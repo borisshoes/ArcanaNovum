@@ -1,0 +1,20 @@
+{
+    "type": "crafting_shapeless",
+    "ingredients": [
+        {"item": "minecraft:ender_eye"},
+		{"item": "minecraft:enchanting_table"}
+    ],
+    "result": {
+        "item": "minecraft:enchanting_table",
+        "data": {
+            "display": {
+                "Name": "[{\"text\":\"Mysterious Tome\",\"italic\":true,\"bold\":true,\"color\":\"dark_purple\"}]",
+                "Lore": [
+                    "[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ender Eye\",\"color\":\"green\"},{\"text\":\" gravitates to the table.\",\"color\":\"blue\"}]",
+                    "[{\"text\":\"It\\'s presence causes the table to \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"transform\",\"italic\":true,\"color\":\"light_purple\"},{\"text\":\"!\"}]"
+                ]
+            },
+            "ArcanaGuideBook": "true"
+        }
+    }
+}

@@ -1,0 +1,64 @@
+package net.borisshoes.arcananovum.mixins;
+
+import com.mojang.authlib.GameProfile;
+import net.borisshoes.arcananovum.items.WingsOfZephyr;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.Utils;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
+@Mixin(ServerPlayerEntity.class)
+public class ServerPlayerMixin {
+   
+   // Mixin for Wings of Zephyr damage mitigation
+   @ModifyVariable(method = "damage", at = @At("HEAD"), argsOnly = true)
+   private float damage1(float amount, DamageSource source){
+      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+      if(source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL)){
+         ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
+         if(MagicItemUtils.isMagic(item)){
+            if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr){
+               WingsOfZephyr wings = (WingsOfZephyr) MagicItemUtils.identifyItem(item);
+               int energy = wings.getEnergy(item);
+               double maxDmgReduction = amount*.5;
+               double dmgReduction = Math.min(energy/100.0,maxDmgReduction);
+               if(dmgReduction == maxDmgReduction || dmgReduction > 12){
+                  player.sendMessage(new LiteralText("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+                  Utils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
+                  Timer timer = new Timer();
+                  timer.schedule(new TimerTask() {
+                     @Override
+                     public void run() {
+                        player.sendMessage(new LiteralText("Wing Energy Remaining: "+wings.getEnergy(item)).formatted(Formatting.GRAY),true);
+                     }
+                  }, 2500);
+               }
+               wings.addEnergy(item,(int)-dmgReduction*100);
+               PLAYER_DATA.get(player).addXP((int)dmgReduction*25); // Add xp
+               return (float) (amount - dmgReduction);
+            }
+         }
+      }
+      return amount;
+   }
+}

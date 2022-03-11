@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "arcananovum",
+  "version": "${version}",
+  "name": "Arcana Novum",
+  "description": "Adds Magic Items to your server!",
+  "authors": [
+    "BorisShoes"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/arcananovum/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "net.borisshoes.arcananovum.Arcananovum"
+    ],
+    "cardinal-components-entity": [
+      "net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer"
+    ],
+    "cardinal-components-world": [
+      "net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer"
+    ]
+  },
+  "custom": {
+    "cardinal-components": ["arcananovum:profile","arcananovum:magicblocks"]
+  },
+  "mixins": [
+    "arcananovum.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.12",
+    "fabric": "*",
+    "minecraft": "1.18.1"
+  }
+}
