@@ -8,6 +8,8 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import org.jetbrains.annotations.Nullable;
 
+import static net.borisshoes.arcananovum.Arcananovum.log;
+
 public class MagicItemIngredient {
    protected final Item itemType;
    protected final int count;
@@ -66,7 +68,7 @@ public class MagicItemIngredient {
    public static boolean validNbt(NbtCompound nbt, NbtCompound required){
       try{
          for(String key : required.getKeys()){
-            //System.out.println("Looking for key "+key);
+            log("Looking for key "+key);
             if(nbt.contains(key)){
                if(nbt.getType(key) == required.getType(key)){
                   byte type = nbt.getType(key);
@@ -77,9 +79,9 @@ public class MagicItemIngredient {
                               return false;
                            break;
                         case 2:
-                           //.out.println("Comparing Shorts: "+key+" "+nbt.getShort(key)+" "+required.getShort(key));
+                           log("Comparing Shorts: "+key+" "+nbt.getShort(key)+" "+required.getShort(key));
                            if(nbt.getShort(key) != required.getShort(key)){
-                              //System.out.println("Returning false on shorts");
+                              log("Returning false on shorts");
                               return false;
                            }
                            
@@ -101,9 +103,11 @@ public class MagicItemIngredient {
                               return false;
                            break;
                         case 8:
-                           //System.out.println("Comparing Strings: "+key+" "+nbt.getString(key)+" "+required.getString(key));
-                           if(!nbt.getString(key).equals(required.getString(key)))
+                           log("Comparing Strings: "+key+" "+nbt.getString(key)+" "+required.getString(key));
+                           if(!nbt.getString(key).equals(required.getString(key))){
+                              log("Returning false on Strings");
                               return false;
+                           }
                            break;
                      }
                   }else if(type == 10){
@@ -115,9 +119,9 @@ public class MagicItemIngredient {
                   }else if(type == 9){ // List comparison
                      NbtList list1 = (NbtList) nbt.get(key);
                      NbtList list2 = (NbtList) required.get(key);
-                     //System.out.println("Calling List on "+key);
+                     log("Calling List on "+key);
                      if(!validList(list1,list2)){
-                        //System.out.println("Valid List False");
+                        log("Valid List False");
                         return false;
                      }
                      
@@ -146,23 +150,35 @@ public class MagicItemIngredient {
       for(int i = 0; i < required.size(); i++){
          NbtElement reqElem = required.get(i);
          boolean found = false;
+         int searched = 0;
          for(int j = 0; j < list.size(); j++){ // Scan list for each element in required
+            searched++;
             NbtElement elem = list.get(j);
    
             if(type == 9){
-               if(validList(list.getList(i),required.getList(i))) // Recursive list call
+               if(validList(list.getList(j),required.getList(i))){ // Recursive list call
                   found = true;
+                  break;
+               }
             }else if(type == 10){
-               //System.out.println("Recursive Call on compound from list");
-               if(validNbt(list.getCompound(i),required.getCompound(i))) // Recursive compound call
+               log("Recursive Call on compound from list");
+               if(validNbt(list.getCompound(j),required.getCompound(i))){// Recursive compound call
                   found = true;
+                  break;
+               }
             }else{
-               if(elem.asString().equals(reqElem.asString())) // Basic element check, order matters
+               if(elem.asString().equals(reqElem.asString())) {// Basic element check, order matters
+                  log("Found basic element");
                   found = true;
+                  break;
+               }
             }
          }
-         if(!found)
+         
+         if(!found){
+            log("searched "+searched+" without finding");
             return false;
+         }
       }
       return true;
    }

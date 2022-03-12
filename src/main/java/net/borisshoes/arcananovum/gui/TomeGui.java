@@ -54,7 +54,6 @@ public class TomeGui extends SimpleGui {
             ItemStack item = this.getSlot(index).getItemStack();
             if(!item.isEmpty()){
                if(type == ClickType.MOUSE_RIGHT){
-                  System.out.println("Displaying Crafting GUI for: "+item.getName().getString());
                   MagicItem magicItem = MagicItemUtils.identifyItem(item);
                   if(magicItem.getRarity() == MagicRarity.MYTHICAL){
                      player.sendMessage(new LiteralText("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
@@ -162,7 +161,6 @@ public class TomeGui extends SimpleGui {
                   }
                   break;
                }
-               System.out.println("Crafting Magic Item: "+magicItem.getName());
             }
          }else if(index == 43){
             //Give Items back

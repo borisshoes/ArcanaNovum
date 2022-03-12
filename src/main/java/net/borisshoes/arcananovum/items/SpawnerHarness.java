@@ -153,8 +153,8 @@ public class SpawnerHarness extends MagicItem implements UsableItem{
             {e,p,s,p,e},
             {p,c,b,c,p},
             {s,b,n,b,s},
-            {e,p,b,p,e},
-            {p,c,s,c,p}};
+            {p,c,b,c,p},
+            {e,p,s,p,e}};
       return new MagicItemRecipe(ingredients);
    }
 }

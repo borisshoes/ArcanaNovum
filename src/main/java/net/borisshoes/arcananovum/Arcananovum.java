@@ -81,6 +81,7 @@ public class Arcananovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    private static final ArrayList<TickTimerCallback> TIMER_CALLBACKS = new ArrayList<>();
+   private static final boolean devMode = true;
    
    @Override
    public void onInitialize(){
@@ -98,7 +99,7 @@ public class Arcananovum implements ModInitializer {
                .then(literal("create").requires(source -> source.hasPermissionLevel(2))
                      .then(argument("id", string()).suggests(this::getItemSuggestions)
                            .executes(ctx -> createItem(ctx.getSource(), getString(ctx, "id")))))
-               .then(literal("test").executes(Arcananovum::test3))
+               .then(literal("test").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::test3))
                .then(literal("getbookdata").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::getBookData))
                .then(literal("makerecipe").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::makeCraftingRecipe))
                .then(literal("xp").requires(source -> source.hasPermissionLevel(2))
@@ -170,7 +171,7 @@ public class Arcananovum implements ModInitializer {
             NbtCompound tag = stack.getNbt();
             NbtList pages = tag.getList("pages", NbtElement.STRING_TYPE);
             for(int i = 0; i < pages.size(); i++){
-               System.out.println("\n"+pages.getString(i));
+               log("\n"+pages.getString(i));
             }
          }else{
             player.sendMessage(new LiteralText("Hold a book to get data"),true);
@@ -197,13 +198,13 @@ public class Arcananovum implements ModInitializer {
          ItemStack item1 = player.getStackInHand(Hand.MAIN_HAND);
          ItemStack item2 = player.getStackInHand(Hand.OFF_HAND);
          if(item1.hasNbt() && item2.hasNbt()){
-            System.out.println("Testing My Thing: "+ MagicItemIngredient.validNbt(item1.getNbt(),item2.getNbt())+"\n");
+            log("Testing My Thing: "+ MagicItemIngredient.validNbt(item1.getNbt(),item2.getNbt())+"\n");
          }else if(!item1.hasNbt() && item2.hasNbt()){
-            System.out.println(false);
+            log("false");
          }else if(item1.hasNbt() && !item2.hasNbt()){
-            System.out.println(true);
+            log("true");
          }else{
-            System.out.println(true);
+            log("true");
          }
          
       } catch (Exception e) {
@@ -532,5 +533,11 @@ public class Arcananovum implements ModInitializer {
    
    public static boolean addTickTimerCallback(TickTimerCallback callback){
       return TIMER_CALLBACKS.add(callback);
+   }
+   
+   public static void log(String msg){
+      if(devMode){
+         System.out.println(msg);
+      }
    }
 }
