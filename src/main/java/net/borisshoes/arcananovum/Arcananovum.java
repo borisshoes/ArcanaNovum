@@ -95,7 +95,7 @@ public class Arcananovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    private static final ArrayList<TickTimerCallback> TIMER_CALLBACKS = new ArrayList<>();
-   private static final boolean devMode = true;
+   private static final boolean devMode = false;
    
    @Override
    public void onInitialize(){
