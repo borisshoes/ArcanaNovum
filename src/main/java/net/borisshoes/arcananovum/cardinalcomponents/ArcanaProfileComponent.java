@@ -82,14 +82,14 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    @Override
    public boolean addXP(int xp){
       int newLevel = LevelUtils.levelFromXp(this.xp+xp);
-      if(player instanceof ServerPlayerEntity && LevelUtils.levelFromXp(this.xp) != newLevel){
-         if(newLevel % 5 == 0){
+      if(player instanceof ServerPlayerEntity && getLevel() != newLevel){
+         if(getLevel()/5 < newLevel/5){
             MinecraftServer server = player.getServer();
             if(server != null){
                MutableText lvlUpMsg = new LiteralText("")
                      .append(player.getDisplayName()).formatted(Formatting.ITALIC)
                      .append(new LiteralText(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
-                     .append(new LiteralText(Integer.toString(newLevel)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
+                     .append(new LiteralText(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
                      .append(new LiteralText("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
                server.getPlayerManager().broadcast(lvlUpMsg, MessageType.SYSTEM,player.getUuid());
             }

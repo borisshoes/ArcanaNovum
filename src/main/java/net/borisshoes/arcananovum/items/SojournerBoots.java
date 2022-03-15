@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.StairsBlock;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -14,12 +15,15 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -30,9 +34,12 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.minecraft.block.StairsBlock.HALF;
 
 public class SojournerBoots extends EnergyItem implements TickingItem{
    public SojournerBoots(){
@@ -115,31 +122,21 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
                ScoreboardPlayerScore walkScore = scoreboard.getPlayerScore(player.getEntityName(),walk);
                ScoreboardPlayerScore sprintScore = scoreboard.getPlayerScore(player.getEntityName(),sprint);
                if(walkScore.getScore() + sprintScore.getScore() > 1){
-                  World playerWorld = player.getEntityWorld();
-                  Vec3d vec3d1 = player.getRotationVector();
-                  Vec3d vec3d2 = player.getPos();
-                  Vec3d vec3d3 = new Vec3d(vec3d1.getX(),0,vec3d1.getZ());
-                  BlockPos pos = new BlockPos(vec3d2.add(vec3d3.normalize().multiply(0.45)));
-                  BlockState block = playerWorld.getBlockState(pos);
-                  VoxelShape shape = block.getCollisionShape(playerWorld,pos);
-                  double height = shape.getMax(Direction.Axis.Y);
+                  Vec3d playerRot = player.getRotationVector();
+                  Vec3d playerPos = player.getPos();
+                  Vec3d vec3d3 = new Vec3d(playerRot.getX(),0,playerRot.getZ());
+                  BlockPos pos = new BlockPos(playerPos.add(vec3d3.normalize().multiply(0.45)));
+                  double height = checkHeight(world,pos,playerPos.y);
+                  BlockPos aboveHeadPos = new BlockPos(playerPos.add(0,2.5,0));
                   
-                  if(!pos.equals(player.getBlockPos()) && height >= 0.6){
-                     BlockPos pos1 = new BlockPos(pos.getX(),pos.getY()+1,pos.getZ());
-                     BlockPos pos2 = new BlockPos(pos.getX(),pos.getY()+2,pos.getZ());
-                     double height1 = playerWorld.getBlockState(pos1).getCollisionShape(playerWorld,pos1).getMax(Direction.Axis.Y);
-                     double height2 = playerWorld.getBlockState(pos2).getCollisionShape(playerWorld,pos2).getMax(Direction.Axis.Y);
-                     if(height <= 1.25 && height >= 1){ // Check above block and add min height
-                        if(height+Math.max(0,height1) <= 1.25 && height2 <= 0){
-                           player.teleport(vec3d2.getX(),vec3d2.getY()+height+Math.max(0,height1)+0.125,vec3d2.getZ());
-                           PLAYER_DATA.get(player).addXP(10); // Add xp
-                        }
-                     }else if(height < 1){ // Check above two blocks
-                        if(height1 <= 0 && height2 <= 0){
-                           player.teleport(vec3d2.getX(),vec3d2.getY()+height+0.125,vec3d2.getZ());
-                           PLAYER_DATA.get(player).addXP(10); // Add xp
-                        }
-                     }
+                  if(height > 0.5 && height < 1.3 && world.getBlockState(aboveHeadPos).isAir()){
+                     EnumSet<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
+                     set.add(PlayerPositionLookS2CPacket.Flag.X);
+                     set.add(PlayerPositionLookS2CPacket.Flag.Y);
+                     set.add(PlayerPositionLookS2CPacket.Flag.Z);
+                     
+                     player.networkHandler.requestTeleport(playerPos.getX(), playerPos.getY()+1, playerPos.getZ(), player.getYaw(), player.getPitch(), set);
+                     PLAYER_DATA.get(player).addXP(10); // Add xp
                   }
                   walkScore.setScore(0);
                   sprintScore.setScore(0);
@@ -175,6 +172,24 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
       }catch(Exception e){
          e.printStackTrace();
       }
+   }
+   
+   private double checkHeight(World world, BlockPos pos, double curY){
+      BlockPos[] poses = {pos,new BlockPos(pos.getX(),pos.getY()+1,pos.getZ()),new BlockPos(pos.getX(),pos.getY()+2,pos.getZ())};
+      BlockState[] blocks = {world.getBlockState(poses[0]),world.getBlockState(poses[1]),world.getBlockState(poses[2])};
+      VoxelShape[] shapes = {blocks[0].getCollisionShape(world,poses[0]),blocks[1].getCollisionShape(world,poses[1]),blocks[2].getCollisionShape(world,poses[2])};
+      double heightDiff = 0;
+      for(int i = 0; i <= 2; i++){
+         double height;
+         if(blocks[i].getBlock() instanceof StairsBlock && blocks[i].get(HALF).name().equals("BOTTOM")){
+            height = 0.5;
+         }else{
+            height = shapes[i].getMax(Direction.Axis.Y);
+         }
+         heightDiff = height > 0 ? i+height : heightDiff;
+      }
+      heightDiff -= (curY-poses[0].getY());
+      return heightDiff;
    }
    
    private List<String> makeLore(){

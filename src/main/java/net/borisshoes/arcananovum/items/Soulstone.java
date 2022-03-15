@@ -190,7 +190,7 @@ public class Soulstone extends MagicItem implements AttackingItem,UsableItem{
             return i;
          }
       }
-      return tiers.length-1;
+      return tiers.length;
    }
    
    @Override

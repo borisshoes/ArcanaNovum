@@ -4,10 +4,13 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.callbacks.LoginCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.gui.LoreGui;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -21,6 +24,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -47,6 +52,7 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -63,6 +69,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -72,6 +81,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.gui.TomeGui.getGuideBook;
 import static net.minecraft.command.argument.EntityArgumentType.players;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayers;
 import static net.minecraft.server.command.CommandManager.argument;
@@ -81,6 +91,7 @@ public class Arcananovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    private static final ArrayList<TickTimerCallback> TIMER_CALLBACKS = new ArrayList<>();
+   private static final ArrayList<LoginCallback> LOGIN_CALLBACKS = new ArrayList<>();
    private static final boolean devMode = true;
    
    @Override
@@ -91,6 +102,7 @@ public class Arcananovum implements ModInitializer {
       UseBlockCallback.EVENT.register(this::useBlock);
       ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(this::killedEntity);
       AttackEntityCallback.EVENT.register(this::attackEntity);
+      ServerPlayConnectionEvents.JOIN.register(this::onPlayerJoin);
    
       logger.info("Initializing Arcana Novum");
    
@@ -102,6 +114,8 @@ public class Arcananovum implements ModInitializer {
                .then(literal("test").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::test3))
                .then(literal("getbookdata").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::getBookData))
                .then(literal("makerecipe").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::makeCraftingRecipe))
+               .then(literal("help").executes(Arcananovum::openGuideBook))
+               .then(literal("guide").executes(Arcananovum::openGuideBook))
                .then(literal("xp").requires(source -> source.hasPermissionLevel(2))
                      .then(literal("add")
                            .then(argument("targets", players())
@@ -120,6 +134,22 @@ public class Arcananovum implements ModInitializer {
                                        .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,false)))))))
          );
       });
+   }
+   
+   private static int openGuideBook(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException{
+      ServerPlayerEntity player = ctx.getSource().getPlayer();
+      ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
+      writablebook.setNbt(getGuideBook());
+      BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
+      LoreGui loreGui = new LoreGui(player,bookBuilder,null,-1);
+      loreGui.open();
+      return 1;
+   }
+   
+   private void onPlayerJoin(ServerPlayNetworkHandler netHandler, PacketSender sender, MinecraftServer server){
+      log(netHandler.player.getEntityName()+" has joined the game");
+      log("Abs: "+netHandler.player.getAbsorptionAmount());
+      netHandler.player.setAbsorptionAmount(0);
    }
    
    private static int xpCommand(CommandContext<ServerCommandSource> ctx, Collection<? extends ServerPlayerEntity> targets, int amount, boolean set, boolean points){
@@ -170,9 +200,14 @@ public class Arcananovum implements ModInitializer {
          if(stack.isOf(Items.WRITTEN_BOOK)){
             NbtCompound tag = stack.getNbt();
             NbtList pages = tag.getList("pages", NbtElement.STRING_TYPE);
+            //String path = "C:\\Users\\Boris\\Desktop\\bookdata.txt";
+            //PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
             for(int i = 0; i < pages.size(); i++){
+               //out.println("loreList.add(NbtString.of("+pages.getString(i)+"));");
+               //loreList.add(NbtString.of(e));
                log("\n"+pages.getString(i));
             }
+            //out.close();
          }else{
             player.sendMessage(new LiteralText("Hold a book to get data"),true);
          }
