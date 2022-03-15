@@ -38,7 +38,7 @@ public class MagicBlockComponent implements IMagicBlockComponent{
          for (NbtElement e : blocksTag) {
             NbtCompound blockTag = (NbtCompound) e;
             NbtList pos = blockTag.getList("pos",NbtType.INT);
-            blocks.add(new MagicBlock(pos.getInt(0),pos.getInt(0),pos.getInt(0),blockTag.getCompound("data")));
+            blocks.add(new MagicBlock(pos.getInt(0),pos.getInt(1),pos.getInt(2),blockTag.getCompound("data")));
          }
       }catch(Exception e){
          e.printStackTrace();

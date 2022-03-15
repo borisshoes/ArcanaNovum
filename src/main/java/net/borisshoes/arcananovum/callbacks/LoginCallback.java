@@ -1,16 +1,38 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 
 import javax.annotation.Nullable;
 
 public abstract class LoginCallback {
-   protected ServerPlayerEntity player;
+   protected String playerUUID;
+   protected String id;
+   protected NbtCompound data;
+   protected ServerWorld world;
    
-   public LoginCallback(ServerPlayerEntity player){
-      this.player = player;
+   public abstract void onLogin(ServerPlayNetworkHandler netHandler, MinecraftServer server);
+   
+   public abstract void setData(NbtCompound data);
+   
+   public abstract NbtCompound getData();
+   
+   public void setPlayer(String playerUUID){ this.playerUUID = playerUUID;}
+   
+   public String getId(){
+      return id;
    }
    
-   public abstract void onTimer();
+   public String getPlayer(){
+      return playerUUID;
+   }
+   
+   public ServerWorld getWorld(){
+      return world;
+   }
 }

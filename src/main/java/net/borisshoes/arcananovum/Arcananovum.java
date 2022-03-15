@@ -7,6 +7,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.callbacks.LoginCallback;
+import net.borisshoes.arcananovum.callbacks.LoginCallbacks;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
@@ -64,9 +65,11 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.state.property.Properties;
+import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedWriter;
@@ -79,6 +82,7 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
+import static net.borisshoes.arcananovum.cardinalcomponents.LoginCallbackComponentInitializer.LOGIN_CALLBACK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.gui.TomeGui.getGuideBook;
@@ -91,7 +95,6 @@ public class Arcananovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    private static final ArrayList<TickTimerCallback> TIMER_CALLBACKS = new ArrayList<>();
-   private static final ArrayList<LoginCallback> LOGIN_CALLBACKS = new ArrayList<>();
    private static final boolean devMode = true;
    
    @Override
@@ -147,9 +150,20 @@ public class Arcananovum implements ModInitializer {
    }
    
    private void onPlayerJoin(ServerPlayNetworkHandler netHandler, PacketSender sender, MinecraftServer server){
-      log(netHandler.player.getEntityName()+" has joined the game");
-      log("Abs: "+netHandler.player.getAbsorptionAmount());
-      netHandler.player.setAbsorptionAmount(0);
+      ServerPlayerEntity player = netHandler.player;
+      //log(player.getEntityName()+" has joined the game");
+      
+      ArrayList<LoginCallback> toBeRemoved = new ArrayList<>();
+      for(LoginCallback callback : LOGIN_CALLBACK_LIST.get(server.getWorld(ServerWorld.OVERWORLD)).getCallbacks()){
+         if(callback.getPlayer().equals(player.getUuidAsString())){
+            //log("Running login callback for "+player.getEntityName()+". ID: "+callback.getId());
+            callback.onLogin(netHandler,server);
+            toBeRemoved.add(callback);
+         }
+      }
+      for(LoginCallback callback :toBeRemoved){
+         LOGIN_CALLBACK_LIST.get(server.getWorld(ServerWorld.OVERWORLD)).removeCallback(callback);
+      }
    }
    
    private static int xpCommand(CommandContext<ServerCommandSource> ctx, Collection<? extends ServerPlayerEntity> targets, int amount, boolean set, boolean points){
@@ -568,6 +582,10 @@ public class Arcananovum implements ModInitializer {
    
    public static boolean addTickTimerCallback(TickTimerCallback callback){
       return TIMER_CALLBACKS.add(callback);
+   }
+   
+   public static boolean addLoginCallback(LoginCallback callback){
+      return LOGIN_CALLBACK_LIST.get(callback.getWorld()).addCallback(callback);
    }
    
    public static void log(String msg){
