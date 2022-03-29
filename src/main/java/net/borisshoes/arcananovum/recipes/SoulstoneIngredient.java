@@ -14,12 +14,14 @@ public class SoulstoneIngredient extends MagicItemIngredient{
    private final String type;
    private final boolean consume;
    private final boolean repeatable;
+   private final boolean allowBosses;
    
-   public SoulstoneIngredient(int souls, boolean repeatable, boolean consume, @Nullable String type){
+   public SoulstoneIngredient(int souls, boolean repeatable, boolean consume, boolean allowBosses, @Nullable String type){
       super(Items.FIRE_CHARGE, 1, null);
       this.souls = souls;
       this.repeatable = repeatable;
       this.consume = consume;
+      this.allowBosses = allowBosses;
       this.type = type;
    }
    
@@ -28,6 +30,10 @@ public class SoulstoneIngredient extends MagicItemIngredient{
       if(MagicItemUtils.identifyItem(stack) instanceof Soulstone){
          if(type != null){
             if(!type.equals(Soulstone.getType(stack)))
+               return false;
+         }
+         if(!allowBosses){
+            if((Soulstone.getType(stack).equals("minecraft:ender_dragon") || Soulstone.getType(stack).equals("minecraft:wither")))
                return false;
          }
          return Soulstone.getSouls(stack) >= souls;

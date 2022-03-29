@@ -29,36 +29,5 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
-   
-   // Mixin for Wings of Zephyr damage mitigation
-   @ModifyVariable(method = "damage", at = @At("HEAD"), argsOnly = true)
-   private float damage1(float amount, DamageSource source){
-      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-      if(source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL)){
-         ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
-         if(MagicItemUtils.isMagic(item)){
-            if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr){
-               WingsOfZephyr wings = (WingsOfZephyr) MagicItemUtils.identifyItem(item);
-               int energy = wings.getEnergy(item);
-               double maxDmgReduction = amount*.5;
-               double dmgReduction = Math.min(energy/100.0,maxDmgReduction);
-               if(dmgReduction == maxDmgReduction || dmgReduction > 12){
-                  player.sendMessage(new LiteralText("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
-                  Utils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
-                  Timer timer = new Timer();
-                  timer.schedule(new TimerTask() {
-                     @Override
-                     public void run() {
-                        player.sendMessage(new LiteralText("Wing Energy Remaining: "+wings.getEnergy(item)).formatted(Formatting.GRAY),true);
-                     }
-                  }, 2500);
-               }
-               wings.addEnergy(item,(int)-dmgReduction*100);
-               PLAYER_DATA.get(player).addXP((int)dmgReduction*25); // Add xp
-               return (float) (amount - dmgReduction);
-            }
-         }
-      }
-      return amount;
-   }
+
 }

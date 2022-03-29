@@ -15,6 +15,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.boss.WitherEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -213,7 +215,7 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
          NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
          String type = magicNbt.getString("type");
    
-         if(type.equals("unattuned") && entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
+         if(type.equals("unattuned") && entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity)){
             String entityTypeId = EntityType.getId(attackedEntity.getType()).toString();
             String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
       
@@ -228,13 +230,13 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"      Essence Egg\\n\\nRarity: Empowered\\n\\nAs making Soulstones has taught me, keeping souls imprisoned is hard.\\nMaking so they can be released controllably, is even harder, thankfully I can build off of a Soulstone's solid foundation.\"}");
-      list.add("{\"text\":\"      Essence Egg\\n\\nThis 'Egg' should take the souls from a Soulstone nnd keep them captive just long enough for me to release them into a new form. \\nAlthough it takes 25 souls to make a new body for a single soul to inhabit.\"}");
+      list.add("{\"text\":\"      Essence Egg\\n\\nThis 'Egg' should take the souls from a Soulstone and keep them captive just long enough for me to release them into a new form. \\nAlthough it takes 25 souls to make a new body for a single soul to inhabit.\"}");
       list.add("{\"text\":\"      Essence Egg\\n\\nThe Essence Egg can be used one at a time to spawn a mob, or 5 uses (125 souls) can be used on a spawner to change its attunement to the type of essence contained in the Egg.\"}");
       return list;
    }
    
    private MagicItemRecipe makeRecipe(){
-      SoulstoneIngredient t = new SoulstoneIngredient(Soulstone.tiers[0],true,false,null);
+      SoulstoneIngredient t = new SoulstoneIngredient(Soulstone.tiers[0],true,false, false,null);
       MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,32,null);
       MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,64,null);
       MagicItemIngredient s = new MagicItemIngredient(Items.SOUL_SAND,64,null);
