@@ -134,7 +134,6 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       int mode = (magicNbt.getInt("mode")+1) % 4;
-      System.out.println(mode);
       magicNbt.putInt("mode",mode);
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
