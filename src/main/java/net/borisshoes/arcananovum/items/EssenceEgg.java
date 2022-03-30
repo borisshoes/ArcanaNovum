@@ -82,6 +82,21 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
    }
    
    @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putString("type",magicTag.getString("type"));
+      newTag.getCompound("arcananovum").putInt("uses",magicTag.getInt("uses"));
+      stack.setNbt(newTag);
+      setType(stack,magicTag.getString("type"));
+      setUses(stack,magicTag.getInt("uses"));
+      return stack;
+   }
+   
+   @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
       if(playerEntity.isCreative()){
          ItemStack item = playerEntity.getStackInHand(hand);
@@ -105,7 +120,6 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
             BlockState blockState = world.getBlockState(blockPos);
             if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof MobSpawnerBlockEntity){
                if(getUses(item) >= 5){
-                  System.out.println("Setting spawner");
                   MobSpawnerLogic mobSpawnerLogic = ((MobSpawnerBlockEntity) blockEntity).getLogic();
                   EntityType<?> entityType = EntityType.get(getType(item)).get();
                   mobSpawnerLogic.setEntityId(entityType);
@@ -130,7 +144,6 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
                      entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
                      return entity;
                   });
-                  System.out.println(newEntity.getDisplayName().getString()+" "+newEntity.getBlockPos().toShortString());
                   if (newEntity instanceof MobEntity) {
                      ((MobEntity)newEntity).initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_EGG, null, null);
                   }

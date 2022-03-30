@@ -7,6 +7,18 @@ import net.minecraft.nbt.NbtCompound;
 public abstract class EnergyItem extends MagicItem{
    protected int maxEnergy;
    
+   @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
+      stack.setNbt(newTag);
+      return stack;
+   }
+   
    public int getEnergy(ItemStack item){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");

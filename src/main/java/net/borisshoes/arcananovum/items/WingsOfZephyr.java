@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 
@@ -66,6 +67,20 @@ public class WingsOfZephyr extends EnergyItem{
       prefNBT = addMagicNbt(tag);
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
+      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+      newTag.put("Enchantments",enchants);
+      stack.setNbt(newTag);
+      return stack;
    }
    
    private List<String> makeLore(){

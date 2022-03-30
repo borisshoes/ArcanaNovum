@@ -72,6 +72,20 @@ public class BrainJar extends EnergyItem implements UsableItem,TickingItem{
    }
    
    @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
+      newTag.getCompound("arcananovum").putInt("mode",magicTag.getInt("mode"));
+      stack.setNbt(newTag);
+      editStatusLore(stack);
+      return stack;
+   }
+   
+   @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");

@@ -71,6 +71,36 @@ public class Soulstone extends MagicItem implements AttackingItem,UsableItem{
    }
    
    @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putString("type",magicTag.getString("type"));
+      newTag.getCompound("arcananovum").putInt("souls",magicTag.getInt("souls"));
+      stack.setNbt(newTag);
+      redoLore(stack);
+      return stack;
+   }
+   
+   private void redoLore(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      String type = magicNbt.getString("type");
+      int souls = magicNbt.getInt("souls");
+      int tier = soulsToTier(souls);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      if(!type.equals("unattuned")){
+         String entityTypeName = EntityType.get(type).get().getName().getString();
+         loreList.set(3,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      }
+      if(souls != 0){
+         loreList.set(4,NbtString.of("[{\"text\":\"Tier "+tier+" - ("+souls+" Mobs Killed)\",\"italic\":false,\"color\":\"gray\"}]"));
+      }
+   }
+   
+   @Override
    public boolean attackEntity(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult){
       ItemStack item = playerEntity.getStackInHand(hand);
       NbtCompound itemNbt = item.getNbt();

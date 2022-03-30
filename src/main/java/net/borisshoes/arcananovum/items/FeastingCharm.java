@@ -1,10 +1,12 @@
 package net.borisshoes.arcananovum.items;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.Utils;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -43,6 +45,7 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
       display.putString("Name","[{\"text\":\"Charm of Feasting\",\"italic\":false,\"bold\":true,\"color\":\"gold\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Just carrying the charm makes you feel \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"well nourished\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"feeds\",\"color\":\"gold\"},{\"text\":\" you from your\"},{\"text\":\" inventory.\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to\",\"color\":\"dark_green\"},{\"text\":\" toggle \",\"color\":\"gold\"},{\"text\":\"the charm between feeding modes.\",\"color\":\"dark_green\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
@@ -52,13 +55,17 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
+      prefNBT.getCompound("arcananovum").putInt("mode",0);
+      
       item.setNbt(prefNBT);
       prefItem = item;
    }
    
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      if(world.getServer().getTicks() % (20*30) == 0){//Check player hunger every 30 seconds
+      int mode = item.getNbt().getCompound("arcananovum").getInt("mode");
+      
+      if(world.getServer().getTicks() % (20*20) == 0){ //Check player hunger every 20 seconds
          //Scan for available food items
          PlayerInventory inv = player.getInventory();
          HungerManager hunger = player.getHungerManager();
@@ -69,9 +76,28 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
             if(invItem.isFood() && !MagicItemUtils.isMagic(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
                FoodComponent foodComponent = invItem.getItem().getFoodComponent();
                int foodValue = foodComponent.getHunger();
-               if(20 - hunger.getFoodLevel() >= foodValue){
-                  player.sendMessage(new LiteralText("Your feasting charm consumes a "+invItem.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
+               
+               boolean consume = switch(mode){
+                  case 0 -> // Mode 0 is optimal eating - Optimal Eating
+                        20 - hunger.getFoodLevel() >= foodValue;
+                  case 1 -> // Mode 1 is eat when below regen range - Eat for Regen
+                        hunger.getFoodLevel() < 18;
+                  case 2 -> // Mode 2 is eat if possible when below half HP, otherwise optimal - Optimal + Emergency Eating
+                        20 - hunger.getFoodLevel() >= foodValue || player.getHealth() < 10;
+                  case 3 -> // Mode 3 is eat if possible when below half HP, otherwise when below 2 regen range - Regen + Emergency Eating
+                        hunger.getFoodLevel() < 18 || player.getHealth() < 10;
+                  default -> false;
+               };
+   
+               if(consume){
+                  player.sendMessage(new LiteralText("Your Feasting Charm consumes a "+invItem.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
                   hunger.eat(invItem.getItem(),invItem);
+                  // Apply Status Effects
+                  List<Pair<StatusEffectInstance, Float>> list = foodComponent.getStatusEffects();
+                  for (Pair<StatusEffectInstance, Float> pair : list) {
+                     if (world.isClient || pair.getFirst() == null || !(world.random.nextFloat() < pair.getSecond().floatValue())) continue;
+                     player.addStatusEffect(new StatusEffectInstance(pair.getFirst()));
+                  }
                   invItem.decrement(1);
                   if(invItem.getCount() == 0)
                      invItem.setNbt(new NbtCompound());
@@ -79,7 +105,6 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
                   PLAYER_DATA.get(player).addXP(50*foodValue); // Add xp
                   break; // Only consume one item
                }
-               //this.add(foodComponent.getHunger(), foodComponent.getSaturationModifier());
             }
          }
          
@@ -91,12 +116,34 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
+      toggleMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
       return false;
    }
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
+      toggleMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
       return false;
+   }
+   
+   // Mode 0 is optimal eating - Optimal Eating
+   // Mode 1 is eat when below regen range - Eat for Regen
+   // Mode 2 is eat if possible when below half HP, otherwise optimal - Optimal + Emergency Eating
+   // Mode 3 is eat if possible when below half HP, otherwise when below 2 regen range - Regen + Emergency Eating
+   public void toggleMode(ServerPlayerEntity player, ItemStack item){
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      int mode = (magicNbt.getInt("mode")+1) % 4;
+      System.out.println(mode);
+      magicNbt.putInt("mode",mode);
+      itemNbt.put("arcananovum",magicNbt);
+      item.setNbt(itemNbt);
+      switch(mode){
+         case 0 -> player.sendMessage(new LiteralText("Feasting Mode: Optimal").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 1 -> player.sendMessage(new LiteralText("Feasting Mode: Above 8").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 2 -> player.sendMessage(new LiteralText("Feasting Mode: Optimal + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 3 -> player.sendMessage(new LiteralText("Feasting Mode: Above 8 + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+      }
    }
    
    private List<String> makeLore(){

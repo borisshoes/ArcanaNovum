@@ -107,6 +107,20 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
    }
    
    @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
+      NbtList enchants = itemNbt.getList("Enchantments",NbtElement.COMPOUND_TYPE);
+      newTag.put("Enchantments",enchants);
+      stack.setNbt(newTag);
+      return stack;
+   }
+   
+   @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
       try{
          if(item == player.getEquippedStack(EquipmentSlot.FEET)){

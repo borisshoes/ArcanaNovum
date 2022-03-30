@@ -18,6 +18,7 @@ import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -69,6 +70,20 @@ public class SpawnerHarness extends MagicItem implements UsableItem{
       prefNBT = tag;
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").put("spawner",magicTag.getCompound("spawner"));
+      String loreData = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE).getString(4);
+      newTag.getCompound("display").getList("Lore", NbtElement.STRING_TYPE).set(4,NbtString.of(loreData));
+      stack.setNbt(newTag);
+      return stack;
    }
    
    @Override

@@ -10,6 +10,7 @@ import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -47,6 +48,21 @@ public class ShieldOfFortitude extends MagicItem{
       prefNBT = addMagicNbt(tag);
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+      newTag.put("Enchantments",enchants);
+      if(itemNbt.contains("BlockEntityTag"))
+         newTag.put("BlockEntityTag",itemNbt.getCompound("BlockEntityTag"));
+      stack.setNbt(newTag);
+      return stack;
    }
    
    private List<String> makeLore(){

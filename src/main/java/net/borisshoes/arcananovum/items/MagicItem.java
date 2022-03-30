@@ -21,7 +21,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    protected int concentrationModifier;
    protected MagicItemRecipe recipe;
    protected NbtCompound bookLore;
-   public static int version = 3;
+   public static int version = 7;
    
    public String getName(){
       return name;
@@ -63,9 +63,8 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       // For default just replace everything but UUID
-      String uuid = magicTag.getString("UUID");
       NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",uuid);
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
       stack.setNbt(newTag);
    
       return stack;

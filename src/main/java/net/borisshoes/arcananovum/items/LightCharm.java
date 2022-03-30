@@ -52,6 +52,7 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"radiates\",\"color\":\"yellow\"},{\"text\":\" a warm glow.\",\"color\":\"gold\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Its light seems to \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"linger\",\"italic\":true,\"color\":\"red\"},{\"text\":\" behind you.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to see the magical \",\"color\":\"gold\"},{\"text\":\"light sources\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to toggle the charm \",\"color\":\"gold\"},{\"text\":\"on or off\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
@@ -62,6 +63,7 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       prefNBT.getCompound("arcananovum").putBoolean("vision",false);
+      prefNBT.getCompound("arcananovum").putBoolean("active",true);
       
       item.setNbt(prefNBT);
       prefItem = item;
@@ -70,16 +72,18 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
       boolean vision = item.getNbt().getCompound("arcananovum").getBoolean("vision");
+      boolean active = item.getNbt().getCompound("arcananovum").getBoolean("active");
+      
       if(world.getServer().getTicks() % 60 == 0){
          BlockPos pos = player.getBlockPos();
-         if(world.getLightLevel(pos)<5 && world.getBlockState(pos).isAir()){
-            world.setBlockState(pos,Blocks.LIGHT.getDefaultState(), Block.NOTIFY_ALL);
-            world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
-            Utils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
-            PLAYER_DATA.get(player).addXP(100); // Add xp
+         if(active){
+            if(world.getLightLevel(pos)<5 && world.getBlockState(pos).isAir()){
+               world.setBlockState(pos,Blocks.LIGHT.getDefaultState(), Block.NOTIFY_ALL);
+               world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
+               Utils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
+               PLAYER_DATA.get(player).addXP(100); // Add xp
+            }
          }
-         
-         
          if(vision){
             // Search 10x10x10 area around player for light blocks
             for(BlockPos block : BlockPos.iterateOutwards(pos, 10, 10, 10)){
@@ -94,13 +98,21 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      toggleVision((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+      if(playerEntity.isSneaking()){
+         toggleActive((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+      }else{
+         toggleVision((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+      }
       return false;
    }
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      toggleVision((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+      if(playerEntity.isSneaking()){
+         toggleActive((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+      }else{
+         toggleVision((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+      }
       return false;
    }
    
@@ -108,7 +120,6 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       boolean vision = !magicNbt.getBoolean("vision");
-      System.out.println("Setting vision to: "+vision);
       magicNbt.putBoolean("vision",vision);
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
@@ -120,6 +131,22 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
          Utils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
       }
       
+   }
+   
+   public void toggleActive(ServerPlayerEntity player, ItemStack item){
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      boolean active = !magicNbt.getBoolean("active");
+      magicNbt.putBoolean("active",active);
+      itemNbt.put("arcananovum",magicNbt);
+      item.setNbt(itemNbt);
+      if(active){
+         player.sendMessage(new LiteralText("The Charm's Light Brightens").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+         Utils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
+      }else{
+         player.sendMessage(new LiteralText("The Charm's Light Dims").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+         Utils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
+      }
    }
    
    private List<String> makeLore(){

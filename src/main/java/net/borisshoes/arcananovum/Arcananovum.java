@@ -86,8 +86,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.LoginCallbackCompone
 import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.gui.TomeGui.getGuideBook;
-import static net.minecraft.command.argument.EntityArgumentType.players;
-import static net.minecraft.command.argument.EntityArgumentType.getPlayers;
+import static net.minecraft.command.argument.EntityArgumentType.*;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -119,6 +118,8 @@ public class Arcananovum implements ModInitializer {
                .then(literal("makerecipe").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::makeCraftingRecipe))
                .then(literal("help").executes(Arcananovum::openGuideBook))
                .then(literal("guide").executes(Arcananovum::openGuideBook))
+               .then(literal("uuids").requires(source -> source.hasPermissionLevel(2))
+                     .then(argument("player",player()).executes(context -> uuidCommand(context,getPlayer(context,"player")))))
                .then(literal("xp").requires(source -> source.hasPermissionLevel(2))
                      .then(literal("add")
                            .then(argument("targets", players())
@@ -134,7 +135,10 @@ public class Arcananovum implements ModInitializer {
                                  .then(literal("points")
                                        .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,true))))
                                  .then(literal("levels")
-                                       .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,false)))))))
+                                       .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,false))))))
+                     .then(literal("query")
+                           .then(argument("targets",player())
+                                 .executes(context -> xpCommandQuery(context, getPlayer(context,"targets"))))))
          );
       });
    }
@@ -183,29 +187,107 @@ public class Arcananovum implements ModInitializer {
          }
          
          if(targets.size() == 1 && set && points){
-            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for ").append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && set && !points){
-            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for ").append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to ").append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && !points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to ").append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() != 1 && set && points){
-            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for " + targets.size() + " players"), true);
+            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && set && !points){
-            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for " + targets.size() + " players"), true);
+            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to " + targets.size() + " players"), true);
+            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && !points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to " + targets.size() + " players"), true);
+            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }
    
          return targets.size();
       }catch(Exception e){
+         e.printStackTrace();
          return 0;
       }
    }
    
+   private static int xpCommandQuery(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target){
+      try{
+         ServerCommandSource source = ctx.getSource();
+         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         MutableText feedback = new LiteralText("")
+               .append(target.getDisplayName())
+               .append(new LiteralText(" has ").formatted(Formatting.LIGHT_PURPLE))
+               .append(new LiteralText(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+               .append(new LiteralText(" levels (").formatted(Formatting.LIGHT_PURPLE))
+               .append(new LiteralText(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
+               .append(new LiteralText("). ").formatted(Formatting.LIGHT_PURPLE))
+               .append(new LiteralText(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+               .append(new LiteralText(" Total XP").formatted(Formatting.LIGHT_PURPLE));
+         source.sendFeedback(feedback, false);
+         return 1;
+      }catch(Exception e){
+         e.printStackTrace();
+         return 0;
+      }
+   }
+   
+   private static int uuidCommand(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
+      ServerCommandSource source = ctx.getSource();
+      ArrayList<MutableText> response = new ArrayList<>();
+      ArrayList<MutableText> response2 = new ArrayList<>();
+      Set<String> uuids = new HashSet<>();
+      int count = 0;
+      
+      PlayerInventory inv = player.getInventory();
+      for(int i=0; i<inv.size();i++){
+         ItemStack item = inv.getStack(i);
+         if(item.isEmpty()){
+            continue;
+         }
+      
+         boolean isMagic = MagicItemUtils.isMagic(item);
+         if(!isMagic)
+            continue; // Item not magic, skip
+         
+         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         NbtCompound magictag = item.getNbt().getCompound("arcananovum");
+         count++;
+         String uuid = magictag.getString("UUID") ;
+         
+         MutableText feedback = new LiteralText("")
+               .append(new LiteralText("[").formatted(Formatting.LIGHT_PURPLE))
+               .append(new LiteralText(magicItem.getName()).formatted(Formatting.AQUA))
+               .append(new LiteralText("] ID: ").formatted(Formatting.LIGHT_PURPLE))
+               .append(new LiteralText(uuid).formatted(Formatting.DARK_PURPLE));
+         response.add(feedback.styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
+         if(!uuids.add(uuid) || item.getCount() > 1){
+            MutableText duplicateWarning = new LiteralText("")
+                  .append(new LiteralText("Duplicate: ").formatted(Formatting.RED))
+                  .append(new LiteralText(magicItem.getName()).formatted(Formatting.AQUA))
+                  .append(new LiteralText(" ID: ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(new LiteralText(uuid).formatted(Formatting.DARK_PURPLE));
+            response2.add(duplicateWarning);
+         }
+      }
+      
+      MutableText feedback = new LiteralText("")
+            .append(player.getDisplayName())
+            .append(new LiteralText(" has ").formatted(Formatting.LIGHT_PURPLE))
+            .append(new LiteralText(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+            .append(new LiteralText(" items.").formatted(Formatting.LIGHT_PURPLE));
+      source.sendFeedback(new LiteralText(""),false);
+      source.sendFeedback(feedback,false);
+      source.sendFeedback(new LiteralText("================================").formatted(Formatting.LIGHT_PURPLE),false);
+      for(MutableText r : response){
+         source.sendFeedback(r,false);
+      }
+      source.sendFeedback(new LiteralText("================================").formatted(Formatting.LIGHT_PURPLE),false);
+      for(MutableText r : response2){
+         source.sendFeedback(r,false);
+      }
+      return 1;
+   }
    
    private static int getBookData(CommandContext<ServerCommandSource> objectCommandContext) {
       try {
