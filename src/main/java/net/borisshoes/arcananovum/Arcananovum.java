@@ -286,7 +286,7 @@ public class Arcananovum implements ModInitializer {
       for(MutableText r : response2){
          source.sendFeedback(r,false);
       }
-      return 1;
+      return count;
    }
    
    private static int getBookData(CommandContext<ServerCommandSource> objectCommandContext) {
