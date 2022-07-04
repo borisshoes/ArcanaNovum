@@ -122,7 +122,6 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      toggleMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
       return false;
    }
    
@@ -139,9 +138,9 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
       item.setNbt(itemNbt);
       switch(mode){
          case 0 -> player.sendMessage(new LiteralText("Feasting Mode: Optimal").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 1 -> player.sendMessage(new LiteralText("Feasting Mode: Above 8").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 1 -> player.sendMessage(new LiteralText("Feasting Mode: Regen").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
          case 2 -> player.sendMessage(new LiteralText("Feasting Mode: Optimal + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 3 -> player.sendMessage(new LiteralText("Feasting Mode: Above 8 + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 3 -> player.sendMessage(new LiteralText("Feasting Mode: Regen + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
       }
    }
    

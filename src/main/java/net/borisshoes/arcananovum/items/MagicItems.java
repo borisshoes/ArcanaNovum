@@ -19,6 +19,22 @@ public class MagicItems {
    public static final MagicItem CONTINUUM_ANCHOR = MagicItems.register("continuum_anchor", new ContinuumAnchor());
    public static final MagicItem SOJOURNER_BOOTS = MagicItems.register("sojourner_boots", new SojournerBoots());
    
+   public static final MagicItem RUNIC_MATRIX = MagicItems.register("runic_matrix", new RunicMatrix());
+   public static final MagicItem TEMPORAL_MOMENT = MagicItems.register("temporal_moment", new TemporalMoment());
+   public static final MagicItem ANCIENT_DOWSING_ROD = MagicItems.register("ancient_dowsing_rod", new AncientDowsingRod());
+   public static final MagicItem FELIDAE_CHARM = MagicItems.register("felidae_charm", new FelidaeCharm());
+   public static final MagicItem MAGNETISM_CHARM = MagicItems.register("magnetism_charm", new MagnetismCharm());
+   public static final MagicItem FRACTAL_SPONGE = MagicItems.register("fractal_sponge", new FractalSponge());
+   public static final MagicItem IGNEOUS_COLLIDER = MagicItems.register("igneous_collider", new IgneousCollider());
+   public static final MagicItem PEARL_OF_RECALL = MagicItems.register("pearl_of_recall", new PearlOfRecall());
+   public static final MagicItem BLINK_ARROWS = MagicItems.register("blink_arrows", new BlinkArrows());
+   public static final MagicItem SHULKER_CORE = MagicItems.register("shulker_core", new ShulkerCore());
+   public static final MagicItem STASIS_PEARL = MagicItems.register("stasis_pearl", new StasisPearl());
+   public static final MagicItem LEVITATION_HARNESS = MagicItems.register("levitation_harness", new LevitationHarness());
+   public static final MagicItem RUNIC_BOW = MagicItems.register("runic_bow", new RunicBow());
+   public static final MagicItem SHADOW_STALKERS_GLAIVE = MagicItems.register("shadow_stalkers_glaive", new ShadowStalkersGlaive());
+   
+   
    private static MagicItem register(String id, MagicItem item){
       registry.put(id,item);
       return item;

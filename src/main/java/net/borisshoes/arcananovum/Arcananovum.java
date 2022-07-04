@@ -5,9 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
-import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.callbacks.LoginCallback;
-import net.borisshoes.arcananovum.callbacks.LoginCallbacks;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
@@ -16,7 +14,6 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.Utils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
@@ -39,18 +36,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.WrittenBookItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.MessageType;
-import net.minecraft.network.packet.s2c.play.EntityAttributesS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ServerScoreboard;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -65,11 +58,9 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.state.property.Properties;
-import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedWriter;
@@ -94,7 +85,7 @@ public class Arcananovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    private static final ArrayList<TickTimerCallback> TIMER_CALLBACKS = new ArrayList<>();
-   private static final boolean devMode = false;
+   private static final boolean devMode = true;
    
    @Override
    public void onInitialize(){
@@ -113,8 +104,9 @@ public class Arcananovum implements ModInitializer {
                .then(literal("create").requires(source -> source.hasPermissionLevel(2))
                      .then(argument("id", string()).suggests(this::getItemSuggestions)
                            .executes(ctx -> createItem(ctx.getSource(), getString(ctx, "id")))))
-               .then(literal("test").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::test3))
+               .then(literal("test").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::test))
                .then(literal("getbookdata").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::getBookData))
+               .then(literal("getitemdata").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::getItemData))
                .then(literal("makerecipe").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::makeCraftingRecipe))
                .then(literal("help").executes(Arcananovum::openGuideBook))
                .then(literal("guide").executes(Arcananovum::openGuideBook))
@@ -290,20 +282,22 @@ public class Arcananovum implements ModInitializer {
    }
    
    private static int getBookData(CommandContext<ServerCommandSource> objectCommandContext) {
+      if (!devMode)
+         return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
          if(stack.isOf(Items.WRITTEN_BOOK)){
             NbtCompound tag = stack.getNbt();
             NbtList pages = tag.getList("pages", NbtElement.STRING_TYPE);
-            //String path = "C:\\Users\\Boris\\Desktop\\bookdata.txt";
-            //PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+            String path = "C:\\Users\\Boris\\Desktop\\bookdata.txt";
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
             for(int i = 0; i < pages.size(); i++){
-               //out.println("loreList.add(NbtString.of("+pages.getString(i)+"));");
+               out.println("loreList.add(NbtString.of("+pages.getString(i)+"));");
                //loreList.add(NbtString.of(e));
                log("\n"+pages.getString(i));
             }
-            //out.close();
+            out.close();
          }else{
             player.sendMessage(new LiteralText("Hold a book to get data"),true);
          }
@@ -313,7 +307,64 @@ public class Arcananovum implements ModInitializer {
       return 0;
    }
    
+   private static int getItemData(CommandContext<ServerCommandSource> objectCommandContext) {
+      if (!devMode)
+         return 0;
+      try {
+         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
+         if(!stack.isEmpty()){
+            NbtCompound tag = stack.getNbt();
+            NbtCompound display = tag.getCompound("display");
+   
+            String path = "C:\\Users\\Boris\\Desktop\\itemdata.txt";
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
+            ArrayList<String> lines = new ArrayList<>();
+   
+            lines.add("id = \"\";");
+            lines.add("name = \"\";");
+            lines.add("rarity = MagicRarity.;");
+            lines.add("");
+            lines.add("ItemStack item = new ItemStack(Items.);");
+            lines.add("NbtCompound tag = item.getOrCreateNbt();");
+            lines.add("NbtCompound display = new NbtCompound();");
+            lines.add("NbtList loreList = new NbtList();");
+            lines.add("NbtList enchants = new NbtList();");
+            lines.add("enchants.add(new NbtCompound()); // Gives enchant glow with no enchants");
+            if(display != null){
+               lines.add("display.putString(\"Name\",\""+display.getString("Name").replaceAll("\"","\\\\\"")+"\");");
+               NbtList lore = display.getList("Lore",NbtElement.STRING_TYPE);
+               for(int i = 0; i < lore.size(); i++){
+                  lines.add("loreList.add(NbtString.of(\""+lore.getString(i).replaceAll("\"","\\\\\"")+"\"));");
+               }
+            }
+            lines.add("display.put(\"Lore\",loreList);");
+            lines.add("tag.put(\"display\",display);");
+            lines.add("tag.put(\"Enchantments\",enchants);");
+            lines.add("");
+            lines.add("setBookLore(makeLore());");
+            lines.add("//setRecipe(makeRecipe());");
+            lines.add("prefNBT = addMagicNbt(tag);");
+            lines.add("");
+            lines.add("item.setNbt(prefNBT);");
+            lines.add("prefItem = item;");
+            
+            for(String line : lines){
+               out.println(line);
+            }
+            out.close();
+         }else{
+            player.sendMessage(new LiteralText("Hold an item to get data"),true);
+         }
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+      return 0;
+   }
+   
    private static int makeCraftingRecipe(CommandContext<ServerCommandSource> objectCommandContext) {
+      if (!devMode)
+         return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          
@@ -323,7 +374,9 @@ public class Arcananovum implements ModInitializer {
       return 0;
    }
    
-   private static int test3(CommandContext<ServerCommandSource> objectCommandContext) {
+   private static int test(CommandContext<ServerCommandSource> objectCommandContext) {
+      if (!devMode)
+         return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          ItemStack item1 = player.getStackInHand(Hand.MAIN_HAND);
@@ -354,8 +407,10 @@ public class Arcananovum implements ModInitializer {
             magicItem = MagicItemUtils.identifyUsableItem(item);
             boolean useReturn = magicItem.useItem(playerEntity,world,hand,blockHitResult);
             result = useReturn ? ActionResult.PASS : ActionResult.SUCCESS;
+            if(playerEntity instanceof ServerPlayerEntity player){
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, hand == Hand.MAIN_HAND ? player.getInventory().selectedSlot : 40, item));
+            }
          }
-         
          
          // Magic Block check
          List<MagicBlock> blocks = MAGIC_BLOCK_LIST.get(world).getBlocks();
@@ -381,6 +436,7 @@ public class Arcananovum implements ModInitializer {
                result = ActionResult.SUCCESS;
             }
          }
+         
          return result;
       }catch(Exception e){
          e.printStackTrace();
@@ -394,6 +450,9 @@ public class Arcananovum implements ModInitializer {
          if(MagicItemUtils.isUsableItem(item)){
             UsableItem magicItem = MagicItemUtils.identifyUsableItem(item);
             boolean useReturn = magicItem.useItem(playerEntity,world,hand);
+            if(playerEntity instanceof ServerPlayerEntity player){
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, hand == Hand.MAIN_HAND ? player.getInventory().selectedSlot : 40, item));
+            }
             return useReturn ? TypedActionResult.pass(item) : TypedActionResult.success(item);
          }
          return TypedActionResult.pass(item);

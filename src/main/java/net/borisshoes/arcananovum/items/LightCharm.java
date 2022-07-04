@@ -108,11 +108,6 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      if(playerEntity.isSneaking()){
-         toggleActive((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-      }else{
-         toggleVision((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-      }
       return false;
    }
    
