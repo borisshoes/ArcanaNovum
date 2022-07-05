@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -27,10 +28,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -93,6 +92,7 @@ public class Arcananovum implements ModInitializer {
       ServerTickEvents.END_SERVER_TICK.register(this::onTick);
       UseItemCallback.EVENT.register(this::useItem);
       UseBlockCallback.EVENT.register(this::useBlock);
+      PlayerBlockBreakEvents.BEFORE.register(this::breakBlock);
       ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(this::killedEntity);
       AttackEntityCallback.EVENT.register(this::attackEntity);
       ServerPlayConnectionEvents.JOIN.register(this::onPlayerJoin);
@@ -395,6 +395,26 @@ public class Arcananovum implements ModInitializer {
          e.printStackTrace();
       }
       return 0;
+   }
+   
+   private boolean breakBlock(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity){
+      List<MagicBlock> blocks = MAGIC_BLOCK_LIST.get(world).getBlocks();
+      for(MagicBlock magicBlock : blocks){
+         if(magicBlock.getPos().equals(blockPos)){
+            NbtCompound data = magicBlock.getData();
+            String magicId = data.getString("id");
+            MagicItem itemType = MagicItemUtils.getItemFromId(magicId);
+            if(itemType instanceof BlockItem){
+               List<ItemStack> drops = ((BlockItem) itemType).dropFromBreak(world,playerEntity,blockPos,blockState,blockEntity,data);
+               for(ItemStack drop : drops){
+                  world.spawnEntity(new ItemEntity(world,blockPos.getX(),blockPos.getY(),blockPos.getZ(),drop));
+               }
+            }
+            world.breakBlock(blockPos,false,playerEntity);
+            return false;
+         }
+      }
+      return true;
    }
    
    private ActionResult useBlock(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHitResult){

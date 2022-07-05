@@ -46,7 +46,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
       id = "sojourner_boots";
       name = "Sojourner's Boots";
       rarity = MagicRarity.LEGENDARY;
-      maxEnergy = 250; // +250% speed
+      maxEnergy = 300; // +250% speed
       
       ItemStack item = new ItemStack(Items.LEATHER_BOOTS);
       NbtCompound tag = item.getOrCreateNbt();

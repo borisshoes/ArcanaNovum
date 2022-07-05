@@ -6,7 +6,9 @@ import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.Utils;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,7 +32,7 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ContinuumAnchor extends MagicItem implements UsableItem{
+public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
    public ContinuumAnchor(){
       id = "continuum_anchor";
       name = "Continuum Anchor";
@@ -69,8 +71,8 @@ public class ContinuumAnchor extends MagicItem implements UsableItem{
       ItemStack item = playerEntity.getStackInHand(hand);
       Direction side = result.getSide();
       BlockPos placePos = result.getBlockPos().add(side.getVector());
-      if(world.getBlockState(placePos).isAir() && playerEntity instanceof ServerPlayerEntity){
-         placeAnchor((ServerPlayerEntity) playerEntity, world, item, placePos);
+      if(world.getBlockState(placePos).isAir() && playerEntity instanceof ServerPlayerEntity player){
+         placeAnchor(player, world, item, placePos);
       }else{
          playerEntity.sendMessage(new LiteralText("The anchor cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
          Utils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -94,12 +96,26 @@ public class ContinuumAnchor extends MagicItem implements UsableItem{
          Utils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, 5,.8f);
          item.decrement(item.getCount());
          item.setNbt(new NbtCompound());
-         PLAYER_DATA.get(player).addXP(10000); // Add xp
       }catch(Exception e){
          e.printStackTrace();
       }
    }
    
+   @Override
+   public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
+      List<ItemStack> drops = new ArrayList<>();
+      drops.add(getNewItem());
+      int fuel = blockData.getInt("fuel");
+      if(fuel > 0){
+         ExoticMatter exoticMatter = (ExoticMatter) MagicItems.EXOTIC_MATTER;
+         ItemStack fuelDrop = MagicItems.EXOTIC_MATTER.getNewItem();
+         exoticMatter.setFuel(fuelDrop,fuel);
+         drops.add(fuelDrop);
+      }
+      return drops;
+   }
+   
+   //TODO: Update lore: anchor is now placeable
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Continuum Anchor\\n\\nRarity: Legendary\\n\\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing sturdy casings that can withstand the flow of Arcana, I have made additional efforts to \"}");

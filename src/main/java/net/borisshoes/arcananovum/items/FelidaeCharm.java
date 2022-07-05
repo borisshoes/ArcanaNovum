@@ -2,16 +2,22 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FelidaeCharm extends MagicItem{
+public class FelidaeCharm extends MagicItem implements UsableItem{
    
    public FelidaeCharm(){
       id = "felidae_charm";
@@ -42,6 +48,16 @@ public class FelidaeCharm extends MagicItem{
       item.setNbt(prefNBT);
       prefItem = item;
    
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
+      return false;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
+      return false;
    }
    
    private MagicItemRecipe makeRecipe(){

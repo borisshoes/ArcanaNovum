@@ -4,8 +4,10 @@
   "package": "net.borisshoes.arcananovum.mixins",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ServerPlayerMixin",
-    "LivingEntityMixin"
+    "CreeperMixin",
+    "LivingEntityMixin",
+    "PhantomMixin",
+    "ServerPlayerMixin"
   ],
   "client": [
   ],

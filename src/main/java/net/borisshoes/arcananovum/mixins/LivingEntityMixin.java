@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
+import net.borisshoes.arcananovum.items.FelidaeCharm;
 import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.items.WingsOfZephyr;
@@ -10,6 +11,7 @@ import net.borisshoes.arcananovum.utils.Utils;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -17,6 +19,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -30,7 +33,9 @@ import java.util.TimerTask;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin {
+public abstract class LivingEntityMixin {
+   
+   @Shadow public abstract void endCombat();
    
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
@@ -61,17 +66,18 @@ public class LivingEntityMixin {
    }
    
    
-   // Mixin for Wings of Zephyr damage mitigation
+   // Mixin for damage mitigation (Wings of Zephyr, Charm of Felidae
    @Inject(method = "applyEnchantmentsToDamage", at = @At("RETURN"), cancellable = true)
    private void wingsFallDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
       float reduced = cir.getReturnValueF();
+      float newReturn = reduced;
       LivingEntity entity = (LivingEntity) (Object) this;
       if(source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL)){
-         ItemStack item = entity.getEquippedStack(EquipmentSlot.CHEST);
-         if(MagicItemUtils.isMagic(item)){
-            if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr){
-               WingsOfZephyr wings = (WingsOfZephyr) MagicItemUtils.identifyItem(item);
-               int energy = wings.getEnergy(item);
+         ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
+         if(MagicItemUtils.isMagic(chestItem)){
+            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr){
+               WingsOfZephyr wings = (WingsOfZephyr) MagicItemUtils.identifyItem(chestItem);
+               int energy = wings.getEnergy(chestItem);
                double maxDmgReduction = reduced*.5;
                double dmgReduction = Math.min(energy/100.0,maxDmgReduction);
                if(entity instanceof ServerPlayerEntity player){
@@ -82,16 +88,40 @@ public class LivingEntityMixin {
                      timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                           player.sendMessage(new LiteralText("Wing Energy Remaining: "+wings.getEnergy(item)).formatted(Formatting.GRAY),true);
+                           player.sendMessage(new LiteralText("Wing Energy Remaining: "+wings.getEnergy(chestItem)).formatted(Formatting.GRAY),true);
                         }
                      }, 2500);
                   }
                   PLAYER_DATA.get(player).addXP((int)dmgReduction*25); // Add xp
                }
-               wings.addEnergy(item,(int)-dmgReduction*100);
-               cir.setReturnValue((float) (reduced - dmgReduction));
+               wings.addEnergy(chestItem,(int)-dmgReduction*100);
+               newReturn = (float) (reduced - dmgReduction);
+            }
+         }
+         
+         // Felidae Charm
+         if(entity instanceof ServerPlayerEntity player && source.equals(DamageSource.FALL)){
+            PlayerInventory inv = player.getInventory();
+            for(int i=0; i<inv.size();i++){
+               ItemStack item = inv.getStack(i);
+               if(item.isEmpty()){
+                  continue;
+               }
+      
+               boolean isMagic = MagicItemUtils.isMagic(item);
+               if(!isMagic)
+                  continue; // Item not magic, skip
+      
+               if(MagicItemUtils.identifyItem(item) instanceof FelidaeCharm){
+                  Utils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
+                  float oldReturn = newReturn;
+                  newReturn = newReturn/2 < 2 ? 0 : newReturn / 2; // Half the damage, if the remaining damage is less than a heart, remove all of it.
+                  PLAYER_DATA.get(player).addXP(10*(int)(oldReturn-newReturn)); // Add xp
+                  break; // Make it so multiple charms don't stack
+               }
             }
          }
       }
+      cir.setReturnValue(newReturn);
    }
 }

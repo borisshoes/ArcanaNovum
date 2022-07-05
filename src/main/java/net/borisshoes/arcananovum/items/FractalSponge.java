@@ -1,17 +1,44 @@
 package net.borisshoes.arcananovum.items;
 
+import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.Utils;
+import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.tag.FluidTags;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
-public class FractalSponge extends MagicItem{
+import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.minecraft.block.Block.dropStacks;
+
+public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
    
    public FractalSponge(){
       id = "fractal_sponge";
@@ -43,6 +70,122 @@ public class FractalSponge extends MagicItem{
       item.setNbt(prefNBT);
       prefItem = item;
    
+   }
+   
+   private int absorb(World world, BlockPos pos) {
+      int maxDepth = 16;
+      int maxBlocks = 512;
+      
+      Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
+      queue.add(new Pair(pos, 0));
+      int blocksAbsorbed = 0;
+      
+      while(!queue.isEmpty()) {
+         Pair<BlockPos, Integer> pair = (Pair)queue.poll();
+         BlockPos blockPos = (BlockPos)pair.getLeft();
+         int depth = (Integer)pair.getRight();
+         Direction[] dirs = Direction.values();
+         int numDirs = dirs.length;
+         
+         for(int side = 0; side < numDirs; ++side) {
+            Direction direction = dirs[side];
+            BlockPos blockPos2 = blockPos.offset(direction);
+            BlockState blockState = world.getBlockState(blockPos2);
+            FluidState fluidState = world.getFluidState(blockPos2);
+            Material material = blockState.getMaterial();
+            if (fluidState.isIn(FluidTags.WATER)) {
+               if (blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(world, blockPos2, blockState).isEmpty()) {
+                  ++blocksAbsorbed;
+                  if (depth < maxDepth) {
+                     queue.add(new Pair(blockPos2, depth + 1));
+                  }
+               } else if (blockState.getBlock() instanceof FluidBlock) {
+                  world.setBlockState(blockPos2, Blocks.AIR.getDefaultState(), 3);
+                  ++blocksAbsorbed;
+                  if (depth < maxDepth) {
+                     queue.add(new Pair(blockPos2, depth + 1));
+                  }
+               } else if (material == Material.UNDERWATER_PLANT || material == Material.REPLACEABLE_UNDERWATER_PLANT) {
+                  BlockEntity blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockPos2) : null;
+                  dropStacks(blockState, world, blockPos2, blockEntity);
+                  world.setBlockState(blockPos2, Blocks.AIR.getDefaultState(), 3);
+                  ++blocksAbsorbed;
+                  if (depth < maxDepth) {
+                     queue.add(new Pair(blockPos2, depth + 1));
+                  }
+               }
+            }else if(fluidState.isIn(FluidTags.LAVA)){
+               if (blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(world, blockPos2, blockState).isEmpty()) {
+                  ++blocksAbsorbed;
+                  if (depth < maxDepth) {
+                     queue.add(new Pair(blockPos2, depth + 1));
+                  }
+               } else if (blockState.getBlock() instanceof FluidBlock) {
+                  world.setBlockState(blockPos2, Blocks.AIR.getDefaultState(), 3);
+                  ++blocksAbsorbed;
+                  if (depth < maxDepth) {
+                     queue.add(new Pair(blockPos2, depth + 1));
+                  }
+               }
+            }
+         }
+         
+         if (blocksAbsorbed > maxBlocks) {
+            break;
+         }
+      }
+      
+      return blocksAbsorbed;
+   }
+   
+   @Override
+   public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
+      List<ItemStack> drops = new ArrayList<>();
+      drops.add(getNewItem());
+      return drops;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
+      return false;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
+      ItemStack item = playerEntity.getStackInHand(hand);
+      Direction side = result.getSide();
+      BlockPos placePos = result.getBlockPos().add(side.getVector());
+      boolean placeable = world.getBlockState(placePos).isAir() || world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, item, result));
+      if(placeable && playerEntity instanceof ServerPlayerEntity player){
+         placeSponge(player, world, item, placePos);
+      }else{
+         playerEntity.sendMessage(new LiteralText("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+         Utils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+      }
+      return false;
+   }
+   
+   private void placeSponge(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
+      try{
+         MagicBlock spongeBlock = new MagicBlock(pos);
+         NbtCompound spongeData = new NbtCompound();
+         spongeData.putString("id",this.id);
+         spongeBlock.setData(spongeData);
+         int absorbed = absorb(world, pos);
+         world.setBlockState(pos, Blocks.WET_SPONGE.getDefaultState(), Block.NOTIFY_ALL);
+         MAGIC_BLOCK_LIST.get(world).addBlock(spongeBlock);
+         
+         Utils.playSound(player.getWorld(),pos,SoundEvents.BLOCK_WET_GRASS_PLACE, SoundCategory.BLOCKS,1,.6f);
+         item.decrement(item.getCount());
+         item.setNbt(new NbtCompound());
+         
+         if(absorbed > 0){
+            Utils.playSound(player.getWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
+            PLAYER_DATA.get(player).addXP(absorbed); // Add xp
+         }
+      }catch(Exception e){
+         e.printStackTrace();
+      }
    }
    
    private MagicItemRecipe makeRecipe(){

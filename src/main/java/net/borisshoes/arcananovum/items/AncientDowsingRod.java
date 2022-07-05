@@ -2,21 +2,41 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.Utils;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class AncientDowsingRod extends MagicItem{
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
+public class AncientDowsingRod extends EnergyItem implements UsableItem, TickingItem{
    
    public AncientDowsingRod(){
       id = "ancient_dowsing_rod";
       name = "Ancient Dowsing Rod";
       rarity = MagicRarity.EMPOWERED;
+      maxEnergy = 30; // 30 second recharge
    
       ItemStack item = new ItemStack(Items.BLAZE_ROD);
       NbtCompound tag = item.getOrCreateNbt();
@@ -43,6 +63,122 @@ public class AncientDowsingRod extends MagicItem{
    
    }
    
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
+      ItemStack item = playerEntity.getStackInHand(hand);
+      if (playerEntity instanceof ServerPlayerEntity player){
+         int curEnergy = getEnergy(item);
+         if(curEnergy == maxEnergy){
+            setEnergy(item,0);
+            final int scanRange = 25;
+            BlockPos curBlock = playerEntity.getBlockPos();
+            world.playSound(null, curBlock, SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1f, .5f);
+      
+            List<BlockPos> debris = new ArrayList<>();
+            for(BlockPos block : BlockPos.iterateOutwards(curBlock,scanRange,scanRange/2,scanRange)){
+               if(world.getBlockState(block).getBlock() == Blocks.ANCIENT_DEBRIS){
+                  debris.add(new BlockPos(block));
+               }
+            }
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+               @Override
+               public void run() {
+                  world.playSound(null, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f);
+               }
+            }, 1500);
+            timer.schedule(new TimerTask() {
+               @Override
+               public void run() {
+                  int[] locations = new int[8]; // N, NE, E, SE, S, SW, W, NW
+                  final double t1 = Math.tan(Math.toRadians(45*3.0/2));
+                  final double t2 = Math.tan(Math.toRadians(45/2.0));
+                  final Vec3d playerPos = playerEntity.getPos();
+            
+                  for(BlockPos b : debris){
+                     Vec3d rPos = new Vec3d( b.getX() - playerPos.x, b.getY() - playerPos.y,b.getZ() - playerPos.z);
+                     double ratio = rPos.x == 0 ? 100 : rPos.z / rPos.x;
+                     int ind = 0;
+               
+                     if(ratio < 0 && ratio > -t2){
+                        ind = 0;
+                     }else if(ratio > -t1 && ratio < -t2){
+                        ind = 1;
+                     }else if(ratio < -t1 || ratio > t1){
+                        ind = 2;
+                     }else if(ratio < t1 && ratio > t2){
+                        ind = 3;
+                     }else if(ratio > 0 && ratio < t2){
+                        ind = 4;
+                     }
+                     if(rPos.z < 0){
+                        ind += 4;
+                     }
+                     if(ind > locations.length-1){
+                        ind = 0;
+                     }
+                     locations[ind]++;
+                  }
+                  double radius = 1.5;
+                  for(int i = 0; i < locations.length; i++){
+                     Vec3d pPos = switch(i){
+                        case 0 -> new Vec3d(-radius, 0, 0);
+                        case 1 -> new Vec3d(-radius, 0, radius);
+                        case 2 -> new Vec3d(0, 0, radius);
+                        case 3 -> new Vec3d(radius, 0, radius);
+                        case 4 -> new Vec3d(radius, 0, 0);
+                        case 5 -> new Vec3d(radius, 0, -radius);
+                        case 6 -> new Vec3d(0, 0, -radius);
+                        case 7 -> new Vec3d(-radius, 0, -radius);
+                        default -> new Vec3d(0,0,0);
+                     };
+                     for(int n = 0; n < locations[i]; n++){
+                        double mod = Math.min(n*.6 , 6/radius);
+                        if (mod == 6/radius)
+                           break;
+                        Vec3d parPos = playerPos.add(pPos.multiply(1+mod)).add(0,0.7,0);
+                        player.getWorld().spawnParticles(ParticleTypes.DRIPPING_LAVA,parPos.x,parPos.y,parPos.z,15,.12,.12,.12,1);
+                     }
+                     
+                  }
+                  if(debris.size() > 0){
+                     BlockPos closest = debris.get(0);
+                     Vec3d eyePos = playerEntity.getEyePos();
+                     Vec3d pPos = eyePos.subtract(closest.getX(),closest.getY(),closest.getZ()).normalize().multiply(-1.5);
+                     for(int i = 0; i < 5; i++){
+                        Vec3d parPos = eyePos.add(pPos.multiply(1+.5*i));
+                        player.getWorld().spawnParticles(ParticleTypes.FLAME,parPos.x,parPos.y,parPos.z,15,.12,.12,.12,0.001);
+                     }
+   
+                     PLAYER_DATA.get(player).addXP(100*debris.size()); // Add xp
+                     world.playSound(null, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
+                  }else{
+                     world.playSound(null, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS,1,.5f);
+                  }
+               }
+            }, 7000);
+      
+         }else{
+            playerEntity.sendMessage(new LiteralText("Dowsing Rod Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.GOLD),true);
+            Utils.playSongToPlayer(player,SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+         }
+      }
+      
+      return false;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
+      return false;
+   }
+   
+   @Override
+   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
+      if(world.getServer().getTicks() % 20 == 0){
+         addEnergy(item, 1); // Recharge
+      }
+   }
+   
    private MagicItemRecipe makeRecipe(){
       //TODO make recipe
       return null;
@@ -54,5 +190,6 @@ public class AncientDowsingRod extends MagicItem{
       list.add("{\"text\":\" TODO \"}");
       return list;
    }
+   
    
 }

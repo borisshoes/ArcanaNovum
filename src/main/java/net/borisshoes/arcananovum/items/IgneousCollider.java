@@ -24,14 +24,13 @@ public class IgneousCollider extends MagicItem{
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Fractal Sponge\",\"italic\":false,\"bold\":true,\"color\":\"yellow\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Fractals \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"are known for having \",\"color\":\"blue\"},{\"text\":\"infinite \",\"color\":\"light_purple\"},{\"text\":\"surface area\"},{\"text\":\".\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"effectiveness\",\"color\":\"aqua\"},{\"text\":\" of a \"},{\"text\":\"sponge \",\"color\":\"yellow\"},{\"text\":\"is based on said \"},{\"text\":\"surface area\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"combination \",\"color\":\"aqua\"},{\"text\":\"of the two seems only \"},{\"text\":\"natural\",\"color\":\"dark_aqua\",\"italic\":true},{\"text\":\".\",\"color\":\"blue\",\"italic\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The resulting \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"sponge \",\"color\":\"yellow\"},{\"text\":\"is \"},{\"text\":\"much more effective\",\"color\":\"aqua\"},{\"text\":\" than most \"},{\"text\":\"sponges\",\"color\":\"yellow\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It even works on \",\"italic\":true,\"color\":\"dark_aqua\"},{\"text\":\"lava\",\"color\":\"gold\"},{\"text\":\"!\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Igneous Collider\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Mining \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"obsidian \",\"color\":\"dark_purple\"},{\"text\":\"is a pain, now this machine can do it \"},{\"text\":\"automatically\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Place \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"lava \",\"color\":\"gold\"},{\"text\":\"and \"},{\"text\":\"water \",\"color\":\"dark_blue\"},{\"text\":\"source blocks adjacent to the \"},{\"text\":\"Collider\",\"color\":\"dark_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Obsidian \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"will be \",\"color\":\"light_purple\"},{\"text\":\"spat out\",\"color\":\"dark_aqua\"},{\"text\":\" or into a \",\"color\":\"light_purple\"},{\"text\":\"chest \",\"color\":\"dark_aqua\"},{\"text\":\"above it \",\"color\":\"light_purple\"},{\"text\":\"every minute\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"If \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"four \",\"color\":\"blue\"},{\"text\":\"obsidian \",\"color\":\"dark_purple\"},{\"text\":\"surround it, a \"},{\"text\":\"crying obsidian\",\"color\":\"#660066\"},{\"text\":\" will be \"},{\"text\":\"spat out\",\"color\":\"dark_aqua\"},{\"text\":\" above it.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
