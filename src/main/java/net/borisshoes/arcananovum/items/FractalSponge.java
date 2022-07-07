@@ -172,7 +172,8 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
          spongeData.putString("id",this.id);
          spongeBlock.setData(spongeData);
          int absorbed = absorb(world, pos);
-         world.setBlockState(pos, Blocks.WET_SPONGE.getDefaultState(), Block.NOTIFY_ALL);
+         Block block = absorbed > 0 ? Blocks.WET_SPONGE : Blocks.SPONGE;
+         world.setBlockState(pos, block.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(spongeBlock);
          
          Utils.playSound(player.getWorld(),pos,SoundEvents.BLOCK_WET_GRASS_PLACE, SoundCategory.BLOCKS,1,.6f);

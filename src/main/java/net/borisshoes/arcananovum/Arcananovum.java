@@ -5,7 +5,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
+import net.borisshoes.arcananovum.callbacks.CommandRegisterCallback;
 import net.borisshoes.arcananovum.callbacks.LoginCallback;
+import net.borisshoes.arcananovum.callbacks.ShieldLoginCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
@@ -25,14 +27,15 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -57,6 +60,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,6 +71,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
@@ -84,7 +89,7 @@ public class Arcananovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    private static final ArrayList<TickTimerCallback> TIMER_CALLBACKS = new ArrayList<>();
-   private static final boolean devMode = true;
+   public static final boolean devMode = true;
    
    @Override
    public void onInitialize(){
@@ -96,53 +101,9 @@ public class Arcananovum implements ModInitializer {
       ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(this::killedEntity);
       AttackEntityCallback.EVENT.register(this::attackEntity);
       ServerPlayConnectionEvents.JOIN.register(this::onPlayerJoin);
+      CommandRegistrationCallback.EVENT.register(CommandRegisterCallback::registerCommands);
    
       logger.info("Initializing Arcana Novum");
-   
-      CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-         dispatcher.register(literal("arcana")
-               .then(literal("create").requires(source -> source.hasPermissionLevel(2))
-                     .then(argument("id", string()).suggests(this::getItemSuggestions)
-                           .executes(ctx -> createItem(ctx.getSource(), getString(ctx, "id")))))
-               .then(literal("test").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::test))
-               .then(literal("getbookdata").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::getBookData))
-               .then(literal("getitemdata").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::getItemData))
-               .then(literal("makerecipe").requires(source -> source.hasPermissionLevel(2)).executes(Arcananovum::makeCraftingRecipe))
-               .then(literal("help").executes(Arcananovum::openGuideBook))
-               .then(literal("guide").executes(Arcananovum::openGuideBook))
-               .then(literal("uuids").requires(source -> source.hasPermissionLevel(2))
-                     .then(argument("player",player()).executes(context -> uuidCommand(context,getPlayer(context,"player")))))
-               .then(literal("xp").requires(source -> source.hasPermissionLevel(2))
-                     .then(literal("add")
-                           .then(argument("targets", players())
-                                 .then(((argument("amount", integer())
-                                       .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),false,true)))
-                                       .then(literal("points")
-                                             .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"), false,true))))
-                                       .then(literal("levels")
-                                             .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),false,false))))))
-                     .then(literal("set")
-                           .then(argument("targets", players()).then(((argument("amount", integer(0))
-                                 .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,true)))
-                                 .then(literal("points")
-                                       .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,true))))
-                                 .then(literal("levels")
-                                       .executes(context -> xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,false))))))
-                     .then(literal("query")
-                           .then(argument("targets",player())
-                                 .executes(context -> xpCommandQuery(context, getPlayer(context,"targets"))))))
-         );
-      });
-   }
-   
-   private static int openGuideBook(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException{
-      ServerPlayerEntity player = ctx.getSource().getPlayer();
-      ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-      writablebook.setNbt(getGuideBook());
-      BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-      LoreGui loreGui = new LoreGui(player,bookBuilder,null,-1);
-      loreGui.open();
-      return 1;
    }
    
    private void onPlayerJoin(ServerPlayNetworkHandler netHandler, PacketSender sender, MinecraftServer server){
@@ -160,241 +121,6 @@ public class Arcananovum implements ModInitializer {
       for(LoginCallback callback :toBeRemoved){
          LOGIN_CALLBACK_LIST.get(server.getWorld(ServerWorld.OVERWORLD)).removeCallback(callback);
       }
-   }
-   
-   private static int xpCommand(CommandContext<ServerCommandSource> ctx, Collection<? extends ServerPlayerEntity> targets, int amount, boolean set, boolean points){
-      try{
-         ServerCommandSource source = ctx.getSource();
-         
-         for (ServerPlayerEntity player : targets) {
-            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-            int oldValue = points ? profile.getXP() : profile.getLevel();
-            int newAmount = set ? Math.max(amount, 0) : Math.max(oldValue + amount, 0);
-            if(points){
-               profile.setXP(newAmount);
-            }else{
-               newAmount = Math.max(newAmount, 1);
-               profile.setXP(LevelUtils.levelToTotalXp(newAmount));
-            }
-         }
-         
-         if(targets.size() == 1 && set && points){
-            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
-         }else if(targets.size() == 1 && set && !points){
-            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
-         }else if(targets.size() == 1 && !set && points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
-         }else if(targets.size() == 1 && !set && !points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
-         }else if(targets.size() != 1 && set && points){
-            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
-         }else if(targets.size() != 1 && set && !points){
-            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
-         }else if(targets.size() != 1 && !set && points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
-         }else if(targets.size() != 1 && !set && !points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
-         }
-   
-         return targets.size();
-      }catch(Exception e){
-         e.printStackTrace();
-         return 0;
-      }
-   }
-   
-   private static int xpCommandQuery(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target){
-      try{
-         ServerCommandSource source = ctx.getSource();
-         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
-         MutableText feedback = new LiteralText("")
-               .append(target.getDisplayName())
-               .append(new LiteralText(" has ").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(new LiteralText(" levels (").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
-               .append(new LiteralText("). ").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(new LiteralText(" Total XP").formatted(Formatting.LIGHT_PURPLE));
-         source.sendFeedback(feedback, false);
-         return 1;
-      }catch(Exception e){
-         e.printStackTrace();
-         return 0;
-      }
-   }
-   
-   private static int uuidCommand(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
-      ServerCommandSource source = ctx.getSource();
-      ArrayList<MutableText> response = new ArrayList<>();
-      ArrayList<MutableText> response2 = new ArrayList<>();
-      Set<String> uuids = new HashSet<>();
-      int count = 0;
-      
-      PlayerInventory inv = player.getInventory();
-      for(int i=0; i<inv.size();i++){
-         ItemStack item = inv.getStack(i);
-         if(item.isEmpty()){
-            continue;
-         }
-      
-         boolean isMagic = MagicItemUtils.isMagic(item);
-         if(!isMagic)
-            continue; // Item not magic, skip
-         
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         NbtCompound magictag = item.getNbt().getCompound("arcananovum");
-         count++;
-         String uuid = magictag.getString("UUID") ;
-         
-         MutableText feedback = new LiteralText("")
-               .append(new LiteralText("[").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(magicItem.getName()).formatted(Formatting.AQUA))
-               .append(new LiteralText("] ID: ").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(uuid).formatted(Formatting.DARK_PURPLE));
-         response.add(feedback.styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
-         if(!uuids.add(uuid) || item.getCount() > 1){
-            MutableText duplicateWarning = new LiteralText("")
-                  .append(new LiteralText("Duplicate: ").formatted(Formatting.RED))
-                  .append(new LiteralText(magicItem.getName()).formatted(Formatting.AQUA))
-                  .append(new LiteralText(" ID: ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(new LiteralText(uuid).formatted(Formatting.DARK_PURPLE));
-            response2.add(duplicateWarning);
-         }
-      }
-      
-      MutableText feedback = new LiteralText("")
-            .append(player.getDisplayName())
-            .append(new LiteralText(" has ").formatted(Formatting.LIGHT_PURPLE))
-            .append(new LiteralText(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-            .append(new LiteralText(" items.").formatted(Formatting.LIGHT_PURPLE));
-      source.sendFeedback(new LiteralText(""),false);
-      source.sendFeedback(feedback,false);
-      source.sendFeedback(new LiteralText("================================").formatted(Formatting.LIGHT_PURPLE),false);
-      for(MutableText r : response){
-         source.sendFeedback(r,false);
-      }
-      source.sendFeedback(new LiteralText("================================").formatted(Formatting.LIGHT_PURPLE),false);
-      for(MutableText r : response2){
-         source.sendFeedback(r,false);
-      }
-      return count;
-   }
-   
-   private static int getBookData(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!devMode)
-         return 0;
-      try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
-         if(stack.isOf(Items.WRITTEN_BOOK)){
-            NbtCompound tag = stack.getNbt();
-            NbtList pages = tag.getList("pages", NbtElement.STRING_TYPE);
-            String path = "C:\\Users\\Boris\\Desktop\\bookdata.txt";
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
-            for(int i = 0; i < pages.size(); i++){
-               out.println("loreList.add(NbtString.of("+pages.getString(i)+"));");
-               //loreList.add(NbtString.of(e));
-               log("\n"+pages.getString(i));
-            }
-            out.close();
-         }else{
-            player.sendMessage(new LiteralText("Hold a book to get data"),true);
-         }
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
-      return 0;
-   }
-   
-   private static int getItemData(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!devMode)
-         return 0;
-      try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
-         if(!stack.isEmpty()){
-            NbtCompound tag = stack.getNbt();
-            NbtCompound display = tag.getCompound("display");
-   
-            String path = "C:\\Users\\Boris\\Desktop\\itemdata.txt";
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
-            ArrayList<String> lines = new ArrayList<>();
-   
-            lines.add("id = \"\";");
-            lines.add("name = \"\";");
-            lines.add("rarity = MagicRarity.;");
-            lines.add("");
-            lines.add("ItemStack item = new ItemStack(Items.);");
-            lines.add("NbtCompound tag = item.getOrCreateNbt();");
-            lines.add("NbtCompound display = new NbtCompound();");
-            lines.add("NbtList loreList = new NbtList();");
-            lines.add("NbtList enchants = new NbtList();");
-            lines.add("enchants.add(new NbtCompound()); // Gives enchant glow with no enchants");
-            if(display != null){
-               lines.add("display.putString(\"Name\",\""+display.getString("Name").replaceAll("\"","\\\\\"")+"\");");
-               NbtList lore = display.getList("Lore",NbtElement.STRING_TYPE);
-               for(int i = 0; i < lore.size(); i++){
-                  lines.add("loreList.add(NbtString.of(\""+lore.getString(i).replaceAll("\"","\\\\\"")+"\"));");
-               }
-            }
-            lines.add("display.put(\"Lore\",loreList);");
-            lines.add("tag.put(\"display\",display);");
-            lines.add("tag.put(\"Enchantments\",enchants);");
-            lines.add("");
-            lines.add("setBookLore(makeLore());");
-            lines.add("//setRecipe(makeRecipe());");
-            lines.add("prefNBT = addMagicNbt(tag);");
-            lines.add("");
-            lines.add("item.setNbt(prefNBT);");
-            lines.add("prefItem = item;");
-            
-            for(String line : lines){
-               out.println(line);
-            }
-            out.close();
-         }else{
-            player.sendMessage(new LiteralText("Hold an item to get data"),true);
-         }
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
-      return 0;
-   }
-   
-   private static int makeCraftingRecipe(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!devMode)
-         return 0;
-      try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
-      return 0;
-   }
-   
-   private static int test(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!devMode)
-         return 0;
-      try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         ItemStack item1 = player.getStackInHand(Hand.MAIN_HAND);
-         ItemStack item2 = player.getStackInHand(Hand.OFF_HAND);
-         if(item1.hasNbt() && item2.hasNbt()){
-            log("Testing My Thing: "+ MagicItemIngredient.validNbt(item1.getNbt(),item2.getNbt())+"\n");
-         }else if(!item1.hasNbt() && item2.hasNbt()){
-            log("false");
-         }else if(item1.hasNbt() && !item2.hasNbt()){
-            log("true");
-         }else{
-            log("true");
-         }
-         
-      } catch (Exception e) {
-         e.printStackTrace();
-      }
-      return 0;
    }
    
    private boolean breakBlock(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity){
@@ -451,9 +177,9 @@ public class Arcananovum implements ModInitializer {
                         ((ExoticMatter)MagicItemUtils.identifyEnergyItem(removedFuelItem)).setFuel(removedFuelItem,curFuel);
                         playerEntity.giveItemStack(removedFuelItem);
                      }
+                     result = ActionResult.SUCCESS;
                   }
                }
-               result = ActionResult.SUCCESS;
             }
          }
          
@@ -637,7 +363,9 @@ public class Arcananovum implements ModInitializer {
       try{
          // Magic Block Tick
          List<MagicBlock> blocks = MAGIC_BLOCK_LIST.get(serverWorld).getBlocks();
-         for(MagicBlock magicBlock : blocks){
+         Iterator<MagicBlock> iter = blocks.iterator();
+         while(iter.hasNext()){
+            MagicBlock magicBlock = iter.next();
             BlockPos pos = magicBlock.getPos();
             long chunkPosL = ChunkPos.toLong(pos);
             ChunkPos chunkPos = new ChunkPos(pos);
@@ -697,47 +425,164 @@ public class Arcananovum implements ModInitializer {
                               serverWorld.setChunkForced(chunkPos.x+i,chunkPos.z+j,false);
                            }
                         }
-                        MAGIC_BLOCK_LIST.get(serverWorld).removeBlock(magicBlock);
+                        iter.remove();
                      }
-                     break;
+                  }else if(id.equals(MagicItems.FRACTAL_SPONGE.getId())){ // Fractal Sponge Tick
+                     // Check that the block is still there
+                     BlockState state = serverWorld.getBlockState(pos);
+                     if(state.getBlock().asItem() != MagicItems.FRACTAL_SPONGE.getPrefItem().getItem() && state.getBlock().asItem() != Items.WET_SPONGE){
+                        iter.remove();
+                     }
+                  }else if(id.equals(MagicItems.IGNEOUS_COLLIDER.getId())){ // Igneous Collider Tick
+                     // Check that the block is still there
+                     BlockState state = serverWorld.getBlockState(pos);
+                     if(state.getBlock().asItem() == MagicItems.IGNEOUS_COLLIDER.getPrefItem().getItem()){
+                        if(serverWorld.getServer().getTicks() % 20 == 0){ // Tick the block every second
+                           int cooldown = blockData.getInt("cooldown");
+                           if(cooldown-- == 0){
+                              // Do the check
+                              BlockPos hasLava = null;
+                              BlockPos hasWater = null;
+                              BlockPos hasInventory = null;
+                              BlockPos hasNetherite = null;
+                              Inventory output = null;
+                              
+                              Direction[] dirs = Direction.values();
+                              int numDirs = dirs.length;
+   
+                              for(int side = 0; side < numDirs; ++side){
+                                 Direction direction = dirs[side];
+                                 BlockPos pos2 = pos.offset(direction);
+                                 BlockState state2 = serverWorld.getBlockState(pos2);
+                                 Block block2 = state2.getBlock();
+                                 
+                                 if(direction.getAxis() != Direction.Axis.Y){ // Check for fluid
+                                    if(block2 == Blocks.LAVA && state2.getFluidState().isStill()){
+                                       hasLava = pos2;
+                                    }else if(block2 == Blocks.WATER  && state2.getFluidState().isStill()){
+                                       hasWater = pos2;
+                                    }else if(block2 == Blocks.LAVA_CAULDRON){
+                                       hasLava = pos2;
+                                    }else if(block2 == Blocks.WATER_CAULDRON){
+                                       hasWater = pos2;
+                                    }
+                                 }else if(direction.getId() == 1){ // Check for chest
+                                    if (block2 instanceof InventoryProvider) {
+                                       output = ((InventoryProvider)block2).getInventory(state2, serverWorld, pos2);
+                                    } else if (state2.hasBlockEntity()) {
+                                       BlockEntity blockEntity = serverWorld.getBlockEntity(pos2);
+                                       if (blockEntity instanceof Inventory) {
+                                          output = (Inventory)blockEntity;
+                                          if (output instanceof ChestBlockEntity && block2 instanceof ChestBlock) {
+                                             output = ChestBlock.getInventory((ChestBlock)block2, state2, serverWorld, pos2, true);
+                                          }
+                                       }
+                                    }
+                                    if (output != null){
+                                       hasInventory = pos2;
+                                    }
+                                 }else if(direction.getId() == 0){ //Check for netherite block
+                                    if(block2 == Blocks.NETHERITE_BLOCK){
+                                       hasNetherite = pos2;
+                                    }
+                                 }
+                              }
+                              if(hasLava != null && hasWater != null){ // Produce Obsidian
+                                 ItemStack obby;
+                                 if(hasNetherite == null){
+                                    obby = new ItemStack(Items.OBSIDIAN);
+                                 }else{
+                                    obby = new ItemStack(Items.CRYING_OBSIDIAN);
+                                 }
+                                 
+                                 if(hasInventory == null){ // Drop above collider
+                                    serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+1.25,pos.getZ()+0.5,obby, 0, 0.2, 0));
+                                 }else{ // Put in inventory
+                                    Inventory finalOutput = output;
+                                    boolean isFull = (output instanceof SidedInventory ? IntStream.of(((SidedInventory)output).getAvailableSlots(Direction.DOWN)) : IntStream.range(0, output.size())).allMatch((slot) -> {
+                                       ItemStack itemStack = finalOutput.getStack(slot);
+                                       return itemStack.getCount() >= itemStack.getMaxCount();
+                                    });
+                                    if(isFull){
+                                       serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+2.5,pos.getZ()+0.5,obby, 0, 0.2, 0));
+                                    }else{
+                                       boolean inserted = false;
+                                       
+                                       if (output instanceof SidedInventory sidedInventory) {
+                                          int[] is = sidedInventory.getAvailableSlots(Direction.DOWN);
+      
+                                          for(int i = 0; i < is.length; ++i) {
+                                             // Check if can be inserted
+                                             ItemStack toStack = output.getStack(i);
+                                             if(output.isValid(i, obby) && ((SidedInventory)output).canInsert(i, obby, Direction.DOWN)){
+                                                if(toStack.isEmpty()){
+                                                   output.setStack(i,obby);
+                                                   inserted = true;
+                                                   break;
+                                                }else if(toStack.isOf(obby.getItem()) && toStack.getCount()+obby.getCount() < obby.getMaxCount() && ItemStack.areNbtEqual(toStack,obby)){
+                                                   toStack.increment(obby.getCount());
+                                                   inserted = true;
+                                                   break;
+                                                }
+                                             }
+                                          }
+                                       } else {
+                                          int j = output.size();
+      
+                                          for(int k = 0; k < j; ++k) {
+                                             // Check if can be inserted
+                                             ItemStack toStack = output.getStack(k);
+                                             if(output.isValid(k, obby)){
+                                                if(toStack.isEmpty()){
+                                                   output.setStack(k,obby);
+                                                   inserted = true;
+                                                   break;
+                                                }else if(toStack.isOf(obby.getItem()) && toStack.getCount()+obby.getCount() < obby.getMaxCount() && ItemStack.areNbtEqual(toStack,obby)){
+                                                   toStack.increment(obby.getCount());
+                                                   inserted = true;
+                                                   break;
+                                                }
+                                             }
+                                          }
+                                       }
+                                       
+                                       
+                                       if(!inserted){
+                                          serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+2.5,pos.getZ()+0.5,obby, 0, 0.2, 0));
+                                       }else{
+                                          output.markDirty();
+                                       }
+                                    }
+                                 }
+                                 
+                                 // Remove Source Blocks
+                                 if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
+                                    serverWorld.setBlockState(hasLava, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                                 }else{
+                                    serverWorld.setBlockState(hasLava, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                                 }
+                                 if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER){
+                                    serverWorld.setBlockState(hasWater, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                                 }else{
+                                    serverWorld.setBlockState(hasWater, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                                 }
+                                 
+                                 Utils.playSound(serverWorld,pos,SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
+                              }
+                              
+                              cooldown = IgneousCollider.COOLDOWN-1;
+                           }
+                           blockData.putInt("cooldown",cooldown);
+                        }
+                     }else{
+                        iter.remove();
+                     }
                   }
                }
             }
          }
       }catch(Exception e){
          e.printStackTrace();
-      }
-   }
-   
-   private CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> serverCommandSourceCommandContext, SuggestionsBuilder builder){
-      String start = builder.getRemaining().toLowerCase();
-      Set<String> items = MagicItems.registry.keySet();
-      items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
-      return builder.buildFuture();
-   }
-   
-   public static int createItem(ServerCommandSource source, String id) throws CommandSyntaxException{
-      try{
-         MagicItem magicItem = MagicItemUtils.getItemFromId(id);
-         if(magicItem == null){
-            source.getPlayer().sendMessage(new LiteralText("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC), false);
-            return 0;
-         }
-         ItemStack item = magicItem.getNewItem();
-   
-         if(item == null){
-            source.getPlayer().sendMessage(new LiteralText("No Preferred Item Found For: "+magicItem.getName()).formatted(Formatting.RED, Formatting.ITALIC), false);
-            return 0;
-         }else{
-            NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-            String uuid = magicTag.getString("UUID");
-            source.getPlayer().sendMessage(new LiteralText("Generated New: "+magicItem.getName()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
-            source.getPlayer().giveItemStack(item);
-            return 1;
-         }
-      }catch(Exception e){
-         e.printStackTrace();
-         return -1;
       }
    }
    

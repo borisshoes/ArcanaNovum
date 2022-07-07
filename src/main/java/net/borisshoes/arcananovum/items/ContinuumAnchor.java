@@ -11,6 +11,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -71,10 +72,11 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
       ItemStack item = playerEntity.getStackInHand(hand);
       Direction side = result.getSide();
       BlockPos placePos = result.getBlockPos().add(side.getVector());
-      if(world.getBlockState(placePos).isAir() && playerEntity instanceof ServerPlayerEntity player){
+      boolean placeable = world.getBlockState(placePos).isAir() || world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, item, result));
+      if(placeable && playerEntity instanceof ServerPlayerEntity player){
          placeAnchor(player, world, item, placePos);
       }else{
-         playerEntity.sendMessage(new LiteralText("The anchor cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+         playerEntity.sendMessage(new LiteralText("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
          Utils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;
