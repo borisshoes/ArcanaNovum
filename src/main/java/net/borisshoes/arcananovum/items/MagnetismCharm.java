@@ -2,9 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,8 +11,6 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -22,19 +18,12 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.EntityView;
-import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.Arcananovum.log;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 
 public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
@@ -117,7 +106,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
       
       Box box = new Box(playerPos,playerPos).expand(activeLength+activeRange);
       List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd));
-      Utils.playSongToPlayer(player, SoundEvents.ENTITY_FOX_TELEPORT, 1,.9f);
+      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_FOX_TELEPORT, 1,.9f);
    
       for(ItemEntity item : items){
          double x = playerPos.getX() - item.getX();
@@ -143,10 +132,10 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
       item.setNbt(itemNbt);
       if(active){
          player.sendMessage(new LiteralText("The Charm's Pull Strengthens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,2f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,2f);
       }else{
          player.sendMessage(new LiteralText("The Charm's Pull Weakens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, .3f,.5f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, .3f,.5f);
       }
    }
    

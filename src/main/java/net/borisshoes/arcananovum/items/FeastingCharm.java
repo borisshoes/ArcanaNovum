@@ -5,7 +5,7 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -101,7 +101,7 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
                   invItem.decrement(1);
                   if(invItem.getCount() == 0)
                      invItem.setNbt(new NbtCompound());
-                  Utils.playSongToPlayer(player, SoundEvents.ENTITY_GENERIC_EAT, 1,.7f);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_GENERIC_EAT, 1,.7f);
                   PLAYER_DATA.get(player).addXP(50*foodValue); // Add xp
                   break; // Only consume one item
                }

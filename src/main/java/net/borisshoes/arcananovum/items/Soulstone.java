@@ -4,7 +4,7 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -115,7 +115,7 @@ public class Soulstone extends MagicItem implements AttackingItem,UsableItem{
          NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
          loreList.set(3,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
          player.sendMessage(new LiteralText("The Soulstone attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
       }
       return true;
    }
@@ -133,7 +133,7 @@ public class Soulstone extends MagicItem implements AttackingItem,UsableItem{
       if(tier != soulsToTier(souls-1)){
          // Level up notification
          player.sendMessage(new LiteralText("Your Soulstone crackles with new power!").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1,1f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1,1f);
          PLAYER_DATA.get(player).addXP(souls*50); // Add xp
       }
       magicNbt.putInt("souls",souls);

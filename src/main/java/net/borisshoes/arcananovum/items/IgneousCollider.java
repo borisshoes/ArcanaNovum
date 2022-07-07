@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -80,7 +80,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
          placeCollider(player, world, item, placePos);
       }else{
          playerEntity.sendMessage(new LiteralText("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
-         Utils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+         SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;
    }
@@ -95,7 +95,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
          world.setBlockState(pos, Blocks.LODESTONE.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(colliderBlock);
          
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_STONE_PLACE, 1,1f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_STONE_PLACE, 1,1f);
          item.decrement(item.getCount());
          item.setNbt(new NbtCompound());
       }catch(Exception e){

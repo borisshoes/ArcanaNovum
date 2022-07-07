@@ -2,8 +2,9 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.sound.Sound;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -72,7 +73,7 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
             setEnergy(item,0);
             final int scanRange = 25;
             BlockPos curBlock = playerEntity.getBlockPos();
-            world.playSound(null, curBlock, SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1f, .5f);
+            SoundUtils.playSound(world, curBlock, SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1f, .5f);
       
             List<BlockPos> debris = new ArrayList<>();
             for(BlockPos block : BlockPos.iterateOutwards(curBlock,scanRange,scanRange/2,scanRange)){
@@ -84,7 +85,7 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
             timer.schedule(new TimerTask() {
                @Override
                public void run() {
-                  world.playSound(null, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f);
+                  SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f);
                }
             }, 1500);
             timer.schedule(new TimerTask() {
@@ -151,16 +152,16 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
                      }
    
                      PLAYER_DATA.get(player).addXP(100*debris.size()); // Add xp
-                     world.playSound(null, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
+                     SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
                   }else{
-                     world.playSound(null, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS,1,.5f);
+                     SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS,1,.5f);
                   }
                }
             }, 7000);
       
          }else{
             playerEntity.sendMessage(new LiteralText("Dowsing Rod Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.GOLD),true);
-            Utils.playSongToPlayer(player,SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+            SoundUtils.playSongToPlayer(player,SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
          }
       }
       

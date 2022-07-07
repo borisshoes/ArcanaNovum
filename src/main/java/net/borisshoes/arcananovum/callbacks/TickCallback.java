@@ -7,7 +7,7 @@ import net.borisshoes.arcananovum.items.TickingItem;
 import net.borisshoes.arcananovum.items.WingsOfZephyr;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerInventory;
@@ -116,7 +116,7 @@ public class TickCallback {
       int curConc = MagicItemUtils.getUsedConcentration(player);
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
          player.sendMessage(new LiteralText("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
-         Utils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
          player.damage(DamageSource.OUT_OF_WORLD, 8);
          if(player.isDead()){
             AbstractTeam abstractTeam = player.getScoreboardTeam();

@@ -5,15 +5,15 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-public class Utils {
+public class SoundUtils {
    public static void playSongToPlayer(ServerPlayerEntity player, SoundEvent event, float vol, float pitch) {
       player.networkHandler.sendPacket(new PlaySoundS2CPacket(event, SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch));
    }
    
-   public static void playSound(ServerWorld world, BlockPos pos, SoundEvent event, SoundCategory category, float vol, float pitch){
+   public static void playSound(World world, BlockPos pos, SoundEvent event, SoundCategory category, float vol, float pitch){
       world.playSound(null,pos.getX(),pos.getY(),pos.getZ(),event, category, vol, pitch);
    }
 }

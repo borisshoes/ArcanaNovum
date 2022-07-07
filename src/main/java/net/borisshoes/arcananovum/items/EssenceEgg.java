@@ -4,7 +4,7 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.recipes.SoulstoneIngredient;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -13,11 +13,9 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -129,7 +127,7 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
                   addUses(item, -5);
                   if(playerEntity instanceof ServerPlayerEntity player){
                      player.sendMessage(new LiteralText("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
-                     Utils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
                      PLAYER_DATA.get(playerEntity).addXP(2500); // Add xp
                   }
                }
@@ -151,7 +149,7 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
    
                   addUses(item,-1);
                   if(playerEntity instanceof ServerPlayerEntity player){
-                     Utils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
                      PLAYER_DATA.get(playerEntity).addXP(500); // Add xp
                   }
                }
@@ -234,7 +232,7 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
       
             setType(item,entityTypeId);
             player.sendMessage(new LiteralText("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-            Utils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
          }
       }
       return true;

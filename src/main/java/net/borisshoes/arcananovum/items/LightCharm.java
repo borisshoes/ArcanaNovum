@@ -3,16 +3,12 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.PotionItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -80,7 +76,7 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
             if(world.getLightLevel(pos)<5 && world.getBlockState(pos).isAir()){
                world.setBlockState(pos,Blocks.LIGHT.getDefaultState(), Block.NOTIFY_ALL);
                world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
-               Utils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
                PLAYER_DATA.get(player).addXP(100); // Add xp
             }
          }
@@ -120,10 +116,10 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       item.setNbt(itemNbt);
       if(vision){
          player.sendMessage(new LiteralText("You can now see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
       }else{
          player.sendMessage(new LiteralText("You can no longer see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
       }
       
    }
@@ -137,10 +133,10 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       item.setNbt(itemNbt);
       if(active){
          player.sendMessage(new LiteralText("The Charm's Light Brightens").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
       }else{
          player.sendMessage(new LiteralText("The Charm's Light Dims").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-         Utils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
       }
    }
    

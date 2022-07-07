@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.ai.goals;
 
 import net.borisshoes.arcananovum.items.FelidaeCharm;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.NoPenaltyTargeting;
 import net.minecraft.entity.ai.TargetPredicate;
@@ -71,7 +71,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal
       this.mob.playSound(SoundEvents.ENTITY_CREEPER_HURT, 1, 1);
       if(this.targetEntity instanceof ServerPlayerEntity player){
          PLAYER_DATA.get(player).addXP(10); // Add xp
-         Utils.playSongToPlayer(player,SoundEvents.ENTITY_CAT_HISS, .1f, 1);
+         SoundUtils.playSongToPlayer(player,SoundEvents.ENTITY_CAT_HISS, .1f, 1);
       }
    }
 }

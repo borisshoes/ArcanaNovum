@@ -2,19 +2,18 @@ package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.items.FelidaeCharm;
-import net.borisshoes.arcananovum.items.MagicItem;
-import net.borisshoes.arcananovum.items.ShieldOfFortitude;
-import net.borisshoes.arcananovum.items.WingsOfZephyr;
+import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -22,10 +21,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -59,16 +55,43 @@ public abstract class LivingEntityMixin {
          float addedAbs = (float) Math.min(10,amount*.5);
          if(entity instanceof ServerPlayerEntity player){
             Arcananovum.addTickTimerCallback(new ShieldTimerCallback(200,item,player,addedAbs));
-            Utils.playSongToPlayer(player,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
+            SoundUtils.playSongToPlayer(player,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
          }
          entity.setAbsorptionAmount((curAbs + addedAbs));
+      }
+   }
+   
+   @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/world/World;getTime()J"))
+   private void playerDamaged(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+      LivingEntity entity = (LivingEntity) (Object) this;
+      if(entity instanceof ServerPlayerEntity player){
+         PlayerInventory inv = player.getInventory();
+         for(int i=0; i<inv.size();i++){
+            ItemStack item = inv.getStack(i);
+            if(item.isEmpty()){
+               continue;
+            }
+      
+            boolean isMagic = MagicItemUtils.isMagic(item);
+            if(!isMagic)
+               continue; // Item not magic, skip
+      
+            // Cancel all Pearls of Recall
+            if(MagicItemUtils.identifyItem(item) instanceof PearlOfRecall pearl){
+               NbtCompound itemNbt = item.getNbt();
+               NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+               if(magicNbt.getInt("heat") > 0){
+                  magicNbt.putInt("heat", -1);
+               }
+            }
+         }
       }
    }
    
    
    // Mixin for damage mitigation (Wings of Zephyr, Charm of Felidae
    @Inject(method = "applyEnchantmentsToDamage", at = @At("RETURN"), cancellable = true)
-   private void wingsFallDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
+   private void kineticDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
       float reduced = cir.getReturnValueF();
       float newReturn = reduced;
       LivingEntity entity = (LivingEntity) (Object) this;
@@ -83,7 +106,7 @@ public abstract class LivingEntityMixin {
                if(entity instanceof ServerPlayerEntity player){
                   if(dmgReduction == maxDmgReduction || dmgReduction > 12){
                      player.sendMessage(new LiteralText("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
-                     Utils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
                      Timer timer = new Timer();
                      timer.schedule(new TimerTask() {
                         @Override
@@ -113,7 +136,7 @@ public abstract class LivingEntityMixin {
                   continue; // Item not magic, skip
       
                if(MagicItemUtils.identifyItem(item) instanceof FelidaeCharm){
-                  Utils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
                   float oldReturn = newReturn;
                   newReturn = newReturn/2 < 2 ? 0 : newReturn / 2; // Half the damage, if the remaining damage is less than a heart, remove all of it.
                   PLAYER_DATA.get(player).addXP(10*(int)(oldReturn-newReturn)); // Add xp

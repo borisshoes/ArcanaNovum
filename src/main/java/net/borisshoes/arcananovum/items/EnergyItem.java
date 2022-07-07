@@ -6,6 +6,7 @@ import net.minecraft.nbt.NbtCompound;
 
 public abstract class EnergyItem extends MagicItem{
    protected int maxEnergy;
+   protected int initEnergy = 0;
    
    @Override
    public ItemStack updateItem(ItemStack stack){
@@ -50,7 +51,7 @@ public abstract class EnergyItem extends MagicItem{
       magic.putInt("Rarity", MagicRarity.getRarityInt(rarity));
       magic.putInt("Version",version);
       magic.putString("UUID", "-");
-      magic.putInt("energy",0);
+      magic.putInt("energy",initEnergy);
       compound.put("arcananovum",magic);
       return compound;
    }

@@ -3,10 +3,8 @@ package net.borisshoes.arcananovum.items;
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -160,7 +158,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
          placeSponge(player, world, item, placePos);
       }else{
          playerEntity.sendMessage(new LiteralText("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
-         Utils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+         SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;
    }
@@ -176,12 +174,12 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
          world.setBlockState(pos, block.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(spongeBlock);
          
-         Utils.playSound(player.getWorld(),pos,SoundEvents.BLOCK_WET_GRASS_PLACE, SoundCategory.BLOCKS,1,.6f);
+         SoundUtils.playSound(player.getWorld(),pos,SoundEvents.BLOCK_WET_GRASS_PLACE, SoundCategory.BLOCKS,1,.6f);
          item.decrement(item.getCount());
          item.setNbt(new NbtCompound());
          
          if(absorbed > 0){
-            Utils.playSound(player.getWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
+            SoundUtils.playSound(player.getWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
             PLAYER_DATA.get(player).addXP(absorbed); // Add xp
          }
       }catch(Exception e){

@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.utils.Utils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -37,7 +37,7 @@ public class ShieldLoginCallback extends LoginCallback{
             PLAYER_DATA.get(player).addXP((int)diff*20); // Give XP
          }
          if(player.getAbsorptionAmount() != 0){
-            Utils.playSongToPlayer(player, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
+            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
          }
          player.setAbsorptionAmount(removed);
       }
