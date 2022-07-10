@@ -32,7 +32,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponent
 
 public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
    
-   public static final int COOLDOWN = 5; /// Cooldown is 60 seconds
+   public static final int COOLDOWN = 60; /// Cooldown is 60 seconds
    
    public IgneousCollider(){
       id = "igneous_collider";

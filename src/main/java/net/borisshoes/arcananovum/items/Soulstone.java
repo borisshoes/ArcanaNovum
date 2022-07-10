@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -154,6 +155,23 @@ public class Soulstone extends MagicItem implements AttackingItem,UsableItem{
       }else{
          return type;
       }
+   }
+   
+   public static ItemStack setType(ItemStack stack, EntityType<? extends MobEntity> type){
+      if(!(MagicItemUtils.identifyItem(stack) instanceof Soulstone)){
+         return null;
+      }
+      ItemStack item = stack.copy();
+   
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+   
+      String entityTypeId = EntityType.getId(type).toString();
+      String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+      magicNbt.putString("type",entityTypeId);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      loreList.set(3,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      return item;
    }
    
    public static int getSouls(ItemStack item){

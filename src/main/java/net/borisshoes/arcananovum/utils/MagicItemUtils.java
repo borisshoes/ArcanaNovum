@@ -131,6 +131,28 @@ public class MagicItemUtils {
       }
    }
    
+   public static boolean isLeftClickItem(ItemStack item){
+      try{
+         if(isMagic(item)){
+            NbtCompound itemNbt = item.getNbt();
+            NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+            // We know that the item is magic, get its class from its id
+            String id = magicTag.getString("id");
+            if(id==null)
+               return false;
+            //System.out.println("Found magic id: "+id);
+            MagicItem magicItem = MagicItems.registry.get(id);
+            //System.out.println("Magic Item Name: "+magicItem.getName());
+            return (magicItem instanceof LeftClickItem);
+         }
+         
+         return false;
+      }catch(Exception e){
+         e.printStackTrace();
+         return false;
+      }
+   }
+   
    public static TickingItem identifyTickingItem(ItemStack item){
       if(needsMagicTick(item)){
          NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
@@ -154,6 +176,15 @@ public class MagicItemUtils {
          NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          String id = magicTag.getString("id");
          return (AttackingItem) MagicItems.registry.get(id);
+      }
+      return null;
+   }
+   
+   public static LeftClickItem identifyLeftClickItem(ItemStack item){
+      if(isLeftClickItem(item)){
+         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
+         String id = magicTag.getString("id");
+         return (LeftClickItem) MagicItems.registry.get(id);
       }
       return null;
    }

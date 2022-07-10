@@ -13,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -147,4 +146,16 @@ public abstract class LivingEntityMixin {
       }
       cir.setReturnValue(newReturn);
    }
+   
+   
+   /*@Inject(method = "swingHand(Lnet/minecraft/util/Hand;Z)V", at = @At("HEAD"))
+   public void swingHand(Hand hand, boolean fromServerPlayer, CallbackInfo ci) {
+      LivingEntity entity = (LivingEntity) (Object) this;
+      System.out.println("This is a left click?");
+      if (!entity.world.isClient) {
+         if(entity instanceof ServerPlayerEntity player && entity.world instanceof ServerWorld world){
+            LeftClickEvent.EVENT.invoker().onPlayerLeftClick(player,world,hand);
+         }
+      }
+   }*/
 }

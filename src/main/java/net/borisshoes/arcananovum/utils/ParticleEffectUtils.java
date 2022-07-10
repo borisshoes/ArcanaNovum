@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
@@ -18,6 +19,20 @@ import java.util.TimerTask;
 
 public class ParticleEffectUtils {
    
+   public static void shulkerCoreLevitate(ServerWorld world, PlayerEntity player, int duration){
+      Vec3d pos = player.getPos();
+      world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y+1,pos.z,1,.3,.3,.3,0.05);
+   
+      if(0 < duration){
+         Timer timer = new Timer();
+         timer.schedule(new TimerTask() {
+            @Override
+            public void run(){
+               shulkerCoreLevitate(world, player,duration-1);
+            }
+         }, 50);
+      }
+   }
    
    public static void recallTeleportCharge(ServerWorld world, Vec3d pos){
       world.spawnParticles(ParticleTypes.PORTAL,pos.x,pos.y+.5,pos.z,20,.2,.5,.2,1);
@@ -26,6 +41,11 @@ public class ParticleEffectUtils {
    
    public static void recallTeleportCancel(ServerWorld world, Vec3d pos){
       world.spawnParticles(ParticleTypes.SMOKE,pos.x,pos.y+.5,pos.z,150,.5,.8,.5,0.05);
+   }
+   
+   public static void recallLocation(ServerWorld world, Vec3d pos, ServerPlayerEntity player){
+      circle(world,player,pos.subtract(0,0,0),ParticleTypes.ENCHANTED_HIT,0.5,12,1,0.1,0);
+      world.spawnParticles(player, ParticleTypes.WITCH, false, pos.x,pos.y,pos.z,5,.15,.15,.15,0);
    }
    
    public static void recallTeleport(ServerWorld world, Vec3d pos){ recallTeleport(world, pos, 0); }

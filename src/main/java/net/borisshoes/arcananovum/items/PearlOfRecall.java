@@ -23,6 +23,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 
@@ -91,8 +93,21 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
          ParticleEffectUtils.recallTeleportCancel(world,player.getPos());
          SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
          magicTag.putInt("heat",0);
-         setEnergy(item,maxEnergy/2);
+         setEnergy(item,(int)(maxEnergy*0.75));
       }
+      
+      if((item.isItemEqual(player.getMainHandStack()) && ItemStack.areNbtEqual(item,player.getMainHandStack())) || (item.isItemEqual(player.getOffHandStack()) && ItemStack.areNbtEqual(item,player.getOffHandStack()))){
+         NbtCompound locNbt = magicTag.getCompound("location");
+         String dim = locNbt.getString("dim");
+         double x = locNbt.getDouble("x");
+         double y = locNbt.getDouble("y");
+         double z = locNbt.getDouble("z");
+         Vec3d loc = new Vec3d(x,y,z);
+         if(player.getWorld().getRegistryKey().getValue().toString().equals(dim) && player.getPos().distanceTo(loc) < 30){
+            ParticleEffectUtils.recallLocation(world,loc,player);
+         }
+      }
+      
       
       if(world.getServer().getTicks() % 20 == 0){
          addEnergy(item, 1); // Recharge
