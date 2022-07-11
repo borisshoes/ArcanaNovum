@@ -6,7 +6,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.gui.LoreGui;
+import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.items.MagicItems;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 import static net.borisshoes.arcananovum.Arcananovum.devMode;
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-import static net.borisshoes.arcananovum.gui.TomeGui.getGuideBook;
+import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
 
 public class ArcanaCommands {
    

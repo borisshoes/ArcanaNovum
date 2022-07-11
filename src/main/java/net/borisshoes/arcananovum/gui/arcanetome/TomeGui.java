@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.gui;
+package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
@@ -19,7 +19,6 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
-import org.lwjgl.system.CallbackI;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 

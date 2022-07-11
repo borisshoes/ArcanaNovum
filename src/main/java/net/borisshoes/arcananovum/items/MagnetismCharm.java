@@ -25,6 +25,8 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 
 public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
    
@@ -115,6 +117,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
          double speed = .1;
          double heightMod = .08;
          item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+         PLAYER_DATA.get(player).addXP(5); // Add xp
       }
    }
    

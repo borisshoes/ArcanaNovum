@@ -1,8 +1,7 @@
-package net.borisshoes.arcananovum.gui;
+package net.borisshoes.arcananovum.gui.shulkercore;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.items.*;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.inventory.Inventory;
@@ -10,13 +9,10 @@ import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
-public class ShulkerCoreInventoryListener  implements InventoryChangedListener {
+public class ShulkerCoreInventoryListener implements InventoryChangedListener {
    private final ShulkerCore core;
    private final ShulkerCoreGui gui;
    private final ItemStack item;

@@ -1,10 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.items.MagicItem;
-import net.borisshoes.arcananovum.items.MagicItems;
-import net.borisshoes.arcananovum.items.TickingItem;
-import net.borisshoes.arcananovum.items.WingsOfZephyr;
+import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -80,7 +77,7 @@ public class TickCallback {
             }
             
             wingsTick(player);
-            
+            levitationHarnessCheck(player);
             concCheck(server,player,arcaneProfile);
          }
          
@@ -140,8 +137,7 @@ public class TickCallback {
       if(player.isFallFlying()){ // Wings of Zephyr
          ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
          if(MagicItemUtils.isMagic(item)){
-            if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr){
-               WingsOfZephyr wings = (WingsOfZephyr) MagicItemUtils.identifyItem(item);
+            if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr wings){
                wings.addEnergy(item,1); // Add 1 energy for each tick of flying
                if(wings.getEnergy(item) % 1000 == 999)
                   player.sendMessage(new LiteralText("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
@@ -151,4 +147,25 @@ public class TickCallback {
       }
    }
    
+   private static void levitationHarnessCheck(ServerPlayerEntity player){
+      if(player.isCreative() || player.isSpectator())
+         return;
+      ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
+      boolean allowFly = false;
+      if(MagicItemUtils.isMagic(item)){
+         if(MagicItemUtils.identifyItem(item) instanceof LevitationHarness harness){
+            if(harness.getEnergy(item) > 0 && harness.getStall(item) == -1){
+               allowFly = true;
+            }
+         }
+      }
+      if(player.getAbilities().allowFlying != allowFly){
+         if(player.getAbilities().flying && !allowFly){
+            player.getAbilities().flying = false;
+         }
+         player.getAbilities().allowFlying = allowFly;
+         player.sendAbilitiesUpdate();
+      }
+      
+   }
 }

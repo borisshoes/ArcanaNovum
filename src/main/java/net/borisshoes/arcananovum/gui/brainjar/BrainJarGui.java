@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.gui;
+package net.borisshoes.arcananovum.gui.brainjar;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.gui.SimpleGui;

@@ -1,20 +1,17 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.borisshoes.arcananovum.gui.BrainJarGui;
-import net.borisshoes.arcananovum.gui.TomeGui;
+import net.borisshoes.arcananovum.gui.brainjar.BrainJarGui;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.EnchantedBookItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;

@@ -163,7 +163,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
                int newEnergy = getEnergy(item);
                if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
                   player.sendMessage(new LiteralText("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
-               PLAYER_DATA.get(player).addXP(2); // Add xp
+               PLAYER_DATA.get(player).addXP(1); // Add xp
             }else{
                addEnergy(item,-10);
             }

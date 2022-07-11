@@ -19,6 +19,33 @@ import java.util.TimerTask;
 
 public class ParticleEffectUtils {
    
+   public static void harnessFly(ServerWorld world, ServerPlayerEntity player, int duration){
+      Vec3d pos = player.getPos();
+      world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y,pos.z,1,.3,.3,.3,0.05);
+      world.spawnParticles(ParticleTypes.INSTANT_EFFECT,pos.x,pos.y,pos.z,1,.3,.3,.3,1);
+      
+      if(0 < duration){
+         Timer timer = new Timer();
+         timer.schedule(new TimerTask() {
+            @Override
+            public void run(){
+               harnessFly(world, player,duration-1);
+            }
+         }, 100);
+      }
+   }
+   
+   public static void harnessStall(ServerWorld world, Vec3d pos){
+      world.spawnParticles(ParticleTypes.SMOKE,pos.x,pos.y+0.5,pos.z,100,.4,.6,.4,0.05);
+      world.spawnParticles(ParticleTypes.ANGRY_VILLAGER,pos.x,pos.y+0.5,pos.z,15,.4,.6,.4,1);
+      world.spawnParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,pos.x,pos.y+0.5,pos.z,15,.4,.6,.4,0.07);
+   }
+   
+   public static void shadowGlaiveTp(ServerWorld world, ServerPlayerEntity player){
+      Vec3d pos = player.getPos();
+      world.spawnParticles(ParticleTypes.LARGE_SMOKE,pos.x,pos.y+0.5,pos.z,100,.4,.4,.4,0.07);
+   }
+   
    public static void shulkerCoreLevitate(ServerWorld world, PlayerEntity player, int duration){
       Vec3d pos = player.getPos();
       world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y+1,pos.z,1,.3,.3,.3,0.05);

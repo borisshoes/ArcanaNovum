@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.gui;
+package net.borisshoes.arcananovum.gui.arcanetome;
 
 import net.minecraft.inventory.SimpleInventory;
 

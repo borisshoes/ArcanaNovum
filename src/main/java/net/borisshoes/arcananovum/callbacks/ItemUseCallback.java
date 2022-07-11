@@ -1,8 +1,10 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.items.LevitationHarness;
 import net.borisshoes.arcananovum.items.UsableItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,7 +20,7 @@ public class ItemUseCallback {
             UsableItem magicItem = MagicItemUtils.identifyUsableItem(item);
             boolean useReturn = magicItem.useItem(playerEntity,world,hand);
             if(playerEntity instanceof ServerPlayerEntity player){
-               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, hand == Hand.MAIN_HAND ? player.getInventory().selectedSlot : 40, item));
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, hand == Hand.MAIN_HAND ? player.getInventory().selectedSlot : PlayerInventory.OFF_HAND_SLOT, item));
             }
             return useReturn ? TypedActionResult.pass(item) : TypedActionResult.success(item);
          }

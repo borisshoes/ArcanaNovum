@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.gui;
+package net.borisshoes.arcananovum.gui.shulkercore;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -15,12 +15,7 @@ public class ShulkerCoreGui extends SimpleGui {
    private ShulkerCore core;
    private ItemStack item;
    private boolean valid;
-   /**
-    * Constructs a new simple container gui for the supplied player.
-    *
-    * @param type                        the screen handler that the client should display
-    * @param player                      the player to server this gui to
-    */
+
    public ShulkerCoreGui(ScreenHandlerType<?> type, ServerPlayerEntity player, ShulkerCore core, ItemStack item){
       super(type, player, false);
       this.core = core;

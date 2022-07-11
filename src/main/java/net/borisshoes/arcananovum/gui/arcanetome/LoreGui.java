@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.gui;
+package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;

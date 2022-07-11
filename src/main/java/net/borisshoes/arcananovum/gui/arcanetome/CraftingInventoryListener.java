@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.gui;
+package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -14,7 +14,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
-import org.jetbrains.annotations.Nullable;
 
 public class CraftingInventoryListener implements InventoryChangedListener {
    private final ArcaneTome tome;

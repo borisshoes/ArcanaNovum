@@ -1,14 +1,14 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.borisshoes.arcananovum.gui.*;
+import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
+import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
+import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -30,11 +30,9 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;

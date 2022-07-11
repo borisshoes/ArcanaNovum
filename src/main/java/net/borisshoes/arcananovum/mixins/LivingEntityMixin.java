@@ -4,7 +4,9 @@ import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -13,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
@@ -22,6 +25,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -31,6 +35,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public abstract class LivingEntityMixin {
    
    @Shadow public abstract void endCombat();
+   
+   @Shadow protected abstract void checkHandStackSwap(Map<EquipmentSlot, ItemStack> equipmentChanges);
    
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
@@ -80,8 +86,42 @@ public abstract class LivingEntityMixin {
                NbtCompound itemNbt = item.getNbt();
                NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
                if(magicNbt.getInt("heat") > 0){
+                  player.sendMessage(new LiteralText("Your Recall Has Been Disrupted!").formatted(Formatting.RED,Formatting.ITALIC),true);
                   magicNbt.putInt("heat", -1);
                }
+            }
+         }
+   
+         // Stall Levitation Harness
+         ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
+         if(MagicItemUtils.isMagic(chestItem) && player.getAbilities().flying){
+            if(MagicItemUtils.identifyItem(chestItem) instanceof LevitationHarness harness){
+               harness.setStall(chestItem,10);
+               player.sendMessage(new LiteralText("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
+               ParticleEffectUtils.harnessStall(player.getWorld(),player.getPos().add(0,0.5,0));
+            }
+         }
+      }
+   }
+   
+   @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V"))
+   private void damageDealt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+      LivingEntity entity = (LivingEntity) (Object) this;
+      Entity attacker = source.getAttacker();
+      if(attacker instanceof ServerPlayerEntity player){
+         ItemStack weapon = player.getEquippedStack(EquipmentSlot.MAINHAND);
+   
+         if(MagicItemUtils.identifyItem(weapon) instanceof ShadowStalkersGlaive glaive){
+            int oldEnergy = glaive.getEnergy(weapon);
+            glaive.addEnergy(weapon, (int) amount);
+            int newEnergy = glaive.getEnergy(weapon);
+            if(oldEnergy/20 != newEnergy/20){
+               String message = "Glaive Charges: ";
+               for(int i=1; i<=5; i++){
+                  message += newEnergy >= i*20 ? "✦ " : "✧ ";
+               }
+               player.sendMessage(new LiteralText(message).formatted(Formatting.BLACK),true);
             }
          }
       }
@@ -97,8 +137,7 @@ public abstract class LivingEntityMixin {
       if(source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL)){
          ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
          if(MagicItemUtils.isMagic(chestItem)){
-            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr){
-               WingsOfZephyr wings = (WingsOfZephyr) MagicItemUtils.identifyItem(chestItem);
+            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr wings){
                int energy = wings.getEnergy(chestItem);
                double maxDmgReduction = reduced*.5;
                double dmgReduction = Math.min(energy/100.0,maxDmgReduction);
