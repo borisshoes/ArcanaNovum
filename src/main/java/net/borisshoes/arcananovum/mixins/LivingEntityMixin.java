@@ -34,10 +34,6 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
    
-   @Shadow public abstract void endCombat();
-   
-   @Shadow protected abstract void checkHandStackSwap(Map<EquipmentSlot, ItemStack> equipmentChanges);
-   
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
    private void shieldAbsorb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){

@@ -139,7 +139,10 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
    @Override
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
-      drops.add(getNewItem());
+      String uuid = blockData.getString("UUID");
+      ItemStack drop = getPrefItem();
+      drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
+      drops.add(drop);
       return drops;
    }
    
@@ -167,6 +170,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
       try{
          MagicBlock spongeBlock = new MagicBlock(pos);
          NbtCompound spongeData = new NbtCompound();
+         spongeData.putString("UUID",getUUID(item));
          spongeData.putString("id",this.id);
          spongeBlock.setData(spongeData);
          int absorbed = absorb(world, pos);

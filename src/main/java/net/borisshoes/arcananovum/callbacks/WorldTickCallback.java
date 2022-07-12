@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.IgneousCollider;
+import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.items.MagicItems;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.*;
@@ -23,6 +24,7 @@ import net.minecraft.util.math.Direction;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
@@ -41,12 +43,14 @@ public class WorldTickCallback {
             ChunkPos chunkPos = new ChunkPos(pos);
             
             //System.out.println(serverWorld.isChunkLoaded(chunkPos.x,chunkPos.z));
-            
             if(serverWorld.shouldTickBlocksInChunk(chunkPosL)){ // Only tick blocks in loaded chunks
                NbtCompound blockData = magicBlock.getData();
                if(blockData.contains("id")){
                   String id = blockData.getString("id");
                   BlockState state = serverWorld.getBlockState(pos);
+                  if(!blockData.contains("UUID")){
+                     blockData.putString("UUID", UUID.randomUUID().toString());
+                  }
                   
                   if(id.equals(MagicItems.CONTINUUM_ANCHOR.getId())){ // Continuum Anchor Tick
                      if(state.getBlock().asItem() == MagicItems.CONTINUUM_ANCHOR.getPrefItem().getItem()){ // First check that the block is still there
@@ -74,6 +78,7 @@ public class WorldTickCallback {
                }
             }
          }
+         
       }catch(Exception e){
          e.printStackTrace();
       }

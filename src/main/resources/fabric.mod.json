@@ -20,11 +20,12 @@
     ],
     "cardinal-components-world": [
       "net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer",
+      "net.borisshoes.arcananovum.cardinalcomponents.MagicEntityComponentInitializer",
       "net.borisshoes.arcananovum.cardinalcomponents.LoginCallbackComponentInitializer"
     ]
   },
   "custom": {
-    "cardinal-components": ["arcananovum:profile","arcananovum:magicblocks","arcananovum:login_callbacks"]
+    "cardinal-components": ["arcananovum:profile","arcananovum:magicblocks","arcananovum:magicentities","arcananovum:login_callbacks"]
   },
   "mixins": [
     "arcananovum.mixins.json"

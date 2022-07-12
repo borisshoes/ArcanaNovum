@@ -84,6 +84,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
       try{
          MagicBlock anchorBlock = new MagicBlock(pos);
          NbtCompound anchorData = new NbtCompound();
+         anchorData.putString("UUID",getUUID(item));
          anchorData.putString("id",this.id);
          anchorData.putBoolean("active",false);
          anchorData.putInt("fuel",0);
@@ -104,7 +105,11 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
    @Override
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
-      drops.add(getNewItem());
+      String uuid = blockData.getString("UUID");
+      ItemStack drop = getPrefItem();
+      drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
+      drops.add(drop);
+      
       int fuel = blockData.getInt("fuel");
       if(fuel > 0){
          ExoticMatter exoticMatter = (ExoticMatter) MagicItems.EXOTIC_MATTER;

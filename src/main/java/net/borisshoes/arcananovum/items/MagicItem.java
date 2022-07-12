@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -83,6 +84,14 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    public NbtCompound addUUID(NbtCompound compound){
       compound.putString("UUID", UUID.randomUUID().toString());
       return compound;
+   }
+   
+   public String getUUID(ItemStack item){
+      if(!MagicItemUtils.isMagic(item))
+         return null;
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      return magicTag.getString("UUID");
    }
    
    public int compareTo(@NotNull MagicItem otherItem){
