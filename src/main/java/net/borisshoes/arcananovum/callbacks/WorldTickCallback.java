@@ -1,19 +1,24 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.IgneousCollider;
 import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.items.MagicItems;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -21,6 +26,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +34,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.MagicEntityComponentInitializer.MAGIC_ENTITY_LIST;
 
 public class WorldTickCallback {
    
@@ -79,6 +86,41 @@ public class WorldTickCallback {
             }
          }
          
+         // Keep tabs on magic entities
+         List<MagicEntity> entities = MAGIC_ENTITY_LIST.get(serverWorld).getEntities();
+         Iterator<MagicEntity> iter2 = entities.iterator();
+         while(iter2.hasNext()){
+            MagicEntity magicEntity = iter2.next();
+            NbtCompound magicData = magicEntity.getData();
+            String id = magicData.getString("id");
+            String uuid = magicEntity.getUuid();
+            
+            if(id.equals(MagicItems.STASIS_PEARL.getId())){
+               int keepAlive = magicData.getInt("keepAlive");
+               boolean alive = magicData.getBoolean("alive");
+               boolean stasis = magicData.getBoolean("stasis");
+               boolean kill = false;
+               magicData.putInt("keepAlive",keepAlive-1);
+               if(keepAlive < 0 || !alive){ // Remove item
+                  kill = true;
+               }
+               if(!stasis || kill){ // Clean up
+                  Entity found = serverWorld.getEntity(UUID.fromString(uuid));
+                  if(found == null){
+                     iter2.remove();
+                  }else if(kill){
+                     found.kill();
+                     iter2.remove();
+                  }
+               }else if(serverWorld.getServer().getTicks() % 3 == 0){ // Do stasis particle effects
+                  NbtCompound pearlData = magicData.getCompound("pearlData");
+                  NbtList pos = pearlData.getList("Pos", NbtList.DOUBLE_TYPE);
+                  ParticleEffectUtils.stasisPearl(serverWorld,new Vec3d(pos.getDouble(0),pos.getDouble(1),pos.getDouble(2)));
+               }
+            }
+         }
+         
+
       }catch(Exception e){
          e.printStackTrace();
       }

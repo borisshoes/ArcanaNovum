@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.callbacks.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -32,6 +33,8 @@ public class Arcananovum implements ModInitializer {
       AttackEntityCallback.EVENT.register(EntityAttackCallback::attackEntity);
       ServerPlayConnectionEvents.JOIN.register(PlayerJoinCallback::onPlayerJoin);
       CommandRegistrationCallback.EVENT.register(CommandRegisterCallback::registerCommands);
+      ServerEntityEvents.ENTITY_LOAD.register(EntityLoadCallbacks::loadEntity);
+      ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
    
       logger.info("Initializing Arcana Novum");
    }

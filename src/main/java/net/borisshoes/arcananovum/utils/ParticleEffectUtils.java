@@ -97,6 +97,11 @@ public class ParticleEffectUtils {
       }
    }
    
+   public static void stasisPearl(ServerWorld world, Vec3d pos){
+      world.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.x,pos.y,pos.z,5,.15,.15,.15,0.01);
+      world.spawnParticles(ParticleTypes.GLOW,pos.x,pos.y,pos.z,5,.1,.1,.1,0);
+   }
+   
    private static void circle(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int intervals, int count, double delta, double speed){
       double dA = Math.PI * 2 / intervals;
       for(int i = 0; i < intervals; i++){
@@ -107,6 +112,29 @@ public class ParticleEffectUtils {
          
          if(player == null){
             world.spawnParticles(type,x,y,z,count,delta,delta,delta,speed);
+         }else{
+            world.spawnParticles(player,type,false,x,y,z,count,delta,delta,delta,speed);
+         }
+      }
+   }
+   
+   private static void sphere(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int points, int count, double delta, double speed){
+      double phi = Math.PI * (3 - Math.sqrt(5));
+      
+      for(int i = 0; i < points; i++){
+         // Fibonacci Sphere Equations
+         double y = 1 - (i / (double)(points-1)) * 2;
+         double r = Math.sqrt(1-y*y);
+         double theta = phi*i;
+         double x = Math.cos(theta) * r;
+         double z = Math.sin(theta) * r;
+         
+         // Center Offset and Radius Scale
+         Vec3d point = new Vec3d(x,y,z);
+         point = point.multiply(radius).add(center.x, center.y, center.z);
+      
+         if(player == null){
+            world.spawnParticles(type,point.x,point.y,point.z,count,delta,delta,delta,speed);
          }else{
             world.spawnParticles(player,type,false,x,y,z,count,delta,delta,delta,speed);
          }

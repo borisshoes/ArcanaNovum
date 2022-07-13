@@ -68,7 +68,7 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
       NbtCompound magicTag = tag.getCompound("arcananovum");
       NbtCompound locTag = new NbtCompound();
       locTag.putString("dim","unattuned");
-      magicTag.putInt("heap",0);
+      magicTag.putInt("heat",0);
       magicTag.put("location",locTag);
       prefNBT = tag;
       item.setNbt(prefNBT);

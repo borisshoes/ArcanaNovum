@@ -34,8 +34,8 @@ public class MagicEntityComponent implements IMagicEntityComponent{
          NbtList entitiesTag = tag.getList("MagicEntities", NbtType.COMPOUND);
          for (NbtElement e : entitiesTag) {
             NbtCompound entityTag = (NbtCompound) e;
-            NbtList pos = entityTag.getList("pos",NbtType.DOUBLE);
-            entities.add(new MagicEntity(pos.getDouble(0),pos.getDouble(1),pos.getDouble(2),entityTag.getCompound("data")));
+            String uuid = entityTag.getString("UUID");
+            entities.add(new MagicEntity(uuid,entityTag.getCompound("data")));
          }
       }catch(Exception e){
          e.printStackTrace();
@@ -48,11 +48,7 @@ public class MagicEntityComponent implements IMagicEntityComponent{
          NbtList entitiesTag = new NbtList();
          for(MagicEntity entity : entities){
             NbtCompound entityTag = new NbtCompound();
-            NbtList pos = new NbtList();
-            pos.add(0, NbtDouble.of(entity.getPos().getX()));
-            pos.add(1, NbtDouble.of(entity.getPos().getY()));
-            pos.add(2, NbtDouble.of(entity.getPos().getZ()));
-            entityTag.put("pos",pos);
+            entityTag.putString("UUID",entity.getUuid());
             entityTag.put("data",entity.getData());
             entitiesTag.add(entityTag);
          }
