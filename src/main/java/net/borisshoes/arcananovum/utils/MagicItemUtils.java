@@ -206,6 +206,7 @@ public class MagicItemUtils {
    }
    
    public static int getUsedConcentration(ServerPlayerEntity player){
+      // TODO Special cases for arrows
       int concSum = 0;
       PlayerInventory inv = player.getInventory();
       for(int i=0; i<inv.size();i++){

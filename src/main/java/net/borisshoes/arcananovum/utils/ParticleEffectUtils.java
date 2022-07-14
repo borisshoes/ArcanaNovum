@@ -19,6 +19,10 @@ import java.util.TimerTask;
 
 public class ParticleEffectUtils {
    
+   public static void blinkArrowTp(ServerWorld world, Vec3d pos){
+      world.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.x,pos.y,pos.z,100,.3,.5,.3,0.05);
+   }
+   
    public static void harnessFly(ServerWorld world, ServerPlayerEntity player, int duration){
       Vec3d pos = player.getPos();
       world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y,pos.z,1,.3,.3,.3,0.05);

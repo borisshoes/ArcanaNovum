@@ -2,16 +2,26 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlinkArrows extends MagicItem{
+public class BlinkArrows extends MagicItem implements RunicArrow{
    
    public BlinkArrows(){
       id = "blink_arrows";
@@ -48,6 +58,27 @@ public class BlinkArrows extends MagicItem{
       item.setNbt(prefNBT);
       prefItem = item;
    
+   }
+   
+   @Override
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
+      if(arrow.getOwner() instanceof ServerPlayerEntity player){
+         Vec3d tpPos = entityHitResult.getPos();
+         player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
+         SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
+      }
+   }
+   
+   @Override
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
+      if(arrow.getOwner() instanceof ServerPlayerEntity player){
+         Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
+         Vec3d tpPos = blockHitResult.getPos().add(offset);
+         player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
+         SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
+      }
    }
    
    private MagicItemRecipe makeRecipe(){

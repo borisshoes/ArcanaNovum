@@ -23,7 +23,10 @@ public class RunicBow extends MagicItem{
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
+      NbtCompound power = new NbtCompound();
+      power.putString("id","power");
+      power.putInt("lvl",7);
+      enchants.add(power);
       display.putString("Name","[{\"text\":\"Runic Bow\",\"italic\":false,\"bold\":true,\"color\":\"light_purple\"}]");
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false},{\"text\":\"Runic Bow\",\"color\":\"light_purple\"},{\"text\":\" makes use of the \",\"color\":\"dark_purple\"},{\"text\":\"Runic Matrix\",\"color\":\"light_purple\"},{\"text\":\" to create \",\"color\":\"dark_purple\"},{\"text\":\"unique effects\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\",\"color\":\"light_purple\"},{\"text\":\" can fire and \"},{\"text\":\"activate\",\"italic\":true,\"color\":\"dark_aqua\"},{\"text\":\" \",\"italic\":true},{\"text\":\"the effects of \"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
@@ -33,7 +36,8 @@ public class RunicBow extends MagicItem{
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      //TODO weapon values n stuff
+      tag.putInt("HideFlags",7);
+      tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
       //setRecipe(makeRecipe());
