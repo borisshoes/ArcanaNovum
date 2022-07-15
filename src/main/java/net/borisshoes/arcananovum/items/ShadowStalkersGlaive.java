@@ -123,8 +123,17 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
       if(world.getServer().getTicks() % (20) == 0){
          NbtCompound itemNbt = item.getNbt();
          NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         int tether = magicNbt.getInt("tether");
+         
+         String lastAtk = magicNbt.getString("lastAttacked");
+         if(lastAtk != null && !lastAtk.isEmpty()){
+            Entity target = player.getWorld().getEntity(UUID.fromString(lastAtk));
+            if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
+               magicNbt.putString("lastAttacked","");
+               magicNbt.putInt("tether",-1);
+            }
+         }
    
+         int tether = magicNbt.getInt("tether");
          if(tether > 0){
             magicNbt.putInt("tether",tether-1);
          }else if(tether == 0){
@@ -142,37 +151,18 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       int energy = getEnergy(item);
+      String lastAtk = magicNbt.getString("lastAttacked");
       
-      if(player.isSneaking() && energy >= 20){
-         Vec3d playerPos = player.getPos();
-         Vec3d view = player.getRotationVecClient();
-         Vec3d tpPos = playerPos.add(view.multiply(teleportLength));
-   
-         ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
-         player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
-         ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
-         SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
-         addEnergy(item,-20);
-         String message = "Glaive Charges: ";
-         for(int i=1; i<=5; i++){
-            message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
-         }
-         player.sendMessage(new LiteralText(message).formatted(Formatting.BLACK),true);
-         PLAYER_DATA.get(player).addXP(100); // Add xp
-      }else if(energy >= 80){
-         String lastAtk = magicNbt.getString("lastAttacked");
-         boolean fail = false;
-         if(lastAtk == null || lastAtk.isEmpty()){
-            fail = true;
-         }else{
+      if(lastAtk != null && !lastAtk.isEmpty() && !player.isSneaking()){
+         if(energy >= 80){
             Entity target = player.getWorld().getEntity(UUID.fromString(lastAtk));
             if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
-               fail = true;
+               player.sendMessage(new LiteralText("The Glaive Has No Target").formatted(Formatting.BLACK),true);
             }else{
                Vec3d targetPos = target.getPos();
                Vec3d targetView = target.getRotationVecClient();
                Vec3d tpPos = targetPos.add(targetView.multiply(-1.5,0,-1.5));
-   
+      
                ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,target.getYaw(),target.getPitch());
                ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
@@ -185,14 +175,31 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
                player.sendMessage(new LiteralText(message).formatted(Formatting.BLACK),true);
                PLAYER_DATA.get(player).addXP(500); // Add xp
             }
-         }
-         if(fail){
-            player.sendMessage(new LiteralText("The Glaive Has No Target").formatted(Formatting.RED),true);
+         }else{
+            player.sendMessage(new LiteralText("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
             SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
          }
-      }else{
-         player.sendMessage(new LiteralText("The Glaive Needs More Energy").formatted(Formatting.RED),true);
-         SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
+      }else if(player.isSneaking()){
+         if(energy >= 20){
+            Vec3d playerPos = player.getPos();
+            Vec3d view = player.getRotationVecClient();
+            Vec3d tpPos = playerPos.add(view.multiply(teleportLength));
+   
+            ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+            player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+            ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+            SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
+            addEnergy(item,-20);
+            String message = "Glaive Charges: ";
+            for(int i=1; i<=5; i++){
+               message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
+            }
+            player.sendMessage(new LiteralText(message).formatted(Formatting.BLACK),true);
+            PLAYER_DATA.get(player).addXP(100); // Add xp
+         }else{
+            player.sendMessage(new LiteralText("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
+            SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
+         }
       }
       
       return false;

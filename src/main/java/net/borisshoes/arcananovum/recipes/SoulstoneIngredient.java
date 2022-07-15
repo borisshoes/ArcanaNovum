@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.recipes;
 
+import net.borisshoes.arcananovum.items.MagicItems;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -60,6 +62,15 @@ public class SoulstoneIngredient extends MagicItemIngredient{
             }
          }
       }
+   }
+   
+   @Override
+   public String getName(){
+      String name = MagicItems.SOULSTONE.getName();
+      if(type != null){
+         name += " ("+souls+"+ "+EntityType.get(type).get().getName().getString()+")";
+      }
+      return name;
    }
    
    @Override

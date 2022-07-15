@@ -23,6 +23,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 
@@ -299,6 +300,40 @@ public class ArcaneTome extends MagicItem implements UsableItem{
          ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
          gui.setSlot(craftingSlots[i], GuiElementBuilder.from(ingredient));
       }
+   
+      ItemStack recipeList = new ItemStack(Items.PAPER);
+      HashMap<String, Pair<Integer,ItemStack>> ingredList = recipe.getIngredientList();
+      tag = recipeList.getOrCreateNbt();
+      display = new NbtCompound();
+      loreList = new NbtList();
+      display.putString("Name","[{\"text\":\"Total Ingredients\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"-----------------------\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      for(Map.Entry<String, Pair<Integer,ItemStack>> ingred : ingredList.entrySet()){
+         ItemStack ingredStack = ingred.getValue().getRight();
+         int maxCount = ingredStack.getMaxCount();
+         int num = ingred.getValue().getLeft();
+         int stacks = num / maxCount;
+         int rem = num % maxCount;
+         String stackStr = "";
+         if(num > maxCount){
+            if(rem > 0){
+               stackStr = "("+stacks+" Stacks + "+rem+")";
+            }else{
+               stackStr = "("+stacks+" Stacks)";
+            }
+            stackStr = ",{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+stackStr+"\",\"color\":\"yellow\"}";
+         }
+         String ingredStr = "[{\"text\":\""+ingred.getKey()+"\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+num+"\",\"color\":\"green\"}"+stackStr+"]";
+         
+         loreList.add(NbtString.of(ingredStr));
+      }
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Does not include NBT Values\",\"italic\":true,\"color\":\"dark_purple\"}]"));
+   
+      display.put("Lore",loreList);
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      gui.setSlot(26,GuiElementBuilder.from(recipeList));
    
       gui.setTitle(new LiteralText("Recipe for "+magicItem.getName()));
    }

@@ -65,6 +65,10 @@ public class MagicItemIngredient {
       return stack;
    }
    
+   public String getName(){
+      return ingredientAsStack().getName().getString();
+   }
+   
    public static boolean validNbt(NbtCompound nbt, NbtCompound required){
       try{
          for(String key : required.getKeys()){
