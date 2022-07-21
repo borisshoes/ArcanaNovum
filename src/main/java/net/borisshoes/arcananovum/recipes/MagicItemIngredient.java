@@ -72,7 +72,7 @@ public class MagicItemIngredient {
    public static boolean validNbt(NbtCompound nbt, NbtCompound required){
       try{
          for(String key : required.getKeys()){
-            log("Looking for key "+key);
+            //log("Looking for key "+key);
             if(nbt.contains(key)){
                if(nbt.getType(key) == required.getType(key)){
                   byte type = nbt.getType(key);
@@ -83,9 +83,9 @@ public class MagicItemIngredient {
                               return false;
                            break;
                         case 2:
-                           log("Comparing Shorts: "+key+" "+nbt.getShort(key)+" "+required.getShort(key));
+                           //log("Comparing Shorts: "+key+" "+nbt.getShort(key)+" "+required.getShort(key));
                            if(nbt.getShort(key) != required.getShort(key)){
-                              log("Returning false on shorts");
+                              //log("Returning false on shorts");
                               return false;
                            }
                            
@@ -107,9 +107,9 @@ public class MagicItemIngredient {
                               return false;
                            break;
                         case 8:
-                           log("Comparing Strings: "+key+" "+nbt.getString(key)+" "+required.getString(key));
+                           //log("Comparing Strings: "+key+" "+nbt.getString(key)+" "+required.getString(key));
                            if(!nbt.getString(key).equals(required.getString(key))){
-                              log("Returning false on Strings");
+                              //log("Returning false on Strings");
                               return false;
                            }
                            break;
@@ -123,9 +123,9 @@ public class MagicItemIngredient {
                   }else if(type == 9){ // List comparison
                      NbtList list1 = (NbtList) nbt.get(key);
                      NbtList list2 = (NbtList) required.get(key);
-                     log("Calling List on "+key);
+                     //log("Calling List on "+key);
                      if(!validList(list1,list2)){
-                        log("Valid List False");
+                        //log("Valid List False");
                         return false;
                      }
                      
@@ -165,14 +165,14 @@ public class MagicItemIngredient {
                   break;
                }
             }else if(type == 10){
-               log("Recursive Call on compound from list");
+               //log("Recursive Call on compound from list");
                if(validNbt(list.getCompound(j),required.getCompound(i))){// Recursive compound call
                   found = true;
                   break;
                }
             }else{
                if(elem.asString().equals(reqElem.asString())) {// Basic element check, order matters
-                  log("Found basic element");
+                  //log("Found basic element");
                   found = true;
                   break;
                }
@@ -180,7 +180,7 @@ public class MagicItemIngredient {
          }
          
          if(!found){
-            log("searched "+searched+" without finding");
+            //log("searched "+searched+" without finding");
             return false;
          }
       }

@@ -2,9 +2,11 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 
@@ -48,15 +50,48 @@ public class RunicBow extends MagicItem{
    
    }
    
+   @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+      newTag.put("Enchantments",enchants);
+      stack.setNbt(newTag);
+      return stack;
+   }
+   
+   @Override
+   public ItemStack forgeItem(Inventory inv){
+      ItemStack toolStack = inv.getStack(12); // Should be the Sword
+      ItemStack newMagicItem = getNewItem();
+      NbtCompound nbt = toolStack.getNbt();
+      if(nbt != null && nbt.contains("Enchantments")){
+         NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+         for(int i = 0; i < enchants.size(); i++){
+            if(((NbtCompound)enchants.get(i)).getString("id").equals("power")){
+               NbtCompound power = new NbtCompound();
+               power.putString("id","power");
+               power.putInt("lvl",7);
+               enchants.set(i,power);
+            }
+         }
+         newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
+      }
+      return newMagicItem;
+   }
+   
    private MagicItemRecipe makeRecipe(){
       //TODO make recipe
       return null;
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"       Runic Bow\\n\\nRarity: Legendary\\n\\nThe Runic Bow is truely a masterpiece of adaptive Arcana. The integrated Runic Matrices reconfigure the Bow's ethereal structure based on the projectile being fired to unlock its Arcane effects. \"}");
+      list.add("{\"text\":\"       Runic Bow\\n\\nThe Runic Bow is capable of utilizing Runic Arrows and activating their special abilities. The Bow also enhances normal arrows to do more damage than a traditional enchanted bow as well as being incredibly durable.\"}");
       return list;
    }
 }

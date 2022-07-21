@@ -3,11 +3,13 @@
   "id": "arcananovum",
   "version": "${version}",
   "name": "Arcana Novum",
-  "description": "Adds Magic Items to your server!",
+  "description": "A Server-Side magic mod that adds various Magic Items to your server!",
   "authors": [
     "BorisShoes"
   ],
-  "contact": {},
+  "contact": {
+    "repo": "https://github.com/borisshoes/ArcanaNovum"
+  },
   "license": "MIT",
   "icon": "assets/arcananovum/icon.png",
   "environment": "server",
@@ -31,8 +33,8 @@
     "arcananovum.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.12.12",
+    "fabricloader": ">=0.14.8",
     "fabric": "*",
-    "minecraft": "1.18.2"
+    "minecraft": "1.19"
   }
 }

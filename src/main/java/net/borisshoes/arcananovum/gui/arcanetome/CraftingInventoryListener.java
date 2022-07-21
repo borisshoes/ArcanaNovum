@@ -12,7 +12,8 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class CraftingInventoryListener implements InventoryChangedListener {
@@ -73,7 +74,7 @@ public class CraftingInventoryListener implements InventoryChangedListener {
          tag.putInt("HideFlags",103);
          gui.setSlot(25, GuiElementBuilder.from(table));
       }else{
-         gui.setSlot(25, GuiElementBuilder.from(matchedItem.getPrefItem()).addLoreLine(new LiteralText("")).addLoreLine(new LiteralText("Click to Forge!").formatted(Formatting.AQUA,Formatting.BOLD)).glow());
+         gui.setSlot(25, GuiElementBuilder.from(matchedItem.getPrefItem()).addLoreLine(Text.translatable("")).addLoreLine(Text.translatable("Click to Forge!").formatted(Formatting.AQUA,Formatting.BOLD)).glow());
       }
    }
 }

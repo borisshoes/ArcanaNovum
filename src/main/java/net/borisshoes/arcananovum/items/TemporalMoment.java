@@ -47,9 +47,8 @@ public class TemporalMoment extends MagicItem{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"   Temporal Moment\\n\\nRarity: Mundane\\n\\nTime always moves forwards, but its rate can be changed from fluxuations in spacetime. With enough energy perhaps it could be slowed to a halt, freezing a moment in time to use later.\"}");
       return list;
    }
 }

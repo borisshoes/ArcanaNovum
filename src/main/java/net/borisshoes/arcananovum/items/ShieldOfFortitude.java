@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -63,6 +64,23 @@ public class ShieldOfFortitude extends MagicItem{
          newTag.put("BlockEntityTag",itemNbt.getCompound("BlockEntityTag"));
       stack.setNbt(newTag);
       return stack;
+   }
+   
+   @Override
+   public ItemStack forgeItem(Inventory inv){
+      ItemStack toolStack = inv.getStack(12); // Should be the Sword
+      ItemStack newMagicItem = getNewItem();
+      NbtCompound nbt = toolStack.getNbt();
+      if(nbt != null){
+         if(nbt.contains("Enchantments")){
+            NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+            newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
+         }
+         if(nbt.contains("BlockEntityTag")){
+            newMagicItem.getOrCreateNbt().put("BlockEntityTag", nbt.getCompound("BlockEntityTag"));
+         }
+      }
+      return newMagicItem;
    }
    
    private List<String> makeLore(){

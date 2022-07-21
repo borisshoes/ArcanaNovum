@@ -17,7 +17,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -82,7 +83,7 @@ public abstract class LivingEntityMixin {
                NbtCompound itemNbt = item.getNbt();
                NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
                if(magicNbt.getInt("heat") > 0){
-                  player.sendMessage(new LiteralText("Your Recall Has Been Disrupted!").formatted(Formatting.RED,Formatting.ITALIC),true);
+                  player.sendMessage(Text.translatable("Your Recall Has Been Disrupted!").formatted(Formatting.RED,Formatting.ITALIC),true);
                   magicNbt.putInt("heat", -1);
                }
             }
@@ -93,7 +94,7 @@ public abstract class LivingEntityMixin {
          if(MagicItemUtils.isMagic(chestItem) && player.getAbilities().flying){
             if(MagicItemUtils.identifyItem(chestItem) instanceof LevitationHarness harness){
                harness.setStall(chestItem,10);
-               player.sendMessage(new LiteralText("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.translatable("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
                ParticleEffectUtils.harnessStall(player.getWorld(),player.getPos().add(0,0.5,0));
             }
@@ -117,7 +118,7 @@ public abstract class LivingEntityMixin {
                for(int i=1; i<=5; i++){
                   message += newEnergy >= i*20 ? "✦ " : "✧ ";
                }
-               player.sendMessage(new LiteralText(message).formatted(Formatting.BLACK),true);
+               player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
             }
          }
       }
@@ -125,7 +126,7 @@ public abstract class LivingEntityMixin {
    
    
    // Mixin for damage mitigation (Wings of Zephyr, Charm of Felidae
-   @Inject(method = "applyEnchantmentsToDamage", at = @At("RETURN"), cancellable = true)
+   @Inject(method = "modifyAppliedDamage", at = @At("RETURN"), cancellable = true)
    private void kineticDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
       float reduced = cir.getReturnValueF();
       float newReturn = reduced;
@@ -139,13 +140,13 @@ public abstract class LivingEntityMixin {
                double dmgReduction = Math.min(energy/100.0,maxDmgReduction);
                if(entity instanceof ServerPlayerEntity player){
                   if(dmgReduction == maxDmgReduction || dmgReduction > 12){
-                     player.sendMessage(new LiteralText("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+                     player.sendMessage(Text.translatable("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
                      Timer timer = new Timer();
                      timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                           player.sendMessage(new LiteralText("Wing Energy Remaining: "+wings.getEnergy(chestItem)).formatted(Formatting.GRAY),true);
+                           player.sendMessage(Text.translatable("Wing Energy Remaining: "+wings.getEnergy(chestItem)).formatted(Formatting.GRAY),true);
                         }
                      }, 2500);
                   }

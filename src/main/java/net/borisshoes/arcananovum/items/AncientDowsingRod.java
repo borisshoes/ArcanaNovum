@@ -16,7 +16,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -160,7 +161,7 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
             }, 7000);
       
          }else{
-            playerEntity.sendMessage(new LiteralText("Dowsing Rod Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.GOLD),true);
+            playerEntity.sendMessage(Text.translatable("Dowsing Rod Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.GOLD),true);
             SoundUtils.playSongToPlayer(player,SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
          }
       }
@@ -186,9 +187,9 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\" Ancient Dowsing Rod\\n\\nRarity: Empowered\\n\\nModern Piglins seem to be incapable of finding Netherite, but their bastions contain fragments of it.\\nI recovered some pieces of a tool used by their ancestors, perhaps I can reconstruct it.\"}");
+      list.add("{\"text\":\" Ancient Dowsing Rod\\n\\nRight click the rod to send out a resonating signal that bounces of nearby Ancient Debris.\\n\\nThe sound's echo triggers a compass of flame to indicate how much debris is nearby. And a flaming arrow to show the nearest pile of debris.\"}");
       return list;
    }
    

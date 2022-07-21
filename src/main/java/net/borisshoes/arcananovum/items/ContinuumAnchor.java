@@ -18,7 +18,8 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -74,7 +75,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
       if(placeable && playerEntity instanceof ServerPlayerEntity player){
          placeAnchor(player, world, item, placePos);
       }else{
-         playerEntity.sendMessage(new LiteralText("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+         playerEntity.sendMessage(Text.translatable("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;
@@ -93,7 +94,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
          world.setBlockState(pos, Blocks.RESPAWN_ANCHOR.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(anchorBlock);
       
-         player.sendMessage(new LiteralText("Placing the Continuum Anchor sends a ripple across spacetime.").formatted(Formatting.DARK_BLUE),true);
+         player.sendMessage(Text.translatable("Placing the Continuum Anchor sends a ripple across spacetime.").formatted(Formatting.DARK_BLUE),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, 5,.8f);
          item.decrement(item.getCount());
          item.setNbt(new NbtCompound());
@@ -126,7 +127,6 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
       list.add("{\"text\":\"   Continuum Anchor\\n\\nRarity: Legendary\\n\\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing sturdy casings that can withstand the flow of Arcana, I have made additional efforts to \"}");
       list.add("{\"text\":\"   Continuum Anchor\\n\\nreinforce this chassis against dimensional shear.\\nBy combining all known techniques of manipulating dimensional energy I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.\"}");
       list.add("{\"text\":\"   Continuum Anchor\\n\\nWhen fed with Exotic Matter the Anchor chunk loads a 5x5 chunk area with Entity Processing ticks. The Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. It can be refueled in use, but fuel might be lost.\"}");
-      list.add("{\"text\":\"   Continuum Anchor\\n\\nThe Anchor locks itself in spacetime, hence the name 'anchor' and any attempt to move it will result in its destruction.\\n\\nOnce placed the anchor CANNOT BE RE-OBTAINED. \\n\\n\"}");
       return list;
    }
    

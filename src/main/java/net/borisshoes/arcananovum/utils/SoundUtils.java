@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 
 public class SoundUtils {
    public static void playSongToPlayer(ServerPlayerEntity player, SoundEvent event, float vol, float pitch) {
-      player.networkHandler.sendPacket(new PlaySoundS2CPacket(event, SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch));
+      player.networkHandler.sendPacket(new PlaySoundS2CPacket(event, SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch,0));
    }
    
    public static void playSound(World world, BlockPos pos, SoundEvent event, SoundCategory category, float vol, float pitch){

@@ -26,7 +26,8 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -208,7 +209,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem,TickingI
          if(stall > 0){
             if(stall == 1){
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_POWER_SELECT,0.5f,1.6f);
-               player.sendMessage(new LiteralText("Your Harness Reboots").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.translatable("Your Harness Reboots").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                magicTag.putInt("stall",-1);
             }else{
                magicTag.putInt("stall",stall-1);
@@ -245,9 +246,9 @@ public class LevitationHarness extends EnergyItem implements UsableItem,TickingI
       Formatting durationTextColor = energy > 0 ? Formatting.GRAY : Formatting.RED;
       Formatting glowTextColor = glow > 0 ? Formatting.GOLD : Formatting.RED;
    
-      gui.setSlot(0,new GuiElementBuilder(soulPane).setName(new LiteralText(soulText).formatted(soulTextColor)));
-      gui.setSlot(2,new GuiElementBuilder(durationPane).setName(new LiteralText(durationText).formatted(durationTextColor)));
-      gui.setSlot(4,new GuiElementBuilder(glowPane).setName(new LiteralText(glowText).formatted(glowTextColor)));
+      gui.setSlot(0,new GuiElementBuilder(soulPane).setName(Text.translatable(soulText).formatted(soulTextColor)));
+      gui.setSlot(2,new GuiElementBuilder(durationPane).setName(Text.translatable(durationText).formatted(durationTextColor)));
+      gui.setSlot(4,new GuiElementBuilder(glowPane).setName(Text.translatable(glowText).formatted(glowTextColor)));
    }
    
    public void openGui(PlayerEntity playerEntity, ItemStack item){
@@ -277,7 +278,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem,TickingI
       }else{
          gui.notValidStone();
       }
-      gui.setTitle(new LiteralText("Levitation Harness"));
+      gui.setTitle(Text.translatable("Levitation Harness"));
       listener.finishUpdate();
       
       gui.open();
@@ -306,9 +307,10 @@ public class LevitationHarness extends EnergyItem implements UsableItem,TickingI
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"  Levitation Harness\\n\\nRarity: Legendary\\n\\nThe sheer amount of effort and research that has gone into this is incomparable. A crowning achievement to be sure. The ability to fly freely through the sky is at my command, albeit fueled by innocent souls. \"}");
+      list.add("{\"text\":\"  Levitation Harness\\n\\nGlowstone was an\\nadequate moderator for the Shulker Core but now it is an absolute neccessity that is consumed in large quantities to stabilize the flight reaction. Even with more Glowstone, the reaction is incredibly sensitive to damage.\"}");
+      list.add("{\"text\":\"  Levitation Harness\\n\\nWearing the Harness like a chestpiece grants creative flight. Although the Harness provides no armor value and taking even the slightest bump while in flight will destabilize the flight process. The harness then needs a couple seconds to reactivate.\"}");
       return list;
    }
 }

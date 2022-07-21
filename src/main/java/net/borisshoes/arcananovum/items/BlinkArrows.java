@@ -87,9 +87,8 @@ public class BlinkArrows extends MagicItem implements RunicArrow{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"      Blink Arrows\\n\\nRarity: Exotic\\n\\nThe Runic Matrix has been configured for invoking teleportation spells, and now the arrows act like a thrown Ender Pearl when activated by a Runic Bow.\"}");
       return list;
    }
 }

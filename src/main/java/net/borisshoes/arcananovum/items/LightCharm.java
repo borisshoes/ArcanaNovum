@@ -19,7 +19,8 @@ import net.minecraft.potion.Potions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -115,10 +116,10 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
       if(vision){
-         player.sendMessage(new LiteralText("You can now see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+         player.sendMessage(Text.translatable("You can now see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
       }else{
-         player.sendMessage(new LiteralText("You can no longer see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+         player.sendMessage(Text.translatable("You can no longer see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
       }
       
@@ -132,10 +133,10 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
       if(active){
-         player.sendMessage(new LiteralText("The Charm's Light Brightens").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+         player.sendMessage(Text.translatable("The Charm's Light Brightens").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
       }else{
-         player.sendMessage(new LiteralText("The Charm's Light Dims").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+         player.sendMessage(Text.translatable("The Charm's Light Dims").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
       }
    }

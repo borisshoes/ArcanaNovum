@@ -9,7 +9,8 @@ import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class ShulkerCoreInventoryListener implements InventoryChangedListener {
@@ -36,10 +37,10 @@ public class ShulkerCoreInventoryListener implements InventoryChangedListener {
          String paneText = hasStone ? core.getEnergy(item) + " Shulker Souls" : "No Soulstone Inserted";
          Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
    
-         gui.setSlot(0,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
-         gui.setSlot(1,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
-         gui.setSlot(3,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
-         gui.setSlot(4,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
+         gui.setSlot(0,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
+         gui.setSlot(1,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
+         gui.setSlot(3,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
+         gui.setSlot(4,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
          
          finishUpdate();
       }

@@ -26,7 +26,7 @@ public class LoreGui extends BookGui {
    @Override
    public void onClose(){
       if(tome != null){
-         tome.openGui(player,returnMode);
+         tome.openGui(player,returnMode,"");
       }
    }
 }

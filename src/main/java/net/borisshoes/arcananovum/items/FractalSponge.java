@@ -19,7 +19,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.tag.FluidTags;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -160,7 +161,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
       if(placeable && playerEntity instanceof ServerPlayerEntity player){
          placeSponge(player, world, item, placePos);
       }else{
-         playerEntity.sendMessage(new LiteralText("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+         playerEntity.sendMessage(Text.translatable("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;
@@ -197,9 +198,9 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"    Fractal Sponge\\n\\nRarity: Empowered\\n\\nEver heard of the coastline paradox?\\nI thought about it while staring at an ocean monument from the shore, and now I'm off to shove as many sponges into a Netherite reinforced fractal as I can.\"}");
+      list.add("{\"text\":\"    Fractal Sponge\\n\\nThe Fractal Sponge in practice is only 8 times better than a regular sponge due to it taking time for fluid to soak into the fractal, but it never gets fully soaked and the Netherite frame lets it contain hotter fluids like lava.\"}");
       return list;
    }
 }

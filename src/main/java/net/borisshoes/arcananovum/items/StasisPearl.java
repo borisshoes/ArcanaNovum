@@ -24,7 +24,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -196,7 +197,7 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem{
             }else{
                playerEntity.getItemCooldownManager().set(Items.ENDER_PEARL, 0);
                if(playerEntity instanceof ServerPlayerEntity player){
-                  playerEntity.sendMessage(new LiteralText("Pearl Recharging: "+(getEnergy(item)*100/maxEnergy)+"%").formatted(Formatting.BLUE),true);
+                  playerEntity.sendMessage(Text.translatable("Pearl Recharging: "+(getEnergy(item)*100/maxEnergy)+"%").formatted(Formatting.BLUE),true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
                }
             }
@@ -262,9 +263,9 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"      Stasis Pearl\\n\\nRarity: Exotic\\n\\nSimilar to the Pearl of\\nRecall, except instead of freezing the Pearl during activation its frozen while in flight.\\nThe Pearl is highly volitile and can dematerialize if frozen for too long, or unloaded in flight.\\n\"}");
+      list.add("{\"text\":\"      Stasis Pearl\\n\\nRight Click throws the pearl like normal.\\nRight Clicking while it is in flight puts it in stasis.\\nRight Clicking while frozen will remove it from stasis and continue moving.\\nLike the Recall Pearl, this one takes time to resync to the timeline.\"}");
       return list;
    }
 }

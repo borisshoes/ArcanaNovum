@@ -12,15 +12,18 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -65,13 +68,13 @@ public class ArcaneTome extends MagicItem implements UsableItem{
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      openGui(playerEntity,0);
+      openGui(playerEntity,0,"");
       return false;
    }
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      openGui(playerEntity,0);
+      openGui(playerEntity,0,"");
       return false;
    }
    
@@ -90,7 +93,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       profile.setLevel(LevelUtils.levelFromXp(profile.getXP()));
    }
    
-   public void openGui(PlayerEntity playerEntity, int mode){
+   public void openGui(PlayerEntity playerEntity, int mode, String data){
       if(!(playerEntity instanceof ServerPlayerEntity))
          return;
       ServerPlayerEntity player = (ServerPlayerEntity) playerEntity;
@@ -104,7 +107,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
          buildItemsGui(gui,player);
       }else if(mode == 2){ // Crafting
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X5,player,mode,this);
-         buildCraftingGui(gui,player);
+         buildCraftingGui(gui,player,data);
       }
       gui.setMode(mode);
       gui.open();
@@ -121,13 +124,13 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       gui.setMode(0);
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
-         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(LiteralText.EMPTY.copy()));
+         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
       }
       
       GameProfile gameProfile = new GameProfile(player.getUuid(),null);
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
-      head.setName((new LiteralText("").append(new LiteralText(player.getEntityName()+"'s ").formatted(Formatting.AQUA)).append(new LiteralText("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
-      head.addLoreLine((new LiteralText("").append(new LiteralText("Click").formatted(Formatting.YELLOW)).append(new LiteralText(" for a brief overview of Arcana Novum!").formatted(Formatting.LIGHT_PURPLE))));
+      head.setName((Text.translatable("").append(Text.translatable(player.getEntityName()+"'s ").formatted(Formatting.AQUA)).append(Text.translatable("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
+      head.addLoreLine((Text.translatable("").append(Text.translatable("Click").formatted(Formatting.YELLOW)).append(Text.translatable(" for a brief overview of Arcana Novum!").formatted(Formatting.LIGHT_PURPLE))));
       gui.setSlot(4,head);
       
       ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
@@ -158,10 +161,10 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       int filled = (int)Math.round((double)LevelUtils.getCurLevelXp(profile.getXP())/LevelUtils.nextLevelNewXp(profile.getLevel()) * 6.0);
       for(int i = 11; i <= 16; i++){
          if(i >= filled+11){
-            gui.setSlot(i,new GuiElementBuilder(Items.GLASS_BOTTLE).setName(new LiteralText("XP: "+LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.GREEN)));
+            gui.setSlot(i,new GuiElementBuilder(Items.GLASS_BOTTLE).setName(Text.translatable("XP: "+LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.GREEN)));
    
          }else{
-            gui.setSlot(i,new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(new LiteralText("XP: "+LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.GREEN)));
+            gui.setSlot(i,new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Text.translatable("XP: "+LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.GREEN)));
          }
       }
    
@@ -191,21 +194,21 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       int used = (int)Math.floor((double)MagicItemUtils.getUsedConcentration(player)/LevelUtils.concFromLevel(profile.getLevel()) * 6.0);
       for(int i = 29; i <= 34; i++){
          if(i >= used+29){
-            gui.setSlot(i,new GuiElementBuilder(Items.SLIME_BALL).setName(new LiteralText("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())).formatted(Formatting.AQUA)));
+            gui.setSlot(i,new GuiElementBuilder(Items.SLIME_BALL).setName(Text.translatable("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())).formatted(Formatting.AQUA)));
          }else{
-            gui.setSlot(i,new GuiElementBuilder(Items.MAGMA_CREAM).setName(new LiteralText("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())).formatted(Formatting.AQUA)));
+            gui.setSlot(i,new GuiElementBuilder(Items.MAGMA_CREAM).setName(Text.translatable("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())).formatted(Formatting.AQUA)));
          }
          
       }
    
-      gui.setTitle(new LiteralText("Arcane Profile"));
+      gui.setTitle(Text.translatable("Arcane Profile"));
    }
    
    public void buildItemsGui(TomeGui gui, ServerPlayerEntity player){
       gui.setMode(1);
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
-         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(LiteralText.EMPTY.copy()));
+         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
       }
    
       ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
@@ -254,7 +257,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
          }
       }
       
-      gui.setTitle(new LiteralText("Item Compendium"));
+      gui.setTitle(Text.translatable("Item Compendium"));
    }
    
    public void buildRecipeGui(TomeGui gui, ServerPlayerEntity player, String id){
@@ -267,7 +270,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
-         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(LiteralText.EMPTY.copy()));
+         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
       }
    
       ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
@@ -286,7 +289,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       display = new NbtCompound();
       loreList = new NbtList();
       display.putString("Name","[{\"text\":\"Forge Item\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"green\"},{\"text\":\" to go to the Forging Menu!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"green\"},{\"text\":\" to forge this item!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -335,20 +338,20 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       tag.putInt("HideFlags",103);
       gui.setSlot(26,GuiElementBuilder.from(recipeList));
    
-      gui.setTitle(new LiteralText("Recipe for "+magicItem.getName()));
+      gui.setTitle(Text.translatable("Recipe for "+magicItem.getName()));
    }
    
-   public void buildCraftingGui(TomeGui gui, ServerPlayerEntity player){
+   public void buildCraftingGui(TomeGui gui, ServerPlayerEntity player, String itemId){
       gui.setMode(2);
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
-         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(LiteralText.EMPTY.copy()));
+         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
       }
    
       GameProfile gameProfile = new GameProfile(player.getUuid(),null);
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
-      head.setName((new LiteralText("").append(new LiteralText(player.getEntityName()+"'s ").formatted(Formatting.AQUA)).append(new LiteralText("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
-      head.addLoreLine((new LiteralText("").append(new LiteralText("Click").formatted(Formatting.YELLOW)).append(new LiteralText(" to go to your Profile").formatted(Formatting.LIGHT_PURPLE))));
+      head.setName((Text.translatable("").append(Text.translatable(player.getEntityName()+"'s ").formatted(Formatting.AQUA)).append(Text.translatable("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
+      head.addLoreLine((Text.translatable("").append(Text.translatable("Click").formatted(Formatting.YELLOW)).append(Text.translatable(" to go to your Profile").formatted(Formatting.LIGHT_PURPLE))));
       gui.setSlot(43,head);
    
       ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
@@ -382,13 +385,32 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       CraftingInventory inv = new CraftingInventory();
       CraftingInventoryListener listener = new CraftingInventoryListener(this,gui);
       inv.addListener(listener);
-      ItemStack[] ingredients = new ItemStack[25];
       for(int i = 0; i<25;i++){
-         ingredients[i] = ItemStack.EMPTY;
          gui.setSlotRedirect(craftingSlots[i], new Slot(inv,i,0,0));
       }
+      
+      if(itemId != null && !itemId.isEmpty()){
+         MagicItemRecipe recipe = MagicItemUtils.getItemFromId(itemId).getRecipe();
+         MagicItemIngredient[][] ingredients = recipe.getIngredients();
+         Inventory playerInventory = player.getInventory();
+         
+         for(int i = 0; i < 25; i++){
+            MagicItemIngredient ingredient = ingredients[i/5][i%5];
+            
+            for(int j = 0; j < playerInventory.size(); j++){
+               ItemStack invSlot = playerInventory.getStack(j);
+               
+               if(ingredient.validStack(invSlot)){
+                  ItemStack toMove = invSlot.split(ingredient.getCount());
+                  inv.setStack(i,toMove);
+                  playerInventory.setStack(j,invSlot);
+                  break;
+               }
+            }
+         }
+      }
    
-      gui.setTitle(new LiteralText("Forge Items"));
+      gui.setTitle(Text.translatable("Forge Items"));
    }
    
    private List<String> makeLore(){

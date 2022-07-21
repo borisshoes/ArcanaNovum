@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.recipes.SoulstoneIngredient;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
@@ -18,6 +19,7 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -26,7 +28,8 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -126,7 +129,7 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
    
                   addUses(item, -5);
                   if(playerEntity instanceof ServerPlayerEntity player){
-                     player.sendMessage(new LiteralText("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
+                     player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
                      PLAYER_DATA.get(playerEntity).addXP(2500); // Add xp
                   }
@@ -231,11 +234,27 @@ public class EssenceEgg extends MagicItem implements UsableItem,AttackingItem{
             String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
       
             setType(item,entityTypeId);
-            player.sendMessage(new LiteralText("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+            player.sendMessage(Text.translatable("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
          }
       }
       return true;
+   }
+   
+   @Override
+   public ItemStack forgeItem(Inventory inv){
+      // Souls n stuff
+      ItemStack soulstoneStack = inv.getStack(12); // Should be the Soulstone
+      ItemStack newMagicItem = null;
+      if(MagicItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
+         int uses = (Soulstone.getSouls(soulstoneStack) / Soulstone.tiers[0]);
+         String essenceType = Soulstone.getType(soulstoneStack);
+      
+         newMagicItem = getNewItem();
+         setType(newMagicItem,essenceType);
+         setUses(newMagicItem,uses);
+      }
+      return newMagicItem;
    }
    
    private List<String> makeLore(){

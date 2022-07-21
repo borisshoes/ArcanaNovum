@@ -17,7 +17,8 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -79,7 +80,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
       if(placeable && playerEntity instanceof ServerPlayerEntity player){
          placeCollider(player, world, item, placePos);
       }else{
-         playerEntity.sendMessage(new LiteralText("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+         playerEntity.sendMessage(Text.translatable("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;
@@ -120,9 +121,9 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"    Igneous Collider\\n\\nRarity: Exotic\\n\\nMining Obsidian sucks, its time intensive and boring.\\nMaking a contraption to do it for me would be of great benefit.\\nI guess was as simple as enchanting some pickaxes to move by themself.\"}");
+      list.add("{\"text\":\"    Igneous Collider\\n\\nThe Igneous Collider takes water and lava from either a source block or a cauldron that is adjacent to its side and spits out an Obsidian into a chest above it every minute.\\nA Collider with a Netherite block below it produces Crying Obsidian. \"}");
       return list;
    }
 }

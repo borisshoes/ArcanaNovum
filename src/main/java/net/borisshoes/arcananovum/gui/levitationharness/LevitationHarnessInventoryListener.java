@@ -12,7 +12,6 @@ import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
 public class LevitationHarnessInventoryListener implements InventoryChangedListener {

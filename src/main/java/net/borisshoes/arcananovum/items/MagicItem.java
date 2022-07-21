@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -101,6 +102,10 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       }else{
          return rarityCompare;
       }
+   }
+   
+   public ItemStack forgeItem(Inventory inv){
+      return getNewItem();
    }
    
    protected void setBookLore(List<String> lines){

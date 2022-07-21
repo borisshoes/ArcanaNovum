@@ -19,7 +19,8 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -90,7 +91,7 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
                };
    
                if(consume){
-                  player.sendMessage(new LiteralText("Your Feasting Charm consumes a "+invItem.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
+                  player.sendMessage(Text.translatable("Your Feasting Charm consumes a "+invItem.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
                   hunger.eat(invItem.getItem(),invItem);
                   // Apply Status Effects
                   List<Pair<StatusEffectInstance, Float>> list = foodComponent.getStatusEffects();
@@ -137,10 +138,10 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
       switch(mode){
-         case 0 -> player.sendMessage(new LiteralText("Feasting Mode: Optimal").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 1 -> player.sendMessage(new LiteralText("Feasting Mode: Regen").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 2 -> player.sendMessage(new LiteralText("Feasting Mode: Optimal + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 3 -> player.sendMessage(new LiteralText("Feasting Mode: Regen + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 0 -> player.sendMessage(Text.translatable("Feasting Mode: Optimal").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 1 -> player.sendMessage(Text.translatable("Feasting Mode: Regen").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 2 -> player.sendMessage(Text.translatable("Feasting Mode: Optimal + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 3 -> player.sendMessage(Text.translatable("Feasting Mode: Regen + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
       }
    }
    

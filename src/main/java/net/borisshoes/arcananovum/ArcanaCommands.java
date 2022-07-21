@@ -21,8 +21,9 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 
@@ -44,7 +45,7 @@ public class ArcanaCommands {
    
    
    public static int openGuideBook(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException{
-      ServerPlayerEntity player = ctx.getSource().getPlayer();
+      ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
       ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
       writablebook.setNbt(getGuideBook());
       BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
@@ -70,21 +71,21 @@ public class ArcanaCommands {
          }
          
          if(targets.size() == 1 && set && points){
-            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(Text.translatable("Set Arcana XP to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && set && !points){
-            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(Text.translatable("Set Arcana Level to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(Text.translatable("Gave "+amount+" Arcana XP to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && !points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(Text.translatable("Gave "+amount+" Arcana Levels to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() != 1 && set && points){
-            source.sendFeedback(new LiteralText("Set Arcana XP to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(Text.translatable("Set Arcana XP to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && set && !points){
-            source.sendFeedback(new LiteralText("Set Arcana Level to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(Text.translatable("Set Arcana Level to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana XP to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(Text.translatable("Gave "+amount+" Arcana XP to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && !points){
-            source.sendFeedback(new LiteralText("Gave "+amount+" Arcana Levels to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(Text.translatable("Gave "+amount+" Arcana Levels to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }
          
          return targets.size();
@@ -117,34 +118,34 @@ public class ArcanaCommands {
          count++;
          String uuid = magictag.getString("UUID") ;
          
-         MutableText feedback = new LiteralText("")
-               .append(new LiteralText("[").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(magicItem.getName()).formatted(Formatting.AQUA))
-               .append(new LiteralText("] ID: ").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(uuid).formatted(Formatting.DARK_PURPLE));
+         MutableText feedback = Text.translatable("")
+               .append(Text.translatable("[").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.translatable(magicItem.getName()).formatted(Formatting.AQUA))
+               .append(Text.translatable("] ID: ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
          response.add(feedback.styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
          if(!uuids.add(uuid) || item.getCount() > 1){
-            MutableText duplicateWarning = new LiteralText("")
-                  .append(new LiteralText("Duplicate: ").formatted(Formatting.RED))
-                  .append(new LiteralText(magicItem.getName()).formatted(Formatting.AQUA))
-                  .append(new LiteralText(" ID: ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(new LiteralText(uuid).formatted(Formatting.DARK_PURPLE));
+            MutableText duplicateWarning = Text.translatable("")
+                  .append(Text.translatable("Duplicate: ").formatted(Formatting.RED))
+                  .append(Text.translatable(magicItem.getName()).formatted(Formatting.AQUA))
+                  .append(Text.translatable(" ID: ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
             response2.add(duplicateWarning);
          }
       }
       
-      MutableText feedback = new LiteralText("")
+      MutableText feedback = Text.translatable("")
             .append(player.getDisplayName())
-            .append(new LiteralText(" has ").formatted(Formatting.LIGHT_PURPLE))
-            .append(new LiteralText(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-            .append(new LiteralText(" items.").formatted(Formatting.LIGHT_PURPLE));
-      source.sendFeedback(new LiteralText(""),false);
+            .append(Text.translatable(" has ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.translatable(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+            .append(Text.translatable(" items.").formatted(Formatting.LIGHT_PURPLE));
+      source.sendFeedback(Text.translatable(""),false);
       source.sendFeedback(feedback,false);
-      source.sendFeedback(new LiteralText("================================").formatted(Formatting.LIGHT_PURPLE),false);
+      source.sendFeedback(Text.translatable("================================").formatted(Formatting.LIGHT_PURPLE),false);
       for(MutableText r : response){
          source.sendFeedback(r,false);
       }
-      source.sendFeedback(new LiteralText("================================").formatted(Formatting.LIGHT_PURPLE),false);
+      source.sendFeedback(Text.translatable("================================").formatted(Formatting.LIGHT_PURPLE),false);
       for(MutableText r : response2){
          source.sendFeedback(r,false);
       }
@@ -155,21 +156,22 @@ public class ArcanaCommands {
       if (!devMode)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
          ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
          if(stack.isOf(Items.WRITTEN_BOOK)){
             NbtCompound tag = stack.getNbt();
             NbtList pages = tag.getList("pages", NbtElement.STRING_TYPE);
             String path = "C:\\Users\\Boris\\Desktop\\bookdata.txt";
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
             for(int i = 0; i < pages.size(); i++){
-               out.println("loreList.add(NbtString.of("+pages.getString(i)+"));");
-               //loreList.add(NbtString.of(e));
-               log("\n"+pages.getString(i));
+               String page = pages.getString(i);
+               page = page.replaceAll("\"","\\\\\"").replace("\\n","\\\\n");
+               out.println("list.add(\""+page+"\");");
+               //log("\n"+page);
             }
             out.close();
          }else{
-            player.sendMessage(new LiteralText("Hold a book to get data"),true);
+            player.sendMessage(Text.translatable("Hold a book to get data"),true);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -181,15 +183,15 @@ public class ArcanaCommands {
       try{
          ServerCommandSource source = ctx.getSource();
          IArcanaProfileComponent profile = PLAYER_DATA.get(target);
-         MutableText feedback = new LiteralText("")
+         MutableText feedback = Text.translatable("")
                .append(target.getDisplayName())
-               .append(new LiteralText(" has ").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(new LiteralText(" levels (").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
-               .append(new LiteralText("). ").formatted(Formatting.LIGHT_PURPLE))
-               .append(new LiteralText(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(new LiteralText(" Total XP").formatted(Formatting.LIGHT_PURPLE));
+               .append(Text.translatable(" has ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.translatable(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+               .append(Text.translatable(" levels (").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.translatable(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
+               .append(Text.translatable("). ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.translatable(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+               .append(Text.translatable(" Total XP").formatted(Formatting.LIGHT_PURPLE));
          source.sendFeedback(feedback, false);
          return 1;
       }catch(Exception e){
@@ -202,7 +204,7 @@ public class ArcanaCommands {
       if (!devMode)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
          ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
          if(!stack.isEmpty()){
             NbtCompound tag = stack.getNbt();
@@ -245,7 +247,7 @@ public class ArcanaCommands {
             }
             out.close();
          }else{
-            player.sendMessage(new LiteralText("Hold an item to get data"),true);
+            player.sendMessage(Text.translatable("Hold an item to get data"),true);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -257,7 +259,7 @@ public class ArcanaCommands {
       if (!devMode)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
          
       } catch (Exception e) {
          e.printStackTrace();
@@ -269,7 +271,7 @@ public class ArcanaCommands {
       if (!devMode)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
          ItemStack item1 = player.getStackInHand(Hand.MAIN_HAND);
          ItemStack item2 = player.getStackInHand(Hand.OFF_HAND);
          if(item1.hasNbt() && item2.hasNbt()){
@@ -299,19 +301,19 @@ public class ArcanaCommands {
       try{
          MagicItem magicItem = MagicItemUtils.getItemFromId(id);
          if(magicItem == null){
-            source.getPlayer().sendMessage(new LiteralText("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC), false);
+            source.getPlayerOrThrow().sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC), false);
             return 0;
          }
          ItemStack item = magicItem.getNewItem();
          
          if(item == null){
-            source.getPlayer().sendMessage(new LiteralText("No Preferred Item Found For: "+magicItem.getName()).formatted(Formatting.RED, Formatting.ITALIC), false);
+            source.getPlayerOrThrow().sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getName()).formatted(Formatting.RED, Formatting.ITALIC), false);
             return 0;
          }else{
             NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
             String uuid = magicTag.getString("UUID");
-            source.getPlayer().sendMessage(new LiteralText("Generated New: "+magicItem.getName()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
-            source.getPlayer().giveItemStack(item);
+            source.getPlayerOrThrow().sendMessage(Text.translatable("Generated New: "+magicItem.getName()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
+            source.getPlayerOrThrow().giveItemStack(item);
             return 1;
          }
       }catch(Exception e){

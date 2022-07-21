@@ -20,7 +20,8 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -172,8 +173,8 @@ public class BrainJar extends EnergyItem implements UsableItem,TickingItem{
       tag.put("display",display);
       gui.setSlot(4,GuiElementBuilder.from(bottle));
    
-      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(new LiteralText(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(new LiteralText(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
    
       if(mode == 0){
          ItemStack notmending = new ItemStack(Items.BARRIER);
@@ -202,7 +203,7 @@ public class BrainJar extends EnergyItem implements UsableItem,TickingItem{
       }
    
    
-      gui.setTitle(new LiteralText("Brain in a Jar"));
+      gui.setTitle(Text.translatable("Brain in a Jar"));
       gui.open();
    }
    
@@ -277,8 +278,8 @@ public class BrainJar extends EnergyItem implements UsableItem,TickingItem{
       tag.put("display",display);
       gui.setSlot(4,GuiElementBuilder.from(bottle));
       
-      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(new LiteralText(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(new LiteralText(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
       editStatusLore(item);
    }
    
@@ -318,8 +319,8 @@ public class BrainJar extends EnergyItem implements UsableItem,TickingItem{
       tag.put("display",display);
       gui.setSlot(4,GuiElementBuilder.from(bottle));
       
-      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(new LiteralText(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(new LiteralText(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
       editStatusLore(item);
    }
    

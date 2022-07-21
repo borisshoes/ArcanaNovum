@@ -18,7 +18,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -222,7 +223,7 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
                magicNbt.putInt("heat",1); // Starts the heat up process
                SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1,1);
             }else{
-               playerEntity.sendMessage(new LiteralText("Pearl Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.DARK_AQUA),true);
+               playerEntity.sendMessage(Text.translatable("Pearl Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.DARK_AQUA),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
             }
          }
@@ -241,9 +242,9 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"    Pearl of Recall\\n\\nRarity: Exotic\\n\\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it. I can even use it multiple times after a recharge.\"}");
+      list.add("{\"text\":\"    Pearl of Recall\\n\\nRight Clicking sets the Pearl's Recall Point.\\n\\nRight Clicking again starts to unfreeze the pearl in time. Taking damage resets the process.\\n\\nAfter use, the Pearl takes a while to resync to the timeline.\"}");
       return list;
    }
 }

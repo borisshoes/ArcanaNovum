@@ -9,6 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -25,7 +26,8 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -162,7 +164,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
                addEnergy(item,2);
                int newEnergy = getEnergy(item);
                if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
-                  player.sendMessage(new LiteralText("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
+                  player.sendMessage(Text.translatable("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                PLAYER_DATA.get(player).addXP(1); // Add xp
             }else{
                addEnergy(item,-10);
@@ -206,11 +208,23 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
       return heightDiff;
    }
    
+   @Override
+   public ItemStack forgeItem(Inventory inv){
+      ItemStack toolStack = inv.getStack(12); // Should be the Sword
+      ItemStack newMagicItem = getNewItem();
+      NbtCompound nbt = toolStack.getNbt();
+      if(nbt != null && nbt.contains("Enchantments")){
+         NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+         newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
+      }
+      return newMagicItem;
+   }
+   
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"  Sojourner's Boots\\n\\nRarity: Legendary\\n\\nInstead on focusing of the combative properties of the Wings of Zephyr, I tried to see how I could take inspiration from its storage of energy to enhance the wearer while also keeping the desirable\\n\"}");
       list.add("{\"text\":\"  Sojourner's Boots\\n\\nbasic protection of the netherite boots I am trying to infuse.\\n\\nThe result are a pair of boots equal to unenchanted netherite, although I believe I can add enchantments through books with an anvil.\\n\"}");
-      list.add("{\"text\":\"  Sojourner's Boots\\n\\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 250%. On top of that, the momentum carries me up short hills without effort.\"}");
+      list.add("{\"text\":\"  Sojourner's Boots\\n\\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 300%. On top of that, the momentum carries me up short hills without effort.\"}");
       return list;
    }
    

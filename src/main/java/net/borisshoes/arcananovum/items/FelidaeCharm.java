@@ -66,9 +66,9 @@ public class FelidaeCharm extends MagicItem implements UsableItem{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"   Charm of Felidae\\n\\nRarity: Empowered\\n\\nCats are quite powerful creatures, managing to frighten phantoms and scare creepers. They can even fall from any height without care.\\nThis Charm seeks to mimic a fraction of that power.\"}");
+      list.add("{\"text\":\"   Charm of Felidae\\n\\nThe Charm halves all fall damage, stops phantoms from swooping the holder, and gives creepers a good scare every now and then.\"}");
       return list;
    }
 }

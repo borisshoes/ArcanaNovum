@@ -9,14 +9,14 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
@@ -99,11 +99,11 @@ public class TickCallback {
       ServerScoreboard scoreboard = server.getScoreboard();
       if(scoreboard.getNullableObjective("arcananovum_sojourn_walk") == null){
          ScoreboardCriterion walked = ScoreboardCriterion.getOrCreateStatCriterion("minecraft.custom:minecraft.walk_one_cm").orElseThrow();
-         scoreboard.addObjective("arcananovum_sojourn_walk",walked,new LiteralText("dist_walked_sojourn"),walked.getDefaultRenderType());
+         scoreboard.addObjective("arcananovum_sojourn_walk",walked,Text.translatable("dist_walked_sojourn"),walked.getDefaultRenderType());
       }
       if(scoreboard.getNullableObjective("arcananovum_sojourn_sprint") == null){
          ScoreboardCriterion sprinted = ScoreboardCriterion.getOrCreateStatCriterion("minecraft.custom:minecraft.sprint_one_cm").orElseThrow();
-         scoreboard.addObjective("arcananovum_sojourn_sprint",sprinted,new LiteralText("dist_sprinted_sojourn"),sprinted.getDefaultRenderType());
+         scoreboard.addObjective("arcananovum_sojourn_sprint",sprinted,Text.translatable("dist_sprinted_sojourn"),sprinted.getDefaultRenderType());
       }
    }
    
@@ -112,7 +112,7 @@ public class TickCallback {
       int maxConc = LevelUtils.concFromXp(arcaneProfile.getXP());
       int curConc = MagicItemUtils.getUsedConcentration(player);
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
-         player.sendMessage(new LiteralText("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
+         player.sendMessage(Text.translatable("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
          player.damage(DamageSource.OUT_OF_WORLD, 8);
          if(player.isDead()){
@@ -125,10 +125,10 @@ public class TickCallback {
                   "'s items consumed too much concentration",
                   " couldn't channel enough Arcana to their items"
             };
-            final Text deathMsg = new LiteralText("")
-                  .append(new LiteralText(player.getEntityName()).formatted(playerColor).formatted())
-                  .append(new LiteralText(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
-            server.getPlayerManager().broadcast(deathMsg, MessageType.SYSTEM, Util.NIL_UUID);
+            final Text deathMsg = Text.translatable("")
+                  .append(Text.translatable(player.getEntityName()).formatted(playerColor).formatted())
+                  .append(Text.translatable(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
+            server.getPlayerManager().broadcast(deathMsg, MessageType.SYSTEM);
          }
       }
    }
@@ -140,7 +140,7 @@ public class TickCallback {
             if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr wings){
                wings.addEnergy(item,1); // Add 1 energy for each tick of flying
                if(wings.getEnergy(item) % 1000 == 999)
-                  player.sendMessage(new LiteralText("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
+                  player.sendMessage(Text.translatable("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
                PLAYER_DATA.get(player).addXP(2); // Add xp
             }
          }

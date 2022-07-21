@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.callbacks;
 import com.mojang.brigadier.CommandDispatcher;
 import net.borisshoes.arcananovum.ArcanaCommands;
 import net.borisshoes.arcananovum.Arcananovum;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
@@ -15,7 +17,7 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class CommandRegisterCallback {
-   public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated){
+   public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment){
       dispatcher.register(literal("arcana")
             .then(literal("create").requires(source -> source.hasPermissionLevel(2))
                   .then(argument("id", string()).suggests(ArcanaCommands::getItemSuggestions)

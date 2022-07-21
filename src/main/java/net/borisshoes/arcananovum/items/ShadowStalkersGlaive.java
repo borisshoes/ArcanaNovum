@@ -1,12 +1,14 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -17,7 +19,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -157,7 +160,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
          if(energy >= 80){
             Entity target = player.getWorld().getEntity(UUID.fromString(lastAtk));
             if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
-               player.sendMessage(new LiteralText("The Glaive Has No Target").formatted(Formatting.BLACK),true);
+               player.sendMessage(Text.translatable("The Glaive Has No Target").formatted(Formatting.BLACK),true);
             }else{
                Vec3d targetPos = target.getPos();
                Vec3d targetView = target.getRotationVecClient();
@@ -172,11 +175,11 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
                for(int i=1; i<=5; i++){
                   message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
                }
-               player.sendMessage(new LiteralText(message).formatted(Formatting.BLACK),true);
+               player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
                PLAYER_DATA.get(player).addXP(500); // Add xp
             }
          }else{
-            player.sendMessage(new LiteralText("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
+            player.sendMessage(Text.translatable("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
             SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
          }
       }else if(player.isSneaking()){
@@ -194,10 +197,10 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
             for(int i=1; i<=5; i++){
                message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
             }
-            player.sendMessage(new LiteralText(message).formatted(Formatting.BLACK),true);
+            player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
             PLAYER_DATA.get(player).addXP(100); // Add xp
          }else{
-            player.sendMessage(new LiteralText("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
+            player.sendMessage(Text.translatable("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
             SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
          }
       }
@@ -210,15 +213,28 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
       return true;
    }
    
+   @Override
+   public ItemStack forgeItem(Inventory inv){
+      ItemStack toolStack = inv.getStack(12); // Should be the Sword
+      ItemStack newMagicItem = getNewItem();
+      NbtCompound nbt = toolStack.getNbt();
+      if(nbt != null && nbt.contains("Enchantments")){
+         NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+         newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
+      }
+      return newMagicItem;
+   }
+   
    private MagicItemRecipe makeRecipe(){
       //TODO make recipe
       return null;
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"   Shadow Stalker's\\n          Glaive\\nRarity: Legendary\\n\\nThis Blade was forged to mimic the power of Endermen to stride through the shadows and relentlessly follow foes. However, instead of using ender particles to warp through dimensions, this sword\"}");
+      list.add("{\"text\":\"   Shadow Stalker's\\n          Glaive\\nuses a force of which we know very little. To fall through the shadows and emerge elsewhere is far different than what it feels like to channel Ender Energy. Blood that is spilled on the sword gets soaked up by shadowy tendrils that eminate from it.\"}");
+      list.add("{\"text\":\"   Shadow Stalker's\\n          Glaive\\nStriking foes grants charges.\\nSneak Right Click consumes one charge to blink forward.\\nThe Glaive remembers the last target it struck and Right Clicking consumes four charges to teleport behind that target. \"}");
       return list;
    }
 }

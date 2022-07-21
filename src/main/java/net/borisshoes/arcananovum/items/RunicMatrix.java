@@ -51,9 +51,8 @@ public class RunicMatrix extends MagicItem implements UsableItem{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"      Runic Matrix\\n\\nRarity: Mundane\\n\\nRunic language is often used to create magical effects. Being able to freely combine multiple runic words like in a crafting table results in a device capable of producing a vast number of arcane spells.\"}");
       return list;
    }
    

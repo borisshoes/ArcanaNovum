@@ -14,7 +14,8 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -134,10 +135,10 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
       if(active){
-         player.sendMessage(new LiteralText("The Charm's Pull Strengthens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+         player.sendMessage(Text.translatable("The Charm's Pull Strengthens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,2f);
       }else{
-         player.sendMessage(new LiteralText("The Charm's Pull Weakens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+         player.sendMessage(Text.translatable("The Charm's Pull Weakens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, .3f,.5f);
       }
    }
@@ -148,9 +149,9 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"  Charm of Magnetism\\n\\nRarity: Empowered\\n\\nMagnets, how do they work? Well, they pull stuff sometimes... \\nI think I can make one by condensing all the iron I can find and striking it with lightning to charge it, which will leave me with a permanent magnet.\"}");
+      list.add("{\"text\":\"  Charm of Magnetism\\n\\nThe Charm can be toggled to passively pull in items around you.\\n\\nRight Clicking the charm pulls items from the direction you are looking towards you.\"}");
       return list;
    }
 }

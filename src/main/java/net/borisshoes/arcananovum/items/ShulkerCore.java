@@ -26,7 +26,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -163,7 +164,7 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
          magicTag.putInt("speed",speed);
          magicTag.putInt("speedCD",5);
          if(playerEntity instanceof ServerPlayerEntity player){
-            player.sendMessage(new LiteralText("Shulker Core Speed: "+(speed/2+1)).formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),true);
+            player.sendMessage(Text.translatable("Shulker Core Speed: "+(speed/2+1)).formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),true);
             float pitch = (float) (0.1875*speed+0.3125);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_XYLOPHONE, 0.5f, pitch);
          }
@@ -197,7 +198,7 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
             redoLore(item);
          }
       }else{
-         playerEntity.sendMessage(new LiteralText("The Shulker Core is empty.").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+         playerEntity.sendMessage(Text.translatable("The Shulker Core is empty.").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
          SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
       }
    }
@@ -219,10 +220,10 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       String paneText = hasStone ? getEnergy(item) + " Shulker Souls" : "No Soulstone Inserted";
       Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
    
-      gui.setSlot(0,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
-      gui.setSlot(1,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
-      gui.setSlot(3,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
-      gui.setSlot(4,new GuiElementBuilder(pane).setName(new LiteralText(paneText).formatted(textColor)));
+      gui.setSlot(0,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
+      gui.setSlot(1,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
+      gui.setSlot(3,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
+      gui.setSlot(4,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
    
       ShulkerCoreInventory inv = new ShulkerCoreInventory();
       ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this,gui,item);
@@ -237,7 +238,7 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       }else{
          gui.notValid();
       }
-      gui.setTitle(new LiteralText("Shulker Core"));
+      gui.setTitle(Text.translatable("Shulker Core"));
       listener.finishUpdate();
       
       gui.open();
@@ -261,9 +262,9 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
    }
    
    private List<String> makeLore(){
-      //TODO make lore
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" TODO \"}");
+      list.add("{\"text\":\"     Shulker Core\\n\\nRarity: Exotic\\n\\nShulkers are fascinating creatures, their unique levitation effect could be a precursor to true flight if I combined a bit of their essence... er... a lot of their essence... Whats a bit of genocide anyways?\"}");
+      list.add("{\"text\":\"     Shulker Core\\n\\nAfter a massacre that took too long to comprehend, I have enough essence to control their power.\\n\\nRight click to grant levitation.\\nSneak right click to change the speed.\\nLeft click to swap out the Soulstone inside.\"}");
       return list;
    }
 }

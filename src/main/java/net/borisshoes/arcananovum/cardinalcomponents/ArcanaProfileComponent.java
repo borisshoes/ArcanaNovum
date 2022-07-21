@@ -10,12 +10,15 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.filter.FilteredMessage;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
@@ -85,19 +88,19 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          if(getLevel()/5 < newLevel/5){
             MinecraftServer server = player.getServer();
             if(server != null){
-               MutableText lvlUpMsg = new LiteralText("")
+               MutableText lvlUpMsg = Text.translatable("")
                      .append(player.getDisplayName()).formatted(Formatting.ITALIC)
-                     .append(new LiteralText(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
-                     .append(new LiteralText(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
-                     .append(new LiteralText("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
-               server.getPlayerManager().broadcast(lvlUpMsg, MessageType.SYSTEM,player.getUuid());
+                     .append(Text.translatable(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
+                     .append(Text.translatable(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
+                     .append(Text.translatable("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
+               server.getPlayerManager().broadcast(lvlUpMsg, MessageType.SYSTEM);
             }
          }
          SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
-         player.sendMessage(new LiteralText(""),false);
-         player.sendMessage(new LiteralText("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
-         player.sendMessage(new LiteralText("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
-         player.sendMessage(new LiteralText(""),false);
+         player.sendMessage(Text.translatable(""),false);
+         player.sendMessage(Text.translatable("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
+         player.sendMessage(Text.translatable("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
+         player.sendMessage(Text.translatable(""),false);
       }
       this.xp += xp;
       this.level = newLevel;
@@ -124,12 +127,12 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(player instanceof ServerPlayerEntity){
          MinecraftServer server = player.getServer();
          if(server != null){
-            MutableText newCraftMsg = new LiteralText("")
+            MutableText newCraftMsg = Text.translatable("")
                   .append(player.getDisplayName()).formatted(Formatting.ITALIC)
-                  .append(new LiteralText(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
-                  .append(new LiteralText(magicItem.getName()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
-                  .append(new LiteralText("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
-            server.getPlayerManager().broadcast(newCraftMsg, MessageType.SYSTEM, player.getUuid());
+                  .append(Text.translatable(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
+                  .append(Text.translatable(magicItem.getName()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
+                  .append(Text.translatable("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+            server.getPlayerManager().broadcast(newCraftMsg, MessageType.SYSTEM);
          }
       }
       addXP(MagicRarity.getFirstCraftXp(magicItem.getRarity()));
