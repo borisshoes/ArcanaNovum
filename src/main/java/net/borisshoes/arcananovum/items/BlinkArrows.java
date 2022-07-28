@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
@@ -52,7 +54,7 @@ public class BlinkArrows extends MagicItem implements RunicArrow{
       item.setCount(64);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
       item.setNbt(prefNBT);
@@ -82,8 +84,18 @@ public class BlinkArrows extends MagicItem implements RunicArrow{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient s = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      MagicItemIngredient p = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,p,a,a},
+            {a,p,s,p,a},
+            {p,s,m,s,p},
+            {a,p,s,p,a},
+            {a,a,p,a,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

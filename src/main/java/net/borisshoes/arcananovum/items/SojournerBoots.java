@@ -210,7 +210,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
    
    @Override
    public ItemStack forgeItem(Inventory inv){
-      ItemStack toolStack = inv.getStack(12); // Should be the Sword
+      ItemStack toolStack = inv.getStack(12); // Should be the Boots
       ItemStack newMagicItem = getNewItem();
       NbtCompound nbt = toolStack.getNbt();
       if(nbt != null && nbt.contains("Enchantments")){

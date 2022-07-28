@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -81,7 +82,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
       tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
@@ -226,8 +227,20 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
+      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
+      MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
+      MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,64,null);
+      MagicItemIngredient t = new MagicItemIngredient(Items.NETHERITE_SWORD,1,null);
+      
+      MagicItemIngredient[][] ingredients = {
+            {e,o,s,o,e},
+            {o,p,n,p,o},
+            {s,n,t,n,s},
+            {o,p,n,p,o},
+            {e,o,s,o,e}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

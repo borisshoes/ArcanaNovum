@@ -1,14 +1,20 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.util.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +48,7 @@ public class RunicBow extends MagicItem{
       tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
       item.setNbt(prefNBT);
@@ -65,16 +71,16 @@ public class RunicBow extends MagicItem{
    
    @Override
    public ItemStack forgeItem(Inventory inv){
-      ItemStack toolStack = inv.getStack(12); // Should be the Sword
+      ItemStack toolStack = inv.getStack(12); // Should be the Bow
       ItemStack newMagicItem = getNewItem();
       NbtCompound nbt = toolStack.getNbt();
       if(nbt != null && nbt.contains("Enchantments")){
          NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
          for(int i = 0; i < enchants.size(); i++){
-            if(((NbtCompound)enchants.get(i)).getString("id").equals("power")){
+            if(((NbtCompound)enchants.get(i)).getString("id").equals(Registry.ENCHANTMENT.getId(Enchantments.POWER).toString())){
                NbtCompound power = new NbtCompound();
                power.putString("id","power");
-               power.putInt("lvl",7);
+               power.putShort("lvl", (short) 7);
                enchants.set(i,power);
             }
          }
@@ -84,8 +90,20 @@ public class RunicBow extends MagicItem{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      MagicItemIngredient c = new MagicItemIngredient(Items.AMETHYST_SHARD,64,null);
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
+      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.BOW,1,null);
+      MagicItemIngredient e = new MagicItemIngredient(Items.ENCHANTED_BOOK,1, EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.POWER,5)).getNbt());
+      
+      MagicItemIngredient[][] ingredients = {
+            {c,s,e,s,c},
+            {s,n,m,n,s},
+            {e,m,b,m,e},
+            {s,n,m,n,s},
+            {c,s,e,s,c}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

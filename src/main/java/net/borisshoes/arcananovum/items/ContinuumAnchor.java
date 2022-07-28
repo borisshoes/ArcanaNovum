@@ -121,7 +121,6 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
       return drops;
    }
    
-   //TODO: Update lore: anchor is now placeable
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Continuum Anchor\\n\\nRarity: Legendary\\n\\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing sturdy casings that can withstand the flow of Arcana, I have made additional efforts to \"}");

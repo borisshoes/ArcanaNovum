@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.arcanetome.CraftingInventory;
 import net.borisshoes.arcananovum.gui.arcanetome.CraftingInventoryListener;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -402,6 +403,9 @@ public class ArcaneTome extends MagicItem implements UsableItem{
                
                if(ingredient.validStack(invSlot)){
                   ItemStack toMove = invSlot.split(ingredient.getCount());
+                  if(invSlot.getCount() == 0){
+                     invSlot = ItemStack.EMPTY;
+                  }
                   inv.setStack(i,toMove);
                   playerInventory.setStack(j,invSlot);
                   break;

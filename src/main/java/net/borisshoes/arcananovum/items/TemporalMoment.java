@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;
@@ -34,7 +35,7 @@ public class TemporalMoment extends MagicItem{
       tag.put("Enchantments",enchants);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -42,8 +43,20 @@ public class TemporalMoment extends MagicItem{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient l = new MagicItemIngredient(Items.LAPIS_LAZULI,32,null);
+      MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,32,null);
+      MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,32,null);
+      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND,16,null);
+      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.CLOCK,64,null);
+   
+      MagicItemIngredient[][] ingredients = {
+            {o,e,p,e,o},
+            {e,d,l,d,e},
+            {p,l,c,l,p},
+            {e,d,l,d,e},
+            {o,e,p,e,o}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

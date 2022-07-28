@@ -7,7 +7,11 @@ import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInvento
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.ShulkerCoreIngredient;
+import net.borisshoes.arcananovum.recipes.SoulstoneIngredient;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -15,12 +19,15 @@ import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -80,10 +87,10 @@ public class LevitationHarness extends EnergyItem implements UsableItem,TickingI
       tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.putInt("souls",1000);
+      magicTag.putInt("souls",500);
       magicTag.putInt("glowstone",960);
       magicTag.putInt("stall",-1);
       magicTag.putBoolean("wasFlying",false);
@@ -300,10 +307,34 @@ public class LevitationHarness extends EnergyItem implements UsableItem,TickingI
       return true;
    }
    
+   @Override
+   public ItemStack forgeItem(Inventory inv){
+      // Souls n stuff
+      ItemStack coreStack = inv.getStack(12); // Should be the Core
+      ItemStack newMagicItem = null;
+      if(MagicItemUtils.identifyItem(coreStack) instanceof ShulkerCore core){
+         newMagicItem = getNewItem();
+         setStone(newMagicItem,core.getStone(coreStack));
+         redoLore(newMagicItem);
+      }
+      return newMagicItem;
+   }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      ShulkerCoreIngredient c = new ShulkerCoreIngredient(true,500);
+      MagicItemIngredient s = new MagicItemIngredient(Items.SHULKER_SHELL,64,null);
+      MagicItemIngredient o = new MagicItemIngredient(Items.GLOWSTONE,64,null);
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,16,null);
+      MagicItemIngredient i = new MagicItemIngredient(Items.NETHERITE_INGOT,8,null);
+      MagicItemIngredient e = new MagicItemIngredient(Items.ELYTRA,1,null);
+      
+      MagicItemIngredient[][] ingredients = {
+            {o,e,s,e,o},
+            {e,n,i,n,e},
+            {s,i,c,i,s},
+            {e,n,i,n,e},
+            {o,e,s,e,o}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

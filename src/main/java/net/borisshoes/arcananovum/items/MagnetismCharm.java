@@ -1,11 +1,15 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -57,7 +61,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       prefNBT.getCompound("arcananovum").putBoolean("active",false);
    
@@ -144,8 +148,20 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient r = new MagicItemIngredient(Items.LIGHTNING_ROD,64,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.IRON_BARS,64,null);
+      MagicItemIngredient i = new MagicItemIngredient(Items.IRON_INGOT,64,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.COMPASS,64,null);
+      MagicItemIngredient l = new MagicItemIngredient(Items.IRON_BLOCK,64,null);
+      MagicItemIngredient a = new MagicItemIngredient(Items.ANVIL,64,null);
+ 
+      MagicItemIngredient[][] ingredients = {
+            {r,b,i,b,r},
+            {b,c,l,c,b},
+            {i,l,a,l,i},
+            {b,c,l,c,b},
+            {r,b,i,b,r}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

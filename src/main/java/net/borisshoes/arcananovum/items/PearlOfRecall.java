@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
@@ -64,7 +66,7 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
       NbtCompound locTag = new NbtCompound();
@@ -237,8 +239,20 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,32,null);
+      MagicItemIngredient p = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
+      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+      MagicItemIngredient t = new MagicItemIngredient(Items.CLOCK,32,null);
+      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.TEMPORAL_MOMENT,1);
+      
+      MagicItemIngredient[][] ingredients = {
+            {c,p,s,p,c},
+            {p,t,e,t,p},
+            {s,e,m,e,s},
+            {p,t,e,t,p},
+            {c,p,s,p,c}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

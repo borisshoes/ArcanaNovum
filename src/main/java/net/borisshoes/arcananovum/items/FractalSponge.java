@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -63,7 +64,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
       item.setNbt(prefNBT);
@@ -193,8 +194,20 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient m = new MagicItemIngredient(Items.MAGMA_BLOCK,64,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,16,null);
+      MagicItemIngredient s = new MagicItemIngredient(Items.SPONGE,48,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.BLUE_ICE,64,null);
+      MagicItemIngredient i = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,8,null);
+      
+      MagicItemIngredient[][] ingredients = {
+            {m,c,s,c,b},
+            {c,i,s,i,c},
+            {s,s,n,s,s},
+            {c,i,s,i,c},
+            {b,c,s,c,m}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

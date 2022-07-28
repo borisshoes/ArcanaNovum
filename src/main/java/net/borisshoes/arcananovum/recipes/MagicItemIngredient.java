@@ -1,11 +1,16 @@
 package net.borisshoes.arcananovum.recipes;
 
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.util.Pair;
+import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import static net.borisshoes.arcananovum.Arcananovum.log;
@@ -14,6 +19,8 @@ public class MagicItemIngredient {
    protected final Item itemType;
    protected final int count;
    protected final NbtCompound requiredNbt;
+   
+   public static MagicItemIngredient EMPTY = new MagicItemIngredient(Items.AIR,1,null);
    
    public MagicItemIngredient(Item itemType, int count, @Nullable NbtCompound requiredNbt){
       this.count = count;
@@ -67,6 +74,16 @@ public class MagicItemIngredient {
    
    public String getName(){
       return ingredientAsStack().getName().getString();
+   }
+   
+   public static NbtCompound getEnchantNbt(Pair<Enchantment,Integer>...enchants){
+      NbtCompound nbt = new NbtCompound();
+      NbtList enchantList = new NbtList();
+      for(Pair<Enchantment,Integer> enchant : enchants){
+         enchantList.add(EnchantmentHelper.createNbt(Registry.ENCHANTMENT.getId(enchant.getLeft()),enchant.getRight()));
+      }
+      nbt.put("Enchantments",enchantList);
+      return nbt;
    }
    
    public static boolean validNbt(NbtCompound nbt, NbtCompound required){

@@ -6,8 +6,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -205,9 +207,8 @@ public class MagicItemUtils {
       return null;
    }
    
-   public static int getUsedConcentration(ServerPlayerEntity player){
-      // TODO Special cases for arrows
-      int concSum = 0;
+   public static HashMap<MagicItem,Integer> getMagicInventory(ServerPlayerEntity player){
+      HashMap<MagicItem,Integer> magicInv = new HashMap<>();
       PlayerInventory inv = player.getInventory();
       for(int i=0; i<inv.size();i++){
          ItemStack item = inv.getStack(i);
@@ -216,24 +217,39 @@ public class MagicItemUtils {
          boolean isMagic = MagicItemUtils.isMagic(item);
          if(!isMagic)
             continue;
+         
          MagicItem magicItem = identifyItem(item);
-         concSum += MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod();
+         if(magicInv.containsKey(magicItem)){
+            magicInv.put(magicItem,magicInv.get(magicItem)+item.getCount());
+         }else{
+            magicInv.put(magicItem,item.getCount());
+         }
+      }
+      return magicInv;
+   }
+   
+   public static int getUsedConcentration(ServerPlayerEntity player){
+      int concSum = 0;
+      HashMap<MagicItem,Integer> magicInv = getMagicInventory(player);
+      for(Map.Entry<MagicItem, Integer> entry : magicInv.entrySet()){
+         MagicItem magicItem = entry.getKey();
+         int prefCount = magicItem.getPrefItem().getCount();
+         concSum += Math.ceil(entry.getValue()/(double)prefCount) * MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod();
       }
       return concSum;
    }
    
    public static List<String> getConcBreakdown(ServerPlayerEntity player){
       ArrayList<String> list = new ArrayList<>();
-      PlayerInventory inv = player.getInventory();
-      for(int i=0; i<inv.size();i++){
-         ItemStack item = inv.getStack(i);
-         if(item.isEmpty())
-            continue;
-         boolean isMagic = MagicItemUtils.isMagic(item);
-         if(!isMagic)
-            continue;
-         MagicItem magicItem = identifyItem(item);
-         String line = magicItem.getName()+" ("+(MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod())+")";
+   
+      HashMap<MagicItem,Integer> magicInv = getMagicInventory(player);
+      for(Map.Entry<MagicItem, Integer> entry : magicInv.entrySet()){
+         MagicItem magicItem = entry.getKey();
+         int prefCount = magicItem.getPrefItem().getCount();
+         int multiplier = (int)Math.ceil(entry.getValue()/(double)prefCount);
+         int itemConc = multiplier * MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod();
+         String multStr = multiplier > 1 ? " x"+multiplier : "";
+         String line = magicItem.getName()+multStr+" ("+itemConc+")";
          list.add(line);
       }
       return list;

@@ -4,7 +4,10 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.SoulstoneIngredient;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -14,12 +17,16 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -72,7 +79,7 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
       magicTag.putInt("speed",1);
@@ -244,6 +251,26 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       gui.open();
    }
    
+   public boolean hasStone(ItemStack item){
+      if(MagicItemUtils.identifyItem(item) instanceof ShulkerCore){
+         NbtCompound itemNbt = item.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         return magicNbt.getBoolean("stone");
+      }
+      return false;
+   }
+   
+   public ItemStack getStone(ItemStack item){
+      if(MagicItemUtils.identifyItem(item) instanceof ShulkerCore){
+         NbtCompound itemNbt = item.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         if(magicNbt.getBoolean("stone")){
+            return Soulstone.setSouls(Soulstone.setType(MagicItems.SOULSTONE.getNewItem(),EntityType.SHULKER),getEnergy(item));
+         }
+      }
+      return null;
+   }
+   
    public void setStone(ItemStack item, ItemStack stone){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
@@ -256,9 +283,36 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       }
    }
    
+   @Override
+   public ItemStack forgeItem(Inventory inv){
+      // Souls n stuff
+      ItemStack soulstoneStack = inv.getStack(12); // Should be the Soulstone
+      ItemStack newMagicItem = null;
+      if(MagicItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
+         newMagicItem = getNewItem();
+         setStone(newMagicItem,soulstoneStack);
+         redoLore(newMagicItem);
+      }
+      return newMagicItem;
+   }
+   
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      SoulstoneIngredient t = new SoulstoneIngredient(Soulstone.tiers[4],false,true, false,EntityType.getId(EntityType.SHULKER).toString());
+      MagicItemIngredient s = new MagicItemIngredient(Items.SHULKER_SHELL,64,null);
+      MagicItemIngredient o = new MagicItemIngredient(Items.GLOWSTONE,64,null);
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.PHANTOM_MEMBRANE,32,null);
+   
+      ItemStack p1 = new ItemStack(Items.POTION);
+      MagicItemIngredient p = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(p1, Potions.LONG_SLOW_FALLING).getNbt());
+      
+      MagicItemIngredient[][] ingredients = {
+            {o,s,m,s,o},
+            {s,n,p,n,s},
+            {m,p,t,p,m},
+            {s,n,p,n,s},
+            {o,s,m,s,o}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

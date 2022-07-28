@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -57,7 +58,7 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
       item.setNbt(prefNBT);
@@ -182,8 +183,22 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient d = new MagicItemIngredient(Items.ANCIENT_DEBRIS,4,null);
+      MagicItemIngredient f = new MagicItemIngredient(Items.FIRE_CHARGE,64,null);
+      MagicItemIngredient s = new MagicItemIngredient(Items.NETHERITE_SCRAP,4,null);
+      MagicItemIngredient w = new MagicItemIngredient(Items.RED_NETHER_BRICKS,64,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.BELL,4,null);
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.GOLD_INGOT,64,null);
+      MagicItemIngredient r = new MagicItemIngredient(Items.BLAZE_ROD,64,null);
+   
+      MagicItemIngredient[][] ingredients = {
+            {d,f,s,w,d},
+            {f,n,g,n,w},
+            {s,r,b,r,s},
+            {w,n,g,n,f},
+            {d,w,s,f,d}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

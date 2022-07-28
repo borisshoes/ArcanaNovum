@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -69,7 +71,7 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem{
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
@@ -258,8 +260,20 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,32,null);
+      MagicItemIngredient p = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
+      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
+      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.TEMPORAL_MOMENT,1);
+      
+      MagicItemIngredient[][] ingredients = {
+            {e,p,n,p,e},
+            {p,c,s,c,p},
+            {n,s,m,s,n},
+            {p,c,s,c,p},
+            {e,p,n,p,e}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

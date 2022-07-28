@@ -19,7 +19,7 @@ public class SoulstoneIngredient extends MagicItemIngredient{
    private final boolean allowBosses;
    
    public SoulstoneIngredient(int souls, boolean repeatable, boolean consume, boolean allowBosses, @Nullable String type){
-      super(Items.FIRE_CHARGE, 1, null);
+      super(MagicItems.SOULSTONE.getPrefItem().getItem(), 1, null);
       this.souls = souls;
       this.repeatable = repeatable;
       this.consume = consume;

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -8,7 +9,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -21,6 +26,7 @@ import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -58,7 +64,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
       item.setNbt(prefNBT);
@@ -116,8 +122,21 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,64,null);
+      MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
+      MagicItemIngredient i = new MagicItemIngredient(Items.BLUE_ICE,64,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.MAGMA_BLOCK,64,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.CAULDRON,64,null);
+      MagicItemIngredient l = new MagicItemIngredient(Items.LODESTONE,4,null);
+      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND_PICKAXE,1, MagicItemIngredient.getEnchantNbt(new Pair(Enchantments.EFFICIENCY,5)));
+      
+      MagicItemIngredient[][] ingredients = {
+            {o,p,o,p,o},
+            {p,i,c,m,p},
+            {o,d,l,d,o},
+            {p,i,c,m,p},
+            {o,p,o,p,o}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){

@@ -1,8 +1,12 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -42,7 +46,7 @@ public class FelidaeCharm extends MagicItem implements UsableItem{
       tag.put("Enchantments",enchants);
    
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
       item.setNbt(prefNBT);
@@ -61,8 +65,23 @@ public class FelidaeCharm extends MagicItem implements UsableItem{
    }
    
    private MagicItemRecipe makeRecipe(){
-      //TODO make recipe
-      return null;
+      MagicItemIngredient m = new MagicItemIngredient(Items.PHANTOM_MEMBRANE,32,null);
+      MagicItemIngredient s = new MagicItemIngredient(Items.STRING,64,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.GUNPOWDER,64,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.TROPICAL_FISH,64,null);
+      MagicItemIngredient p = new MagicItemIngredient(Items.PUFFERFISH,64,null);
+      MagicItemIngredient f = new MagicItemIngredient(Items.COD,64,null);
+      MagicItemIngredient l = new MagicItemIngredient(Items.SALMON,64,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.CREEPER_HEAD,1,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.ENCHANTED_BOOK,1, EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.FEATHER_FALLING,4)).getNbt());
+      
+      MagicItemIngredient[][] ingredients = {
+            {m,s,g,s,m},
+            {s,b,c,b,s},
+            {g,l,h,p,g},
+            {s,b,f,b,s},
+            {m,s,g,s,m}};
+      return new MagicItemRecipe(ingredients);
    }
    
    private List<String> makeLore(){
