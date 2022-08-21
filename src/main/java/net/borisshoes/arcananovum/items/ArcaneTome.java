@@ -44,7 +44,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       name = "Tome of Arcana Novum";
       rarity = MagicRarity.EMPOWERED;
    
-      ItemStack item = new ItemStack(Items.END_PORTAL_FRAME);
+      ItemStack item = new ItemStack(Items.KNOWLEDGE_BOOK);
       NbtCompound tag = item.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();

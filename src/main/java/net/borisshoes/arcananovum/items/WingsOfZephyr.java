@@ -29,12 +29,12 @@ public class WingsOfZephyr extends EnergyItem{
       prot.putString("id","protection");
       prot.putInt("lvl",4);
       enchants.add(prot);
-      display.putString("Name","[{\"text\":\"Armored Wings of Zephyr\",\"italic\":false,\"color\":\"gray\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Let these \",\"italic\":true,\"color\":\"white\"},{\"text\":\"gentle wings\",\"color\":\"gray\"},{\"text\":\" shield you from the dangers of the land.\"},{\"text\":\"\",\"italic\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These wings are equivalent to a \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"They also have\",\"italic\":false,\"color\":\"white\"},{\"text\":\" \",\"color\":\"gray\"},{\"text\":\"Protection 4\",\"color\":\"aqua\"},{\"text\":\" and are\"},{\"text\":\" \",\"color\":\"gray\"},{\"text\":\"Unbreakable\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Armored Wings of Zephyr\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Gentle Wings\",\"color\":\"gray\"},{\"text\":\" will shield you from the dangers of the land.\",\"color\":\"white\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These wings are equal to an \",\"italic\":false,\"color\":\"white\"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection 4\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"white\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"They also store \",\"italic\":false,\"color\":\"white\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Mythical\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Mythical \",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
       NbtCompound kbRes = new NbtCompound();
       kbRes.putDouble("Amount",0.1);
@@ -86,7 +86,7 @@ public class WingsOfZephyr extends EnergyItem{
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"     Armored Wings \\n       of Zephyr\\n\\nRarity: Mythical\\n\\nThe first discovered Mythical Item. They offer unsurmounted protection equivalent to the strongest of armor.\\n\\nThe Wings themselves are hardened to the \"}");
-      list.add("{\"text\":\"     Armored Wings \\n       of Zephyr\\n\\npoint of being impervious to structural damage.\\n\\nAs study of them furthers a new ability has been discovered.\\nThe Wings collect and store kinetic energy when in flight than can be re-emitted when\"}");
+      list.add("{\"text\":\"     Armored Wings \\n       of Zephyr\\n\\npoint of being impervious to structural damage.\\n\\nAs study of them furthers a new ability has been discovered.\\nThe Wings collect and store kinetic energy when in flight that can be re-emitted when\"}");
       list.add("{\"text\":\"     Armored Wings \\n       of Zephyr\\n\\nthe wearer suffers a large impact.\\n\\nThis effect seems to negate up to half of all fall damage and kinetic damage taken as long as the Wings have stored enough energy.\"}");
       return list;
    }

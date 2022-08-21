@@ -30,7 +30,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 
 public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
    public ContinuumAnchor(){

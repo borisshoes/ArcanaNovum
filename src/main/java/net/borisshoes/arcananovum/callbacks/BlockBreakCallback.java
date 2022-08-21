@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.BlockItem;
 import net.borisshoes.arcananovum.items.MagicItem;
+import net.borisshoes.arcananovum.items.PickaxeOfPluto;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -15,7 +16,8 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 
 public class BlockBreakCallback {
    public static boolean breakBlock(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity){
@@ -33,6 +35,14 @@ public class BlockBreakCallback {
             }
             world.breakBlock(blockPos,false,playerEntity);
             return false;
+         }
+      }
+      
+      ItemStack tool = playerEntity.getMainHandStack();
+      if(MagicItemUtils.identifyItem(tool) instanceof PickaxeOfPluto pick){
+         PLAYER_DATA.get(playerEntity).addXP(1);
+         if(!playerEntity.isSneaking()){
+            pick.veinMine(world,playerEntity,tool,blockPos);
          }
       }
       return true;

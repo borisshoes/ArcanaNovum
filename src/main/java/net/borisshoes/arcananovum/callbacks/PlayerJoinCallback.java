@@ -8,7 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.LoginCallbackComponentInitializer.LOGIN_CALLBACK_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
 public class PlayerJoinCallback {
    public static void onPlayerJoin(ServerPlayNetworkHandler netHandler, PacketSender sender, MinecraftServer server){

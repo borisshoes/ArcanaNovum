@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.MagicBlocksComponentInitializer.MAGIC_BLOCK_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 
 @Mixin(PistonBlock.class)
 public class PistonMixin {

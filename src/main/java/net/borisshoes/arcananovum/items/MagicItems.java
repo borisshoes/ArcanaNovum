@@ -19,6 +19,7 @@ public class MagicItems {
    public static final MagicItem CONTINUUM_ANCHOR = MagicItems.register("continuum_anchor", new ContinuumAnchor());
    public static final MagicItem SOJOURNER_BOOTS = MagicItems.register("sojourner_boots", new SojournerBoots());
    
+   public static final MagicItem PICKAXE_OF_PLUTO = MagicItems.register("pickaxe_of_pluto",new PickaxeOfPluto());
    public static final MagicItem RUNIC_MATRIX = MagicItems.register("runic_matrix", new RunicMatrix());
    public static final MagicItem TEMPORAL_MOMENT = MagicItems.register("temporal_moment", new TemporalMoment());
    public static final MagicItem ANCIENT_DOWSING_ROD = MagicItems.register("ancient_dowsing_rod", new AncientDowsingRod());

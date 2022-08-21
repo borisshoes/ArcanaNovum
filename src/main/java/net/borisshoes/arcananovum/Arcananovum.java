@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.LoginCallbackComponentInitializer.LOGIN_CALLBACK_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
 public class Arcananovum implements ModInitializer {
    

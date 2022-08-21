@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.network.message.MessageType;
@@ -22,12 +23,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class ArcanaProfileComponent implements IArcanaProfileComponent{
    private final PlayerEntity player;
    private final List<String> crafted = new ArrayList<>();
    private final List<String> recipes = new ArrayList<>();
+   private final HashMap<String, NbtElement> miscData = new HashMap<>();
    private int level;
    private int xp;
    
@@ -41,6 +45,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       recipes.clear();
       tag.getList("crafted", NbtType.STRING).forEach(item -> crafted.add(item.asString()));
       tag.getList("recipes", NbtType.STRING).forEach(item -> recipes.add(item.asString()));
+      NbtCompound miscDataTag = tag.getCompound("miscData");
+      Set<String> keys = miscDataTag.getKeys();
+      keys.forEach(key ->{
+         miscData.put(key,miscDataTag.get(key));
+      });
       level = tag.getInt("level");
       xp = tag.getInt("xp");
    }
@@ -49,14 +58,17 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public void writeToNbt(NbtCompound tag){
       NbtList craftedTag = new NbtList();
       NbtList recipesTag = new NbtList();
+      NbtCompound miscDataTag = new NbtCompound();
       crafted.forEach(item -> {
          craftedTag.add(NbtString.of(item));
       });
       recipes.forEach(item -> {
          recipesTag.add(NbtString.of(item));
       });
+      miscData.forEach(miscDataTag::put);
       tag.put("crafted",craftedTag);
       tag.put("recipes",recipesTag);
+      tag.put("miscData",miscDataTag);
       tag.putInt("level",level);
       tag.putInt("xp",xp);
    }
@@ -69,6 +81,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    @Override
    public List<String> getRecipes(){
       return recipes;
+   }
+   
+   @Override
+   public NbtElement getMiscData(String id){
+      return miscData.get(id);
    }
    
    @Override
@@ -155,6 +172,16 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public boolean removeRecipe(String item){
       if (recipes.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
       return recipes.removeIf(i -> i.equalsIgnoreCase(item));
+   }
+   
+   @Override
+   public void addMiscData(String id, NbtElement data){
+      miscData.put(id,data);
+   }
+   
+   @Override
+   public void removeMiscData(String id){
+      miscData.remove(id);
    }
    
    

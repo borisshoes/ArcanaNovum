@@ -33,12 +33,12 @@ public class LeadershipCharm extends MagicItem implements TickingItem{
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Charm of Leadership\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Your courage coalesces into a \",\"color\":\"yellow\"},{\"text\":\"crystal shard\",\"color\":\"light_purple\"},{\"text\":\"!\",\"color\":\"yellow\",\"italic\":true}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empower yourself and allies with your fighting spirit!\",\"italic\":true,\"color\":\"yellow\"},{\"text\":\"\",\"italic\":false,\"color\":\"yellow\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Grants\",\"italic\":false,\"color\":\"yellow\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"regen\",\"color\":\"light_purple\"},{\"text\":\", \"},{\"text\":\"resistance\",\"color\":\"gray\"},{\"text\":\", and \"},{\"text\":\"strength\",\"color\":\"dark_red\"},{\"text\":\" and \"},{\"text\":\"mends gear\",\"color\":\"green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Charm of Leadership\",\"italic\":false,\"bold\":true,\"color\":\"light_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Gods \",\"color\":\"light_purple\"},{\"text\":\"have acknowledged \"},{\"text\":\"your \",\"color\":\"aqua\"},{\"text\":\"boundless \"},{\"text\":\"courage\",\"color\":\"gold\"},{\"text\":\"!\",\"color\":\"yellow\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"They grant this \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Charm \",\"color\":\"light_purple\"},{\"text\":\"to empower \"},{\"text\":\"you \",\"color\":\"aqua\"},{\"text\":\"and your \"},{\"text\":\"allies \",\"color\":\"aqua\"},{\"text\":\"in the coming fight!\",\"color\":\"yellow\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Grants AoE \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"regen\",\"color\":\"light_purple\"},{\"text\":\", \"},{\"text\":\"resistance\",\"color\":\"blue\"},{\"text\":\", \"},{\"text\":\"strength \",\"color\":\"dark_red\"},{\"text\":\"and \"},{\"text\":\"mends gear\",\"color\":\"green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Mythical\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Mythical \",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
