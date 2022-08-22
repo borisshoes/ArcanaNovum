@@ -110,7 +110,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
                      .append(Text.translatable(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
                      .append(Text.translatable(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
                      .append(Text.translatable("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
-               server.getPlayerManager().broadcast(lvlUpMsg, MessageType.SYSTEM);
+               server.getPlayerManager().broadcast(lvlUpMsg, false);
             }
          }
          SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
@@ -149,7 +149,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
                   .append(Text.translatable(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
                   .append(Text.translatable(magicItem.getName()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
                   .append(Text.translatable("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
-            server.getPlayerManager().broadcast(newCraftMsg, MessageType.SYSTEM);
+            server.getPlayerManager().broadcast(newCraftMsg, false);
          }
       }
       addXP(MagicRarity.getFirstCraftXp(magicItem.getRarity()));

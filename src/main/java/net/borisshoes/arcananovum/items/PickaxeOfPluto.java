@@ -1,35 +1,26 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
-import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.*;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.tag.FluidTags;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.*;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-import static net.minecraft.block.Block.dropStacks;
 
 public class PickaxeOfPluto extends MagicItem implements LeftClickItem,TickingItem{
    public static final ArrayList<Block> VEIN_ORES = new ArrayList<>(Arrays.asList(
@@ -186,6 +177,7 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem,TickingIt
          if(type instanceof RedstoneOreBlock ore){
             ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, player.getMainHandStack(),true);
          }
+         PLAYER_DATA.get(player).addXP(5);
       }
       for(ItemStack stack : drops){
          Block.dropStack(world, pos, stack);

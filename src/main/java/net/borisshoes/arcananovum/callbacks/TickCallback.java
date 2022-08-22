@@ -128,7 +128,7 @@ public class TickCallback {
             final Text deathMsg = Text.translatable("")
                   .append(Text.translatable(player.getEntityName()).formatted(playerColor).formatted())
                   .append(Text.translatable(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
-            server.getPlayerManager().broadcast(deathMsg, MessageType.SYSTEM);
+            server.getPlayerManager().broadcast(deathMsg, false);
          }
       }
    }
