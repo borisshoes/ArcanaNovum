@@ -108,7 +108,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem{
                   blockEntity.readNbt(spawnerData);
                }
    
-               if(Math.random() > .5){ // 50-50 of the harness breaking after use
+               if(Math.random() > .15){ // 15% of the harness breaking after use
                   NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
                   loreList.set(4,NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
                   player.sendMessage(Text.translatable("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
@@ -150,7 +150,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem{
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Spawner Harness\\n\\nRarity: Exotic\\n\\nSpawners have always been one of the few blocks that have beyond the reach of the silk touch enchantment.\\nPerhaps I can enhance the enchant a bit further by giving the magic a Harness\"}");
       list.add("{\"text\":\"   Spawner Harness\\n\\nto channel additional Arcana to.\\n\\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however even with my best efforts the Harness can break after use.\"}");
-      list.add("{\"text\":\"   Spawner Harness\\n\\nRight click on a spawner with the Harness to capture the spawner. \\n\\nThe Harness can then place the spawner elsewhere in the world with a 50% chance of breaking after use.\"}");
+      list.add("{\"text\":\"   Spawner Harness\\n\\nRight click on a spawner with the Harness to capture the spawner. \\n\\nThe Harness can then place the spawner elsewhere in the world with a 15% chance of breaking after use.\"}");
       return list;
    }
    

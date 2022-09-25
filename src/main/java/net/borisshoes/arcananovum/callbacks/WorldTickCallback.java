@@ -10,8 +10,10 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
@@ -19,20 +21,25 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
+import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.Arcananovum.WORLD_TIMER_CALLBACKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 
@@ -117,10 +124,38 @@ public class WorldTickCallback {
                   NbtList pos = pearlData.getList("Pos", NbtList.DOUBLE_TYPE);
                   ParticleEffectUtils.stasisPearl(serverWorld,new Vec3d(pos.getDouble(0),pos.getDouble(1),pos.getDouble(2)));
                }
+            }else if(id.equals("boss_dragon_phantom")){
+               Entity found = serverWorld.getEntity(UUID.fromString(uuid));
+               if(found != null){
+                  ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),3f);
+                  ServerWorld entityWorld = (ServerWorld) found.getEntityWorld();
+                  entityWorld.spawnParticles(dust,found.getX(),found.getY(),found.getZ(),1,1.5,1,1.5,0);
+               }
+            }else if(id.equals("boss_dragon_wizard")){
+               Entity found = serverWorld.getEntity(UUID.fromString(uuid));
+               if(found != null && serverWorld.getServer().getTicks() % 4 == 0){
+                  ServerWorld entityWorld = (ServerWorld) found.getEntityWorld();
+                  entityWorld.spawnParticles(ParticleTypes.CLOUD,found.getX(),found.getY(),found.getZ(),5,0.25,0.25,0.25,0);
+                  PlayerEntity nearestPlayer = entityWorld.getClosestPlayer(found,25);
+                  if(nearestPlayer != null)
+                     found.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES,nearestPlayer.getEyePos());
+               }
             }
          }
-         
-
+   
+         // Tick Timer Callbacks
+         ArrayList<Pair<ServerWorld,TickTimerCallback>> toRemove = new ArrayList<>();
+         for(int i = 0; i < WORLD_TIMER_CALLBACKS.size(); i++){
+            Pair<ServerWorld,TickTimerCallback> pair = WORLD_TIMER_CALLBACKS.get(i);
+            TickTimerCallback t = pair.getRight();
+            if(pair.getLeft().getRegistryKey() == serverWorld.getRegistryKey()){
+               if(t.decreaseTimer() == 0){
+                  t.onTimer();
+                  toRemove.add(pair);
+               }
+            }
+         }
+         WORLD_TIMER_CALLBACKS.removeIf(toRemove::contains);
       }catch(Exception e){
          e.printStackTrace();
       }

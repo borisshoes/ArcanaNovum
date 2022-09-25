@@ -14,6 +14,7 @@ import net.minecraft.server.world.ServerWorld;
 import java.util.Iterator;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 
 public class EntityLoadCallbacks {
@@ -41,9 +42,17 @@ public class EntityLoadCallbacks {
                   if(entity.getRemovalReason() == Entity.RemovalReason.KILLED || entity.getRemovalReason() == Entity.RemovalReason.DISCARDED || entity.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION){
                      iter.remove();
                   }
+               }else if(id.equals("boss_dragon_phantom")){
+                  if(entity.getRemovalReason() == Entity.RemovalReason.KILLED){
+                     magicData.putBoolean("dead",true);
+                  }
+               }else if(id.equals("boss_dragon_wizard")){
+                  if(entity.getRemovalReason() == Entity.RemovalReason.KILLED){
+                     magicData.putBoolean("dead",true);
+                  }
                }
          
-               //System.out.println("Unloading magic entity ("+id+"): "+entity.getUuidAsString()+" "+entity.getRemovalReason());
+               //log("Unloading magic entity ("+id+"): "+entity.getUuidAsString()+" "+entity.getRemovalReason());
             }
          }
       }catch(Exception e){

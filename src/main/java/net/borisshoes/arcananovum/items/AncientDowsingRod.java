@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.sound.Sound;
@@ -97,6 +98,7 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
                   final double t1 = Math.tan(Math.toRadians(45*3.0/2));
                   final double t2 = Math.tan(Math.toRadians(45/2.0));
                   final Vec3d playerPos = playerEntity.getPos();
+                  int count = 0;
             
                   for(BlockPos b : debris){
                      Vec3d rPos = new Vec3d( b.getX() - playerPos.x, b.getY() - playerPos.y,b.getZ() - playerPos.z);
@@ -121,6 +123,10 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
                         ind = 0;
                      }
                      locations[ind]++;
+                     
+                     if(world instanceof ServerWorld serverWorld && count < 12)
+                        ParticleEffectUtils.dowsingRodEmitter(serverWorld,new Vec3d(b.getX(),b.getY(),b.getZ()),1);
+                     count++;
                   }
                   double radius = 1.5;
                   for(int i = 0; i < locations.length; i++){

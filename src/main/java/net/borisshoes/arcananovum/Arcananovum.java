@@ -4,10 +4,13 @@ import net.borisshoes.arcananovum.callbacks.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,8 +21,9 @@ import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentIn
 public class Arcananovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
-   public static final ArrayList<TickTimerCallback> TIMER_CALLBACKS = new ArrayList<>();
-   public static final boolean devMode = false;
+   public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
+   public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
+   public static final boolean devMode = true;
    
    @Override
    public void onInitialize(){
@@ -35,12 +39,17 @@ public class Arcananovum implements ModInitializer {
       CommandRegistrationCallback.EVENT.register(CommandRegisterCallback::registerCommands);
       ServerEntityEvents.ENTITY_LOAD.register(EntityLoadCallbacks::loadEntity);
       ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
+      ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathCallback::afterRespawn);
    
       logger.info("Initializing Arcana Novum");
    }
    
    public static boolean addTickTimerCallback(TickTimerCallback callback){
-      return TIMER_CALLBACKS.add(callback);
+      return SERVER_TIMER_CALLBACKS.add(callback);
+   }
+   
+   public static boolean addTickTimerCallback(ServerWorld world, TickTimerCallback callback){
+      return WORLD_TIMER_CALLBACKS.add(new Pair<>(world,callback));
    }
    
    public static boolean addLoginCallback(LoginCallback callback){

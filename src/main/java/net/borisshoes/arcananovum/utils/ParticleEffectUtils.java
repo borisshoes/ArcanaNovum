@@ -1,6 +1,10 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
@@ -10,9 +14,12 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -42,6 +49,21 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.SMOKE,pos.x,pos.y+0.5,pos.z,100,.4,.6,.4,0.05);
       world.spawnParticles(ParticleTypes.ANGRY_VILLAGER,pos.x,pos.y+0.5,pos.z,15,.4,.6,.4,1);
       world.spawnParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,pos.x,pos.y+0.5,pos.z,15,.4,.6,.4,0.07);
+   }
+   
+   public static void dowsingRodEmitter(ServerWorld world, Vec3d pos, int calls){
+      if(world.getBlockState(new BlockPos(pos)).getBlock() != Blocks.ANCIENT_DEBRIS) return;
+      
+      world.spawnParticles(ParticleTypes.FLAME,pos.x+0.5,pos.y+0.5,pos.z+0.5,3,.4,.4,.4,0.05);
+      
+      if(calls < (100)){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(3, new TimerTask() {
+            @Override
+            public void run(){
+               dowsingRodEmitter(world, pos, calls + 1);
+            }
+         }));
+      }
    }
    
    public static void shadowGlaiveTp(ServerWorld world, ServerPlayerEntity player){
@@ -105,7 +127,161 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.GLOW,pos.x,pos.y,pos.z,5,.1,.1,.1,0);
    }
    
-   private static void circle(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int intervals, int count, double delta, double speed){
+   public static void dragonBossTowerCircleInvuln(ServerWorld world, Vec3d center, int period, int calls){
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(9109665)),.8f);
+      ParticleEffect dust2 = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(9109665)),1.5f);
+      double r = 2.5;
+      float t = (float)(Math.PI/(period/100)*calls);
+      double sqrt3 = Math.sqrt(3);
+      
+      circle(world,null,center,dust,r,60,1,0,1);
+      //circle(world,null,center,dust,1.1*r,100,1,0,1);
+      //circle(world,null,center,dust,r/2,30,1,0.,1);
+      //circle(world,null,center,dust,2*sqrt3/3,30,1,0,1);
+      
+      Vec3d[] tri1 = {new Vec3d(0, 0, r),new Vec3d(-r*sqrt3/2, 0, -r/2),new Vec3d(r*sqrt3/2, 0, -r/2)};
+      Vec3d[] tri2 = {new Vec3d(0, 0, -r),new Vec3d(-r*sqrt3/2, 0, r/2),new Vec3d(r*sqrt3/2, 0, +r/2)};
+      for(int i = 0; i < 3; i++){
+         Vec3d p1 = tri1[i].rotateY(t).add(center);
+         Vec3d p2 = tri1[(i+1)%3].rotateY(t).add(center);
+         Vec3d p3 = tri2[i].rotateY(t).add(center);
+         Vec3d p4 = tri2[(i+1)%3].rotateY(t).add(center);
+         line(world,null,p1,p2,dust,20,1,0,1);
+         line(world,null,p3,p4,dust,20,1,0,1);
+      }
+   
+      double steps = 60.0;
+      double radius = 1.75;
+      double height = 5.5;
+      int num = 6;
+      int concurrent = 4;
+      double[][] angles = new double[num][concurrent];
+      for(int i = 0; i<angles[0].length;i++){
+         int invulnAnimTick = Math.floorMod((int) (calls-steps*i/concurrent), (int) steps);
+      
+         r = -(2*radius / steps) * Math.abs(invulnAnimTick - (steps / 2.0)) + radius;
+         for(int j = 0; j < angles.length; j++){
+            angles[j][i] = -((2 * Math.PI / angles.length) * j + invulnAnimTick / 10.0);
+            double x = r * Math.cos(angles[j][i]) + (center.x);
+            double z = r * Math.sin(angles[j][i]) + (center.z);
+            double y = height * invulnAnimTick / steps + (center.y-1.25);
+            world.spawnParticles(dust2, x, y, z, 1, 0, 0, 0,1);
+         }
+      }
+   
+      if(calls < (period/100)){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
+            @Override
+            public void run(){
+               dragonBossTowerCircleInvuln(world, center, period, calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void dragonBossTowerCirclePush(ServerWorld world, Vec3d center, int period, int calls){
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),2f);
+      ParticleEffect dustLarge = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),3f);
+      double r = 1.05*4;
+      float t = -(float)(Math.PI/(period/100)*calls + Math.PI);
+      double sqrt3 = Math.sqrt(3);
+   
+      circle(world,null,center,dust,r,40,1,0,1);
+      
+      Vec3d[] tri1 = {new Vec3d(0, 0, r),new Vec3d(-r*sqrt3/2, 0, -r/2),new Vec3d(r*sqrt3/2, 0, -r/2)};
+      Vec3d[] tri2 = {new Vec3d(0, 0, -r),new Vec3d(-r*sqrt3/2, 0, r/2),new Vec3d(r*sqrt3/2, 0, +r/2)};
+      for(int i = 0; i < 3; i++){
+         Vec3d p1 = tri1[i].rotateY(t).add(center);
+         Vec3d p2 = tri1[(i+1)%3].rotateY(t).add(center);
+         Vec3d p3 = tri2[i].rotateY(t).add(center);
+         Vec3d p4 = tri2[(i+1)%3].rotateY(t).add(center);
+         line(world,null,p1,p2,dust,12,1,0,1);
+         line(world,null,p3,p4,dust,12,1,0,1);
+      }
+      
+      sphere(world,null,center.add(0,2,0),dustLarge,5.5,50,1,0,1,-t);
+      
+      if(calls < (period/100)){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
+            @Override
+            public void run(){
+               dragonBossTowerCirclePush(world, center, period, calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void dragonReclaimTowerCircle(ServerWorld world, Vec3d center, int period, int calls){
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(4044031)),1.5f);
+      double r = 1.05*4;
+      float t = -(float)(Math.PI/(period/100)*calls + Math.PI);
+      double sqrt3 = Math.sqrt(3);
+      
+      circle(world,null,center,dust,r,40,1,0,1);
+      
+      Vec3d[] tri1 = {new Vec3d(0, 0, r),new Vec3d(-r*sqrt3/2, 0, -r/2),new Vec3d(r*sqrt3/2, 0, -r/2)};
+      Vec3d[] tri2 = {new Vec3d(0, 0, -r),new Vec3d(-r*sqrt3/2, 0, r/2),new Vec3d(r*sqrt3/2, 0, +r/2)};
+      for(int i = 0; i < 3; i++){
+         Vec3d p1 = tri1[i].rotateY(t).add(center);
+         Vec3d p2 = tri1[(i+1)%3].rotateY(t).add(center);
+         Vec3d p3 = tri2[i].rotateY(t).add(center);
+         Vec3d p4 = tri2[(i+1)%3].rotateY(t).add(center);
+         line(world,null,p1,p2,dust,16,1,0,1);
+         line(world,null,p3,p4,dust,16,1,0,1);
+      }
+      
+      if(calls < (period/100)){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
+            @Override
+            public void run(){
+               dragonReclaimTowerCircle(world, center, period, calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void dragonReclaimTowerShield(ServerWorld world, Vec3d center, int calls){
+      int period = 15000;
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(9694975)),1.5f);
+      float t = -(float)(Math.PI/(period/200)*calls + Math.PI);
+      
+      sphere(world,null,center.add(0,2,0),dust,5.5,75,1,0,1,-t);
+      
+      if(calls < (period/200)){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
+            @Override
+            public void run(){
+               dragonReclaimTowerShield(world, center, calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void dragonBossWizardPulse(ServerWorld world, Vec3d center, int ticks){
+      double radius = ticks/4.0;
+      double theta = 2*Math.PI / 20.0;
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),(float)radius/2);
+      sphere(world,null,center,dust,radius,(int)radius*25,1,0,1,theta*ticks);
+   }
+   
+   public static void line(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d p1, Vec3d p2, ParticleEffect type, int intervals, int count, double delta, double speed){
+      double dx = (p2.x-p1.x)/intervals;
+      double dy = (p2.y-p1.y)/intervals;
+      double dz = (p2.z-p1.z)/intervals;
+      for(int i = 0; i < intervals; i++){
+         double x = p1.x + dx*i;
+         double y = p1.y + dy*i;
+         double z = p1.z + dz*i;
+         
+         if(player == null){
+            world.spawnParticles(type,x,y,z,count,delta,delta,delta,speed);
+         }else{
+            world.spawnParticles(player,type,false,x,y,z,count,delta,delta,delta,speed);
+         }
+      }
+   }
+   
+   public static void circle(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int intervals, int count, double delta, double speed){
       double dA = Math.PI * 2 / intervals;
       for(int i = 0; i < intervals; i++){
          double angle = dA * i;
@@ -121,16 +297,16 @@ public class ParticleEffectUtils {
       }
    }
    
-   private static void sphere(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int points, int count, double delta, double speed){
+   public static void sphere(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int points, int count, double delta, double speed, double theta){
       double phi = Math.PI * (3 - Math.sqrt(5));
       
       for(int i = 0; i < points; i++){
          // Fibonacci Sphere Equations
          double y = 1 - (i / (double)(points-1)) * 2;
          double r = Math.sqrt(1-y*y);
-         double theta = phi*i;
-         double x = Math.cos(theta) * r;
-         double z = Math.sin(theta) * r;
+         double t = phi*i + theta;
+         double x = Math.cos(t) * r;
+         double z = Math.sin(t) * r;
          
          // Center Offset and Radius Scale
          Vec3d point = new Vec3d(x,y,z);
@@ -143,4 +319,5 @@ public class ParticleEffectUtils {
          }
       }
    }
+   // Notes about the Dust Particle, size goes from .01 to 4, you can use an int represented rgb value with new Vec3f(Vec3d.unpackRgb(int))
 }

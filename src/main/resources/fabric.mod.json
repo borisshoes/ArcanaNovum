@@ -25,7 +25,7 @@
     ]
   },
   "custom": {
-    "cardinal-components": ["arcananovum:profile","arcananovum:magicblocks","arcananovum:magicentities","arcananovum:login_callbacks"]
+    "cardinal-components": ["arcananovum:profile","arcananovum:magicblocks","arcananovum:magicentities","arcananovum:login_callbacks","arcananovum:bossfight"]
   },
   "mixins": [
     "arcananovum.mixins.json"

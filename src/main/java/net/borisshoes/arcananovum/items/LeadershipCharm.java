@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
@@ -90,27 +91,18 @@ public class LeadershipCharm extends MagicItem implements TickingItem{
             }
          }
       }
-   
-      int numRadius = 180;
+      
       // Particle effects
       if(tickCount % 10 == 0){
-         double[] angles = new double[numRadius];
-         for(int i = 0; i<angles.length; i++){
-            angles[i] = (2*Math.PI/numRadius) * i;
-            double x = effectRange * Math.cos(angles[i]) + player.getX();
-            double z = effectRange * Math.sin(angles[i]) + player.getZ();
-            double y = player.getY()+.5;
-            
-            world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, x, y, z, 1, .05, .05, .05, 10);
-         }
+         double theta = Math.PI/(80)*(tickCount%160); // 8 second duration
+         ParticleEffectUtils.sphere(world,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0,theta);
+         ParticleEffectUtils.circle(world,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0);
          for(ServerPlayerEntity plyr : inRangePlayers){
             if(plyr.equals(player))
                continue;
             world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, plyr.getX(), plyr.getY()+.75, plyr.getZ(), 4, .2, .2, .2, 10);
+            world.spawnParticles(plyr,ParticleTypes.HAPPY_VILLAGER, false, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
          }
-      }
-      if(tickCount % 4 == 0){
-         world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
       }
       
       if(tickCount > 360)

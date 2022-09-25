@@ -1,43 +1,57 @@
 package net.borisshoes.arcananovum;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import eu.pb4.sgui.api.elements.BookElementBuilder;
+import eu.pb4.sgui.api.ClickType;
+import eu.pb4.sgui.api.elements.*;
+import eu.pb4.sgui.api.gui.HotbarGui;
+import net.borisshoes.arcananovum.bosses.BossFight;
+import net.borisshoes.arcananovum.bosses.BossFights;
+import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.items.MagicItems;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static net.borisshoes.arcananovum.Arcananovum.devMode;
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
 
 public class ArcanaCommands {
@@ -270,18 +284,10 @@ public class ArcanaCommands {
       if (!devMode)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
-         ItemStack item1 = player.getStackInHand(Hand.MAIN_HAND);
-         ItemStack item2 = player.getStackInHand(Hand.OFF_HAND);
-         if(item1.hasNbt() && item2.hasNbt()){
-            log("Testing My Thing: "+ MagicItemIngredient.validNbt(item1.getNbt(),item2.getNbt())+"\n");
-         }else if(!item1.hasNbt() && item2.hasNbt()){
-            log("false");
-         }else if(item1.hasNbt() && !item2.hasNbt()){
-            log("true");
-         }else{
-            log("true");
-         }
+         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         PuzzleGui gui = new PuzzleGui(ScreenHandlerType.GENERIC_9X6,player,null);
+         gui.buildPuzzle();
+         gui.open();
          
       } catch (Exception e) {
          e.printStackTrace();
@@ -319,5 +325,105 @@ public class ArcanaCommands {
          e.printStackTrace();
          return -1;
       }
+   }
+   
+   public static int startDragonBoss(CommandContext<ServerCommandSource> context){
+      ServerCommandSource source = context.getSource();
+      if(!source.isExecutedByPlayer()){
+         source.sendFeedback(Text.translatable("Command must be executed by a player"), false);
+         return -1;
+      }
+      for(ServerWorld world : source.getServer().getWorlds()){
+         if(BOSS_FIGHT.get(world).getBossFight() != null){
+            source.sendFeedback(Text.translatable("A Boss Fight is Currently Active"), false);
+            return -1;
+         }
+      }
+      ServerPlayerEntity player = source.getPlayer();
+      return DragonBossFight.prepBoss(player);
+   }
+   
+   public static int abortBoss(CommandContext<ServerCommandSource> context){
+      MinecraftServer server = context.getSource().getServer();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
+      context.getSource().sendFeedback(Text.translatable("Aborting Boss Fight"),true);
+      if(bossFight == null){
+         return BossFight.cleanBoss(server);
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         return DragonBossFight.abortBoss(server);
+      }
+      return 0;
+   }
+   
+   public static int cleanBoss(CommandContext<ServerCommandSource> context){
+      ServerCommandSource source = context.getSource();
+      source.sendFeedback(Text.translatable("Cleaned Boss Data"),true);
+      return BossFight.cleanBoss(source.getServer());
+   }
+   
+   public static int bossStatus(CommandContext<ServerCommandSource> context){
+      ServerCommandSource source = context.getSource();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+      if(bossFight == null){
+         source.sendFeedback(Text.translatable("No Boss Fight Active"),false);
+         return -1;
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         return DragonBossFight.bossStatus(source.getServer(),context.getSource());
+      }
+      return -1;
+   }
+   
+   public static int testBoss(CommandContext<ServerCommandSource> context){
+      ServerCommandSource source = context.getSource();
+      log("Test Boss");
+      DragonBossFight.test();
+      return 0;
+   }
+   
+   public static int bossTeleport(CommandContext<ServerCommandSource> context, ServerPlayerEntity player, boolean all){
+      ServerCommandSource source = context.getSource();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+      if(bossFight == null){
+         source.sendFeedback(Text.translatable("No Boss Fight Active"),false);
+         return -1;
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         if(all){
+            List<ServerPlayerEntity> players = source.getServer().getPlayerManager().getPlayerList();
+            for(ServerPlayerEntity p : players){
+               DragonBossFight.teleportPlayer(p,true);
+            }
+         }else{
+            DragonBossFight.teleportPlayer(player,context.getSource().hasPermissionLevel(2));
+         }
+         return 0;
+      }
+      return -1;
+   }
+   
+   public static int announceBoss(ServerCommandSource source, String time){
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+      if(bossFight == null){
+         source.sendFeedback(Text.translatable("No Boss Fight Active"),false);
+         return -1;
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         return DragonBossFight.announceBoss(source.getServer(),bossFight.getRight(),time);
+      }
+      return -1;
+   }
+   
+   public static int beginBoss(CommandContext<ServerCommandSource> context){
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(context.getSource().getServer().getWorld(World.END)).getBossFight();
+      if(bossFight == null){
+         context.getSource().sendFeedback(Text.translatable("No Boss Fight Active"),false);
+         return -1;
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         return DragonBossFight.beginBoss(context.getSource().getServer(),bossFight.getRight());
+      }
+      return -1;
    }
 }

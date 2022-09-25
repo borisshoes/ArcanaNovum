@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.bosses.BossFights;
+import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -9,28 +11,31 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.message.MessageType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
+import net.minecraft.util.Pair;
+import net.minecraft.world.World;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
 public class TickCallback {
    public static void onTick(MinecraftServer server){
       try{
          sojournerScoreboardTick(server);
+         bossTickCheck(server);
          
          List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
@@ -77,19 +82,20 @@ public class TickCallback {
             }
             
             wingsTick(player);
-            levitationHarnessCheck(player);
+            flightCheck(player);
             concCheck(server,player,arcaneProfile);
          }
          
          // Tick Timer Callbacks
-         Iterator<TickTimerCallback> itr = TIMER_CALLBACKS.iterator();
-         while(itr.hasNext()){
-            TickTimerCallback t = itr.next();
+         ArrayList<TickTimerCallback> toRemove = new ArrayList<>();
+         for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
+            TickTimerCallback t = SERVER_TIMER_CALLBACKS.get(i);
             if(t.decreaseTimer() == 0){
                t.onTimer();
-               itr.remove();
+               toRemove.add(t);
             }
          }
+         SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
       }catch(Exception e){
          e.printStackTrace();
       }
@@ -104,6 +110,17 @@ public class TickCallback {
       if(scoreboard.getNullableObjective("arcananovum_sojourn_sprint") == null){
          ScoreboardCriterion sprinted = ScoreboardCriterion.getOrCreateStatCriterion("minecraft.custom:minecraft.sprint_one_cm").orElseThrow();
          scoreboard.addObjective("arcananovum_sojourn_sprint",sprinted,Text.translatable("dist_sprinted_sojourn"),sprinted.getDefaultRenderType());
+      }
+   }
+   
+   private static void bossTickCheck(MinecraftServer server){
+      for(ServerWorld world : server.getWorlds()){
+         Pair<BossFights, NbtCompound> fight = BOSS_FIGHT.get(world).getBossFight();
+         if(fight != null){
+            if(fight.getLeft() == BossFights.DRAGON){
+               DragonBossFight.tick(server,fight.getRight());
+            }
+         }
       }
    }
    
@@ -147,9 +164,11 @@ public class TickCallback {
       }
    }
    
-   private static void levitationHarnessCheck(ServerPlayerEntity player){
+   private static void flightCheck(ServerPlayerEntity player){
       if(player.isCreative() || player.isSpectator())
          return;
+      
+      // Levitation Harness
       ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
       boolean allowFly = false;
       if(MagicItemUtils.isMagic(item)){
@@ -159,6 +178,20 @@ public class TickCallback {
             }
          }
       }
+      
+      // Dragon Tower Check
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(player.getServer().getWorld(World.END)).getBossFight();
+      if(bossFight != null && bossFight.getLeft() == BossFights.DRAGON){
+         List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
+         if(reclaimStates != null){
+            for(DragonBossFight.ReclaimState reclaimState : reclaimStates){
+               if(reclaimState.getPlayer() != null && reclaimState.getPlayer().equals(player)){
+                  allowFly = true;
+               }
+            }
+         }
+      }
+      
       if(player.getAbilities().allowFlying != allowFly){
          if(player.getAbilities().flying && !allowFly){
             player.getAbilities().flying = false;
