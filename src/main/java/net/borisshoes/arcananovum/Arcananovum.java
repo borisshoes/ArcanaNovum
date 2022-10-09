@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.recipe.RecipeUnlocker;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -41,7 +42,7 @@ public class Arcananovum implements ModInitializer {
       ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
       ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathCallback::afterRespawn);
    
-      logger.info("Initializing Arcana Novum");
+      logger.info("Arcana Surges Through The Server!");
    }
    
    public static boolean addTickTimerCallback(TickTimerCallback callback){

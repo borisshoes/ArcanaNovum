@@ -38,7 +38,7 @@ public class BrainJar extends EnergyItem implements UsableItem,TickingItem{
       id = "brain_jar";
       name = "Brain in a Jar";
       rarity = MagicRarity.EXOTIC;
-      maxEnergy = 100000;
+      maxEnergy = 1000000;
       
       ItemStack item = new ItemStack(Items.ZOMBIE_HEAD);
       NbtCompound tag = item.getOrCreateNbt();

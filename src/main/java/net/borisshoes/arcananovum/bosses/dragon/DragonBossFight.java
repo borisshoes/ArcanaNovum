@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.MagicItems;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -194,10 +195,9 @@ public class DragonBossFight {
             if(!phase1Notif){
                numPlayers = calcPlayers(server,false);
                DragonDialog.announce(DragonDialog.Announcements.EVENT_START,server,null);
-               Timer timer = new Timer();
-               timer.schedule(new TimerTask() {
+               Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(100, new TimerTask() {
                   @Override
-                  public void run() {
+                  public void run(){
                      List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
                      for(ServerPlayerEntity player : players){
                         if(!player.isCreative() && !player.isSpectator()){
@@ -245,7 +245,7 @@ public class DragonBossFight {
                      DragonDialog.announce(DragonDialog.Announcements.PHASE_ONE_START,server,null);
                      phase = 1;
                   }
-               }, 5000);
+               }));
                dragonAbilities = new DragonAbilities(server,endWorld,dragon,crystals);
                lairActions = new DragonLairActions(server,endWorld);
                phase1Notif = true;
@@ -460,14 +460,12 @@ public class DragonBossFight {
                for(DragonBossFight.ReclaimState reclaimState : reclaimStates){
                   reclaimState.fightEnd();
                }
-               
-               Timer timer = new Timer();
-               timer.schedule(new TimerTask() {
+               Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(100, new TimerTask() {
                   @Override
                   public void run(){
                      endFight(server,endWorld);
                   }
-               }, 5000);
+               }));
                endNotif = true;
             }
          }
@@ -648,16 +646,14 @@ public class DragonBossFight {
       message.add(Text.literal("")
             .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
    
-   
-      Timer timer = new Timer();
-      timer.schedule(new TimerTask() {
+      Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(200, new TimerTask() {
          @Override
          public void run(){
             for(MutableText msg : message){
                endWorld.getServer().getPlayerManager().broadcast(msg, false);
             }
          }
-      }, 10000);
+      }));
    
       GameRules rules = server.getGameRules();
       GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);

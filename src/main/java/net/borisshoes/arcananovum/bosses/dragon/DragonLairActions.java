@@ -276,22 +276,22 @@ public class DragonLairActions {
       
       if(phase == 1){
          actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,3));
-         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
-         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,5));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
+         //actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
+         //actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
+         //actions.add(new Pair<>(DragonLairActionTypes.QUAKE,5));
+         //actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
       }else if(phase == 2){
          actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,4));
-         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
-         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
+         //actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
+         //actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
+         //actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
+         //actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
       }else if(phase == 3){
          actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,3));
-         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
-         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,4));
+         //actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
+         //actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
+         //actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
+         //actions.add(new Pair<>(DragonLairActionTypes.STARFALL,4));
       }
    
       for(Pair<DragonLairActionTypes, Integer> action : actions){

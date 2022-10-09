@@ -1,26 +1,18 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.Arcananovum;
-import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 
 import javax.annotation.Nullable;
-import java.util.Random;
-import java.util.Timer;
 import java.util.TimerTask;
 
 public class ParticleEffectUtils {
@@ -35,13 +27,12 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.INSTANT_EFFECT,pos.x,pos.y,pos.z,1,.3,.3,.3,1);
       
       if(0 < duration){
-         Timer timer = new Timer();
-         timer.schedule(new TimerTask() {
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
             @Override
             public void run(){
                harnessFly(world, player,duration-1);
             }
-         }, 100);
+         }));
       }
    }
    
@@ -66,6 +57,18 @@ public class ParticleEffectUtils {
       }
    }
    
+   public static void dowsingRodArrow(ServerWorld world, Vec3d start, Vec3d end, int calls){
+      line(world,null,start,end,ParticleTypes.FLAME,8,3,.08,0);
+      if(calls < (16)){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
+            @Override
+            public void run(){
+               dowsingRodArrow(world, start, end, calls + 1);
+            }
+         }));
+      }
+   }
+   
    public static void shadowGlaiveTp(ServerWorld world, ServerPlayerEntity player){
       Vec3d pos = player.getPos();
       world.spawnParticles(ParticleTypes.LARGE_SMOKE,pos.x,pos.y+0.5,pos.z,100,.4,.4,.4,0.07);
@@ -76,13 +79,12 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y+1,pos.z,1,.3,.3,.3,0.05);
    
       if(0 < duration){
-         Timer timer = new Timer();
-         timer.schedule(new TimerTask() {
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
             @Override
             public void run(){
                shulkerCoreLevitate(world, player,duration-1);
             }
-         }, 50);
+         }));
       }
    }
    
@@ -112,13 +114,12 @@ public class ParticleEffectUtils {
       circle(world,null,pos.subtract(0,0.5,0),ParticleTypes.WITCH,1,20,1,0.1,0);
       
       if(tick < animLength){
-         Timer timer = new Timer();
-         timer.schedule(new TimerTask() {
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
             @Override
             public void run(){
                recallTeleport(world,pos,tick+1);
             }
-         }, 50);
+         }));
       }
    }
    

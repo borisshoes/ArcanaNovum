@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
@@ -33,16 +35,22 @@ public class PistonMixin {
             BlockPos magicPos = block.getPos();
             if(pos.equals(magicPos)){
                cir.setReturnValue(false);
-               Timer timer = new Timer();
-               timer.schedule(new TimerTask() {
+               
+               Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(4, new TimerTask() {
                   @Override
                   public void run(){
                      List<ServerPlayerEntity> players = serverWorld.getPlayers(p -> p.squaredDistanceTo(pos.getX(),pos.getY(),pos.getZ()) <= 25000);
                      for(ServerPlayerEntity player : players){
                         player.networkHandler.sendPacket(new BlockUpdateS2CPacket(pos,state));
+                        
+                        for(Direction direction : Direction.values()){
+                           BlockPos blockPos2 = pos.offset(direction);
+                           BlockState blockState = world.getBlockState(blockPos2);
+                           player.networkHandler.sendPacket(new BlockUpdateS2CPacket(blockPos2, blockState));
+                        }
                      }
                   }
-               }, 151);
+               }));
                break;
             }
          }

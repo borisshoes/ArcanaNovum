@@ -86,7 +86,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
       if(placeable && playerEntity instanceof ServerPlayerEntity player){
          placeCollider(player, world, item, placePos);
       }else{
-         playerEntity.sendMessage(Text.translatable("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+         playerEntity.sendMessage(Text.translatable("The collider cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;

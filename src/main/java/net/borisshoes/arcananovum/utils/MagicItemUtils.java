@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static net.borisshoes.arcananovum.Arcananovum.log;
+
 public class MagicItemUtils {
    
    public static boolean isMagic(ItemStack item){
@@ -50,17 +52,18 @@ public class MagicItemUtils {
    }
    
    public static boolean needsVersionUpdate(ItemStack item){
-      if(!isMagic(item))
+      MagicItem magicItem = identifyItem(item);
+      if(!isMagic(item) || magicItem == null)
          return false;
       try{
          NbtCompound itemNbt = item.getNbt();
          NbtCompound magicTag = itemNbt.getCompound("arcananovum");
          if(!magicTag.contains("Version",NbtCompound.INT_TYPE)){
-            System.out.println("Missing Version Data");
+            log("Item Missing Version Data");
             return true; // Version tag missing, needs update
          }
          int version = magicTag.getInt("Version");
-         return version != MagicItem.version; // Version mismatch, needs update
+         return version != MagicItem.version + magicItem.getItemVersion(); // Version mismatch, needs update
       }catch(Exception e){
          e.printStackTrace();
          return false;

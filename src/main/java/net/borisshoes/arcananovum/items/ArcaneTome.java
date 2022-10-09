@@ -42,7 +42,8 @@ public class ArcaneTome extends MagicItem implements UsableItem{
    public ArcaneTome(){
       id = "arcane_tome";
       name = "Tome of Arcana Novum";
-      rarity = MagicRarity.EMPOWERED;
+      rarity = MagicRarity.NONE;
+      itemVersion = 1;
    
       ItemStack item = new ItemStack(Items.KNOWLEDGE_BOOK);
       NbtCompound tag = item.getOrCreateNbt();
@@ -55,7 +56,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       loreList.add(NbtString.of("[{\"text\":\"There is so much \",\"italic\":false,\"color\":\"green\"},{\"text\":\"new magic\",\"color\":\"light_purple\"},{\"text\":\" to explore...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"yellow\"},{\"text\":\" to open the tome.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Mundane\",\"italic\":false,\"color\":\"gray\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);

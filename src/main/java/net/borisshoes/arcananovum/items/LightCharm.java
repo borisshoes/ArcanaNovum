@@ -152,6 +152,9 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       MagicItemIngredient b = new MagicItemIngredient(Items.BEACON,1,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.GLOWSTONE,64,null);
       MagicItemIngredient s = new MagicItemIngredient(Items.SHROOMLIGHT,64,null);
+      MagicItemIngredient f = new MagicItemIngredient(Items.PEARLESCENT_FROGLIGHT,64,null);
+      MagicItemIngredient o = new MagicItemIngredient(Items.OCHRE_FROGLIGHT,64,null);
+      MagicItemIngredient v = new MagicItemIngredient(Items.VERDANT_FROGLIGHT,64,null);
       MagicItemIngredient l = new MagicItemIngredient(Items.SEA_LANTERN,64,null);
       MagicItemIngredient p = new MagicItemIngredient(Items.BLAZE_POWDER,64,null);
       ItemStack potion = new ItemStack(Items.POTION);
@@ -160,9 +163,9 @@ public class LightCharm extends MagicItem implements TickingItem,UsableItem{
       MagicItemIngredient[][] ingredients = {
             {n,p,s,p,n},
             {p,l,g,l,p},
-            {s,g,b,g,s},
+            {f,g,b,g,o},
             {p,l,g,l,p},
-            {n,p,s,p,n}};
+            {n,p,v,p,n}};
       return new MagicItemRecipe(ingredients);
    }
 }

@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.items.ContinuumAnchor;
 import net.borisshoes.arcananovum.items.IgneousCollider;
 import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.items.MagicItems;
@@ -38,8 +39,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
-import static net.borisshoes.arcananovum.Arcananovum.WORLD_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.Arcananovum.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 
@@ -73,7 +73,7 @@ public class WorldTickCallback {
                         int range = blockData.getInt("range");
                         for(int i = -range; i <= range; i++){
                            for(int j = -range; j <= range; j++){
-                              serverWorld.setChunkForced(chunkPos.x+i,chunkPos.z+j,false);
+                              ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
                            }
                         }
                         iter.remove();
@@ -162,7 +162,7 @@ public class WorldTickCallback {
    }
    
    private static void continuumAnchorTick(ServerWorld serverWorld, BlockPos pos, ChunkPos chunkPos, NbtCompound blockData){
-      if(serverWorld.getServer().getTicks() % 20 == 0){ // Anchor only ticks redstone and load update every second
+      if(serverWorld.getServer().getTicks() % 5 == 0){ // Anchor only ticks redstone and load update every quarter second
       
          int fuel = blockData.getInt("fuel");
          boolean active = !serverWorld.isReceivingRedstonePower(pos) && fuel != 0; // Redstone low is ON
@@ -182,18 +182,18 @@ public class WorldTickCallback {
       
          // Do the chunk loading thing
          if(prevActive && !active){ // Power Down
-            //System.out.print("Deactivating chunks");
+            //log("Deactivating chunks");
             for(int i = -range; i <= range; i++){
                for(int j = -range; j <= range; j++){
-                  serverWorld.setChunkForced(chunkPos.x+i,chunkPos.z+j,false);
+                  ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
                }
             }
             serverWorld.playSound(null,pos.getX(),pos.getY(),pos.getZ(), SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.MASTER,1,1.5f);
          }else if(!prevActive && active){ // Power Up
-            //System.out.print("Activating chunks");
+            //log("Activating chunks");
             for(int i = -range; i <= range; i++){
                for(int j = -range; j <= range; j++){
-                  serverWorld.setChunkForced(chunkPos.x+i,chunkPos.z+j,true);
+                  ContinuumAnchor.addChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
                }
             }
             serverWorld.playSound(null,pos.getX(),pos.getY(),pos.getZ(),SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.MASTER,1,.7f);

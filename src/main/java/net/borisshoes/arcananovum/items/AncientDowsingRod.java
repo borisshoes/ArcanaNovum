@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -84,88 +86,88 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
                   debris.add(new BlockPos(block));
                }
             }
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-               @Override
-               public void run() {
-                  SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f);
-               }
-            }, 1500);
-            timer.schedule(new TimerTask() {
-               @Override
-               public void run() {
-                  int[] locations = new int[8]; // N, NE, E, SE, S, SW, W, NW
-                  final double t1 = Math.tan(Math.toRadians(45*3.0/2));
-                  final double t2 = Math.tan(Math.toRadians(45/2.0));
-                  final Vec3d playerPos = playerEntity.getPos();
-                  int count = 0;
-            
-                  for(BlockPos b : debris){
-                     Vec3d rPos = new Vec3d( b.getX() - playerPos.x, b.getY() - playerPos.y,b.getZ() - playerPos.z);
-                     double ratio = rPos.x == 0 ? 100 : rPos.z / rPos.x;
-                     int ind = 0;
-               
-                     if(ratio < 0 && ratio > -t2){
-                        ind = 0;
-                     }else if(ratio > -t1 && ratio < -t2){
-                        ind = 1;
-                     }else if(ratio < -t1 || ratio > t1){
-                        ind = 2;
-                     }else if(ratio < t1 && ratio > t2){
-                        ind = 3;
-                     }else if(ratio > 0 && ratio < t2){
-                        ind = 4;
-                     }
-                     if(rPos.z < 0){
-                        ind += 4;
-                     }
-                     if(ind > locations.length-1){
-                        ind = 0;
-                     }
-                     locations[ind]++;
-                     
-                     if(world instanceof ServerWorld serverWorld && count < 12)
-                        ParticleEffectUtils.dowsingRodEmitter(serverWorld,new Vec3d(b.getX(),b.getY(),b.getZ()),1);
-                     count++;
+            if(world instanceof ServerWorld serverWorld){
+               Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(30, new TimerTask() {
+                  @Override
+                  public void run(){
+                     SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f);
                   }
-                  double radius = 1.5;
-                  for(int i = 0; i < locations.length; i++){
-                     Vec3d pPos = switch(i){
-                        case 0 -> new Vec3d(-radius, 0, 0);
-                        case 1 -> new Vec3d(-radius, 0, radius);
-                        case 2 -> new Vec3d(0, 0, radius);
-                        case 3 -> new Vec3d(radius, 0, radius);
-                        case 4 -> new Vec3d(radius, 0, 0);
-                        case 5 -> new Vec3d(radius, 0, -radius);
-                        case 6 -> new Vec3d(0, 0, -radius);
-                        case 7 -> new Vec3d(-radius, 0, -radius);
-                        default -> new Vec3d(0,0,0);
-                     };
-                     for(int n = 0; n < locations[i]; n++){
-                        double mod = Math.min(n*.6 , 6/radius);
-                        if (mod == 6/radius)
-                           break;
-                        Vec3d parPos = playerPos.add(pPos.multiply(1+mod)).add(0,0.7,0);
-                        player.getWorld().spawnParticles(ParticleTypes.DRIPPING_LAVA,parPos.x,parPos.y,parPos.z,15,.12,.12,.12,1);
-                     }
-                     
-                  }
-                  if(debris.size() > 0){
-                     BlockPos closest = debris.get(0);
-                     Vec3d eyePos = playerEntity.getEyePos();
-                     Vec3d pPos = eyePos.subtract(closest.getX(),closest.getY(),closest.getZ()).normalize().multiply(-1.5);
-                     for(int i = 0; i < 5; i++){
-                        Vec3d parPos = eyePos.add(pPos.multiply(1+.5*i));
-                        player.getWorld().spawnParticles(ParticleTypes.FLAME,parPos.x,parPos.y,parPos.z,15,.12,.12,.12,0.001);
-                     }
+               }));
+               Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(140, new TimerTask() {
+                  @Override
+                  public void run(){
+                     int[] locations = new int[8]; // N, NE, E, SE, S, SW, W, NW
+                     final double t1 = Math.tan(Math.toRadians(45*3.0/2));
+                     final double t2 = Math.tan(Math.toRadians(45/2.0));
+                     final Vec3d playerPos = playerEntity.getPos();
+                     int count = 0;
    
-                     PLAYER_DATA.get(player).addXP(100*debris.size()); // Add xp
-                     SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
-                  }else{
-                     SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS,1,.5f);
+                     for(BlockPos b : debris){
+                        Vec3d rPos = new Vec3d( b.getX() - playerPos.x, b.getY() - playerPos.y,b.getZ() - playerPos.z);
+                        double ratio = rPos.x == 0 ? 100 : rPos.z / rPos.x;
+                        int ind = 0;
+      
+                        if(ratio < 0 && ratio > -t2){
+                           ind = 0;
+                        }else if(ratio > -t1 && ratio < -t2){
+                           ind = 1;
+                        }else if(ratio < -t1 || ratio > t1){
+                           ind = 2;
+                        }else if(ratio < t1 && ratio > t2){
+                           ind = 3;
+                        }else if(ratio > 0 && ratio < t2){
+                           ind = 4;
+                        }
+                        if(rPos.z < 0){
+                           ind += 4;
+                        }
+                        if(ind > locations.length-1){
+                           ind = 0;
+                        }
+                        locations[ind]++;
+      
+                        if(count < 12)
+                           ParticleEffectUtils.dowsingRodEmitter(serverWorld,new Vec3d(b.getX(),b.getY(),b.getZ()),1);
+                        count++;
+                     }
+                     double radius = 1.5;
+                     for(int i = 0; i < locations.length; i++){
+                        Vec3d pPos = switch(i){
+                           case 0 -> new Vec3d(-radius, 0, 0);
+                           case 1 -> new Vec3d(-radius, 0, radius);
+                           case 2 -> new Vec3d(0, 0, radius);
+                           case 3 -> new Vec3d(radius, 0, radius);
+                           case 4 -> new Vec3d(radius, 0, 0);
+                           case 5 -> new Vec3d(radius, 0, -radius);
+                           case 6 -> new Vec3d(0, 0, -radius);
+                           case 7 -> new Vec3d(-radius, 0, -radius);
+                           default -> new Vec3d(0,0,0);
+                        };
+                        for(int n = 0; n < locations[i]; n++){
+                           double mod = Math.min(n*.6 , 6/radius);
+                           if (mod == 6/radius)
+                              break;
+                           Vec3d parPos = playerPos.add(pPos.multiply(1+mod)).add(0,0.7,0);
+                           player.getWorld().spawnParticles(ParticleTypes.DRIPPING_LAVA,parPos.x,parPos.y,parPos.z,15,.12,.12,.12,1);
+                        }
+      
+                     }
+                     if(debris.size() > 0){
+                        BlockPos closest = debris.get(0);
+                        Vec3d eyePos = playerEntity.getEyePos();
+                        Vec3d blockPos = new Vec3d(closest.getX()+.5,closest.getY()+0.5,closest.getZ()+0.5);
+                        Vec3d start = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5));
+                        Vec3d end = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5+3));
+                        ParticleEffectUtils.dowsingRodArrow(player.getWorld(),start,end,1);
+      
+                        PLAYER_DATA.get(player).addXP(100*debris.size()); // Add xp
+                        SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
+                     }else{
+                        SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS,1,.5f);
+                     }
                   }
-               }
-            }, 7000);
+               }));
+            }
       
          }else{
             playerEntity.sendMessage(Text.translatable("Dowsing Rod Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.GOLD),true);

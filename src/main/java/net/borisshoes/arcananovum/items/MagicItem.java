@@ -24,6 +24,9 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    protected MagicItemRecipe recipe;
    protected NbtCompound bookLore;
    public static int version = 8;
+   public int itemVersion;
+   
+   public int getItemVersion() { return itemVersion; }
    
    public String getName(){
       return name;

@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.items.*;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -94,6 +95,7 @@ public abstract class LivingEntityMixin {
          if(MagicItemUtils.isMagic(chestItem) && player.getAbilities().flying){
             if(MagicItemUtils.identifyItem(chestItem) instanceof LevitationHarness harness){
                harness.setStall(chestItem,10);
+               player.setHealth(player.getHealth()/2);
                player.sendMessage(Text.translatable("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
                ParticleEffectUtils.harnessStall(player.getWorld(),player.getPos().add(0,0.5,0));
@@ -142,13 +144,12 @@ public abstract class LivingEntityMixin {
                   if(dmgReduction == maxDmgReduction || dmgReduction > 12){
                      player.sendMessage(Text.translatable("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
-                     Timer timer = new Timer();
-                     timer.schedule(new TimerTask() {
+                     Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
                         @Override
-                        public void run() {
+                        public void run(){
                            player.sendMessage(Text.translatable("Wing Energy Remaining: "+wings.getEnergy(chestItem)).formatted(Formatting.GRAY),true);
                         }
-                     }, 2500);
+                     }));
                   }
                   PLAYER_DATA.get(player).addXP((int)dmgReduction*25); // Add xp
                }

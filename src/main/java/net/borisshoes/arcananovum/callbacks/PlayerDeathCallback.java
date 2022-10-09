@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,12 +27,11 @@ public class PlayerDeathCallback {
       if(bossFight == null) return;
       if(bossFight.getLeft() == BossFights.DRAGON){
          DragonBossFight.playerDied(newPlayer);
-         Timer timer = new Timer();
-         timer.schedule(new TimerTask() {
+         Arcananovum.addTickTimerCallback(new GenericTimer(20, new TimerTask() {
             @Override
             public void run(){
                // Give teleport option
-         
+   
                MutableText deathMsg1 = Text.literal("")
                      .append(Text.literal("You have ").formatted(Formatting.AQUA))
                      .append(Text.literal("died").formatted(Formatting.RED, Formatting.BOLD, Formatting.ITALIC))
@@ -42,11 +43,11 @@ public class PlayerDeathCallback {
                                  .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to Teleport!")))
                                  .withColor(Formatting.LIGHT_PURPLE).withBold(true)))
                      .append(Text.literal(" to Teleport back to the fight!").formatted(Formatting.AQUA));
-         
+   
                newPlayer.sendMessage(deathMsg1, false);
                newPlayer.sendMessage(deathMsg2, false);
             }
-         }, 1000);
+         }));
       }
    }
 }

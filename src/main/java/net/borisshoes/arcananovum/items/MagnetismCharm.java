@@ -43,6 +43,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
       id = "magnetism_charm";
       name = "Charm of Magnetism";
       rarity = MagicRarity.EMPOWERED;
+      itemVersion = 2;
    
       ItemStack item = new ItemStack(Items.IRON_INGOT);
       NbtCompound tag = item.getOrCreateNbt();
@@ -51,9 +52,10 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Charm of Magnetism\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"You can feel the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"charm\",\"color\":\"gray\"},{\"text\":\" \"},{\"text\":\"tugging \",\"color\":\"dark_green\"},{\"text\":\"on surrounding objects.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to \",\"color\":\"dark_gray\"},{\"text\":\"drag \",\"color\":\"gray\"},{\"text\":\"nearby items near you.\",\"color\":\"dark_gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to toggle the \",\"color\":\"dark_gray\"},{\"text\":\"magnetism \",\"color\":\"gray\"},{\"text\":\"passively\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"You can feel the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"charm\",\"color\":\"gray\"},{\"text\":\" \"},{\"text\":\"tugging \",\"color\":\"dark_green\"},{\"text\":\"on surrounding objects.\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to \",\"color\":\"dark_gray\"},{\"text\":\"drag \",\"color\":\"gray\"},{\"text\":\"nearby items to you.\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to toggle the \",\"color\":\"dark_gray\"},{\"text\":\"magnetism \",\"color\":\"gray\"},{\"text\":\"passively\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to temporarily disable the \",\"color\":\"dark_gray\"},{\"text\":\"passive\",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\" pull\",\"color\":\"gray\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
@@ -72,21 +74,23 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
    
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack charm){
-      boolean active = charm.getNbt().getCompound("arcananovum").getBoolean("active");
-      
-      if(active && world.getServer().getTicks() % 6 == 0){
-         Vec3d playerPos = player.getEyePos();
-         
-         Box box = new Box(playerPos,playerPos).expand(passiveRange);
-         List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity) -> entity.getType() == EntityType.ITEM);
+      if(!player.isSneaking()){
+         boolean active = charm.getNbt().getCompound("arcananovum").getBoolean("active");
    
-         for(ItemEntity item : items){
-            double x = playerPos.getX() - item.getX();
-            double y = playerPos.getY() - item.getY();
-            double z = playerPos.getZ() - item.getZ();
-            double speed = .06;
-            double heightMod = .04;
-            item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+         if(active && world.getServer().getTicks() % 6 == 0){
+            Vec3d playerPos = player.getEyePos();
+      
+            Box box = new Box(playerPos,playerPos).expand(passiveRange);
+            List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity) -> entity.getType() == EntityType.ITEM);
+      
+            for(ItemEntity item : items){
+               double x = playerPos.getX() - item.getX();
+               double y = playerPos.getY() - item.getY();
+               double z = playerPos.getZ() - item.getZ();
+               double speed = .06;
+               double heightMod = .04;
+               item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+            }
          }
       }
    }

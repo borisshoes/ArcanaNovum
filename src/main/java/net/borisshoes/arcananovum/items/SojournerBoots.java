@@ -48,7 +48,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
       id = "sojourner_boots";
       name = "Sojourner's Boots";
       rarity = MagicRarity.LEGENDARY;
-      maxEnergy = 300; // +250% speed
+      maxEnergy = 500; // +500% speed
       
       ItemStack item = new ItemStack(Items.LEATHER_BOOTS);
       NbtCompound tag = item.getOrCreateNbt();
@@ -224,7 +224,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"  Sojourner's Boots\\n\\nRarity: Legendary\\n\\nInstead on focusing of the combative properties of the Wings of Zephyr, I tried to see how I could take inspiration from its storage of energy to enhance the wearer while also keeping the desirable\\n\"}");
       list.add("{\"text\":\"  Sojourner's Boots\\n\\nbasic protection of the netherite boots I am trying to infuse.\\n\\nThe result are a pair of boots equal to unenchanted netherite, although I believe I can add enchantments through books with an anvil.\\n\"}");
-      list.add("{\"text\":\"  Sojourner's Boots\\n\\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 300%. On top of that, the momentum carries me up short hills without effort.\"}");
+      list.add("{\"text\":\"  Sojourner's Boots\\n\\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 500%. On top of that, the momentum carries me up short hills without effort.\"}");
       return list;
    }
    
@@ -235,7 +235,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem{
       MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.GRASS_BLOCK,64,null);
       MagicItemIngredient t = new MagicItemIngredient(Items.TERRACOTTA,64,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.STONE,64,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.PACKED_MUD,64,null);
       MagicItemIngredient z = new MagicItemIngredient(Items.SAND,64,null);
       
       ItemStack p1 = new ItemStack(Items.POTION);

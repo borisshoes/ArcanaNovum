@@ -7,10 +7,19 @@
     "BowMixin",
     "CreeperMixin",
     "LivingEntityMixin",
+    "MinecraftServerMixin",
+    "MobEntityMixin",
+    "MobSpawnerLogicMixin",
     "PhantomMixin",
     "PistonMixin",
     "ProjectileMixin",
-    "ServerPlayerMixin"
+    "ServerPlayerMixin",
+    "ServerWorldMixin",
+    "ShapedRecipeMixin",
+    "ShapelessRecipeMixin",
+    "SpawnDensityCapperMixin",
+    "ThreadedAnvilChunkStorageMixin",
+    "WitherEntityMixin"
   ],
   "client": [
   ],
