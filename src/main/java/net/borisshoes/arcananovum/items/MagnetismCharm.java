@@ -30,6 +30,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 
@@ -64,7 +65,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
+      prefNBT = this.addMagicNbt(tag);
       prefNBT.getCompound("arcananovum").putBoolean("active",false);
    
       item.setNbt(prefNBT);
@@ -74,6 +75,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
    
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack charm){
+      //log("Tick Check"+charm.getNbt().getCompound("arcananovum").getBoolean("active"));
       if(!player.isSneaking()){
          boolean active = charm.getNbt().getCompound("arcananovum").getBoolean("active");
    

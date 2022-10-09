@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static net.borisshoes.arcananovum.Arcananovum.log;
+
 public abstract class MagicItem implements Comparable<MagicItem>{
    protected String name;
    protected String id;
@@ -67,9 +69,10 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
+      // For default just replace everything but UUID and update version
       NbtCompound newTag = prefNBT.copy();
       newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putInt("Version",MagicItem.version + getItemVersion());
       stack.setNbt(newTag);
    
       return stack;
@@ -79,7 +82,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       NbtCompound magic = new NbtCompound();
       magic.putString("id",id);
       magic.putInt("Rarity",MagicRarity.getRarityInt(rarity));
-      magic.putInt("Version",version);
+      magic.putInt("Version",MagicItem.version + getItemVersion());
       magic.putString("UUID", "-");
       compound.put("arcananovum",magic);
       return compound;
