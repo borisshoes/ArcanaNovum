@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.utils;
 public class LevelUtils {
    
    public static int levelFromXp(int xp){
-      return (int) Math.floor((-1000 + Math.sqrt(4000*((double)xp)+9000000))/2000);
+      return (int) Math.min(100,Math.floor((-1000 + Math.sqrt(4000*((double)xp)+9000000))/2000));
    }
    
    public static int levelToTotalXp(int lvl){
@@ -17,12 +17,12 @@ public class LevelUtils {
    public static int concFromLevel(int lvl){
       if(lvl < 1){
          return 0;
-      }else if(lvl <= 17){
+      }else if(lvl <= 5){
          return (int)Math.floor(8*Math.sqrt(lvl-1)+5);
       }else if(lvl <= 50){
-         return (int)Math.floor(2*lvl+3);
+         return (int)Math.floor(2*lvl+11);
       }else{
-         return (int)Math.floor(18*Math.sqrt(lvl-1)-23);
+         return (int)Math.floor(37.95*Math.sqrt(lvl+40)-249);
       }
    }
    

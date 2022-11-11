@@ -20,7 +20,7 @@ public class RunicMatrix extends MagicItem implements UsableItem{
    public RunicMatrix(){
       id = "runic_matrix";
       name = "Runic Matrix";
-      rarity = MagicRarity.NONE;
+      rarity = MagicRarity.MUNDANE;
    
       ItemStack item = new ItemStack(Items.END_CRYSTAL);
       NbtCompound tag = item.getOrCreateNbt();

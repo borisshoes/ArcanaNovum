@@ -22,7 +22,7 @@ public class ExoticMatter extends EnergyItem implements UsableItem{
    public ExoticMatter(){
       id = "exotic_matter";
       name = "Exotic Matter";
-      rarity = MagicRarity.NONE;
+      rarity = MagicRarity.MUNDANE;
       maxEnergy = 600000; // Maximum seconds of chunk loading per exotic matter fuel (1 week)
       
       ItemStack item = new ItemStack(Items.STRUCTURE_BLOCK);

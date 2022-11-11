@@ -100,6 +100,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
    @Override
    public boolean addXP(int xp){
+      if(getLevel() == 100 && this.xp + xp < 1000000000){
+         this.xp += xp;
+         return true;
+      }
+      
       int newLevel = LevelUtils.levelFromXp(this.xp+xp);
       if(player instanceof ServerPlayerEntity && getLevel() != newLevel){
          if(getLevel()/5 < newLevel/5){

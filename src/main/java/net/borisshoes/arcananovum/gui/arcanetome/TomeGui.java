@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
@@ -17,15 +18,19 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+
+import javax.annotation.Nullable;
+
+import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TomeGui extends SimpleGui {
-   private int mode;
+   private ArcaneTome.TomeMode mode;
    private ArcaneTome tome;
+   private CompendiumSettings settings;
    /**
     * Constructs a new simple container gui for the supplied player.
     *
@@ -33,87 +38,82 @@ public class TomeGui extends SimpleGui {
     * @param player                      the player to server this gui to
     * @param mode                        mode of screen (profile:0 items:1)
     */
-   public TomeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, int mode, ArcaneTome tome){
+   public TomeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, ArcaneTome.TomeMode mode, ArcaneTome tome){
       super(type, player, false);
       this.mode = mode;
       this.tome = tome;
+      this.settings = new CompendiumSettings();
+   }
+   
+   public TomeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, ArcaneTome.TomeMode mode, ArcaneTome tome, CompendiumSettings settings){
+      super(type, player, false);
+      this.mode = mode;
+      this.tome = tome;
+      this.settings = settings;
    }
    
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
-      if(mode == 0){
+      if(mode == ArcaneTome.TomeMode.PROFILE){
          if(index == 49){
-            tome.buildItemsGui(this,player);
-         }
-         if(index == 4){
+            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+         }else if(index == 4){
             // Guide gui
             ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
             writablebook.setNbt(getGuideBook());
             BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-            LoreGui loreGui = new LoreGui(player,bookBuilder,tome,0);
+            LoreGui loreGui = new LoreGui(player,bookBuilder,tome,ArcaneTome.TomeMode.PROFILE,settings);
             loreGui.open();
          }
-      }else if(mode == 1){
+      }else if(mode == ArcaneTome.TomeMode.COMPENDIUM){
          if(index == 4){
             tome.buildProfileGui(this,player);
-         }
-         if(index == 49){
-            tome.openGui(player,2,"");
-         }
-         if(index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8){
+         }else if(index == 49){
+            tome.openGui(player,ArcaneTome.TomeMode.TINKER,settings);
+         }else if(index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8){
             ItemStack item = this.getSlot(index).getItemStack();
             if(!item.isEmpty()){
-               if(type == ClickType.MOUSE_RIGHT){
-                  MagicItem magicItem = MagicItemUtils.identifyItem(item);
-                  if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-                     player.sendMessage(Text.translatable("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
-                  }else{
-                     if(magicItem.getRecipe() != null){
-                        tome.openRecipeGui(player, magicItem.getId());
-                     }else{
-                        player.sendMessage(Text.translatable("You Cannot Craft This Item").formatted(Formatting.RED),false);
-                     }
-                  }
-               }else{
-                  NbtCompound loreData = MagicItemUtils.identifyItem(item).getBookLore();
-                  if(loreData != null){
-                     ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-                     writablebook.setNbt(loreData);
-                     BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-                     LoreGui loreGui = new LoreGui(player,bookBuilder,tome,1);
-                     loreGui.open();
-                  }else{
-                     player.sendMessage(Text.translatable("No Lore Found For That Item").formatted(Formatting.RED),false);
-                  }
-               }
+               MagicItem magicItem = MagicItemUtils.identifyItem(item);
+               tome.openItemGui(player,settings, magicItem.getId());
             }
-            
+         }else if(index == 0){
+            settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType()));
+            tome.buildCompendiumGui(this,player,settings);
+         }else if(index == 8){
+            MagicRarity curFilter = settings.filterType;
+            if(curFilter == null){
+               settings.setFilterType(MagicRarity.MUNDANE);
+            }else if(curFilter == MagicRarity.MUNDANE){
+               settings.setFilterType(MagicRarity.EMPOWERED);
+            }else if(curFilter == MagicRarity.EMPOWERED){
+               settings.setFilterType(MagicRarity.EXOTIC);
+            }else if(curFilter == MagicRarity.EXOTIC){
+               settings.setFilterType(MagicRarity.LEGENDARY);
+            }else if(curFilter == MagicRarity.LEGENDARY){
+               settings.setFilterType(MagicRarity.MYTHICAL);
+            }else if(curFilter == MagicRarity.MYTHICAL){
+               settings.setFilterType(null);
+            }
+            tome.buildCompendiumGui(this,player,settings);
+         }else if(index == 45){
+            if(settings.getPage() > 1){
+               settings.setPage(settings.getPage()-1);
+               tome.buildCompendiumGui(this,player,settings);
+            }
+         }else if(index == 53){
+            List<MagicItem> items = tome.sortedFilteredItemList(settings);
+            int numPages = (int) Math.ceil((float)items.size()/28.0);
+            if(settings.getPage() < numPages){
+               settings.setPage(settings.getPage()+1);
+               tome.buildCompendiumGui(this,player,settings);
+            }
          }
-      }else if(mode == 2){
+      }else if(mode == ArcaneTome.TomeMode.CRAFTING){
          if(index == 7){
             //Give Items back
             Inventory inv = getSlotRedirect(1).inventory;
-            for(int i=0; i<inv.size();i++){
-               ItemStack stack = inv.getStack(i);
-               if(!stack.isEmpty()){
-         
-                  ItemEntity itemEntity;
-                  boolean bl = player.getInventory().insertStack(stack);
-                  if (!bl || !stack.isEmpty()) {
-                     itemEntity = player.dropItem(stack, false);
-                     if (itemEntity == null) continue;
-                     itemEntity.resetPickupDelay();
-                     itemEntity.setOwner(player.getUuid());
-                     continue;
-                  }
-                  stack.setCount(1);
-                  itemEntity = player.dropItem(stack, false);
-                  if (itemEntity != null) {
-                     itemEntity.setDespawnImmediately();
-                  }
-               }
-            }
-            tome.openGui(player,1,"");
+            returnItems(inv);
+            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
          }else if(index == 25){
             ItemStack item = this.getSlot(index).getItemStack();
             if(MagicItemUtils.isMagic(item)){
@@ -162,46 +162,83 @@ public class TomeGui extends SimpleGui {
          }else if(index == 43){
             //Give Items back
             Inventory inv = getSlotRedirect(1).inventory;
-            for(int i=0; i<inv.size();i++){
-               ItemStack stack = inv.getStack(i);
-               if(!stack.isEmpty()){
-         
-                  ItemEntity itemEntity;
-                  boolean bl = player.getInventory().insertStack(stack);
-                  if (!bl || !stack.isEmpty()) {
-                     itemEntity = player.dropItem(stack, false);
-                     if (itemEntity == null) continue;
-                     itemEntity.resetPickupDelay();
-                     itemEntity.setOwner(player.getUuid());
-                     continue;
-                  }
-                  stack.setCount(1);
-                  itemEntity = player.dropItem(stack, false);
-                  if (itemEntity != null) {
-                     itemEntity.setDespawnImmediately();
-                  }
-               }
-            }
-            tome.openGui(player,0,"");
+            returnItems(inv);
+            tome.openGui(player, ArcaneTome.TomeMode.PROFILE,settings);
          }
-      }else if(mode == 3){
+      }else if(mode == ArcaneTome.TomeMode.RECIPE){
          ItemStack item = this.getSlot(25).getItemStack();
          MagicItem magicItem = MagicItemUtils.identifyItem(item);
          if(index == 7){
-            tome.openGui(player,1,"");
+            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
          }else if(index == 25){
             NbtCompound loreData = magicItem.getBookLore();
             if(loreData != null){
                ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
                writablebook.setNbt(loreData);
                BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-               LoreGui loreGui = new LoreGui(player,bookBuilder,tome,1);
+               LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.RECIPE,settings, magicItem.getId());
                loreGui.open();
             }else{
                player.sendMessage(Text.translatable("No Lore Found For That Item").formatted(Formatting.RED),false);
             }
          }else if(index == 43){
-            tome.openGui(player,2,magicItem.getId());
+            tome.openGui(player, ArcaneTome.TomeMode.CRAFTING,settings,magicItem.getId());
+         }
+      }else if(mode == ArcaneTome.TomeMode.ITEM){
+         ItemStack item = this.getSlot(4).getItemStack();
+         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         
+         if(index == 2){
+            if(magicItem.getRarity() == MagicRarity.MYTHICAL){
+               player.sendMessage(Text.translatable("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
+            }else{
+               if(magicItem.getRecipe() != null){
+                  tome.openRecipeGui(player,settings, magicItem.getId());
+               }else{
+                  player.sendMessage(Text.translatable("You Cannot Craft This Item").formatted(Formatting.RED),false);
+               }
+            }
+         }
+         if(index == 4){
+            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+         }
+         if(index == 6){
+            NbtCompound loreData = magicItem.getBookLore();
+            if(loreData != null){
+               ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
+               writablebook.setNbt(loreData);
+               BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
+               LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
+               loreGui.open();
+            }else{
+               player.sendMessage(Text.translatable("No Lore Found For That Item").formatted(Formatting.RED),false);
+            }
+         }
+      }else if(mode == ArcaneTome.TomeMode.TINKER){
+         Inventory inv = getSlotRedirect(4).inventory;
+         ItemStack item = inv.getStack(0);
+         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         
+         if(index == 10){
+            returnItems(inv);
+            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+         }else if(index == 16){
+            if(magicItem != null){
+               returnItems(inv);
+               tome.openGui(player, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
+            }else{
+               player.sendMessage(Text.translatable("Insert an Item to Tinker").formatted(Formatting.RED),false);
+            }
+         }else if(index ==  22){
+            if(magicItem != null){
+               RenameGui renameGui = new RenameGui(player,tome,settings,item);
+               renameGui.setTitle(Text.translatable("Rename Magic Item"));
+               renameGui.setSlot(0, GuiElementBuilder.from(item));
+               renameGui.setSlot(2, GuiElementBuilder.from(item));
+               renameGui.open();
+            }else{
+               player.sendMessage(Text.translatable("Insert an Item to Tinker").formatted(Formatting.RED),false);
+            }
          }
       }
       return true;
@@ -209,39 +246,53 @@ public class TomeGui extends SimpleGui {
    
    @Override
    public void onClose(){
-      if(mode == 3){ // Recipe gui to compendium
-         tome.openGui(player,1,"");
-      }else if(mode == 2){ // Crafting gui give items back
+      if(mode == ArcaneTome.TomeMode.RECIPE){ // Recipe gui to compendium
+         ItemStack item = this.getSlot(25).getItemStack();
+         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         tome.openGui(player,ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
+      }else if(mode == ArcaneTome.TomeMode.CRAFTING){ // Crafting gui give items back
          //Give Items back
          Inventory inv = getSlotRedirect(1).inventory;
-         for(int i=0; i<inv.size();i++){
-            ItemStack stack = inv.getStack(i);
-            if(!stack.isEmpty()){
+         returnItems(inv);
+         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+      }else if(mode == ArcaneTome.TomeMode.ITEM){ // Item gui to compendium
+         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+      }else if(mode == ArcaneTome.TomeMode.TINKER){ // Give tinker items back
+         //Give Items back
+         Inventory inv = getSlotRedirect(4).inventory;
+         returnItems(inv);
+         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+      }
+   }
+   
+   private void returnItems(Inventory inv){
+      for(int i=0; i<inv.size();i++){
+         ItemStack stack = inv.getStack(i);
+         if(!stack.isEmpty()){
          
-               ItemEntity itemEntity;
-               boolean bl = player.getInventory().insertStack(stack);
-               if (!bl || !stack.isEmpty()) {
-                  itemEntity = player.dropItem(stack, false);
-                  if (itemEntity == null) continue;
-                  itemEntity.resetPickupDelay();
-                  itemEntity.setOwner(player.getUuid());
-                  continue;
-               }
-               stack.setCount(1);
+            ItemEntity itemEntity;
+            boolean bl = player.getInventory().insertStack(stack);
+            if (!bl || !stack.isEmpty()) {
                itemEntity = player.dropItem(stack, false);
-               if (itemEntity != null) {
-                  itemEntity.setDespawnImmediately();
-               }
+               if (itemEntity == null) continue;
+               itemEntity.resetPickupDelay();
+               itemEntity.setOwner(player.getUuid());
+               continue;
+            }
+            stack.setCount(1);
+            itemEntity = player.dropItem(stack, false);
+            if (itemEntity != null) {
+               itemEntity.setDespawnImmediately();
             }
          }
       }
    }
    
-   public int getMode(){
+   public ArcaneTome.TomeMode getMode(){
       return mode;
    }
    
-   public void setMode(int mode){
+   public void setMode(ArcaneTome.TomeMode mode){
       this.mode = mode;
    }
    
@@ -270,5 +321,47 @@ public class TomeGui extends SimpleGui {
       bookLore.putString("title","arcana_guide");
       
       return bookLore;
+   }
+   
+   public static class CompendiumSettings{
+      private ArcaneTome.TomeSort sortType;
+      private MagicRarity filterType;
+      private int page;
+      
+      public CompendiumSettings(){
+         this.sortType = ArcaneTome.TomeSort.RARITY_ASC;
+         this.filterType = null;
+         this.page = 1;
+      }
+      
+      public CompendiumSettings(ArcaneTome.TomeSort sortType, @Nullable MagicRarity filterType, int page){
+         this.sortType = sortType;
+         this.filterType = filterType;
+         this.page = page;
+      }
+   
+      public MagicRarity getFilterType(){
+         return filterType;
+      }
+   
+      public ArcaneTome.TomeSort getSortType(){
+         return sortType;
+      }
+   
+      public int getPage(){
+         return page;
+      }
+   
+      public void setPage(int page){
+         this.page = page;
+      }
+   
+      public void setFilterType(MagicRarity filterType){
+         this.filterType = filterType;
+      }
+   
+      public void setSortType(ArcaneTome.TomeSort sortType){
+         this.sortType = sortType;
+      }
    }
 }

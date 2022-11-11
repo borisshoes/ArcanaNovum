@@ -16,7 +16,7 @@ public class TemporalMoment extends MagicItem{
    public TemporalMoment(){
       id = "temporal_moment";
       name = "Temporal Moment";
-      rarity = MagicRarity.NONE;
+      rarity = MagicRarity.MUNDANE;
       
       ItemStack item = new ItemStack(Items.CLOCK);
       NbtCompound tag = item.getOrCreateNbt();

@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
+import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.items.MagicItems;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -62,7 +63,7 @@ public class ArcanaCommands {
       ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
       writablebook.setNbt(getGuideBook());
       BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-      LoreGui loreGui = new LoreGui(player,bookBuilder,null,-1);
+      LoreGui loreGui = new LoreGui(player,bookBuilder,null, ArcaneTome.TomeMode.NONE,null);
       loreGui.open();
       return 1;
    }

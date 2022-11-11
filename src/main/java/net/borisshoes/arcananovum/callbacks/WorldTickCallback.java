@@ -171,7 +171,7 @@ public class WorldTickCallback {
          blockData.putBoolean("active",active); // Update redstone power
          //System.out.println();
          //System.out.println("ticking anchor at "+pos.toShortString());
-         if(active){
+         if(active && serverWorld.getServer().getTicks() % 20 == 0){
             fuel = Math.max(0,fuel-1);
             blockData.putInt("fuel",fuel);
             //System.out.println("ticking active anchor at "+pos.toShortString()+" | "+chunkPos.x+", "+chunkPos.z);

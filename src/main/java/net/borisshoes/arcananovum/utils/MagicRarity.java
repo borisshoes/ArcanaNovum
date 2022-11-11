@@ -1,7 +1,11 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+
 public enum MagicRarity {
-   NONE(0,"None"),
+   MUNDANE(0,"Mundane"),
    EMPOWERED(1,"Empowered"),
    EXOTIC(2,"Exotic"),
    LEGENDARY(3,"Legendary"),
@@ -15,24 +19,50 @@ public enum MagicRarity {
       this.rarity = rarity;
    }
    
+   public static MagicRarity rarityFromInt(int value){
+      for(MagicRarity magicRarity : MagicRarity.values()){
+         if(magicRarity.rarity == value) return magicRarity;
+      }
+      return null;
+   }
+   
+   public static Text getColoredLabel(MagicRarity rarity, boolean bold){
+      MutableText text;
+      if(rarity == null){
+         text = Text.literal("None").formatted(Formatting.WHITE);
+      }else{
+         text = Text.literal(rarity.label);
+      }
+      if(bold) text = text.formatted(Formatting.BOLD);
+      if (rarity == null) return text;
+   
+      return switch(rarity){
+         case MUNDANE -> text.formatted(Formatting.GRAY);
+         case EMPOWERED -> text.formatted(Formatting.GREEN);
+         case EXOTIC -> text.formatted(Formatting.AQUA);
+         case LEGENDARY -> text.formatted(Formatting.GOLD);
+         case MYTHICAL -> text.formatted(Formatting.LIGHT_PURPLE);
+      };
+   }
+   
    public static int getRarityInt(MagicRarity rarity){
       return rarity.rarity;
    }
    
    public static int getConcentration(MagicRarity rarity){
-      switch(rarity){
-         case NONE -> {return 0;}
-         case EMPOWERED -> {return 1;}
-         case EXOTIC -> {return 5;}
-         case LEGENDARY -> {return 20;}
-         case MYTHICAL -> {return 0;}
-      }
-      return 0;
+      return switch(rarity){
+         case MUNDANE -> 0;
+         case EMPOWERED -> 1;
+         case EXOTIC -> 5;
+         case LEGENDARY -> 20;
+         case MYTHICAL -> 0;
+         default -> 0;
+      };
    }
    
    public static int getFirstCraftXp(MagicRarity rarity){
       switch(rarity){
-         case NONE -> {return 1000;}
+         case MUNDANE -> {return 1000;}
          case EMPOWERED -> {return 5000;}
          case EXOTIC -> {return 10000;}
          case LEGENDARY -> {return 25000;}
@@ -43,7 +73,7 @@ public enum MagicRarity {
    
    public static int getCraftXp(MagicRarity rarity){
       switch(rarity){
-         case NONE -> {return 100;}
+         case MUNDANE -> {return 100;}
          case EMPOWERED -> {return 1000;}
          case EXOTIC -> {return 5000;}
          case LEGENDARY -> {return 15000;}

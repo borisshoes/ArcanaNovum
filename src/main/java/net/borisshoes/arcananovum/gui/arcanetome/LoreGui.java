@@ -10,12 +10,24 @@ import org.jetbrains.annotations.Nullable;
 public class LoreGui extends BookGui {
    
    private final ArcaneTome tome;
-   private final int returnMode;
+   private final ArcaneTome.TomeMode returnMode;
+   private final String returnItem;
+   private final TomeGui.CompendiumSettings settings;
    
-   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, int returnMode){
+   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, ArcaneTome.TomeMode returnMode, TomeGui.CompendiumSettings settings){
       super(player, book);
       this.tome = tome;
       this.returnMode = returnMode;
+      this.returnItem = "";
+      this.settings = settings;
+   }
+   
+   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, ArcaneTome.TomeMode returnMode, TomeGui.CompendiumSettings settings, String returnItem){
+      super(player, book);
+      this.tome = tome;
+      this.returnMode = returnMode;
+      this.returnItem = returnItem;
+      this.settings = settings;
    }
    
    @Override
@@ -26,7 +38,7 @@ public class LoreGui extends BookGui {
    @Override
    public void onClose(){
       if(tome != null){
-         tome.openGui(player,returnMode,"");
+         tome.openGui(player,returnMode,settings,returnItem);
       }
    }
 }

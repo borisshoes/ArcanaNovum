@@ -210,6 +210,7 @@ public class MagicItemUtils {
       return null;
    }
    
+   //TODO Conc from shulker boxes and ender chest
    public static HashMap<MagicItem,Integer> getMagicInventory(ServerPlayerEntity player){
       HashMap<MagicItem,Integer> magicInv = new HashMap<>();
       PlayerInventory inv = player.getInventory();
@@ -231,6 +232,7 @@ public class MagicItemUtils {
       return magicInv;
    }
    
+   //TODO Conc from shulker boxes and ender chest
    public static int getUsedConcentration(ServerPlayerEntity player){
       int concSum = 0;
       HashMap<MagicItem,Integer> magicInv = getMagicInventory(player);
@@ -242,6 +244,8 @@ public class MagicItemUtils {
       return concSum;
    }
    
+   
+   //TODO Conc from shulker boxes and ender chest
    public static List<String> getConcBreakdown(ServerPlayerEntity player){
       ArrayList<String> list = new ArrayList<>();
    
