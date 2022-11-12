@@ -1,17 +1,22 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.items.*;
+import net.minecraft.block.ShulkerBoxBlock;
+import net.minecraft.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.EnderChestInventory;
+import net.minecraft.inventory.Inventories;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.screen.slot.ShulkerBoxSlot;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Pair;
+import net.minecraft.util.collection.DefaultedList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.log;
 
@@ -210,59 +215,128 @@ public class MagicItemUtils {
       return null;
    }
    
-   //TODO Conc from shulker boxes and ender chest
-   public static HashMap<MagicItem,Integer> getMagicInventory(ServerPlayerEntity player){
-      HashMap<MagicItem,Integer> magicInv = new HashMap<>();
+   public static List<MagicInvItem> getMagicInventory(ServerPlayerEntity player){
+      List<MagicInvItem> magicInv = new ArrayList<>();
       PlayerInventory inv = player.getInventory();
+      EnderChestInventory eChest = player.getEnderChestInventory();
+      magicInvHelper(inv,magicInv,false,false);
+      magicInvHelper(eChest,magicInv,true,false);
+      return magicInv;
+   }
+   
+   public static void magicInvHelper(Inventory inv, List<MagicInvItem> magicInv, boolean enderChest, boolean shulker){
       for(int i=0; i<inv.size();i++){
          ItemStack item = inv.getStack(i);
          if(item.isEmpty())
             continue;
          boolean isMagic = MagicItemUtils.isMagic(item);
-         if(!isMagic)
+         boolean isBox = item.isOf(Items.SHULKER_BOX) || item.isOf(Items.WHITE_SHULKER_BOX) || item.isOf(Items.BLACK_SHULKER_BOX) || item.isOf(Items.BLUE_SHULKER_BOX) || item.isOf(Items.BROWN_SHULKER_BOX) || item.isOf(Items.CYAN_SHULKER_BOX) || item.isOf(Items.GRAY_SHULKER_BOX) || item.isOf(Items.GREEN_SHULKER_BOX) || item.isOf(Items.LIGHT_BLUE_SHULKER_BOX) || item.isOf(Items.LIGHT_GRAY_SHULKER_BOX) || item.isOf(Items.LIME_SHULKER_BOX) || item.isOf(Items.MAGENTA_SHULKER_BOX) || item.isOf(Items.ORANGE_SHULKER_BOX) || item.isOf(Items.PINK_SHULKER_BOX) || item.isOf(Items.PURPLE_SHULKER_BOX) || item.isOf(Items.RED_SHULKER_BOX) || item.isOf(Items.YELLOW_SHULKER_BOX);
+         if(isBox && !isMagic){
+            NbtCompound tag = item.getNbt();
+            if(tag == null) continue;
+            NbtCompound bet = tag.getCompound("BlockEntityTag");
+            if(bet == null || !bet.contains("Items",9)) continue;
+            
+            DefaultedList<ItemStack> shulkerItems = DefaultedList.ofSize(27, ItemStack.EMPTY);
+            Inventories.readNbt(bet, shulkerItems);
+            SimpleInventory shulkerInv = new SimpleInventory(27);
+            for(int j = 0; j < shulkerItems.size(); j++){
+               shulkerInv.setStack(j,shulkerItems.get(j));
+            }
+            magicInvHelper(shulkerInv,magicInv,enderChest,true);
+         }
+         if(!isMagic){
             continue;
+         }
          
+      
          MagicItem magicItem = identifyItem(item);
-         if(magicInv.containsKey(magicItem)){
-            magicInv.put(magicItem,magicInv.get(magicItem)+item.getCount());
+         MagicInvItem invItem = new MagicInvItem(magicItem,item.getCount(),enderChest,shulker);
+         int contains = MagicInvItem.invContains(magicInv,invItem);
+         if(contains >= 0){
+            magicInv.get(contains).count += invItem.count;
          }else{
-            magicInv.put(magicItem,item.getCount());
+            magicInv.add(invItem);
          }
       }
-      return magicInv;
    }
    
-   //TODO Conc from shulker boxes and ender chest
    public static int getUsedConcentration(ServerPlayerEntity player){
       int concSum = 0;
-      HashMap<MagicItem,Integer> magicInv = getMagicInventory(player);
-      for(Map.Entry<MagicItem, Integer> entry : magicInv.entrySet()){
-         MagicItem magicItem = entry.getKey();
+      List<MagicInvItem> magicInv = getMagicInventory(player);
+      for(MagicInvItem magicInvItem : magicInv){
+         MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
-         concSum += Math.ceil(entry.getValue()/(double)prefCount) * MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod();
+         double containerMod = 1;
+         if(magicInvItem.eChest) containerMod *= 0.5;
+         if(magicInvItem.shulker) containerMod *= 0.5;
+         concSum += Math.ceil(magicInvItem.count/(double)prefCount) * Math.round(containerMod*MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod());
       }
+      
       return concSum;
    }
    
    
-   //TODO Conc from shulker boxes and ender chest
    public static List<String> getConcBreakdown(ServerPlayerEntity player){
       ArrayList<String> list = new ArrayList<>();
-   
-      HashMap<MagicItem,Integer> magicInv = getMagicInventory(player);
-      for(Map.Entry<MagicItem, Integer> entry : magicInv.entrySet()){
-         MagicItem magicItem = entry.getKey();
+      
+      List<MagicInvItem> magicInv = getMagicInventory(player);
+      Comparator<MagicInvItem> comparator = (MagicInvItem i1, MagicInvItem i2) -> {
+         int r1 = i1.count*MagicRarity.getConcentration(i1.item.getRarity());
+         if(i1.shulker) r1 += 50000;
+         if(i1.eChest) r1 += 100000;
+         int r2 = i2.count*MagicRarity.getConcentration(i2.item.getRarity());
+         if(i2.shulker) r2 += 50000;
+         if(i2.eChest) r2 += 100000;
+         return r1 - r2;
+      };
+      magicInv.sort(comparator);
+      
+      for(MagicInvItem magicInvItem : magicInv){
+         MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
-         int multiplier = (int)Math.ceil(entry.getValue()/(double)prefCount);
-         int itemConc = multiplier * MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod();
+         double containerMod = 1;
+         if(magicInvItem.eChest) containerMod *= 0.5;
+         if(magicInvItem.shulker) containerMod *= 0.5;
+         int multiplier = (int)Math.ceil(magicInvItem.count/(double)prefCount);
+         int itemConc = multiplier * (int)Math.round(containerMod*MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod());
          String multStr = multiplier > 1 ? " x"+multiplier : "";
-         String line = magicItem.getName()+multStr+" ("+itemConc+")";
+         String contStr = magicInvItem.eChest && magicInvItem.shulker ? " [Ender Chest + Shulker Box]" : magicInvItem.eChest ? " [Ender Chest]" : magicInvItem.shulker ? " [Shulker Box]" : "";
+         //String line = magicItem.getName()+multStr+" ("+itemConc+")"+contStr;
+         String line = "[{\"text\":\"- "+magicItem.getName()+"\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+multStr+"\",\"color\":\"blue\"},{\"text\":\" ("+itemConc+")\",\"color\":\"dark_green\"},{\"text\":\""+contStr+"\",\"color\":\"dark_purple\"}]";
          list.add(line);
       }
+      
       return list;
    }
    
    public static MagicItem getItemFromId(String id){
       return MagicItems.registry.get(id);
+   }
+   
+   public static class MagicInvItem {
+      public final boolean eChest;
+      public final boolean shulker;
+      private int count;
+      public final MagicItem item;
+      public final String hash;
+   
+      public MagicInvItem(MagicItem item, int count, boolean eChest, boolean shulker){
+         this.eChest = eChest;
+         this.shulker = shulker;
+         this.count = count;
+         this.item = item;
+         this.hash = item.getId() + eChest + shulker;
+      }
+   
+      public static int invContains(List<MagicInvItem> inv, MagicInvItem invItem){
+         for(int i = 0; i < inv.size(); i++){
+            MagicInvItem magicInvItem = inv.get(i);
+            if(magicInvItem.hash.equals(invItem.hash)){
+               return i;
+            }
+         }
+         return -1;
+      }
    }
 }

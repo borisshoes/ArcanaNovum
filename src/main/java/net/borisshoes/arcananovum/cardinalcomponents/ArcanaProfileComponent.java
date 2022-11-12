@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
+import com.mojang.datafixers.kinds.IdF;
 import net.borisshoes.arcananovum.items.MagicItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
@@ -109,20 +110,40 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(player instanceof ServerPlayerEntity && getLevel() != newLevel){
          if(getLevel()/5 < newLevel/5){
             MinecraftServer server = player.getServer();
+            
             if(server != null){
-               MutableText lvlUpMsg = Text.translatable("")
-                     .append(player.getDisplayName()).formatted(Formatting.ITALIC)
-                     .append(Text.translatable(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
-                     .append(Text.translatable(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
-                     .append(Text.translatable("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
-               server.getPlayerManager().broadcast(lvlUpMsg, false);
+               if(newLevel/5 * 5 == 100){
+                  MutableText playerName = Text.literal("").append(player.getDisplayName()).formatted(Formatting.BOLD, Formatting.UNDERLINE);
+                  
+                  MutableText lvlUpMsg = Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
+                  server.getPlayerManager().broadcast(lvlUpMsg, false);
+                  
+                  lvlUpMsg = Text.literal("")
+                        .append(Text.literal("=== ").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK))
+                        .append(playerName)
+                        .append(Text.literal(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
+                        .append(Text.literal(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
+                        .append(Text.literal("!!!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
+                        .append(Text.literal(" ===").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK));
+                  server.getPlayerManager().broadcast(lvlUpMsg, false);
+   
+                  lvlUpMsg = Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
+                  server.getPlayerManager().broadcast(lvlUpMsg, false);
+               }else{
+                  MutableText lvlUpMsg = Text.literal("")
+                        .append(player.getDisplayName()).formatted(Formatting.ITALIC)
+                        .append(Text.literal(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
+                        .append(Text.literal(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD,Formatting.ITALIC, Formatting.UNDERLINE))
+                        .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
+                  server.getPlayerManager().broadcast(lvlUpMsg, false);
+               }
             }
          }
          SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
-         player.sendMessage(Text.translatable(""),false);
-         player.sendMessage(Text.translatable("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
-         player.sendMessage(Text.translatable("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
-         player.sendMessage(Text.translatable(""),false);
+         player.sendMessage(Text.literal(""),false);
+         player.sendMessage(Text.literal("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
+         player.sendMessage(Text.literal("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
+         player.sendMessage(Text.literal(""),false);
       }
       this.xp += xp;
       this.level = newLevel;
@@ -149,11 +170,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(player instanceof ServerPlayerEntity){
          MinecraftServer server = player.getServer();
          if(server != null){
-            MutableText newCraftMsg = Text.translatable("")
+            MutableText newCraftMsg = Text.literal("")
                   .append(player.getDisplayName()).formatted(Formatting.ITALIC)
-                  .append(Text.translatable(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
-                  .append(Text.translatable(magicItem.getName()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
-                  .append(Text.translatable("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+                  .append(Text.literal(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
+                  .append(Text.literal(magicItem.getName()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
+                  .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
             server.getPlayerManager().broadcast(newCraftMsg, false);
          }
       }

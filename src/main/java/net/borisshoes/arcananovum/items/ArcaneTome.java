@@ -182,9 +182,9 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       display.putString("Name","[{\"text\":\"Arcana Level\",\"italic\":false,\"color\":\"dark_green\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Arcana Level: "+level+"\",\"italic\":false,\"color\":\"green\"}]"));
       if(level == 100){
-         loreList.add(NbtString.of("[{\"text\":\"Total Experience: "+profile.getXP()+"\",\"italic\":false,\"color\":\"green\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+         loreList.add(NbtString.of("[{\"text\":\"Total Experience: "+LevelUtils.readableInt(profile.getXP())+"\",\"italic\":false,\"color\":\"green\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       }else{
-         loreList.add(NbtString.of("[{\"text\":\"Experience: "+LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(level)+"\",\"italic\":false,\"color\":\"green\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+         loreList.add(NbtString.of("[{\"text\":\"Experience: "+LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()))+"/"+LevelUtils.readableInt(LevelUtils.nextLevelNewXp(level))+"\",\"italic\":false,\"color\":\"green\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       }
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"You can increase your arcana by crafting and using magic items!\",\"italic\":false,\"color\":\"light_purple\"}]"));
@@ -201,10 +201,10 @@ public class ArcaneTome extends MagicItem implements UsableItem{
          int filled = (int)Math.round((double)LevelUtils.getCurLevelXp(profile.getXP())/LevelUtils.nextLevelNewXp(profile.getLevel()) * 6.0);
          for(int i = 11; i <= 16; i++){
             if(i >= filled+11){
-               gui.setSlot(i,new GuiElementBuilder(Items.GLASS_BOTTLE).setName(Text.literal("XP: "+LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.GREEN)));
+               gui.setSlot(i,new GuiElementBuilder(Items.GLASS_BOTTLE).setName(Text.literal("XP: "+LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()))+"/"+LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).formatted(Formatting.GREEN)));
          
             }else{
-               gui.setSlot(i,new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Text.literal("XP: "+LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.GREEN)));
+               gui.setSlot(i,new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Text.literal("XP: "+LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()))+"/"+LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).formatted(Formatting.GREEN)));
             }
          }
       }
@@ -251,7 +251,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
          loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
          loreList.add(NbtString.of("[{\"text\":\"Items Taking Concentration:\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
          for(String item : concBreakdown){
-            loreList.add(NbtString.of("[{\"text\":\" - "+item+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+            loreList.add(NbtString.of(item));
          }
       }
       
@@ -460,7 +460,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       tag.putInt("HideFlags",103);
       gui.setSlot(22,GuiElementBuilder.from(nameItem));
    
-      ItemStack upgradePane = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
+      ItemStack upgradePane = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
       tag = upgradePane.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();

@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.utils;
 
+import java.text.DecimalFormat;
+
 public class LevelUtils {
    
    public static int levelFromXp(int xp){
@@ -24,6 +26,10 @@ public class LevelUtils {
       }else{
          return (int)Math.floor(37.95*Math.sqrt(lvl+40)-249);
       }
+   }
+   
+   public static String readableInt(int num){
+      return String.format("%,d", num);
    }
    
    public static int concFromXp(int xp){

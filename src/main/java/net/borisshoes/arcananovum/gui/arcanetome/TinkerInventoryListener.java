@@ -43,17 +43,22 @@ public class TinkerInventoryListener implements InventoryChangedListener {
       ItemStack item = inv.getStack(0);
       MagicItem magicItem = MagicItemUtils.identifyItem(item);
    
-      for(int i = 0; i < 7; i++){
-         ItemStack upgradePane = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
-         NbtCompound tag = upgradePane.getOrCreateNbt();
-         NbtCompound display = new NbtCompound();
-         NbtList loreList = new NbtList();
-         display.putString("Name","[{\"text\":\"Upgrades (Coming Soon):\",\"italic\":false,\"color\":\"dark_purple\"}]");
-         loreList.add(NbtString.of("[{\"text\":\"Unlocked upgrades can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         display.put("Lore",loreList);
-         tag.put("display",display);
-         tag.putInt("HideFlags",103);
+      ItemStack upgradePane;
+      if(magicItem == null){
+         upgradePane = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
+      }else{
+         upgradePane = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
+      }
+      NbtCompound tag = upgradePane.getOrCreateNbt();
+      NbtCompound display = new NbtCompound();
+      NbtList loreList = new NbtList();
+      display.putString("Name","[{\"text\":\"Upgrades (Coming Soon):\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Unlocked upgrades can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      display.put("Lore",loreList);
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
       
+      for(int i = 0; i < 7; i++){
          gui.setSlot(28+i,GuiElementBuilder.from(upgradePane));
          gui.setSlot(37+i,GuiElementBuilder.from(upgradePane));
          gui.setSlot(46+i,GuiElementBuilder.from(upgradePane));
@@ -73,9 +78,9 @@ public class TinkerInventoryListener implements InventoryChangedListener {
          }
       }
       
-      NbtCompound tag = itemWindow.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
+      tag = itemWindow.getOrCreateNbt();
+      display = new NbtCompound();
+      loreList = new NbtList();
       display.putString("Name","[{\"text\":\"Insert a Magic Item to Tinker with it\",\"italic\":false,\"color\":\"dark_purple\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Apply upgrades or rename your item!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
