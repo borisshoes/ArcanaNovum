@@ -36,7 +36,7 @@ public class ExoticMatter extends EnergyItem implements UsableItem{
       loreList.add(NbtString.of("[{\"text\":\"Perhaps it could be \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"useful\",\"italic\":true,\"color\":\"gray\"},{\"text\":\" for something...\",\"italic\":false,\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Used as \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"fuel\",\"color\":\"gold\"},{\"text\":\" for the \"},{\"text\":\"Continuum Anchor\",\"color\":\"dark_blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"600000\",\"color\":\"blue\"},{\"text\":\" Seconds\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"7 Days\",\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Mundane\",\"italic\":false,\"color\":\"gray\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
@@ -67,7 +67,7 @@ public class ExoticMatter extends EnergyItem implements UsableItem{
       
       int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, maxEnergy);
       setEnergy(item,newFuel);
-      loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+newFuel+"\",\"color\":\"blue\"},{\"text\":\" Seconds\"}]"));
+      loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(item)+"\",\"color\":\"blue\"}]"));
       return newFuel;
    }
    
@@ -77,7 +77,22 @@ public class ExoticMatter extends EnergyItem implements UsableItem{
    
       int newFuel = MathHelper.clamp(fuel, 0, maxEnergy);
       setEnergy(item,newFuel);
-      loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+newFuel+"\",\"color\":\"blue\"},{\"text\":\" Seconds\"}]"));
+      loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(item)+"\",\"color\":\"blue\"}]"));
+   }
+   
+   public String getDuration(ItemStack item){
+      int energy = getEnergy(item);
+      String duration;
+      if(energy >= 172800){
+         duration = ((energy/86400)+1)+" Days";
+      }else if(energy >= 6000){
+         duration = ((energy/3600)+1)+" Hours";
+      }else if(energy >= 100){
+         duration = ((energy/60)+1)+" Minutes";
+      }else{
+         duration = energy+" Seconds";
+      }
+      return duration;
    }
    
    private List<String> makeLore(){

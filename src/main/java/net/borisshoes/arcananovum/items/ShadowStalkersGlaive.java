@@ -36,7 +36,7 @@ import java.util.UUID;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,UsableItem,AttackingItem{
+public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,UsableItem{
    private final int teleportLength = 10;
    
    public ShadowStalkersGlaive(){
@@ -110,16 +110,13 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
       return stack;
    }
    
-   @Override
-   public boolean attackEntity(PlayerEntity player, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult){
+   public void entityAttacked(PlayerEntity player, ItemStack item, Entity entity){
       if(entity instanceof MobEntity || entity instanceof PlayerEntity){
-         ItemStack item = player.getStackInHand(hand);
          NbtCompound itemNbt = item.getNbt();
          NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
          magicNbt.putString("lastAttacked",entity.getUuidAsString());
-         magicNbt.putInt("tether",15);
+         magicNbt.putInt("tether",60);
       }
-      return true;
    }
    
    @Override
@@ -144,13 +141,25 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
             magicNbt.putInt("tether",-1);
             magicNbt.putString("lastAttacked","");
          }
+   
+         if(world.getServer().getTicks() % (100) == 0){
+            int energy = getEnergy(item);
+            if(energy < 20){
+               setEnergy(item,20);
+               StringBuilder message = new StringBuilder("Glaive Charges: ");
+               for(int i=1; i<=5; i++){
+                  message.append(20 >= i * 20 ? "✦ " : "✧ ");
+               }
+               player.sendMessage(Text.translatable(message.toString()).formatted(Formatting.BLACK),true);
+            }
+         }
       }
    }
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
       if(!(playerEntity instanceof ServerPlayerEntity player))
-         return false;
+         return true;
       ItemStack item = player.getStackInHand(hand);
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
@@ -178,6 +187,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
                }
                player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
                PLAYER_DATA.get(player).addXP(500); // Add xp
+               return false;
             }
          }else{
             player.sendMessage(Text.translatable("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
@@ -200,13 +210,14 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,Usab
             }
             player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
             PLAYER_DATA.get(player).addXP(100); // Add xp
+            return false;
          }else{
             player.sendMessage(Text.translatable("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
             SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
          }
       }
       
-      return false;
+      return true;
    }
    
    @Override

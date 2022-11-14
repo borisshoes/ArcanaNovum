@@ -104,6 +104,7 @@ public abstract class LivingEntityMixin {
       }
    }
    
+   // Mixin for shadow stalker's glaive doing damage
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V"))
    private void damageDealt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
       LivingEntity entity = (LivingEntity) (Object) this;
@@ -127,7 +128,7 @@ public abstract class LivingEntityMixin {
    }
    
    
-   // Mixin for damage mitigation (Wings of Zephyr, Charm of Felidae
+   // Mixin for damage mitigation for Wings of Zephyr, Charm of Felidae
    @Inject(method = "modifyAppliedDamage", at = @At("RETURN"), cancellable = true)
    private void kineticDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
       float reduced = cir.getReturnValueF();
