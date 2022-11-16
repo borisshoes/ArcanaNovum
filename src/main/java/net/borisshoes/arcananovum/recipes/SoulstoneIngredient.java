@@ -1,13 +1,10 @@
 package net.borisshoes.arcananovum.recipes;
 
-import net.borisshoes.arcananovum.items.MagicItems;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import org.jetbrains.annotations.Nullable;
 
 public class SoulstoneIngredient extends MagicItemIngredient{

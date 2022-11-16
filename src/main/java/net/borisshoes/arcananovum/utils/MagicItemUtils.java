@@ -1,8 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
-import net.borisshoes.arcananovum.items.*;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
+import net.borisshoes.arcananovum.items.core.*;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.inventory.Inventories;
@@ -11,8 +9,6 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.screen.slot.ShulkerBoxSlot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.collection.DefaultedList;
 

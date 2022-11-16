@@ -2,8 +2,8 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.ExoticMatter;
-import net.borisshoes.arcananovum.items.MagicItems;
-import net.borisshoes.arcananovum.items.UsableItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;

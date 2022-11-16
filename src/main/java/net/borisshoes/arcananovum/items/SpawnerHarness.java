@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -22,7 +24,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -36,11 +37,12 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class SpawnerHarness extends MagicItem implements UsableItem{
+public class SpawnerHarness extends MagicItem implements UsableItem {
    public SpawnerHarness(){
       id = "spawner_harness";
       name = "Spawner Harness";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.BLOCKS};
       
       ItemStack item = new ItemStack(Items.SPAWNER);
       NbtCompound tag = item.getOrCreateNbt();

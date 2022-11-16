@@ -4,6 +4,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
+import net.borisshoes.arcananovum.items.core.*;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.recipes.SoulstoneIngredient;
@@ -22,7 +23,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.potion.PotionUtil;
@@ -33,7 +33,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -48,12 +47,13 @@ import java.util.Map;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem, TickingItem{
+public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem, TickingItem {
    
    public ShulkerCore(){
       id = "shulker_core";
       name = "Shulker Core";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
       maxEnergy = Integer.MAX_VALUE;
       initEnergy = 1000;
    

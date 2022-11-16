@@ -1,8 +1,10 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -20,15 +22,12 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,13 +35,14 @@ import java.util.UUID;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ShadowStalkersGlaive extends EnergyItem implements TickingItem,UsableItem{
+public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, UsableItem {
    private final int teleportLength = 10;
    
    public ShadowStalkersGlaive(){
       id = "shadow_stalkers_glaive";
       name = "Shadow Stalkers Glaive";
       rarity = MagicRarity.LEGENDARY;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
       maxEnergy = 100; // 100 Damage stored
    
       ItemStack item = new ItemStack(Items.NETHERITE_SWORD);

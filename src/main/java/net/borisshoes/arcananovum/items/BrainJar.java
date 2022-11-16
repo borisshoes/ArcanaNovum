@@ -2,6 +2,9 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.gui.brainjar.BrainJarGui;
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -20,7 +23,6 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -33,11 +35,12 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class BrainJar extends EnergyItem implements UsableItem,TickingItem{
+public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
    public BrainJar(){
       id = "brain_jar";
       name = "Brain in a Jar";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
       maxEnergy = 1000000;
       
       ItemStack item = new ItemStack(Items.ZOMBIE_HEAD);

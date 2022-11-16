@@ -4,6 +4,9 @@ import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.*;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -28,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
-import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 

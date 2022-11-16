@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -11,13 +12,15 @@ import net.minecraft.nbt.NbtString;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WingsOfZephyr extends EnergyItem{
+public class WingsOfZephyr extends EnergyItem {
    public WingsOfZephyr(){
       id = "wings_of_zephyr";
       name = "Armored Wings of Zephyr";
       rarity = MagicRarity.MYTHICAL;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.ARMOR};
       maxEnergy = 10000; // Store up to 100 points of dmg mitigation at 5 seconds of flight per damage point stored
       // aka 100 ticks/energy per 1 dmg point
+      itemVersion = 1;
       
       ItemStack item = new ItemStack(Items.ELYTRA);
       NbtCompound tag = item.getOrCreateNbt();
@@ -30,9 +33,9 @@ public class WingsOfZephyr extends EnergyItem{
       prot.putInt("lvl",4);
       enchants.add(prot);
       display.putString("Name","[{\"text\":\"Armored Wings of Zephyr\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Gentle Wings\",\"color\":\"gray\"},{\"text\":\" will shield you from the dangers of the land.\",\"color\":\"white\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These wings are equal to an \",\"italic\":false,\"color\":\"white\"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection 4\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"white\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"They also store \",\"italic\":false,\"color\":\"white\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Gentle Wings\",\"color\":\"gray\"},{\"text\":\" will shield you from the \"},{\"text\":\"dangers \",\"color\":\"yellow\"},{\"text\":\"of the land.\",\"color\":\"white\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Wings \",\"color\":\"gray\"},{\"text\":\"act as a \"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection IV\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"white\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"They store \",\"italic\":false,\"color\":\"white\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"gray\"},{\"text\":\" and are \"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Mythical \",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);

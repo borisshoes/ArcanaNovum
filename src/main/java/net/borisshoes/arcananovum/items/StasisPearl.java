@@ -1,18 +1,18 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.inventory.Inventory;
@@ -26,7 +26,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -37,16 +36,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class StasisPearl extends EnergyItem implements TickingItem, UsableItem{
+public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
    
    public StasisPearl(){
       id = "stasis_pearl";
       name = "Stasis Pearl";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
       maxEnergy = 60; // 1 minute recharge time
       initEnergy = 60;
    

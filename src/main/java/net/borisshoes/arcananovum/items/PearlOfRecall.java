@@ -1,5 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
@@ -7,42 +11,35 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem{
+public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem {
    
    public PearlOfRecall(){
       id = "pearl_of_recall";
       name = "Pearl of Recall";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
       maxEnergy = 600; // 10 minute recharge time
       initEnergy = 600;
    

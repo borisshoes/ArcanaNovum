@@ -1,5 +1,9 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
@@ -17,18 +21,18 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlinkArrows extends MagicItem implements RunicArrow{
+public class BlinkArrows extends MagicItem implements RunicArrow {
    
    public BlinkArrows(){
       id = "blink_arrows";
       name = "Blink Arrows";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
    
       ItemStack item = new ItemStack(Items.TIPPED_ARROW);
       NbtCompound tag = item.getOrCreateNbt();

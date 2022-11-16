@@ -1,12 +1,11 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.inventory.Inventory;
@@ -16,7 +15,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
@@ -24,9 +22,7 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -39,15 +35,15 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.block.StairsBlock.HALF;
 
-public class SojournerBoots extends EnergyItem implements TickingItem{
+public class SojournerBoots extends EnergyItem implements TickingItem {
    public SojournerBoots(){
       id = "sojourner_boots";
       name = "Sojourner's Boots";
       rarity = MagicRarity.LEGENDARY;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARMOR};
       maxEnergy = 500; // +500% speed
       
       ItemStack item = new ItemStack(Items.LEATHER_BOOTS);

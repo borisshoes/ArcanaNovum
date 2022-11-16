@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.recipes;
 
-import net.borisshoes.arcananovum.items.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.item.ItemStack;
 

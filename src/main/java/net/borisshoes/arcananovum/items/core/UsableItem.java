@@ -1,4 +1,4 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.core;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Hand;

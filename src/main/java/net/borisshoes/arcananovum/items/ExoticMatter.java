@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -18,11 +20,12 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExoticMatter extends EnergyItem implements UsableItem{
+public class ExoticMatter extends EnergyItem implements UsableItem {
    public ExoticMatter(){
       id = "exotic_matter";
       name = "Exotic Matter";
       rarity = MagicRarity.MUNDANE;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
       maxEnergy = 600000; // Maximum seconds of chunk loading per exotic matter fuel (1 week)
       
       ItemStack item = new ItemStack(Items.STRUCTURE_BLOCK);

@@ -2,19 +2,16 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.IMagicEntityComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntityComponent;
-import net.borisshoes.arcananovum.items.MagicItems;
-import net.borisshoes.arcananovum.items.RunicArrow;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.Iterator;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 
 public class EntityLoadCallbacks {

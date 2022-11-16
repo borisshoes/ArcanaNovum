@@ -1,6 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
@@ -8,7 +11,6 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.sound.Sound;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -20,7 +22,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -31,17 +32,17 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class AncientDowsingRod extends EnergyItem implements UsableItem, TickingItem{
+public class AncientDowsingRod extends EnergyItem implements UsableItem, TickingItem {
    
    public AncientDowsingRod(){
       id = "ancient_dowsing_rod";
       name = "Ancient Dowsing Rod";
       rarity = MagicRarity.EMPOWERED;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
       maxEnergy = 30; // 30 second recharge
    
       ItemStack item = new ItemStack(Items.BLAZE_ROD);

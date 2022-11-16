@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.items.AttackingItem;
+import net.borisshoes.arcananovum.items.core.AttackingItem;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.Entity;

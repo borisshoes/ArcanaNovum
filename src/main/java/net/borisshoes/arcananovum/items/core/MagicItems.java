@@ -1,10 +1,15 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.core;
+
+import net.borisshoes.arcananovum.items.*;
+import net.borisshoes.arcananovum.items.arrows.*;
+import net.borisshoes.arcananovum.items.charms.*;
 
 import java.util.HashMap;
 
 public class MagicItems {
    public static HashMap<String,MagicItem> registry = new HashMap<>();
    
+   // 1.0 Items
    public static final MagicItem LEADERSHIP_CHARM = MagicItems.register("leadership_charm",new LeadershipCharm());
    public static final MagicItem WINGS_OF_ZEPHYR = MagicItems.register("wings_of_zephyr",new WingsOfZephyr());
    public static final MagicItem ARCANE_TOME = MagicItems.register("arcane_tome", new ArcaneTome());
@@ -19,6 +24,7 @@ public class MagicItems {
    public static final MagicItem CONTINUUM_ANCHOR = MagicItems.register("continuum_anchor", new ContinuumAnchor());
    public static final MagicItem SOJOURNER_BOOTS = MagicItems.register("sojourner_boots", new SojournerBoots());
    
+   // 1.1 Items
    public static final MagicItem PICKAXE_OF_PLUTO = MagicItems.register("pickaxe_of_pluto",new PickaxeOfPluto());
    public static final MagicItem RUNIC_MATRIX = MagicItems.register("runic_matrix", new RunicMatrix());
    public static final MagicItem TEMPORAL_MOMENT = MagicItems.register("temporal_moment", new TemporalMoment());
@@ -35,6 +41,22 @@ public class MagicItems {
    public static final MagicItem RUNIC_BOW = MagicItems.register("runic_bow", new RunicBow());
    public static final MagicItem SHADOW_STALKERS_GLAIVE = MagicItems.register("shadow_stalkers_glaive", new ShadowStalkersGlaive());
    
+   // 1.3 Items
+   public static final MagicItem TETHER_ARROWS = MagicItems.register("tether_arrows", new TetherArrows());
+   public static final MagicItem DETONATION_ARROWS = MagicItems.register("detonation_arrows", new DetonationArrows());
+   public static final MagicItem CONCUSSION_ARROWS = MagicItems.register("concussion_arrows", new ConcussionArrows());
+   public static final MagicItem SMOKE_ARROWS = MagicItems.register("smoke_arrows", new SmokeArrows());
+   public static final MagicItem TELESCOPING_BEACON = MagicItems.register("telescoping_beacon", new TelescopingBeacon());
+   public static final MagicItem EXPULSION_ARROWS = MagicItems.register("expulsion_arrows", new ExpulsionArrows());
+   public static final MagicItem GRAVITON_ARROWS = MagicItems.register("graviton_arrows", new GravitonArrows());
+   public static final MagicItem SIPHONING_ARROWS = MagicItems.register("siphoning_arrows", new SiphoningArrows());
+   public static final MagicItem STORM_ARROWS = MagicItems.register("storm_arrows", new StormArrows());
+   public static final MagicItem ARCANE_FLAK_ARROWS = MagicItems.register("arcane_flak_arrows", new ArcaneFlakArrows());
+   public static final MagicItem OVERFLOWING_QUIVER = MagicItems.register("overflowing_quiver", new OverflowingQuiver());
+   public static final MagicItem CINDERS_CHARM = MagicItems.register("cinders_charm", new CindersCharm());
+   public static final MagicItem PHOTONIC_ARROWS = MagicItems.register("photonic_arrows", new PhotonicArrows());
+   public static final MagicItem SPAWNER_INFUSER = MagicItems.register("spawner_infuser", new SpawnerInfuser());
+   public static final MagicItem RUNIC_QUIVER = MagicItems.register("runic_quiver", new RunicQuiver());
    
    private static MagicItem register(String id, MagicItem item){
       registry.put(id,item);

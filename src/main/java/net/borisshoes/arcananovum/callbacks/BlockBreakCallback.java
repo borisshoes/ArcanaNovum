@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
-import net.borisshoes.arcananovum.items.BlockItem;
-import net.borisshoes.arcananovum.items.MagicItem;
+import net.borisshoes.arcananovum.items.core.BlockItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.PickaxeOfPluto;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.block.BlockState;

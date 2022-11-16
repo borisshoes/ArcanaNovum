@@ -1,5 +1,8 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -19,7 +22,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LeadershipCharm extends MagicItem implements TickingItem{
+public class LeadershipCharm extends MagicItem implements TickingItem {
    
    private int tickCount;
    
@@ -27,6 +30,7 @@ public class LeadershipCharm extends MagicItem implements TickingItem{
       id = "leadership_charm";
       name = "Charm of Leadership";
       rarity = MagicRarity.MYTHICAL;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       
       ItemStack item = new ItemStack(Items.AMETHYST_SHARD);
       NbtCompound tag = item.getOrCreateNbt();

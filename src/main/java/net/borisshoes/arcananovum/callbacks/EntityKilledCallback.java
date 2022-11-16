@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.items.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
@@ -8,7 +8,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;

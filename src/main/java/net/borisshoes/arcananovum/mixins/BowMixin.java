@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
-import net.borisshoes.arcananovum.items.MagicItem;
-import net.borisshoes.arcananovum.items.RunicArrow;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.items.RunicBow;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -15,7 +15,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

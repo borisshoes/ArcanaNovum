@@ -1,6 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.items.core.BlockItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -9,11 +12,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -22,7 +22,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -37,7 +36,7 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 
-public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
+public class IgneousCollider extends MagicItem implements UsableItem, BlockItem {
    
    public static final int COOLDOWN = 15; /// Cooldown is 15 seconds
    
@@ -45,6 +44,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem{
       id = "igneous_collider";
       name = "Igneous Collider";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS};
    
       ItemStack item = new ItemStack(Items.LODESTONE);
       NbtCompound tag = item.getOrCreateNbt();

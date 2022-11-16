@@ -4,13 +4,13 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventory;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
-import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
-import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
-import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
+import net.borisshoes.arcananovum.items.core.EnergyItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.recipes.ShulkerCoreIngredient;
-import net.borisshoes.arcananovum.recipes.SoulstoneIngredient;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
@@ -26,14 +26,11 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -45,12 +42,13 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class LevitationHarness extends EnergyItem implements UsableItem,TickingItem{
+public class LevitationHarness extends EnergyItem implements UsableItem, TickingItem {
    
    public LevitationHarness(){
       id = "levitation_harness";
       name = "Levitation Harness";
       rarity = MagicRarity.LEGENDARY;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARMOR};
       maxEnergy = Integer.MAX_VALUE;
       initEnergy = 3600; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
    

@@ -2,6 +2,9 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.items.core.BlockItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -20,7 +23,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.tag.FluidTags;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -38,12 +40,13 @@ import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentIn
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.block.Block.dropStacks;
 
-public class FractalSponge extends MagicItem implements UsableItem, BlockItem{
+public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
    
    public FractalSponge(){
       id = "fractal_sponge";
       name = "Fractal Sponge";
       rarity = MagicRarity.EMPOWERED;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.BLOCKS};
    
       ItemStack item = new ItemStack(Items.SPONGE);
       NbtCompound tag = item.getOrCreateNbt();

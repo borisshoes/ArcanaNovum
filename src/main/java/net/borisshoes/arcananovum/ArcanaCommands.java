@@ -1,13 +1,10 @@
 package net.borisshoes.arcananovum;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.*;
-import eu.pb4.sgui.api.gui.HotbarGui;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
@@ -15,11 +12,10 @@ import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.MagicItem;
-import net.borisshoes.arcananovum.items.MagicItems;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -27,20 +23,16 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 import java.io.BufferedWriter;
@@ -214,7 +206,7 @@ public class ArcanaCommands {
       }
    }
    
-   public static int getItemData(CommandContext<ServerCommandSource> objectCommandContext) {
+   public static int getItemData(CommandContext<ServerCommandSource> objectCommandContext, String name) {
       if (!devMode)
          return 0;
       try {
@@ -224,12 +216,35 @@ public class ArcanaCommands {
             NbtCompound tag = stack.getNbt();
             NbtCompound display = tag.getCompound("display");
             
+            StringBuilder itemName = new StringBuilder();
+            boolean foundFirstCap = false;
+            for(int i = 0; i < name.length(); i++){
+               char c = name.charAt(i);
+               if(Character.isUpperCase(c)){
+                  if(foundFirstCap){
+                     itemName.append(" ").append(c);
+                     continue;
+                  }else{
+                     foundFirstCap = true;
+                  }
+               }
+               itemName.append(c);
+            }
+            String fullName = itemName.toString();
+            String idName = fullName.replace(" ","_").toLowerCase();
+            
             String path = "C:\\Users\\Boris\\Desktop\\itemdata.txt";
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
             ArrayList<String> lines = new ArrayList<>();
             
-            lines.add("id = \"\";");
-            lines.add("name = \"\";");
+            lines.add("public static final MagicItem "+idName.toUpperCase()+" = MagicItems.register(\""+idName+"\", new "+name+"());");
+            
+            lines.add("public class "+name+" extends MagicItem {");
+            lines.add("");
+            lines.add("public "+name+"(){");
+            
+            lines.add("id = \""+idName+"\";");
+            lines.add("name = \""+fullName+"\";");
             lines.add("rarity = MagicRarity.;");
             lines.add("");
             lines.add("ItemStack item = new ItemStack(Items.);");
@@ -248,6 +263,11 @@ public class ArcanaCommands {
             lines.add("display.put(\"Lore\",loreList);");
             lines.add("tag.put(\"display\",display);");
             lines.add("tag.put(\"Enchantments\",enchants);");
+            if(stack.isOf(Items.TIPPED_ARROW)){
+               lines.add("tag.putInt(\"CustomPotionColor\","+tag.getInt("CustomPotionColor")+");");
+               lines.add("tag.putInt(\"HideFlags\",127);");
+               lines.add("item.setCount(64);");
+            }
             lines.add("");
             lines.add("setBookLore(makeLore());");
             lines.add("//setRecipe(makeRecipe());");
@@ -255,6 +275,23 @@ public class ArcanaCommands {
             lines.add("");
             lines.add("item.setNbt(prefNBT);");
             lines.add("prefItem = item;");
+            lines.add("}");
+            lines.add("");
+   
+            lines.add("");
+            lines.add("");
+            lines.add("//TODO: Make Recipe");
+            lines.add("private MagicItemRecipe makeRecipe(){");
+            lines.add("return null;");
+            lines.add("}");
+            lines.add("");
+            lines.add("//TODO: Make Lore");
+            lines.add("private List<String> makeLore(){");
+            lines.add("ArrayList<String> list = new ArrayList<>();");
+            lines.add("list.add(\"{\\\"text\\\":\\\"TODO\\\"}\");");
+            lines.add("return list;");
+            lines.add("}");
+            lines.add("}");
             
             for(String line : lines){
                out.println(line);

@@ -1,12 +1,9 @@
 package net.borisshoes.arcananovum.recipes;
 
-import net.borisshoes.arcananovum.items.MagicItems;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.ShulkerCore;
-import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 public class ShulkerCoreIngredient extends MagicItemIngredient{
    

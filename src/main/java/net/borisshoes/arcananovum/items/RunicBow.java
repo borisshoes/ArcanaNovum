@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
@@ -19,12 +21,13 @@ import net.minecraft.util.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RunicBow extends MagicItem{
+public class RunicBow extends MagicItem {
    
    public RunicBow(){
       id = "runic_bow";
       name = "Runic Bow";
       rarity = MagicRarity.LEGENDARY;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
    
       ItemStack item = new ItemStack(Items.BOW);
       NbtCompound tag = item.getOrCreateNbt();

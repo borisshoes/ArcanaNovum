@@ -1,6 +1,10 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
@@ -19,7 +23,6 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -31,11 +34,12 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class FeastingCharm extends MagicItem implements TickingItem, UsableItem{
+public class FeastingCharm extends MagicItem implements TickingItem, UsableItem {
    public FeastingCharm(){
       id = "feasting_charm";
       name = "Charm of Feasting";
       rarity = MagicRarity.EMPOWERED;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       
       ItemStack item = new ItemStack(Items.RABBIT_STEW);
       NbtCompound tag = item.getOrCreateNbt();

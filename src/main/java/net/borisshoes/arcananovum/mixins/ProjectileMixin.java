@@ -1,12 +1,10 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
-import net.borisshoes.arcananovum.items.MagicItem;
-import net.borisshoes.arcananovum.items.RunicArrow;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;

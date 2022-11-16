@@ -1,5 +1,6 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.core;
 
+import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -10,11 +11,8 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static net.borisshoes.arcananovum.Arcananovum.log;
 
 public abstract class MagicItem implements Comparable<MagicItem>{
    protected String name;
@@ -25,6 +23,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    protected int concentrationModifier;
    protected MagicItemRecipe recipe;
    protected NbtCompound bookLore;
+   protected ArcaneTome.TomeFilter[] categories;
    public static int version = 8;
    public int itemVersion;
    
@@ -47,6 +46,8 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    public NbtCompound getBookLore(){ return bookLore; }
    
    public MagicItemRecipe getRecipe(){ return recipe; }
+   
+   public ArcaneTome.TomeFilter[] getCategories(){ return categories; }
    
    // Returns item stack with preferred attributes but without a unique UUID
    public ItemStack getPrefItem(){

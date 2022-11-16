@@ -4,6 +4,9 @@ import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.arcanetome.*;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -30,9 +33,11 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import static net.borisshoes.arcananovum.Arcananovum.devMode;
+import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ArcaneTome extends MagicItem implements UsableItem{
+public class ArcaneTome extends MagicItem implements UsableItem {
    private IArcanaProfileComponent profile;
    private final int[] craftingSlots = {1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
    
@@ -40,6 +45,7 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       id = "arcane_tome";
       name = "Tome of Arcana Novum";
       rarity = MagicRarity.MUNDANE;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 1;
    
       ItemStack item = new ItemStack(Items.KNOWLEDGE_BOOK);
@@ -278,13 +284,13 @@ public class ArcaneTome extends MagicItem implements UsableItem{
    
    
    public List<MagicItem> sortedFilteredItemList(TomeGui.CompendiumSettings settings){
-      MagicRarity filterType = settings.getFilterType();
+      TomeFilter filterType = settings.getFilterType();
       TomeSort sortType = settings.getSortType();
       List<MagicItem> items;
       if(filterType != null){
          items = new ArrayList<>();
          for(MagicItem magicItem : MagicItems.registry.values().stream().toList()){
-            if(magicItem.getRarity() == filterType){
+            if(TomeFilter.matchesFilter(filterType,magicItem)){
                items.add(magicItem);
             }
          }
@@ -299,9 +305,9 @@ public class ArcaneTome extends MagicItem implements UsableItem{
          }
          case RARITY_DESC -> {
             Comparator<MagicItem> rarityDescComparator = (MagicItem i1, MagicItem i2) -> {
-               int rarityCompare = (i2.rarity.rarity - i1.rarity.rarity);
+               int rarityCompare = (i2.getRarity().rarity - i1.getRarity().rarity);
                if(rarityCompare == 0){
-                  return i1.name.compareTo(i2.name);
+                  return i1.getName().compareTo(i2.getName());
                }else{
                   return rarityCompare;
                }
@@ -363,19 +369,22 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       tag.putInt("HideFlags",103);
       GuiElementBuilder filterBuilt = GuiElementBuilder.from(filterItem);
       filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE)));
       filterBuilt.addLoreLine(Text.literal(""));
-      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(MagicRarity.getColoredLabel(settings.getFilterType(),false)));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(TomeFilter.getColoredLabel(settings.getFilterType())));
       gui.setSlot(8,filterBuilt);
       
       ItemStack sortItem = new ItemStack(Items.NETHER_STAR);
       tag = sortItem.getOrCreateNbt();
       display = new NbtCompound();
-      loreList = new NbtList();
       display.putString("Name","[{\"text\":\"Sort Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
       tag.put("display",display);
       tag.putInt("HideFlags",103);
       GuiElementBuilder sortBuilt = GuiElementBuilder.from(sortItem);
       sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE)));
       sortBuilt.addLoreLine(Text.literal(""));
       sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(TomeSort.getColoredLabel(settings.getSortType())));
       gui.setSlot(0,sortBuilt);
@@ -772,11 +781,77 @@ public class ArcaneTome extends MagicItem implements UsableItem{
       TINKER
    }
    
+   public enum TomeFilter{
+      NONE("None"),
+      MUNDANE("Mundane"),
+      EMPOWERED("Empowered"),
+      EXOTIC("Exotic"),
+      LEGENDARY("Legendary"),
+      MYTHICAL("Mythical"),
+      ITEMS("Items"),
+      BLOCKS("Blocks"),
+      ARROWS("Arrows"),
+      ARMOR("Armor"),
+      EQUIPMENT("Equipment"),
+      CHARMS("Charms");
+   
+      public final String label;
+   
+      TomeFilter(String label){
+         this.label = label;
+      }
+   
+      public static Text getColoredLabel(TomeFilter filter){
+         MutableText text = Text.literal(filter.label);
+      
+         return switch(filter){
+            case NONE -> text.formatted(Formatting.WHITE);
+            case MUNDANE -> text.formatted(Formatting.GRAY);
+            case EMPOWERED -> text.formatted(Formatting.GREEN);
+            case EXOTIC -> text.formatted(Formatting.AQUA);
+            case LEGENDARY -> text.formatted(Formatting.GOLD);
+            case MYTHICAL -> text.formatted(Formatting.LIGHT_PURPLE);
+            case ITEMS -> text.formatted(Formatting.DARK_AQUA);
+            case BLOCKS -> text.formatted(Formatting.DARK_PURPLE);
+            case ARROWS -> text.formatted(Formatting.RED);
+            case ARMOR -> text.formatted(Formatting.BLUE);
+            case EQUIPMENT -> text.formatted(Formatting.DARK_RED);
+            case CHARMS -> text.formatted(Formatting.YELLOW);
+         };
+      }
+   
+      public static TomeFilter cycleFilter(TomeFilter filter, boolean backwards){
+         TomeFilter[] filters = TomeFilter.values();
+         int ind = -1;
+         for(int i = 0; i < filters.length; i++){
+            if(filter == filters[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= filters.length) ind = 0;
+         if(ind < 0) ind = filters.length-1;
+         return filters[ind];
+      }
+      
+      public static boolean matchesFilter(TomeFilter filter, MagicItem item){
+         if(filter == TomeFilter.NONE) return true;
+         TomeFilter[] cats = item.getCategories();
+         if(cats == null){
+            log("WARNING!!! No categories found for: "+item.getName());
+            return false;
+         }
+         for(TomeFilter category : cats){
+            if(filter == category) return true;
+         }
+         return false;
+      }
+   }
+   
    public enum TomeSort{
       RARITY_ASC("Rarity Ascending"),
       RARITY_DESC("Rarity Descending"),
-      NAME("Alphabetical"),
-      UNLOCKED("Unlocked Items");
+      NAME("Alphabetical");
    
       public final String label;
    
@@ -791,18 +866,21 @@ public class ArcaneTome extends MagicItem implements UsableItem{
             case RARITY_ASC -> text.formatted(Formatting.LIGHT_PURPLE);
             case RARITY_DESC -> text.formatted(Formatting.DARK_PURPLE);
             case NAME -> text.formatted(Formatting.GREEN);
-            case UNLOCKED -> text.formatted(Formatting.GOLD);
-            default -> text.formatted(Formatting.WHITE);
          };
       }
       
-      public static TomeSort cycleSort(TomeSort sort){
-         return switch(sort){
-            case NAME -> RARITY_ASC;
-            case RARITY_ASC -> RARITY_DESC;
-            case RARITY_DESC -> NAME;
-            default -> RARITY_ASC;
-         };
+      public static TomeSort cycleSort(TomeSort sort, boolean backwards){
+         TomeSort[] sorts = TomeSort.values();
+         int ind = -1;
+         for(int i = 0; i < sorts.length; i++){
+            if(sort == sorts[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= sorts.length) ind = 0;
+         if(ind < 0) ind = sorts.length-1;
+         return sorts[ind];
       }
    }
 }

@@ -2,6 +2,9 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.items.core.LeftClickItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.block.*;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -22,7 +25,7 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class PickaxeOfPluto extends MagicItem implements LeftClickItem,TickingItem{
+public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingItem {
    public static final ArrayList<Block> VEIN_ORES = new ArrayList<>(Arrays.asList(
          Blocks.COAL_ORE,
          Blocks.DEEPSLATE_COAL_ORE,
@@ -52,6 +55,7 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem,TickingIt
       id = "pickaxe_of_pluto";
       name = "Ancient Pickaxe of Pluto";
       rarity = MagicRarity.MYTHICAL;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.EQUIPMENT};
    
       ItemStack item = new ItemStack(Items.NETHERITE_PICKAXE);
       NbtCompound tag = item.getOrCreateNbt();

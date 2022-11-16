@@ -1,5 +1,8 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -12,8 +15,6 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
@@ -21,12 +22,13 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FelidaeCharm extends MagicItem implements UsableItem{
+public class FelidaeCharm extends MagicItem implements UsableItem {
    
    public FelidaeCharm(){
       id = "felidae_charm";
       name = "Charm of Felidae";
       rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 1;
    
       ItemStack item = new ItemStack(Items.STRING);

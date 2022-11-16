@@ -1,15 +1,16 @@
-package net.borisshoes.arcananovum.items;
+package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.TickingItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -18,7 +19,6 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -30,11 +30,10 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 
-public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
+public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem {
    
    private final int activeLength = 15;
    private final int activeRange = 3;
@@ -44,6 +43,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem,UsableItem{
       id = "magnetism_charm";
       name = "Charm of Magnetism";
       rarity = MagicRarity.EMPOWERED;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 2;
    
       ItemStack item = new ItemStack(Items.IRON_INGOT);

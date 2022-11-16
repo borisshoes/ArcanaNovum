@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.items.FelidaeCharm;
+import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.LivingEntity;

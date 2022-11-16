@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -16,11 +18,12 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RunicMatrix extends MagicItem implements UsableItem{
+public class RunicMatrix extends MagicItem implements UsableItem {
    public RunicMatrix(){
       id = "runic_matrix";
       name = "Runic Matrix";
       rarity = MagicRarity.MUNDANE;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
    
       ItemStack item = new ItemStack(Items.END_CRYSTAL);
       NbtCompound tag = item.getOrCreateNbt();
@@ -31,7 +34,7 @@ public class RunicMatrix extends MagicItem implements UsableItem{
       display.putString("Name","[{\"text\":\"Runic Matrix\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true}]");
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false},{\"text\":\"Runes \",\"color\":\"light_purple\"},{\"text\":\"engraved on this \",\"color\":\"dark_purple\"},{\"text\":\"crystalline \",\"color\":\"aqua\"},{\"text\":\"structure\",\"color\":\"dark_purple\"},{\"text\":\" shift\",\"color\":\"blue\"},{\"text\":\" constantly.\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"They \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"slide\",\"color\":\"blue\"},{\"text\":\" to form different combinations of \"},{\"text\":\"runic \",\"color\":\"light_purple\"},{\"text\":\"equations\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"matrix \",\"color\":\"light_purple\"},{\"text\":\"allows for the \"},{\"text\":\"invokation \",\"color\":\"aqua\"},{\"text\":\"of many different \"},{\"text\":\"effects\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"matrix \",\"color\":\"light_purple\"},{\"text\":\"allows for the \"},{\"text\":\"invocation \",\"color\":\"aqua\"},{\"text\":\"of many different \"},{\"text\":\"effects\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Mundane\",\"italic\":false,\"color\":\"gray\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);

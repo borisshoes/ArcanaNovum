@@ -2,8 +2,8 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.MagicItem;
-import net.borisshoes.arcananovum.items.MagicItems;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
@@ -12,7 +12,6 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 

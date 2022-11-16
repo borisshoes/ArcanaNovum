@@ -5,6 +5,7 @@ import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.items.*;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -77,22 +78,28 @@ public class TomeGui extends SimpleGui {
                tome.openItemGui(player,settings, magicItem.getId());
             }
          }else if(index == 0){
-            settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType()));
+            boolean backwards = type == ClickType.MOUSE_RIGHT;
+            boolean middle = type == ClickType.MOUSE_MIDDLE;
+            if(middle){
+               settings.setSortType(ArcaneTome.TomeSort.RARITY_ASC);
+            }else{
+               settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType(),backwards));
+            }
+            
             tome.buildCompendiumGui(this,player,settings);
          }else if(index == 8){
-            MagicRarity curFilter = settings.filterType;
-            if(curFilter == null){
-               settings.setFilterType(MagicRarity.MUNDANE);
-            }else if(curFilter == MagicRarity.MUNDANE){
-               settings.setFilterType(MagicRarity.EMPOWERED);
-            }else if(curFilter == MagicRarity.EMPOWERED){
-               settings.setFilterType(MagicRarity.EXOTIC);
-            }else if(curFilter == MagicRarity.EXOTIC){
-               settings.setFilterType(MagicRarity.LEGENDARY);
-            }else if(curFilter == MagicRarity.LEGENDARY){
-               settings.setFilterType(MagicRarity.MYTHICAL);
-            }else if(curFilter == MagicRarity.MYTHICAL){
-               settings.setFilterType(null);
+            boolean backwards = type == ClickType.MOUSE_RIGHT;
+            boolean middle = type == ClickType.MOUSE_MIDDLE;
+            if(middle){
+               settings.setFilterType(ArcaneTome.TomeFilter.NONE);
+            }else{
+               settings.setFilterType(ArcaneTome.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
+            }
+            
+            List<MagicItem> items = tome.sortedFilteredItemList(settings);
+            int numPages = (int) Math.ceil((float)items.size()/28.0);
+            if(settings.getPage() > numPages){
+               settings.setPage(numPages);
             }
             tome.buildCompendiumGui(this,player,settings);
          }else if(index == 45){
@@ -325,22 +332,22 @@ public class TomeGui extends SimpleGui {
    
    public static class CompendiumSettings{
       private ArcaneTome.TomeSort sortType;
-      private MagicRarity filterType;
+      private ArcaneTome.TomeFilter filterType;
       private int page;
       
       public CompendiumSettings(){
          this.sortType = ArcaneTome.TomeSort.RARITY_ASC;
-         this.filterType = null;
+         this.filterType = ArcaneTome.TomeFilter.NONE;
          this.page = 1;
       }
       
-      public CompendiumSettings(ArcaneTome.TomeSort sortType, @Nullable MagicRarity filterType, int page){
+      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, int page){
          this.sortType = sortType;
          this.filterType = filterType;
          this.page = page;
       }
    
-      public MagicRarity getFilterType(){
+      public ArcaneTome.TomeFilter getFilterType(){
          return filterType;
       }
    
@@ -356,7 +363,7 @@ public class TomeGui extends SimpleGui {
          this.page = page;
       }
    
-      public void setFilterType(MagicRarity filterType){
+      public void setFilterType(ArcaneTome.TomeFilter filterType){
          this.filterType = filterType;
       }
    

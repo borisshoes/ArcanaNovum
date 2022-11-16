@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
-import net.borisshoes.arcananovum.items.MagicItems;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -8,7 +8,6 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;

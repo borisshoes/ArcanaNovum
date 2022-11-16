@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -12,11 +13,12 @@ import net.minecraft.nbt.NbtString;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TemporalMoment extends MagicItem{
+public class TemporalMoment extends MagicItem {
    public TemporalMoment(){
       id = "temporal_moment";
       name = "Temporal Moment";
       rarity = MagicRarity.MUNDANE;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
       
       ItemStack item = new ItemStack(Items.CLOCK);
       NbtCompound tag = item.getOrCreateNbt();

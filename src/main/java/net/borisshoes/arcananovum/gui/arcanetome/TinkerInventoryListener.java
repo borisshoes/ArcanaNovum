@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;

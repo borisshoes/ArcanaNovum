@@ -1,6 +1,10 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.items.core.BlockItem;
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -20,10 +24,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -35,17 +36,17 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
-public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem{
+public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem {
    public static final ChunkTicketType<ChunkPos> TICKET_TYPE = ChunkTicketType.create("ArcanaNovum_Anchor", Comparator.comparingLong(ChunkPos::toLong));
    
    public ContinuumAnchor(){
       id = "continuum_anchor";
       name = "Continuum Anchor";
       rarity = MagicRarity.LEGENDARY;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.BLOCKS};
       itemVersion = 1;
       
       ItemStack item = new ItemStack(Items.RESPAWN_ANCHOR);

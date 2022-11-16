@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.items.LevitationHarness;
-import net.borisshoes.arcananovum.items.UsableItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
