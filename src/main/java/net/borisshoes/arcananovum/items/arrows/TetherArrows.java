@@ -2,18 +2,30 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TetherArrows extends MagicItem {
+public class TetherArrows extends MagicItem implements RunicArrow {
    
    public TetherArrows(){
       id = "tether_arrows";
@@ -28,11 +40,8 @@ public class TetherArrows extends MagicItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name", "[{\"text\":\"Runic Arrows - Tether\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Runic Arrows\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" make use of the Runic Matrix\",\"color\":\"dark_purple\"},{\"text\":\" to create \",\"color\":\"dark_purple\"},{\"text\":\"unique effects\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Runic Arrows\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" will \",\"color\":\"dark_purple\"},{\"text\":\"only\",\"color\":\"dark_aqua\",\"italic\":true},{\"text\":\" \",\"color\":\"dark_aqua\"},{\"text\":\"activate their effect when fired from a \",\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"arrows can be refilled inside a \",\"color\":\"light_purple\"},{\"text\":\"Runic Quiver.\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Tether Arrows:\",\"italic\":false,\"color\":\"gray\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      addRunicArrowLore(loreList);
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"arrows\",\"color\":\"light_purple\"},{\"text\":\" can be refilled inside a \"},{\"text\":\"Runic Quiver\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Runic Arrows \",\"color\":\"light_purple\"},{\"text\":\"pull\",\"color\":\"aqua\"},{\"text\":\" you to a block like a \"},{\"text\":\"grappling hook\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"They will also \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"pull\",\"color\":\"aqua\"},{\"text\":\" a hit \"},{\"text\":\"entity \",\"color\":\"gray\"},{\"text\":\"towards you.\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
@@ -50,6 +59,70 @@ public class TetherArrows extends MagicItem {
       
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && entityHitResult.getEntity() instanceof LivingEntity entity){
+         Vec3d hitPos = entityHitResult.getPos();
+         Vec3d motion = player.getPos().subtract(hitPos);
+         Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
+         motion = motion.add(horizBoost);
+         Vec3d velocity = new Vec3d(velFromLength(motion.x),-velFromHeight(motion.y)/2,velFromLength(motion.z));
+         entity.setVelocity(velocity);
+         ParticleEffectUtils.tetherArrowEntity(player.getWorld(),entity,player);
+         SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
+      }
+   }
+   
+   @Override
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
+      if(arrow.getOwner() instanceof ServerPlayerEntity player){
+         //Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
+         Vec3d hitPos = blockHitResult.getPos();
+         Vec3d motion = hitPos.subtract(player.getPos());
+         Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
+         motion = motion.add(horizBoost);
+         Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
+         player.setVelocity(velocity);
+         player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+         ParticleEffectUtils.tetherArrowGrapple(player.getWorld(),player,blockHitResult.getPos());
+         SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_2, SoundCategory.PLAYERS,.8f,.6f);
+      }
+      
+   }
+   
+   private double velFromLength(double d){
+      double a = .98; // Drag
+      return -20*d*Math.log(a);
+   }
+   
+   private double velFromHeight(double h){
+      double a = .98; // Drag
+      double b = .08; // Gravity
+      if(h < 0) h = 0;
+      if(h < 1){
+         h += 0.5;
+      }else if(h > 1){
+         h += 1.5;
+      }
+      
+      double exp = -Math.pow(a,(h/(a*b) - h/b));
+      double n = 20*a*b*(lambertNeg(exp/Math.E)+1);
+      return n/(a-1);
+   }
+   
+   
+   private double appx1(double x, double y){
+      return x - (x*Math.exp(x)-y)/((x+1)*Math.exp(x));
+   }
+   
+   private double appx2(double x, double y){
+      return appx1(appx1(appx1(appx1(appx1(appx1(appx1(appx1(x,y),y),y),y),y),y),y),y);
+   }
+   
+   private double lambertNeg(double y){
+      return y > -1/Math.E ? (y > 0 ? 0 : appx2(appx2(appx2(appx2(appx2(appx2(appx2(appx2(-2,y),y),y),y),y),y),y),y)) : 0;
    }
    
    

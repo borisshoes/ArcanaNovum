@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ContinuumAnchor;
 import net.borisshoes.arcananovum.items.IgneousCollider;
+import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -13,7 +14,9 @@ import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
@@ -136,6 +139,23 @@ public class WorldTickCallback {
                   PlayerEntity nearestPlayer = entityWorld.getClosestPlayer(found,25);
                   if(nearestPlayer != null)
                      found.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES,nearestPlayer.getEyePos());
+               }
+            }else if(id.equals(MagicItems.ARCANE_FLAK_ARROWS.getId())){
+               int armTime = magicData.getInt("armTime");
+               if(armTime > 0){
+                  armTime--;
+                  magicData.putInt("armTime",armTime);
+               }
+   
+               Entity found = serverWorld.getEntity(UUID.fromString(uuid));
+               if(found instanceof PersistentProjectileEntity arrow && armTime == 0){
+                  double senseRange = 4;
+                  List<Entity> triggerTargets = serverWorld.getOtherEntities(found,found.getBoundingBox().expand(senseRange*2),
+                        e -> !e.isSpectator() && e.distanceTo(found) <= senseRange && e instanceof LivingEntity && !e.isOnGround());
+                  if(triggerTargets.size() > 0){
+                     iter2.remove();
+                     ArcaneFlakArrows.detonate(arrow);
+                  }
                }
             }
          }

@@ -65,9 +65,10 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = this.addMagicNbt(tag);
-      prefNBT.getCompound("arcananovum").putBoolean("active",false);
-   
+      tag = this.addMagicNbt(tag);
+      tag.getCompound("arcananovum").putBoolean("active",false);
+      prefNBT = tag;
+      
       item.setNbt(prefNBT);
       prefItem = item;
    

@@ -2,20 +2,140 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.particle.FireworksSparkParticle;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.*;
 
 import javax.annotation.Nullable;
+import java.awt.*;
+import java.util.List;
 import java.util.TimerTask;
 
 public class ParticleEffectUtils {
+   
+   public static void arcaneFlakArrowDetonate(ServerWorld world, Vec3d pos, int calls){
+      //ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x0085de)),1.4f);
+      double radius = .5+calls*(4.0/5.0);
+      double radius2 = radius*.75;
+      sphere(world,null,pos,ParticleTypes.WITCH,radius,(int)(radius*radius+radius*20+10),3,0.3,0,0);
+      sphere(world,null,pos,ParticleTypes.DRAGON_BREATH,radius2,(int)(radius2*radius2+radius2*20+10),3,0.3,0,0);
+      world.spawnParticles(ParticleTypes.FLASH,pos.x,pos.y,pos.z,1,0,0,0,1);
+      
+      if(calls < 5){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               arcaneFlakArrowDetonate(world, pos,calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void gravitonArrowEmit(ServerWorld world, Vec3d center, List<Entity> entities){
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x000ea8)),1f);
+      ParticleEffect dust2 = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x000754)),1.5f);
+      int count = 30;
+      double range = .3;
+   
+      world.spawnParticles(dust,center.x,center.y,center.z,300,1.5,1.5,1.5,.01);
+      world.spawnParticles(ParticleTypes.PORTAL,center.x,center.y,center.z,100,.5,.5,.5,1);
+      sphere(world,null,center,dust2,.6,50,2,0.1,0,0);
+      
+      for(Entity e : entities){
+         Vec3d pos = e.getPos().add(0,e.getHeight()/2,0);
+         world.spawnParticles(dust,pos.x,pos.y,pos.z,count,range,range,range,.01);
+      }
+   }
+   
+   public static void expulsionArrowEmit(ServerWorld world, Vec3d pos, double range, int calls){
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x0085de)),1.4f);
+      double radius = .5+calls*(range/5);
+      sphere(world,null,pos,dust,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,0);
+      if(calls < 5){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               expulsionArrowEmit(world, pos,range,calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void smokeArrowEmit(ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range, int calls){
+      if(start == null && entity == null) return;
+      Vec3d pos = entity == null ? start : entity.getPos();
+      int count = (int)(40*range*range);
+      
+      List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(pos) < 15000);
+      for(ServerPlayerEntity player : players){
+         world.spawnParticles(player,ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,true,pos.x,pos.y,pos.z,count,range,range,range,.01);
+         world.spawnParticles(player,ParticleTypes.LARGE_SMOKE,true,pos.x,pos.y,pos.z,count,range,range,range,.01);
+      }
+      
+      if(calls < 20){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
+            @Override
+            public void run(){
+               smokeArrowEmit(world, pos, entity,range,calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void concussionArrowShot(ServerWorld world, Vec3d pos, double range, int calls){
+      double radius = .5+calls*(range/5);
+      sphere(world,null,pos,ParticleTypes.SQUID_INK,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,0);
+      if(calls < 5){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               concussionArrowShot(world, pos, range,calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void photonArrowShot(ServerWorld world, LivingEntity entity, Vec3d p2, float brightness){
+      Vec3d p1 = entity.getEyePos().subtract(0,entity.getHeight()/4,0);
+      int intervals = (int) (p1.subtract(p2).length() * 10);
+      double delta = 0.03;
+      double speed = 1;
+      int count = 3;
+      double dx = (p2.x-p1.x)/intervals;
+      double dy = (p2.y-p1.y)/intervals;
+      double dz = (p2.z-p1.z)/intervals;
+      for(int i = 0; i < intervals; i++){
+         double x = p1.x + dx*i;
+         double y = p1.y + dy*i;
+         double z = p1.z + dz*i;
+         
+         float hue = i/((float)intervals);
+         Color c = Color.getHSBColor(hue, 1f, brightness);
+         ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(c.getRGB())),.6f);
+   
+         world.spawnParticles(dust,x,y,z,count,delta,delta,delta,speed);
+      }
+   }
+   
+   public static void tetherArrowEntity(ServerWorld world, LivingEntity entity, ServerPlayerEntity player){
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0xa6a58a)),.4f);
+      double len = player.getPos().subtract(entity.getPos()).length();
+      line(world,null,player.getPos().add(0,player.getHeight()/2,0),entity.getPos().add(0,entity.getHeight()/2,0),dust,(int)(20*len),3,0.03,1);
+   }
+   
+   public static void tetherArrowGrapple(ServerWorld world, ServerPlayerEntity player, Vec3d pos){
+      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0xa6a58a)),.4f);
+      double len = player.getPos().subtract(pos).length();
+      line(world,null,player.getPos(),pos,dust,(int)(20*len),3,0.03,1);
+   }
    
    public static void blinkArrowTp(ServerWorld world, Vec3d pos){
       world.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.x,pos.y,pos.z,100,.3,.5,.3,0.05);

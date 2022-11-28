@@ -2,18 +2,41 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PhotonicArrows extends MagicItem {
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
+public class PhotonicArrows extends MagicItem implements RunicArrow {
    
    public PhotonicArrows(){
       id = "photonic_arrows";
@@ -28,10 +51,7 @@ public class PhotonicArrows extends MagicItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Runic Arrows - Photonic\",\"italic\":false,\"color\":\"aqua\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Runic Arrows\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" make use of the Runic Matrix\",\"color\":\"dark_purple\"},{\"text\":\" to create \",\"color\":\"dark_purple\"},{\"text\":\"unique effects\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Runic Arrows\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" will \",\"color\":\"dark_purple\"},{\"text\":\"only\",\"color\":\"dark_aqua\",\"italic\":true},{\"text\":\" \",\"color\":\"dark_aqua\"},{\"text\":\"activate their effect when fired from a \",\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"arrows can be refilled inside a \",\"color\":\"light_purple\"},{\"text\":\"Runic Quiver.\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      addRunicArrowLore(loreList);
       loreList.add(NbtString.of("[{\"text\":\"Photonic Arrows:\",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" fly perfectly \"},{\"text\":\"straight \",\"color\":\"aqua\"},{\"text\":\"through the air.\",\"color\":\"white\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"white\"},{\"text\":\"arrows \",\"color\":\"light_purple\"},{\"text\":\"pierce \",\"color\":\"aqua\"},{\"text\":\"all \"},{\"text\":\"entities \",\"color\":\"aqua\"},{\"text\":\"before hitting a \"},{\"text\":\"block\",\"color\":\"aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
@@ -52,7 +72,61 @@ public class PhotonicArrows extends MagicItem {
       prefItem = item;
    }
    
+   public void shoot(World world, LivingEntity entity, PersistentProjectileEntity proj){
+      Vec3d startPos = entity.getEyePos();
+      Vec3d view = entity.getRotationVecClient();
+      Vec3d rayEnd = startPos.add(view.multiply(100));
+      BlockHitResult raycast = world.raycast(new RaycastContext(startPos,rayEnd, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE,entity));
+      EntityHitResult entityHit;
+      List<Entity> hits = new ArrayList<>();
+      Box box = new Box(startPos,raycast.getPos());
+      box = box.expand(2);
+      // Primary hitscan check
+      do{
+         entityHit = ProjectileUtil.raycast(entity,startPos,raycast.getPos(),box,e -> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e),100000);
+         if(entityHit != null && entityHit.getType() == HitResult.Type.ENTITY){
+            hits.add(entityHit.getEntity());
+         }
+      }while(entityHit != null && entityHit.getType() == HitResult.Type.ENTITY);
    
+      // Secondary hitscan check to add lenience
+      List<Entity> hits2 = world.getOtherEntities(entity, box, (e)-> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e) && inRange(e,startPos,raycast.getPos()));
+      hits.addAll(hits2);
+      
+      float damage = (float)MathHelper.clamp(proj.getVelocity().length()*5,1,20);
+      
+      for(Entity hit : hits){
+         hit.damage(DamageSource.magic(proj,entity), damage);
+      }
+      if(world instanceof ServerWorld serverWorld){
+         ParticleEffectUtils.photonArrowShot(serverWorld,entity,raycast.getPos(), MathHelper.clamp(damage/15,.4f,1f));
+      }
+   }
+   
+   private boolean inRange(Entity e, Vec3d start, Vec3d end){
+      double range = .25;
+      Box entityBox = e.getBoundingBox().expand((double)e.getTargetingMargin());
+      double len = end.subtract(start).length();
+      Vec3d trace = end.subtract(start).normalize().multiply(range);
+      int i = 0;
+      Vec3d t2 = trace.multiply(i);
+      while(t2.length() < len){
+         Vec3d t3 = start.add(t2);
+         Box hitBox = new Box(t3.x-range,t3.y-range,t3.z-range,t3.x+range,t3.y+range,t3.z+range);
+         if(entityBox.intersects(hitBox)){
+            return true;
+         }
+         t2 = trace.multiply(i);
+         i++;
+      }
+      return false;
+   }
+   
+   @Override
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){}
+   
+   @Override
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){}
    
    //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
