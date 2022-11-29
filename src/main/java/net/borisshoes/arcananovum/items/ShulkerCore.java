@@ -245,7 +245,7 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       }else{
          gui.notValid();
       }
-      gui.setTitle(Text.translatable("Shulker Core"));
+      gui.setTitle(Text.literal("Shulker Core"));
       listener.finishUpdate();
       
       gui.open();

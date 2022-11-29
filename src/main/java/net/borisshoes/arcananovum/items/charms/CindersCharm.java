@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items.charms;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.*;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.advancement.criterion.Criteria;
@@ -75,7 +76,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"red\"},{\"text\":\"charm \",\"color\":\"gold\"},{\"text\":\"grants passive \"},{\"text\":\"fire immunity\",\"color\":\"gold\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Left Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" a block to set it \",\"color\":\"red\"},{\"text\":\"ablaze\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Hold Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to \",\"color\":\"red\"},{\"text\":\"breathe \",\"color\":\"gold\"},{\"text\":\"a \",\"color\":\"red\"},{\"text\":\"cone of fire\",\"color\":\"gold\"},{\"text\":\" in front of you.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to toggle \",\"color\":\"red\"},{\"text\":\"auto-smelting\",\"color\":\"gold\"},{\"text\":\" of picked up items.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to toggle \",\"color\":\"red\"},{\"text\":\"auto-smelting\",\"color\":\"gold\"},{\"text\":\" of picked up items.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
@@ -105,14 +106,8 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       }
       if(getEnergy(itemStack) < 5) {
          playerEntity.sendMessage(Text.literal("The Charm has no Cinders").formatted(Formatting.RED), true);
-         return false;
+         return true;
       }
-      addEnergy(itemStack, -5);
-      String message = "Cinders: ";
-      for(int i=1; i<=5; i++){
-         message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
-      }
-      playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
       
       if (!CampfireBlock.canBeLit(blockState) && !CandleBlock.canBeLit(blockState) && !CandleCakeBlock.canBeLit(blockState)) {
          BlockPos blockPos2 = blockPos.offset(direction);
@@ -121,16 +116,30 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             BlockState blockState2 = AbstractFireBlock.getState(world, blockPos2);
             world.setBlockState(blockPos2, blockState2, 11);
             world.emitGameEvent(playerEntity, GameEvent.BLOCK_PLACE, blockPos);
-         
+   
+            addEnergy(itemStack, -5);
+            String message = "Cinders: ";
+            for(int i=1; i<=5; i++){
+               message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
+            }
+            playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+            
             return !playerEntity.isCreative();
          } else {
-            return false;
+            return !playerEntity.isCreative();
          }
       } else {
          SoundUtils.playSound(world,blockPos,SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
          world.setBlockState(blockPos, (BlockState)blockState.with(Properties.LIT, true), 11);
          world.emitGameEvent(playerEntity, GameEvent.BLOCK_CHANGE, blockPos);
-      
+   
+         addEnergy(itemStack, -5);
+         String message = "Cinders: ";
+         for(int i=1; i<=5; i++){
+            message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
+         }
+         playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+         
          return !playerEntity.isCreative();
       }
    }
@@ -139,6 +148,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       try{
          NbtCompound itemNbt = item.getNbt();
          NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         if(MagicItemUtils.isMagic(stack)) return null;
          int energyToConsume = (int)Math.ceil(stack.getCount() / 8.0);
          if(magicNbt.getBoolean("active") && getEnergy(item) >= energyToConsume){
             // Smelting registry and auto smelt
