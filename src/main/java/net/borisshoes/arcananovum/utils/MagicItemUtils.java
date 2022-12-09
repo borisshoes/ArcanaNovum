@@ -14,6 +14,7 @@ import net.minecraft.util.collection.DefaultedList;
 
 import java.util.*;
 
+import static net.borisshoes.arcananovum.Arcananovum.devPrint;
 import static net.borisshoes.arcananovum.Arcananovum.log;
 
 public class MagicItemUtils {
@@ -60,7 +61,7 @@ public class MagicItemUtils {
          NbtCompound itemNbt = item.getNbt();
          NbtCompound magicTag = itemNbt.getCompound("arcananovum");
          if(!magicTag.contains("Version",NbtCompound.INT_TYPE)){
-            log("Item Missing Version Data");
+            log(1,"Item Missing Version Data");
             return true; // Version tag missing, needs update
          }
          int version = magicTag.getInt("Version");

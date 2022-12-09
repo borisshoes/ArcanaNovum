@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ContinuumAnchor;
 import net.borisshoes.arcananovum.items.IgneousCollider;
+import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
@@ -11,6 +12,8 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.block.entity.MobSpawnerBlockEntity;
+import net.minecraft.block.entity.SculkShriekerBlockEntity;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -85,6 +88,12 @@ public class WorldTickCallback {
                   }else if(id.equals(MagicItems.IGNEOUS_COLLIDER.getId())){ // Igneous Collider Tick
                      if(state.getBlock().asItem() == MagicItems.IGNEOUS_COLLIDER.getPrefItem().getItem()){ // Check that the block is still there
                         igneousColliderTick(serverWorld, pos, blockData);
+                     }else{
+                        iter.remove();
+                     }
+                  }else if(id.equals(MagicItems.SPAWNER_INFUSER.getId())){ // Spawner Infuser Tick
+                     if(state.getBlock().asItem() == MagicItems.SPAWNER_INFUSER.getPrefItem().getItem()){ // Check that the block is still there
+                        spawnerInfuserTick(serverWorld,pos,blockData);
                      }else{
                         iter.remove();
                      }
@@ -186,20 +195,15 @@ public class WorldTickCallback {
          boolean prevActive = blockData.getBoolean("active");
          int range = blockData.getInt("range");
          blockData.putBoolean("active",active); // Update redstone power
-         //System.out.println();
-         //System.out.println("ticking anchor at "+pos.toShortString());
          if(active && serverWorld.getServer().getTicks() % 20 == 0){
             fuel = Math.max(0,fuel-1);
             blockData.putInt("fuel",fuel);
-            //System.out.println("ticking active anchor at "+pos.toShortString()+" | "+chunkPos.x+", "+chunkPos.z);
          }
          int fuelMarks = (int)Math.min(Math.ceil(4.0*fuel/600000.0),4);
-         //System.out.println("fuel marks: "+fuelMarks +" fuel:"+fuel);
          serverWorld.setBlockState(pos, Blocks.RESPAWN_ANCHOR.getDefaultState().with(Properties.CHARGES,fuelMarks), Block.NOTIFY_ALL);
       
          // Do the chunk loading thing
          if(prevActive && !active){ // Power Down
-            //log("Deactivating chunks");
             for(int i = -range; i <= range; i++){
                for(int j = -range; j <= range; j++){
                   ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
@@ -207,13 +211,53 @@ public class WorldTickCallback {
             }
             serverWorld.playSound(null,pos.getX(),pos.getY(),pos.getZ(), SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.MASTER,1,1.5f);
          }else if(!prevActive && active){ // Power Up
-            //log("Activating chunks");
             for(int i = -range; i <= range; i++){
                for(int j = -range; j <= range; j++){
                   ContinuumAnchor.addChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
                }
             }
             serverWorld.playSound(null,pos.getX(),pos.getY(),pos.getZ(),SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.MASTER,1,.7f);
+         }
+      }
+   }
+   
+   private static void spawnerInfuserTick(ServerWorld serverWorld, BlockPos pos, NbtCompound blockData){
+      if(serverWorld.getServer().getTicks() % 5 == 0){ // Infuser only ticks redstone every quarter second
+         // Check for spawner above, match soulstone type, update redstone power, do particles
+         boolean prevActive = blockData.getBoolean("active");
+         boolean hasRedstone = serverWorld.isReceivingRedstonePower(pos); // Redstone high is ON
+         NbtCompound soulstone = blockData.getCompound("soulstone");
+         boolean hasSoulstone = !soulstone.isEmpty();
+         BlockPos spawnerPos = pos.add(0,2,0);
+         BlockEntity blockEntity = serverWorld.getBlockEntity(spawnerPos);
+         BlockState spawnerState = serverWorld.getBlockState(spawnerPos);
+         boolean hasSpawner =  spawnerState.isOf(Blocks.SPAWNER) && blockEntity instanceof MobSpawnerBlockEntity;
+         
+         if(!hasRedstone || !hasSoulstone || !hasSpawner){
+            if(prevActive) blockData.putBoolean("active", false); // Update active status
+            serverWorld.setBlockState(pos, Blocks.SCULK_SHRIEKER.getDefaultState().with(Properties.CAN_SUMMON,false), Block.NOTIFY_ALL);
+            return;
+         }
+         
+         ItemStack stone = ItemStack.fromNbt(soulstone);
+         String stoneType = Soulstone.getType(stone);
+         MobSpawnerBlockEntity spawnerEntity = (MobSpawnerBlockEntity) blockEntity;
+         NbtCompound spawnerData = spawnerEntity.getLogic().writeNbt(new NbtCompound());
+         NbtCompound spawnData = spawnerData.getCompound("SpawnData");
+         if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompound("entity").contains("id")){
+            if(prevActive) blockData.putBoolean("active", false); // Update active status
+            serverWorld.setBlockState(pos, Blocks.SCULK_SHRIEKER.getDefaultState().with(Properties.CAN_SUMMON,false), Block.NOTIFY_ALL);
+            return;
+         }
+         NbtCompound spawnEntity = spawnData.getCompound("entity");
+         
+         boolean correctType = stoneType.equals(spawnEntity.getString("id"));
+         
+         if(correctType){
+            if(!prevActive) blockData.putBoolean("active", true); // Update active status
+            serverWorld.setBlockState(pos, Blocks.SCULK_SHRIEKER.getDefaultState().with(Properties.CAN_SUMMON,true), Block.NOTIFY_ALL);
+            ParticleEffectUtils.spawnerInfuser(serverWorld,pos,5);
+            SoundUtils.soulSounds(serverWorld,pos,1,5);
          }
       }
    }

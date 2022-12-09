@@ -67,6 +67,7 @@ import net.minecraft.world.gen.feature.Feature;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import static net.borisshoes.arcananovum.Arcananovum.devPrint;
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
@@ -1308,7 +1309,7 @@ public class DragonBossFight {
          if(bossFight.getLeft() == BossFights.DRAGON){
             bossFight.getRight().putString("State", state.name());
          }else{
-            log("Boss fight not valid");
+            devPrint("Boss fight not valid");
          }
       }
    }

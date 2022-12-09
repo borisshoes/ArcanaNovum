@@ -52,8 +52,8 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Soulstone\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"The dark stone \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"crackles\",\"italic\":true,\"color\":\"red\"},{\"text\":\" with \"},{\"text\":\"red energy\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"souls\",\"color\":\"dark_purple\"},{\"text\":\" of mobs \"},{\"text\":\"killed\",\"color\":\"red\",\"italic\":true},{\"text\":\" seems to get \"},{\"text\":\"trapped\",\"color\":\"blue\"},{\"text\":\" inside...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The dark stone \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"crackles\",\"italic\":false,\"color\":\"red\"},{\"text\":\" with \"},{\"text\":\"red energy\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"souls\",\"color\":\"dark_purple\"},{\"text\":\" of mobs \"},{\"text\":\"killed\",\"color\":\"red\",\"italic\":false},{\"text\":\" seems to get \"},{\"text\":\"trapped\",\"color\":\"blue\"},{\"text\":\" inside...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Tier 0 - (0 Mobs Killed)\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));

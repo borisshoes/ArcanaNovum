@@ -57,9 +57,24 @@ public class Arcananovum implements ModInitializer {
       return LOGIN_CALLBACK_LIST.get(callback.getWorld()).addCallback(callback);
    }
    
-   public static void log(String msg){
+   public static void devPrint(String msg){
       if(devMode){
          System.out.println(msg);
+      }
+   }
+   
+   /**
+    * Uses built in logger to log a message
+    * @param level 0 - Info | 1 - Warn | 2 - Error | 3 - Fatal | Else - Debug
+    * @param msg  The {@code String} to be printed.
+    */
+   public static void log(int level, String msg){
+      switch(level){
+         case 0 -> logger.info(msg);
+         case 1 -> logger.warn(msg);
+         case 2 -> logger.error(msg);
+         case 3 -> logger.fatal(msg);
+         default -> logger.debug(msg);
       }
    }
 }

@@ -2,7 +2,9 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.client.particle.FireworksSparkParticle;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -10,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.particle.ShriekParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.*;
@@ -20,6 +23,15 @@ import java.util.List;
 import java.util.TimerTask;
 
 public class ParticleEffectUtils {
+   
+   public static void spawnerInfuser(ServerWorld world, BlockPos pos, int duration){
+      for(int i = 0; i < duration; i++) {
+         world.spawnParticles(new ShriekParticleEffect(i * 5), (double)pos.getX() + 0.5, (double)pos.getY() + SculkShriekerBlock.TOP-0.5, (double)pos.getZ() + 0.5, 1,0.0, 0.0, 0.0,0);
+         world.spawnParticles(new ShriekParticleEffect(i * 5+2), (double)pos.getX() + 0.5, (double)pos.getY() + SculkShriekerBlock.TOP-0.5, (double)pos.getZ() + 0.5, 1,0.0, 0.0, 0.0,0);
+      }
+      world.spawnParticles(ParticleTypes.SCULK_SOUL, (double)pos.getX() + 0.5, (double)pos.getY() + 2.5, (double)pos.getZ() + 0.5, 5,0.5, 0.5, 0.5,0.02);
+      world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, (double)pos.getX() + 0.5, (double)pos.getY() + 2.5, (double)pos.getZ() + 0.5, 5,0.3, 0.3, 0.3,0.02);
+   }
    
    public static void arcaneFlakArrowDetonate(ServerWorld world, Vec3d pos, int calls){
       //ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x0085de)),1.4f);

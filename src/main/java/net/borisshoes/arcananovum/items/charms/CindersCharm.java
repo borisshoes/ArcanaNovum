@@ -45,6 +45,8 @@ import net.minecraft.world.event.GameEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class CindersCharm extends EnergyItem implements TickingItem, UsableItem, LeftClickItem {
    
    private final double range = 7.0;
@@ -124,6 +126,10 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             }
             playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
             
+            if(playerEntity instanceof ServerPlayerEntity player){
+               PLAYER_DATA.get(player).addXP(15); // Add xp
+            }
+            
             return !playerEntity.isCreative();
          } else {
             return !playerEntity.isCreative();
@@ -139,6 +145,10 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
          }
          playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+   
+         if(playerEntity instanceof ServerPlayerEntity player){
+            PLAYER_DATA.get(player).addXP(15); // Add xp
+         }
          
          return !playerEntity.isCreative();
       }
@@ -173,6 +183,10 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
                   player.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
                }
                stack = result;
+   
+               if(player instanceof ServerPlayerEntity serverPlayer){
+                  PLAYER_DATA.get(serverPlayer).addXP(energyToConsume*4); // Add xp
+               }
                return stack;
             }
          }
@@ -240,6 +254,10 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
                if(!entity.isFireImmune()){
                   entity.setFireTicks(2*energy+60);
                   entity.damage(DamageSource.IN_FIRE,1.5f);
+                  
+                  if(playerEntity instanceof ServerPlayerEntity serverPlayer){
+                     PLAYER_DATA.get(serverPlayer).addXP(5); // Add xp
+                  }
                }
             }
          }

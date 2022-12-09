@@ -42,6 +42,7 @@ public class CommandRegisterCallback {
             .then(literal("create").requires(source -> source.hasPermissionLevel(2))
                   .then(argument("id", string()).suggests(ArcanaCommands::getItemSuggestions)
                         .executes(ctx -> ArcanaCommands.createItem(ctx.getSource(), getString(ctx, "id")))))
+            .then(literal("cache").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::cacheCommand))
             .then(literal("help").executes(ArcanaCommands::openGuideBook))
             .then(literal("guide").executes(ArcanaCommands::openGuideBook))
             .then(literal("uuids").requires(source -> source.hasPermissionLevel(2))

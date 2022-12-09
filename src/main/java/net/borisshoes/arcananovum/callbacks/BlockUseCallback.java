@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.gui.spawnerinfuser.SpawnerInfuserGui;
 import net.borisshoes.arcananovum.items.ExoticMatter;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
@@ -42,18 +44,11 @@ public class BlockUseCallback {
                NbtCompound blockData = magicBlock.getData();
                if(blockData.contains("id")){
                   String id = blockData.getString("id");
-                  if(id.equals(MagicItems.CONTINUUM_ANCHOR.getId())){ // Continuum Anchor Check
-                     int curFuel = blockData.getInt("fuel");
-                     if(magicItem instanceof ExoticMatter){ // Try to add fuel
-                        blockData.putInt("fuel",curFuel+((ExoticMatter) magicItem).getEnergy(item));
-                        item.decrement(item.getCount());
-                        item.setNbt(new NbtCompound());
-                     }else if(playerEntity.getMainHandStack().isEmpty() && playerEntity.getMainHandStack().isEmpty() && curFuel > 0){ // Remove fuel if both hands are empty
-                        blockData.putInt("fuel",0);
-                        ItemStack removedFuelItem = MagicItems.EXOTIC_MATTER.getNewItem();
-                        ((ExoticMatter)MagicItemUtils.identifyEnergyItem(removedFuelItem)).setFuel(removedFuelItem,curFuel);
-                        playerEntity.giveItemStack(removedFuelItem);
-                     }
+                  if(id.equals(MagicItems.CONTINUUM_ANCHOR.getId()) && (!playerEntity.isSneaking() || item.isEmpty())){ // Continuum Anchor Check
+                     continuumAnchorUse(playerEntity,(MagicItem)magicItem,item,blockData);
+                     result = ActionResult.SUCCESS;
+                  }else if(id.equals(MagicItems.SPAWNER_INFUSER.getId()) && !playerEntity.isSneaking()){ // Spawner Infuser Interface
+                     spawnerHarnessUse(playerEntity,world,magicBlock);
                      result = ActionResult.SUCCESS;
                   }
                }
@@ -64,6 +59,28 @@ public class BlockUseCallback {
       }catch(Exception e){
          e.printStackTrace();
          return ActionResult.PASS;
+      }
+   }
+   
+   private static void continuumAnchorUse(PlayerEntity playerEntity, MagicItem magicItem, ItemStack item, NbtCompound blockData){
+      int curFuel = blockData.getInt("fuel");
+      if(magicItem instanceof ExoticMatter){ // Try to add fuel
+         blockData.putInt("fuel",curFuel+((ExoticMatter) magicItem).getEnergy(item));
+         item.decrement(item.getCount());
+         item.setNbt(new NbtCompound());
+      }else if(playerEntity.getMainHandStack().isEmpty() && playerEntity.getMainHandStack().isEmpty() && curFuel > 0){ // Remove fuel if both hands are empty
+         blockData.putInt("fuel",0);
+         ItemStack removedFuelItem = MagicItems.EXOTIC_MATTER.getNewItem();
+         ((ExoticMatter)MagicItemUtils.identifyEnergyItem(removedFuelItem)).setFuel(removedFuelItem,curFuel);
+         playerEntity.giveItemStack(removedFuelItem);
+      }
+   }
+   
+   private static void spawnerHarnessUse(PlayerEntity playerEntity, World world, MagicBlock block){
+      if(playerEntity instanceof ServerPlayerEntity player){
+         SpawnerInfuserGui gui = new SpawnerInfuserGui(player,block,world);
+         gui.build();
+         gui.open();
       }
    }
 }

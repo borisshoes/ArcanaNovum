@@ -19,12 +19,27 @@ import net.minecraft.util.Hand;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public abstract class QuiverItem extends MagicItem{
    public static final int size = 9;
    protected Formatting color;
    protected int refillMod;
    
-   protected void refillArrow(ItemStack item){
+   @Override
+   public ItemStack updateItem(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      // For default just replace everything but UUID
+      NbtCompound newTag = prefNBT.copy();
+      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").put("arrows",magicTag.getCompound("type"));
+      newTag.getCompound("arcananovum").putInt("slot",magicTag.getInt("slot"));
+      stack.setNbt(newTag);
+      return stack;
+   }
+   
+   protected void refillArrow(ServerPlayerEntity player, ItemStack item){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
@@ -46,6 +61,7 @@ public abstract class QuiverItem extends MagicItem{
       NbtCompound stack = arrows.getCompound(slot);
       byte count = stack.getByte("Count");
       stack.putByte("Count", (byte) (count+1));
+      PLAYER_DATA.get(player).addXP(50); // Add xp
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayerEntity player, ItemStack bow){

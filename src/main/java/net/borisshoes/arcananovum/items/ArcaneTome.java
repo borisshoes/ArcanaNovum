@@ -36,6 +36,7 @@ import java.util.*;
 import static net.borisshoes.arcananovum.Arcananovum.devMode;
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.items.core.MagicItems.RECOMMENDED_LIST;
 
 public class ArcaneTome extends MagicItem implements UsableItem {
    private IArcanaProfileComponent profile;
@@ -283,7 +284,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    }
    
    
-   public List<MagicItem> sortedFilteredItemList(TomeGui.CompendiumSettings settings){
+   public static List<MagicItem> sortedFilteredItemList(TomeGui.CompendiumSettings settings){
       TomeFilter filterType = settings.getFilterType();
       TomeSort sortType = settings.getSortType();
       List<MagicItem> items;
@@ -299,6 +300,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       }
       
       switch(sortType){
+         case RECOMMENDED -> {
+            items.sort(Comparator.comparingInt(RECOMMENDED_LIST::indexOf));
+         }
          case NAME -> {
             Comparator<MagicItem> nameComparator = Comparator.comparing(MagicItem::getName);
             items.sort(nameComparator);
@@ -319,7 +323,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       return items;
    }
    
-   public List<MagicItem> listToPage(List<MagicItem> items, int page){
+   public static List<MagicItem> listToPage(List<MagicItem> items, int page){
       if(page <= 0){
          return items;
       }else if(28*(page-1) >= items.size()){
@@ -838,7 +842,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
          if(filter == TomeFilter.NONE) return true;
          TomeFilter[] cats = item.getCategories();
          if(cats == null){
-            log("WARNING!!! No categories found for: "+item.getName());
+            log(2,"No categories found for: "+item.getName());
             return false;
          }
          for(TomeFilter category : cats){
@@ -849,6 +853,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    }
    
    public enum TomeSort{
+      RECOMMENDED("Recommended"),
       RARITY_ASC("Rarity Ascending"),
       RARITY_DESC("Rarity Descending"),
       NAME("Alphabetical");
@@ -866,6 +871,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
             case RARITY_ASC -> text.formatted(Formatting.LIGHT_PURPLE);
             case RARITY_DESC -> text.formatted(Formatting.DARK_PURPLE);
             case NAME -> text.formatted(Formatting.GREEN);
+            case RECOMMENDED -> text.formatted(Formatting.YELLOW);
          };
       }
       

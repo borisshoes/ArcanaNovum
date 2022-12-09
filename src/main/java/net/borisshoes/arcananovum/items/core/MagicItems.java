@@ -4,10 +4,12 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.arrows.*;
 import net.borisshoes.arcananovum.items.charms.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class MagicItems {
-   public static HashMap<String,MagicItem> registry = new HashMap<>();
+   public static final HashMap<String,MagicItem> registry = new HashMap<>();
    
    // 1.0 Items
    public static final MagicItem LEADERSHIP_CHARM = MagicItems.register("leadership_charm",new LeadershipCharm());
@@ -63,4 +65,49 @@ public class MagicItems {
       return item;
    }
    
+   public static final ArrayList<MagicItem> RECOMMENDED_LIST = new ArrayList<>(Arrays.asList(
+         ARCANE_TOME,
+         TEMPORAL_MOMENT,
+         RUNIC_MATRIX,
+         EXOTIC_MATTER,
+         MAGNETISM_CHARM,
+         LIGHT_CHARM,
+         FEASTING_CHARM,
+         FELIDAE_CHARM,
+         CINDERS_CHARM,
+         TELESCOPING_BEACON,
+         ANCIENT_DOWSING_ROD,
+         SOULSTONE,
+         ESSENCE_EGG,
+         OVERFLOWING_QUIVER,
+         BRAIN_JAR,
+         PEARL_OF_RECALL,
+         STASIS_PEARL,
+         SPAWNER_HARNESS,
+         FRACTAL_SPONGE,
+         IGNEOUS_COLLIDER,
+         CONTINUUM_ANCHOR,
+         SPAWNER_INFUSER,
+         SHULKER_CORE,
+         LEVITATION_HARNESS,
+         SOJOURNER_BOOTS,
+         SHIELD_OF_FORTITUDE,
+         SHADOW_STALKERS_GLAIVE,
+         RUNIC_BOW,
+         RUNIC_QUIVER,
+         TETHER_ARROWS,
+         DETONATION_ARROWS,
+         SMOKE_ARROWS,
+         CONCUSSION_ARROWS,
+         SIPHONING_ARROWS,
+         ARCANE_FLAK_ARROWS,
+         BLINK_ARROWS,
+         EXPULSION_ARROWS,
+         GRAVITON_ARROWS,
+         STORM_ARROWS,
+         PHOTONIC_ARROWS,
+         WINGS_OF_ZEPHYR,
+         PICKAXE_OF_PLUTO,
+         LEADERSHIP_CHARM
+   ));
 }

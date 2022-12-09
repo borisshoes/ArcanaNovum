@@ -336,7 +336,7 @@ public class TomeGui extends SimpleGui {
       private int page;
       
       public CompendiumSettings(){
-         this.sortType = ArcaneTome.TomeSort.RARITY_ASC;
+         this.sortType = ArcaneTome.TomeSort.RECOMMENDED;
          this.filterType = ArcaneTome.TomeFilter.NONE;
          this.page = 1;
       }

@@ -11,29 +11,37 @@ import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
+import net.borisshoes.arcananovum.gui.cache.CacheGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.event.GameEvent;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -41,8 +49,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static net.borisshoes.arcananovum.Arcananovum.devMode;
-import static net.borisshoes.arcananovum.Arcananovum.log;
+import static net.borisshoes.arcananovum.Arcananovum.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
@@ -101,6 +108,7 @@ public class ArcanaCommands {
       }
    }
    
+   //TODO Check shulkers, quivers, and ender chest
    public static int uuidCommand(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
       ServerCommandSource source = ctx.getSource();
       ArrayList<MutableText> response = new ArrayList<>();
@@ -323,14 +331,29 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         PuzzleGui gui = new PuzzleGui(ScreenHandlerType.GENERIC_9X6,player,null);
-         gui.buildPuzzle();
-         gui.open();
-         
+         //player.getWorld().syncWorldEvent(3007, pos, 0);
+         //player.getWorld().emitGameEvent(GameEvent.SHRIEK, pos, GameEvent.Emitter.of(player));
+         //player.getWorld().spawnParticles(ParticleTypes.SHRIEK,player.getX(),player.getY(),player.getZ(),1,0,0,0,1);
+         //SoundUtils.playSongToPlayer(player, SoundEvents.PARTICLE_SOUL_ESCAPE);
       } catch (Exception e) {
          e.printStackTrace();
       }
       return 0;
+   }
+   
+   public static int cacheCommand(CommandContext<ServerCommandSource> objectCommandContext){
+      try{
+         ServerCommandSource source = objectCommandContext.getSource();
+         ServerPlayerEntity player = source.getPlayerOrThrow();
+   
+         CacheGui gui = new CacheGui(player);
+         gui.buildCompendiumGui();
+         gui.open();
+         return 0;
+      }catch(Exception e){
+         e.printStackTrace();
+         return -1;
+      }
    }
    
    public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> serverCommandSourceCommandContext, SuggestionsBuilder builder){
@@ -415,7 +438,7 @@ public class ArcanaCommands {
    
    public static int testBoss(CommandContext<ServerCommandSource> context){
       ServerCommandSource source = context.getSource();
-      log("Test Boss");
+      devPrint("Test Boss");
       DragonBossFight.test();
       return 0;
    }

@@ -139,11 +139,11 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
       ItemStack item = playerEntity.getStackInHand(hand);
       Direction side = result.getSide();
       BlockPos placePos = result.getBlockPos().add(side.getVector());
-      boolean placeable = world.getBlockState(placePos).isAir() || world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, item, result));
+      boolean placeable = world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, item, result));
       if(placeable && playerEntity instanceof ServerPlayerEntity player){
          placeAnchor(player, world, item, placePos);
       }else{
-         playerEntity.sendMessage(Text.translatable("The sponge cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+         playerEntity.sendMessage(Text.literal("The Anchor cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
       }
       return false;
@@ -162,7 +162,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
          world.setBlockState(pos, Blocks.RESPAWN_ANCHOR.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(anchorBlock);
       
-         player.sendMessage(Text.translatable("Placing the Continuum Anchor sends a ripple across spacetime.").formatted(Formatting.DARK_BLUE),true);
+         player.sendMessage(Text.literal("Placing the Continuum Anchor sends a ripple across spacetime.").formatted(Formatting.DARK_BLUE),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, 5,.8f);
          item.decrement(item.getCount());
          item.setNbt(new NbtCompound());

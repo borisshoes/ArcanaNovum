@@ -78,7 +78,7 @@ public class OverflowingQuiver extends QuiverItem implements UsableItem, Ticking
    
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      if(world.getServer().getTicks() % refillMod == 0) refillArrow(item);
+      if(world.getServer().getTicks() % refillMod == 0) refillArrow(player, item);
    }
    
    @Override
