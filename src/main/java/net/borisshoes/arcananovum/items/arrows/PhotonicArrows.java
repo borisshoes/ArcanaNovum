@@ -2,7 +2,10 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
@@ -65,7 +68,7 @@ public class PhotonicArrows extends MagicItem implements RunicArrow {
       item.setCount(64);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -128,15 +131,26 @@ public class PhotonicArrows extends MagicItem implements RunicArrow {
    @Override
    public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){}
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      MagicItemIngredient c = new MagicItemIngredient(Items.AMETHYST_CLUSTER,32,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.BEACON,4,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      MagicItemIngredient k = new MagicItemIngredient(Items.GLOW_INK_SAC,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,g,h,g,a},
+            {k,h,m,h,k},
+            {a,g,h,g,a},
+            {a,a,c,a,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"   Photonic Arrows\\n\\nRarity: Legendary\\n\\n'Straight as an arrow'. What a joke of a saying, I'll show them what straight looks like. Some solar runes coupled with a focusing prism makes a hell of a combo. This brings a new meaning to 'Shooting Lazers'.\"}");
       return list;
    }
 }

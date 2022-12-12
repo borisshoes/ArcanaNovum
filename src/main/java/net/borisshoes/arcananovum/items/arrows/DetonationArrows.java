@@ -2,7 +2,10 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.damage.DamageSource;
@@ -57,7 +60,7 @@ public class DetonationArrows extends MagicItem implements RunicArrow {
       item.setCount(64);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -85,15 +88,25 @@ public class DetonationArrows extends MagicItem implements RunicArrow {
       arrow.discard();
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      MagicItemIngredient c = new MagicItemIngredient(Items.TNT,64,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,c,h,c,a},
+            {c,h,m,h,c},
+            {a,c,h,c,a},
+            {a,a,c,a,a}};
+      return new MagicItemRecipe(ingredients);
+   
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"  Detonation Arrows\\n\\nRarity: Empowered\\n\\nThis Runic Matrix has been stuffed full of volatile Arcana, ready to blow at the slightest impact. \\nHowever, the blast seems to effect terrain slightly more than creatures.\"}");
       return list;
    }
 }

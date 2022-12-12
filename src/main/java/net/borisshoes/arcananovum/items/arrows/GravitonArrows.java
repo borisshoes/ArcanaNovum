@@ -3,7 +3,10 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -68,7 +71,7 @@ public class GravitonArrows extends MagicItem implements RunicArrow {
       item.setCount(64);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -129,15 +132,26 @@ public class GravitonArrows extends MagicItem implements RunicArrow {
       }
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      MagicItemIngredient c = new MagicItemIngredient(Items.OBSIDIAN,64,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.COBWEB,64,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      MagicItemIngredient k = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,g,h,g,a},
+            {k,h,m,h,k},
+            {a,g,h,g,a},
+            {a,a,c,a,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"   Graviton Arrows\\n\\nRarity: Exotic\\n\\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.\"}");
       return list;
    }
 }

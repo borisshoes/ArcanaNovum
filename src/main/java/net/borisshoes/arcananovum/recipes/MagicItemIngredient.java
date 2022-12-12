@@ -76,6 +76,16 @@ public class MagicItemIngredient {
       return ingredientAsStack().getName().getString();
    }
    
+   @Override
+   public boolean equals(Object other){
+      if(other == this) return true;
+      if(!(other instanceof MagicItemIngredient o)) return false;
+      if(requiredNbt != null && o.getRequiredNbt() == null) return false;
+      if(requiredNbt == null && o.getRequiredNbt() != null) return false;
+      if(requiredNbt == null && o.getRequiredNbt() == null) return o.getCount() == count && o.getItemType().equals(itemType);
+      return (o.getCount() == count && o.getItemType().equals(itemType) && o.getRequiredNbt().equals(requiredNbt));
+   }
+   
    public static NbtCompound getEnchantNbt(Pair<Enchantment,Integer>...enchants){
       NbtCompound nbt = new NbtCompound();
       NbtList enchantList = new NbtList();

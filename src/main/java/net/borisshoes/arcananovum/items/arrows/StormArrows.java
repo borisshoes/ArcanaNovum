@@ -2,13 +2,19 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -55,7 +61,7 @@ public class StormArrows extends MagicItem implements RunicArrow {
       item.setCount(64);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -78,22 +84,33 @@ public class StormArrows extends MagicItem implements RunicArrow {
          LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getEntityWorld());
          lightning.setPosition(pos);
          world.spawnEntity(lightning);
-         //SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.WEATHER,.5f,2f);
          if(world instanceof ServerWorld serverWorld && !world.isRaining() && !world.isThundering()){
             serverWorld.setWeather(0, 1200, true, false);
          }
       }
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      MagicItemIngredient c = new MagicItemIngredient(Items.LIGHTNING_ROD,64,null);
+      ItemStack enchantedBook6 = new ItemStack(Items.ENCHANTED_BOOK);
+      EnchantedBookItem.addEnchantment(enchantedBook6,new EnchantmentLevelEntry(Enchantments.CHANNELING,1));
+      MagicItemIngredient g = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,enchantedBook6.getNbt());
+      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,g,h,g,a},
+            {c,h,m,h,c},
+            {a,g,h,g,a},
+            {a,a,c,a,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"     Storm Arrows\\n\\nRarity: Exotic\\n\\nThe channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to force a storm, abeit briefly. The Matrix doesn't always seem to succeed in activating though.\"}");
       return list;
    }
 }

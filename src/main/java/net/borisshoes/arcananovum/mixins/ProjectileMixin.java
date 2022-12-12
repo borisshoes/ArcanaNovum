@@ -27,6 +27,7 @@ public class ProjectileMixin {
             MagicItem item = MagicItemUtils.getItemFromId(id);
             if(item instanceof RunicArrow runicArrow){
                runicArrow.blockHit(arrow,blockHitResult);
+               arrow.discard();
             }
             break;
          }

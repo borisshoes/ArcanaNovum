@@ -1,20 +1,28 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.FishingRodItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -24,6 +32,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimerTask;
 
 public class TetherArrows extends MagicItem implements RunicArrow {
    
@@ -54,7 +63,7 @@ public class TetherArrows extends MagicItem implements RunicArrow {
       item.setCount(64);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -65,20 +74,27 @@ public class TetherArrows extends MagicItem implements RunicArrow {
    public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayerEntity player && entityHitResult.getEntity() instanceof LivingEntity entity){
          Vec3d hitPos = entityHitResult.getPos();
-         Vec3d motion = player.getPos().subtract(hitPos);
-         Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
-         motion = motion.add(horizBoost);
-         Vec3d velocity = new Vec3d(velFromLength(motion.x),-velFromHeight(motion.y)/2,velFromLength(motion.z));
-         entity.setVelocity(velocity);
-         ParticleEffectUtils.tetherArrowEntity(player.getWorld(),entity,player);
-         SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
+   
+         Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               Vec3d motion = player.getPos().subtract(hitPos);
+               Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
+               motion = motion.add(horizBoost);
+               double verticalMotion = motion.y < -3 ? (player.getY() - entity.getY())*.3 : velFromHeight(motion.y)/20;
+               Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,verticalMotion,velFromLength(motion.z)*2.0/9.0);
+               entity.setVelocity(velocity);
+   
+               ParticleEffectUtils.tetherArrowEntity(player.getWorld(),entity,player);
+               SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
+            }
+         }));
       }
    }
    
    @Override
    public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
-         //Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
          Vec3d hitPos = blockHitResult.getPos();
          Vec3d motion = hitPos.subtract(player.getPos());
          Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
@@ -125,16 +141,26 @@ public class TetherArrows extends MagicItem implements RunicArrow {
       return y > -1/Math.E ? (y > 0 ? 0 : appx2(appx2(appx2(appx2(appx2(appx2(appx2(appx2(-2,y),y),y),y),y),y),y),y)) : 0;
    }
    
-   
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      MagicItemIngredient c = new MagicItemIngredient(Items.STRING,64,null);
+      ItemStack potion6 = new ItemStack(Items.POTION);
+      MagicItemIngredient g = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion6, Potions.STRONG_LEAPING).getNbt());
+      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,g,h,g,a},
+            {c,h,m,h,c},
+            {a,g,h,g,a},
+            {a,a,c,a,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"    Tether Arrows\\n\\nRarity: Empowered\\n\\nThrough precise math equations inscribed within the Matrix, these Arrows should create the perfect magical tether to pull me to the location I shot. It can also pull creatures to me. It sucks to miss though.\\n\"}");
       return list;
    }
 }

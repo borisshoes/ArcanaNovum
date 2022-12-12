@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -72,7 +73,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
       tag.put("Enchantments",enchants);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
       NbtList blocks = new NbtList();
@@ -332,15 +333,28 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
       return tiers.length;
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = new MagicItemIngredient(Items.PISTON,64,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,32,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.NETHER_STAR,1,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.IRON_BLOCK,64,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.BEACON,1,null);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,h,m,h,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\" Telescoping Beacon\\n\\nRarity: Empowered\\n\\nA fully powered beacon is a rather large construct. Breaking them down and setting them up is a lot of effort. Through a combination of pistons and a Netherite reinforced chassis, this beacon\"}");
+      list.add("{\"text\":\" Telescoping Beacon\\n\\ncan expand and contract with the press of a button.\\n\\nCollecting it will store enough metallic blocks to redeploy at the highest possible tier without collecting extra.\\n\\nThere must be enough\"}");
+      list.add("{\"text\":\" Telescoping Beacon\\n\\nroom for the beacon and its base to deploy in order to activate.\\n\\nThe beacon expands upwards from the location of placement.\"}");
       return list;
    }
 }

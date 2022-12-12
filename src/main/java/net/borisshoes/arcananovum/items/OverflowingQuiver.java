@@ -5,10 +5,14 @@ import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.QuiverItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -32,7 +36,7 @@ public class OverflowingQuiver extends QuiverItem implements UsableItem, Ticking
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
       color = Formatting.DARK_AQUA;
-      refillMod = 1200; // Ticks between arrow refill, once per minute
+      refillMod = 3000; // Ticks between arrow refill, once per two and a half minutes
       
       ItemStack item = new ItemStack(Items.RABBIT_HIDE);
       NbtCompound tag = item.getOrCreateNbt();
@@ -52,7 +56,7 @@ public class OverflowingQuiver extends QuiverItem implements UsableItem, Ticking
       tag.put("Enchantments",enchants);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
       NbtList storedArrows = new NbtList();
@@ -86,15 +90,32 @@ public class OverflowingQuiver extends QuiverItem implements UsableItem, Ticking
       return false;
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = new MagicItemIngredient(Items.NETHER_STAR,2,null);
+      ItemStack enchantedBook1 = new ItemStack(Items.ENCHANTED_BOOK);
+      EnchantedBookItem.addEnchantment(enchantedBook1,new EnchantmentLevelEntry(Enchantments.INFINITY,1));
+      MagicItemIngredient b = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,enchantedBook1.getNbt());
+      MagicItemIngredient c = new MagicItemIngredient(Items.RABBIT_HIDE,32,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.NETHERITE_INGOT,2,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.ARROW,64,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,h,m,h,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new MagicItemRecipe(ingredients);
+   
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"  Overflowing Quiver\\n\\nRarity: Exotic\\n\\nMore experienced archers keep a variety of arrows on hand, however it is difficult to switch between them in the heat of a fight. This quiver has slots that not only save space, and keep arrows\"}");
+      list.add("{\"text\":\"  Overflowing Quiver\\n\\norganized, but it also contains a mechanism to help guide the archer's hand to the desired arrow type.\\n\\nLeft clicking with any bow cycles the preferred arrows.\\n\\nI have also managed to unlock greater\"}");
+      list.add("{\"text\":\"  Overflowing Quiver\\n\\npotential from the Infinity enchantment and imbued it within the quiver.\\n\\nThe quiver now slowly regenerates all arrows placed inside of it.\\n\\nIt is worth noting that this quiver is not\"}");
+      list.add("{\"text\":\"  Overflowing Quiver\\n\\nsturdy enough to channel Arcana to arrows placed inside,  restricting Runic Arrows from being contained within.\\n\\nI am looking into possible improvments to this design to accommodate more powerful projectiles.\"}");
       return list;
    }
 }

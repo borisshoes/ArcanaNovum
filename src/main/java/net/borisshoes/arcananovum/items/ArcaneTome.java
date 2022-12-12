@@ -95,7 +95,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
             profile.addRecipe(item.getId());
          }
       }
-      // update level from xp just in case levelling changed
+      // update level from xp just in case leveling changed
       profile.setLevel(LevelUtils.levelFromXp(profile.getXP()));
    }
    
@@ -224,11 +224,11 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       loreList.add(NbtString.of("[{\"text\":\"Total Skill Points: "+0+"\",\"italic\":false,\"color\":\"aqua\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Allocated Points: "+0+"/"+0+"\",\"italic\":false,\"color\":\"aqua\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Points From Levelling: "+0+"\",\"italic\":false,\"color\":\"blue\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Points From Leveling: "+0+"\",\"italic\":false,\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Points From Achievements: "+0+"\",\"italic\":false,\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Allocate Skill Points to Upgrade Items!\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Earn Skill Points From Levelling Up or From Achievements!\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Earn Skill Points From Leveling Up or From Achievements!\",\"italic\":false,\"color\":\"light_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -351,7 +351,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       GameProfile gameProfile = new GameProfile(player.getUuid(),null);
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
       head.setName((Text.literal("").append(Text.literal("Magic Items").formatted(Formatting.DARK_PURPLE))));
-      head.addLoreLine((Text.literal("").append(Text.literal("Click here").formatted(Formatting.GREEN)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE))));
+      head.addLoreLine((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE))));
+      head.addLoreLine((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.GREEN)).append(Text.literal(" to view its page").formatted(Formatting.LIGHT_PURPLE))));
+      head.addLoreLine((Text.literal("").append(Text.literal("Right Click an item").formatted(Formatting.YELLOW)).append(Text.literal(" to see its recipe").formatted(Formatting.LIGHT_PURPLE))));
       gui.setSlot(4,head);
    
       ItemStack anvil = new ItemStack(Items.ANVIL);

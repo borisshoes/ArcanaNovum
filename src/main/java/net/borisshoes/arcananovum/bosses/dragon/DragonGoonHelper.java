@@ -37,7 +37,6 @@ import static net.borisshoes.arcananovum.Arcananovum.log;
 public class DragonGoonHelper {
    
    
-   //TODO: Balance stats
    public static PhantomEntity makeGuardianPhantom(ServerWorld endWorld, int numPlayers){
       PhantomEntity guardian = new PhantomEntity(EntityType.PHANTOM, endWorld);
       MutableText phantomName = Text.literal("")

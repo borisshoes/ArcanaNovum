@@ -28,4 +28,11 @@ public class GenericMagicIngredient extends MagicItemIngredient{
    public ItemStack ingredientAsStack(){
       return item.getPrefItem();
    }
+   
+   @Override
+   public boolean equals(Object other){
+      if(other == this) return true;
+      if(!(other instanceof GenericMagicIngredient o)) return false;
+      return (o.item.getId().equals(item.getId()) && o.getCount() == count);
+   }
 }

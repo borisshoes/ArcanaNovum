@@ -75,13 +75,17 @@ public class TomeGui extends SimpleGui {
             ItemStack item = this.getSlot(index).getItemStack();
             if(!item.isEmpty()){
                MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               tome.openItemGui(player,settings, magicItem.getId());
+               if(type == ClickType.MOUSE_RIGHT){
+                  tome.openRecipeGui(player,settings, magicItem.getId());
+               }else{
+                  tome.openItemGui(player,settings, magicItem.getId());
+               }
             }
          }else if(index == 0){
             boolean backwards = type == ClickType.MOUSE_RIGHT;
             boolean middle = type == ClickType.MOUSE_MIDDLE;
             if(middle){
-               settings.setSortType(ArcaneTome.TomeSort.RARITY_ASC);
+               settings.setSortType(ArcaneTome.TomeSort.RECOMMENDED);
             }else{
                settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType(),backwards));
             }
@@ -96,7 +100,7 @@ public class TomeGui extends SimpleGui {
                settings.setFilterType(ArcaneTome.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
             }
             
-            List<MagicItem> items = tome.sortedFilteredItemList(settings);
+            List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
             int numPages = (int) Math.ceil((float)items.size()/28.0);
             if(settings.getPage() > numPages){
                settings.setPage(numPages);
@@ -108,7 +112,7 @@ public class TomeGui extends SimpleGui {
                tome.buildCompendiumGui(this,player,settings);
             }
          }else if(index == 53){
-            List<MagicItem> items = tome.sortedFilteredItemList(settings);
+            List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
             int numPages = (int) Math.ceil((float)items.size()/28.0);
             if(settings.getPage() < numPages){
                settings.setPage(settings.getPage()+1);
@@ -256,7 +260,8 @@ public class TomeGui extends SimpleGui {
       if(mode == ArcaneTome.TomeMode.RECIPE){ // Recipe gui to compendium
          ItemStack item = this.getSlot(25).getItemStack();
          MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         tome.openGui(player,ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
+         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+         //tome.openGui(player,ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
       }else if(mode == ArcaneTome.TomeMode.CRAFTING){ // Crafting gui give items back
          //Give Items back
          Inventory inv = getSlotRedirect(1).inventory;

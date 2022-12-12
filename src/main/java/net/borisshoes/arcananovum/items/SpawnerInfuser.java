@@ -6,6 +6,8 @@ import net.borisshoes.arcananovum.items.core.BlockItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -60,19 +62,20 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Spawner Infuser\",\"italic\":false,\"color\":\"dark_green\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Spawners\",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\" have their \",\"color\":\"dark_aqua\"},{\"text\":\"natural limit\",\"color\":\"yellow\"},{\"text\":\", \",\"color\":\"dark_aqua\"},{\"text\":\"Arcana\",\"color\":\"dark_purple\"},{\"text\":\" can now push it \",\"color\":\"dark_aqua\"},{\"text\":\"further\",\"color\":\"yellow\",\"italic\":true},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The Infuser\",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\" is to be placed two blocks \",\"color\":\"dark_aqua\"},{\"text\":\"below \",\"color\":\"yellow\"},{\"text\":\"a \",\"color\":\"dark_aqua\"},{\"text\":\"spawner\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"When given a \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"soulstone\",\"color\":\"dark_red\"},{\"text\":\" of the \"},{\"text\":\"same type\",\"color\":\"yellow\"},{\"text\":\" as the \"},{\"text\":\"spawner \",\"color\":\"dark_green\"},{\"text\":\"it can be \"},{\"text\":\"activated\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"redstone \",\"color\":\"red\"},{\"text\":\"signal \"},{\"text\":\"activates \",\"color\":\"green\"},{\"text\":\"the \"},{\"text\":\"infuser\",\"color\":\"dark_green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\" the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser \"},{\"text\":\"to \",\"color\":\"dark_aqua\"},{\"text\":\"configure \",\"color\":\"green\"},{\"text\":\"the \",\"color\":\"dark_aqua\"},{\"text\":\"infusion \"},{\"text\":\"type\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Spawners \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"have their \",\"color\":\"dark_aqua\"},{\"text\":\"natural limit\",\"color\":\"yellow\"},{\"text\":\", \",\"color\":\"dark_aqua\"},{\"text\":\"Arcana \",\"color\":\"dark_purple\"},{\"text\":\"can now push them \",\"color\":\"dark_aqua\"},{\"text\":\"further\",\"color\":\"yellow\",\"italic\":true},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Place \",\"italic\":false,\"color\":\"green\"},{\"text\":\"the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"two blocks \",\"color\":\"dark_aqua\"},{\"text\":\"below \",\"color\":\"yellow\"},{\"text\":\"a \",\"color\":\"dark_aqua\"},{\"text\":\"spawner\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"requires a \"},{\"text\":\"soulstone \",\"color\":\"dark_red\"},{\"text\":\"matching the \"},{\"text\":\"spawner \",\"color\":\"dark_green\"},{\"text\":\"type\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"also requires \"},{\"text\":\"Nether Stars\",\"color\":\"aqua\"},{\"text\":\" to unlock \"},{\"text\":\"enhanced \",\"color\":\"yellow\"},{\"text\":\"infusions\",\"color\":\"dark_green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Apply \",\"italic\":false,\"color\":\"green\"},{\"text\":\"a \",\"color\":\"dark_aqua\"},{\"text\":\"Redstone signal\",\"color\":\"red\"},{\"text\":\" to \",\"color\":\"dark_aqua\"},{\"text\":\"activate \"},{\"text\":\"the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"green\"},{\"text\":\" the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"to \",\"color\":\"dark_aqua\"},{\"text\":\"configure \",\"color\":\"yellow\"},{\"text\":\"its \",\"color\":\"dark_aqua\"},{\"text\":\"abilities\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -184,15 +187,30 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
       logic.readNbt(world,pos,savedLogic); // Return saved default data with new delay
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = new MagicItemIngredient(Items.ECHO_SHARD,16,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.SOUL_SAND,64,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.SCULK_SHRIEKER,64,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.NETHER_STAR,8,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
+      MagicItemIngredient k = new MagicItemIngredient(Items.SCULK_CATALYST,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.SPAWNER_HARNESS,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {k,h,m,h,k},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"   Spawner Infuser\\n\\nRarity: Legendary\\n\\nOne of my most intricate and powerful creations to date.\\nThis behemouth exploits a fascinating organism from the Deep Dark called Sculk. It acts as if soulsand became alive. It grows and feeds \"}");
+      list.add("{\"text\":\"   Spawner Infuser\\n\\nfrom souls. \\nBy combining the tech from one of my earlier works, the Spawner Infuser, I believe I can use Arcana to overload the innate magic that summons creatures.\\n\\nAll the Sculk mechanisms need are \"}");
+      list.add("{\"text\":\"   Spawner Infuser\\n\\nsome souls, provided easily from a Soulstone, and some crystalline structure combined with a lot of energy. Nether Stars work as both a focusing crystal and a power source so that should do nicely.\\nA simple Redstone signal will activate it.\"}");
+      list.add("{\"text\":\"   Spawner Infuser\\n\\nAll aspects of the spawner can now be configured from range, to spawn delay, and a whole lot more.\\n\\nAs long as the Sculk has an adequate base of souls from the Soulstone, more and more upgrades can be added.\"}");
       return list;
    }
 }

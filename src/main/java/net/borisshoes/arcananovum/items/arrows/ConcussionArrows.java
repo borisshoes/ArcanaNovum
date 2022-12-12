@@ -3,7 +3,10 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -20,6 +23,8 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -66,7 +71,7 @@ public class ConcussionArrows extends MagicItem implements RunicArrow {
       item.setCount(64);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -125,15 +130,29 @@ public class ConcussionArrows extends MagicItem implements RunicArrow {
       }
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      ItemStack potion2 = new ItemStack(Items.LINGERING_POTION);
+      MagicItemIngredient c = new MagicItemIngredient(Items.LINGERING_POTION,1, PotionUtil.setPotion(potion2, Potions.LONG_SLOWNESS).getNbt());
+      MagicItemIngredient g = new MagicItemIngredient(Items.GLOW_INK_SAC,64,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      MagicItemIngredient i = new MagicItemIngredient(Items.INK_SAC,64,null);
+      ItemStack potion10 = new ItemStack(Items.LINGERING_POTION);
+      MagicItemIngredient k = new MagicItemIngredient(Items.LINGERING_POTION,1, PotionUtil.setPotion(potion10, Potions.LONG_WEAKNESS).getNbt());
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,g,h,i,a},
+            {k,h,m,h,k},
+            {a,i,h,g,a},
+            {a,a,c,a,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"  Concussion Arrows\\n\\nRarity: Empowered\\n\\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact.\\nAnyone caught in its range will have a hard time doing anything for a couple seconds after being hit.\\n\"}");
       return list;
    }
 }

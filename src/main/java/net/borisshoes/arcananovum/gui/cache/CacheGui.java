@@ -36,7 +36,7 @@ public class CacheGui extends SimpleGui {
          boolean backwards = type == ClickType.MOUSE_RIGHT;
          boolean middle = type == ClickType.MOUSE_MIDDLE;
          if(middle){
-            settings.setSortType(ArcaneTome.TomeSort.RARITY_ASC);
+            settings.setSortType(ArcaneTome.TomeSort.RECOMMENDED);
          }else{
             settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType(),backwards));
          }

@@ -2,7 +2,10 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -12,6 +15,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -49,7 +54,7 @@ public class SiphoningArrows extends MagicItem implements RunicArrow {
       item.setCount(64);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -69,15 +74,29 @@ public class SiphoningArrows extends MagicItem implements RunicArrow {
    @Override
    public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){}
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      MagicItemIngredient c = new MagicItemIngredient(Items.GLISTERING_MELON_SLICE,64,null);
+      ItemStack potion6 = new ItemStack(Items.POTION);
+      MagicItemIngredient g = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion6, Potions.STRONG_HEALING).getNbt());
+      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
+      ItemStack potion8 = new ItemStack(Items.POTION);
+      MagicItemIngredient i = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion8, Potions.STRONG_HARMING).getNbt());
+      MagicItemIngredient k = new MagicItemIngredient(Items.FERMENTED_SPIDER_EYE,64,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,g,h,i,a},
+            {k,h,m,h,k},
+            {a,i,h,g,a},
+            {a,a,c,a,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"   Siphoning Arrows\\n\\nRarity: Exotic\\n\\nLife force is something I have rarely explored. I've invoked some simple life runes to draw upon the health lost from my arrows and channel it back to me.\"}");
       return list;
    }
 }

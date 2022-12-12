@@ -2,17 +2,22 @@ package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.*;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -38,16 +43,18 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class CindersCharm extends EnergyItem implements TickingItem, UsableItem, LeftClickItem {
+public class CindersCharm extends EnergyItem implements TickingItem, UsableItem, LeftClickItem, AttackingItem {
    
    private final double range = 7.0;
    private final double closeW = 2.5;
@@ -75,8 +82,8 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Charm of Cinders\",\"italic\":false,\"color\":\"gold\",\"bold\":true}]");
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"red\"},{\"text\":\"charm \",\"color\":\"gold\"},{\"text\":\"burns \",\"color\":\"dark_red\"},{\"text\":\"with \"},{\"text\":\"focused intensity\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"red\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"red\"},{\"text\":\"charm \",\"color\":\"gold\"},{\"text\":\"grants passive \"},{\"text\":\"fire immunity\",\"color\":\"gold\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Left Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" a block to set it \",\"color\":\"red\"},{\"text\":\"ablaze\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Flames \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"welcome you with a \",\"color\":\"red\"},{\"text\":\"warm embrace\"},{\"text\":\".\",\"color\":\"red\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Left Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" a block or creature to set it \",\"color\":\"red\"},{\"text\":\"ablaze\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Hold Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to \",\"color\":\"red\"},{\"text\":\"breathe \",\"color\":\"gold\"},{\"text\":\"a \",\"color\":\"red\"},{\"text\":\"cone of fire\",\"color\":\"gold\"},{\"text\":\" in front of you.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to toggle \",\"color\":\"red\"},{\"text\":\"auto-smelting\",\"color\":\"gold\"},{\"text\":\" of picked up items.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
@@ -86,7 +93,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       tag.put("Enchantments",enchants);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       tag = this.addMagicNbt(tag);
       tag.getCompound("arcananovum").putBoolean("active",false);
       prefNBT = tag;
@@ -113,7 +120,23 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       
       if (!CampfireBlock.canBeLit(blockState) && !CandleBlock.canBeLit(blockState) && !CandleCakeBlock.canBeLit(blockState)) {
          BlockPos blockPos2 = blockPos.offset(direction);
-         if (AbstractFireBlock.canPlaceAt(world, blockPos2, direction)) {
+         if(blockState.isOf(Blocks.TNT)){
+            TntBlock.primeTnt(world,blockPos);
+            world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 11);
+            
+            addEnergy(itemStack, -5);
+            String message = "Cinders: ";
+            for(int i=1; i<=5; i++){
+               message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
+            }
+            playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+   
+            if(playerEntity instanceof ServerPlayerEntity player){
+               PLAYER_DATA.get(player).addXP(50); // Add xp
+            }
+   
+            return !playerEntity.isCreative();
+         }else if (AbstractFireBlock.canPlaceAt(world, blockPos2, direction)) {
             SoundUtils.playSound(world,blockPos,SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
             BlockState blockState2 = AbstractFireBlock.getState(world, blockPos2);
             world.setBlockState(blockPos2, blockState2, 11);
@@ -152,6 +175,35 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          
          return !playerEntity.isCreative();
       }
+   }
+   
+   @Override
+   public boolean attackEntity(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult){
+      ItemStack item = playerEntity.getStackInHand(hand);
+      
+      if(entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
+         if(getEnergy(item) < 5) {
+            playerEntity.sendMessage(Text.literal("The Charm has no Cinders").formatted(Formatting.RED), true);
+            return true;
+         }
+         
+         if(attackedEntity instanceof CreeperEntity creeper){
+            creeper.ignite();
+            PLAYER_DATA.get(player).addXP(50); // Add xp
+         }else{
+            attackedEntity.setOnFireFor(5);
+            PLAYER_DATA.get(player).addXP(15); // Add xp
+         }
+   
+         SoundUtils.playSound(world,attackedEntity.getBlockPos(),SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
+         addEnergy(item, -5);
+         String message = "Cinders: ";
+         for(int i=1; i<=5; i++){
+            message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
+         }
+         playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+      }
+      return true;
    }
    
    public ItemStack smelt(ItemStack item, PlayerEntity player, ItemStack stack){
@@ -252,7 +304,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             if(!(e instanceof LivingEntity entity)) continue;
             if(inCone(playerEntity,e.getEyePos())){
                if(!entity.isFireImmune()){
-                  entity.setFireTicks(2*energy+60);
+                  entity.setOnFireFor((2*energy+60)/20);
                   entity.damage(DamageSource.IN_FIRE,1.5f);
                   
                   if(playerEntity instanceof ServerPlayerEntity serverPlayer){
@@ -368,15 +420,29 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       return stack;
    }
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = new MagicItemIngredient(Items.MAGMA_CREAM,64,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.BLAZE_ROD,64,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.FIRE_CHARGE,64,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.NETHERITE_INGOT,2,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.COAL_BLOCK,64,null);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,h,m,h,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new MagicItemRecipe(ingredients);
+   
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"   Charm of Cinders\\n\\nRarity: Legendary\\n\\nHaving spent much time in the Nether has given me ample opportunity to study the fire dwelling creatures. \\nI believe I can replicate many of their abilities and even make my own.\"}");
+      list.add("{\"text\":\"   Charm of Cinders\\n\\nThis charm grants a variety of skills from base fire immunity, to a simple flint and steel, to flaming breath and even the precision needed to smelt items as I pick them up in an instant.\\n\\nLeft Clicking mimics a flint and steel and\"}");
+      list.add("{\"text\":\"   Charm of Cinders\\n\\ncan even set creatures ablaze.\\n\\nRight Click sends a cone of flame out of the charm igniting creatures.\\n\\nSneak Right Clicking toggles the auto-smelt ability for gathered items.\"}");
       return list;
    }
 }

@@ -15,18 +15,35 @@ import net.borisshoes.arcananovum.gui.cache.CacheGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.DispenserBlockEntity;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -38,8 +55,14 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 
@@ -319,6 +342,144 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
+         ServerWorld world = player.getWorld();
+         Vec3d vec3d = player.getCameraPosVec(0);
+         Vec3d vec3d2 = player.getRotationVec(0);
+         double maxDistance = 5;
+         Vec3d vec3d3 = vec3d.add(vec3d2.x * maxDistance, vec3d2.y * maxDistance, vec3d2.z * maxDistance);
+         BlockHitResult result = world.raycast(new RaycastContext(vec3d, vec3d3, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
+         if(result.getType() == BlockHitResult.Type.MISS){
+            return 0;
+         }
+         BlockPos blockPos = result.getBlockPos();
+         BlockEntity blockEntity = world.getBlockEntity(blockPos);
+         BlockState blockState = world.getBlockState(blockPos);
+         Block block = blockState.getBlock();
+         if(blockEntity instanceof ChestBlockEntity chest && block instanceof ChestBlock chestBlock){
+            Inventory chestInventory = ChestBlock.getInventory(chestBlock, blockState, world, blockPos, true);
+            if(chestInventory == null || chestInventory.size() != 54){
+               return 0;
+            }
+            
+            Pair<MagicItemIngredient,Character>[][] ingredients = new Pair[5][5];
+            HashMap<Character,ArrayList<String>> lineSet = new HashMap<>();
+            
+            for(int i = 0; i < 5; i++){
+               for(int j = 0; j < 5; j++){
+                  ItemStack stack = chestInventory.getStack(i*9+j);
+                  
+                  MagicItem magicItem = MagicItemUtils.identifyItem(stack);
+                  MagicItemIngredient ingred;
+                  ArrayList<String> lines = new ArrayList<>();
+                  char letter = (char) ('a' + (i * 5 + j));
+                  
+                  if(magicItem != null){
+                     ingred = new GenericMagicIngredient(magicItem,stack.getCount());
+                     String idName = magicItem.getId().toUpperCase();
+                     lines.add("GenericMagicIngredient "+letter+" = new GenericMagicIngredient(MagicItems."+idName+","+stack.getCount()+");");
+                  }else if(stack.isOf(Items.POTION) || stack.isOf(Items.SPLASH_POTION) || stack.isOf(Items.LINGERING_POTION)){
+                     String idName = Registry.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     Potion potion = PotionUtil.getPotion(stack);
+                     ItemStack potionStack = new ItemStack(stack.getItem());
+                     ingred = new MagicItemIngredient(stack.getItem(),stack.getCount(), PotionUtil.setPotion(potionStack, potion).getNbt());
+                     
+                     lines.add("ItemStack potion"+(i * 5 + j)+" = new ItemStack(Items."+idName+");");
+                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+", PotionUtil.setPotion(potion"+(i * 5 + j)+", Potions."+Registry.POTION.getId(potion).getPath().toUpperCase()+").getNbt());");
+                  }else if(stack.isOf(Items.ENCHANTED_BOOK)){
+                     ItemStack enchantedItem = new ItemStack(Items.ENCHANTED_BOOK);
+                     lines.add("ItemStack enchantedBook"+(i * 5 + j)+" = new ItemStack(Items.ENCHANTED_BOOK);");
+   
+                     Map<Enchantment, Integer> enchants = EnchantmentHelper.get(stack);
+                     for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()){
+                        EnchantedBookItem.addEnchantment(enchantedItem,new EnchantmentLevelEntry(entry.getKey(),entry.getValue()));
+                        lines.add("EnchantedBookItem.addEnchantment(enchantedBook"+(i * 5 + j)+",new EnchantmentLevelEntry(Enchantments."+ Registry.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"));");
+                     }
+                     ingred = new MagicItemIngredient(Items.ENCHANTED_BOOK,stack.getCount(),enchantedItem.getNbt());
+   
+                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items.ENCHANTED_BOOK,"+stack.getCount()+",enchantedBook"+(i * 5 + j)+".getNbt());");
+                  }else if(stack.hasEnchantments()){
+                     ItemStack enchantedItem = new ItemStack(stack.getItem());
+                     String idName = Registry.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     String line = "MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+", MagicItemIngredient.getEnchantNbt(";
+   
+                     Map<Enchantment, Integer> enchants = EnchantmentHelper.get(stack);
+                     for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()){
+                        enchantedItem.addEnchantment(entry.getKey(),entry.getValue());
+                        line += "new Pair(Enchantments."+Registry.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"),";
+                     }
+                     ingred = new MagicItemIngredient(Items.ENCHANTED_BOOK,stack.getCount(),enchantedItem.getNbt());
+                     line = line.substring(0,line.length()-1) + "));";
+                     lines.add(line);
+                  }else if(stack.isEmpty()){
+                     ingred = MagicItemIngredient.EMPTY;
+                     lines.add("MagicItemIngredient "+letter+" = MagicItemIngredient.EMPTY;");
+                  }else{
+                     ingred = new MagicItemIngredient(stack.getItem(),stack.getCount(),null);
+                     String idName = Registry.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+",null);");
+                  }
+                  
+                  boolean match = false;
+                  for(int m = 0; m <= i; m++){
+                     if(match) break;
+                     for(int n = 0; n < (m == i ? j : 5); n++){
+                        Pair<MagicItemIngredient,Character> prev = ingredients[m][n];
+                        MagicItemIngredient prevIng = prev.getLeft();
+                        
+                        if(prevIng.equals(ingred)){
+                           ingredients[i][j] = prev;
+                           match = true;
+                           break;
+                        }
+                     }
+                  }
+                  if(!match) {
+                     ingredients[i][j] = new Pair<>(ingred, letter);
+                     lineSet.put(letter,lines);
+                  }
+                  //System.out.print(chestInventory.getStack(i*9+j).getItem().getName().getString()+" ");
+               }
+               //System.out.println();
+            }
+   
+            String path = "C:\\Users\\Boris\\Desktop\\itemrecipe.txt";
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
+            ArrayList<String> lines = new ArrayList<>();
+   
+            for(Map.Entry<Character, ArrayList<String>> entry : lineSet.entrySet()){
+               lines.addAll(entry.getValue());
+            }
+            lines.add("");
+            lines.add("MagicItemIngredient[][] ingredients = {");
+            for(int i = 0; i < 5; i++){
+               String line = "   {";
+               for(int j = 0; j < 5; j++){
+                  line += ingredients[i][j].getRight()+",";
+               }
+               if(i == 4){
+                  line = line.substring(0,line.length()-1) + "}};";
+               }else{
+                  line = line.substring(0,line.length()-1) + "},";
+               }
+               lines.add(line);
+            }
+            lines.add("return new MagicItemRecipe(ingredients);");
+            
+            /*
+            MagicItemIngredient[][] ingredients = {
+               {c,e,x,e,c},
+               {e,m,x,m,e},
+               {x,x,h,x,x},
+               {e,m,x,m,e},
+               {c,e,x,e,c}};
+            return new MagicItemRecipe(ingredients);
+            */
+            
+            for(String line : lines){
+               out.println(line);
+            }
+            out.close();
+         }
          
       } catch (Exception e) {
          e.printStackTrace();
