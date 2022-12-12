@@ -212,6 +212,7 @@ public class MagicItemUtils {
       return null;
    }
    
+   //TODO: Quiver Support + Better Scalable Nesting for future item holding items
    public static List<MagicInvItem> getMagicInventory(ServerPlayerEntity player){
       List<MagicInvItem> magicInv = new ArrayList<>();
       PlayerInventory inv = player.getInventory();
@@ -252,7 +253,9 @@ public class MagicItemUtils {
          int contains = MagicInvItem.invContains(magicInv,invItem);
          if(contains >= 0){
             magicInv.get(contains).count += invItem.count;
+            magicInv.get(contains).addId(magicItem.getUUID(item));
          }else{
+            invItem.addId(magicItem.getUUID(item));
             magicInv.add(invItem);
          }
       }
@@ -317,6 +320,7 @@ public class MagicItemUtils {
       private int count;
       public final MagicItem item;
       public final String hash;
+      private final ArrayList<String> uuids;
    
       public MagicInvItem(MagicItem item, int count, boolean eChest, boolean shulker){
          this.eChest = eChest;
@@ -324,6 +328,7 @@ public class MagicItemUtils {
          this.count = count;
          this.item = item;
          this.hash = item.getId() + eChest + shulker;
+         this.uuids = new ArrayList<>();
       }
    
       public static int invContains(List<MagicInvItem> inv, MagicInvItem invItem){
@@ -334,6 +339,18 @@ public class MagicItemUtils {
             }
          }
          return -1;
+      }
+      
+      public void addId(String uuid){
+         uuids.add(uuid);
+      }
+      
+      public ArrayList<String> getUuids(){
+         return uuids;
+      }
+   
+      public int getCount(){
+         return count;
       }
    }
 }

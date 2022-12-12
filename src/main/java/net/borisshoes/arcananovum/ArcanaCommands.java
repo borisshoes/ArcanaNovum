@@ -131,7 +131,7 @@ public class ArcanaCommands {
       }
    }
    
-   //TODO Check shulkers, quivers, and ender chest
+   //TODO: Quiver Support + Better Scalable Nesting for future item holding items
    public static int uuidCommand(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
       ServerCommandSource source = ctx.getSource();
       ArrayList<MutableText> response = new ArrayList<>();
@@ -139,35 +139,31 @@ public class ArcanaCommands {
       Set<String> uuids = new HashSet<>();
       int count = 0;
       
-      PlayerInventory inv = player.getInventory();
-      for(int i=0; i<inv.size();i++){
-         ItemStack item = inv.getStack(i);
-         if(item.isEmpty()){
-            continue;
-         }
-         
-         boolean isMagic = MagicItemUtils.isMagic(item);
-         if(!isMagic)
-            continue; // Item not magic, skip
-         
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         NbtCompound magictag = item.getNbt().getCompound("arcananovum");
-         count++;
-         String uuid = magictag.getString("UUID") ;
-         
-         MutableText feedback = Text.translatable("")
-               .append(Text.translatable("[").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(magicItem.getName()).formatted(Formatting.AQUA))
-               .append(Text.translatable("] ID: ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
-         response.add(feedback.styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
-         if(!uuids.add(uuid) || item.getCount() > 1){
-            MutableText duplicateWarning = Text.translatable("")
-                  .append(Text.translatable("Duplicate: ").formatted(Formatting.RED))
+      List<MagicItemUtils.MagicInvItem> magicInv = MagicItemUtils.getMagicInventory(player);
+      for(MagicItemUtils.MagicInvItem invItem : magicInv){
+         MagicItem magicItem = invItem.item;
+         for(String uuid : invItem.getUuids()){
+            count++;
+   
+            String storage = invItem.eChest && invItem.shulker ? "EC+SB" : invItem.eChest ? "EC" : invItem.shulker ? "SB" : "Inv";
+            
+            MutableText feedback = Text.translatable("")
+                  .append(Text.translatable("(").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.translatable(storage).formatted(Formatting.BLUE))
+                  .append(Text.translatable(") ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.translatable("[").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.translatable(magicItem.getName()).formatted(Formatting.AQUA))
-                  .append(Text.translatable(" ID: ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.translatable("] ID: ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
-            response2.add(duplicateWarning);
+            response.add(feedback.styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
+            if(!uuids.add(uuid) || invItem.getUuids().size() < (invItem.getCount()/magicItem.getPrefItem().getCount())){
+               MutableText duplicateWarning = Text.translatable("")
+                     .append(Text.translatable("Duplicate: ").formatted(Formatting.RED))
+                     .append(Text.translatable(magicItem.getName()).formatted(Formatting.AQUA))
+                     .append(Text.translatable(" ID: ").formatted(Formatting.LIGHT_PURPLE))
+                     .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
+               response2.add(duplicateWarning);
+            }
          }
       }
       
