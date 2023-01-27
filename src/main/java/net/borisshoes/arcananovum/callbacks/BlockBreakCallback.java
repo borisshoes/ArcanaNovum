@@ -1,16 +1,20 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.core.BlockItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.PickaxeOfPluto;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -44,6 +48,7 @@ public class BlockBreakCallback {
          if(!playerEntity.isSneaking()){
             pick.veinMine(world,playerEntity,tool,blockPos);
          }
+         if((blockState.getMaterial() == Material.STONE) && playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.progress(player,"diggy_hole",1);
       }
       return true;
    }

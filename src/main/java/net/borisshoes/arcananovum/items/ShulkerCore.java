@@ -23,6 +23,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.potion.PotionUtil;
@@ -95,13 +96,13 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      newTag.getCompound("arcananovum").putInt("speed",magicTag.getInt("speed"));
-      newTag.getCompound("arcananovum").putInt("speedCD",magicTag.getInt("speedCD"));
-      newTag.getCompound("arcananovum").putBoolean("stone",magicTag.getBoolean("stone"));
+      int speed = magicTag.getInt("speed");
+      int speedCD = magicTag.getInt("speedCD");
+      boolean stone = magicTag.getBoolean("stone");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("speed",speed);
+      newTag.getCompound("arcananovum").putInt("speedCD",speedCD);
+      newTag.getCompound("arcananovum").putBoolean("stone",stone);
       stack.setNbt(newTag);
       redoLore(stack);
       return stack;

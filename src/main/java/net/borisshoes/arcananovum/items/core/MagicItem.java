@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    protected MagicItemRecipe recipe;
    protected NbtCompound bookLore;
    protected ArcaneTome.TomeFilter[] categories;
-   public static int version = 8;
+   public static int version = 9;
    public int itemVersion;
    
    public int getItemVersion() { return itemVersion; }
@@ -63,6 +64,22 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       return stack;
    }
    
+   public ItemStack addCrafter(ItemStack stack, String player){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      magicTag.putString("crafter", player);
+      stack.setNbt(itemNbt);
+      return stack;
+   }
+   
+   public String getCrafter(ItemStack item){
+      if(!MagicItemUtils.isMagic(item))
+         return null;
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      return magicTag.getString("crafter");
+   }
+   
    public NbtCompound getPrefNBT(){
       return prefNBT;
    }
@@ -70,9 +87,10 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID and update version
+      // For default just replace everything but UUID and crafter and update version
       NbtCompound newTag = prefNBT.copy();
       newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      newTag.getCompound("arcananovum").putString("crafter",magicTag.getString("crafter"));
       newTag.getCompound("arcananovum").putInt("Version",MagicItem.version + getItemVersion());
       stack.setNbt(newTag);
    

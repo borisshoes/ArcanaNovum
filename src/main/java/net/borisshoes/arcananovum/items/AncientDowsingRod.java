@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -163,6 +164,11 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
       
                         PLAYER_DATA.get(player).addXP(100*debris.size()); // Add xp
                         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
+                        
+                        if(debris.size() >= 10){
+                           ArcanaAchievements.grant(player,"motherload");
+                        }
+                        ArcanaAchievements.progress(player,"archeologist",debris.size());
                      }else{
                         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS,1,.5f);
                      }

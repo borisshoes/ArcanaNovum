@@ -62,12 +62,9 @@ public class RunicBow extends MagicItem {
    @Override
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      newTag.put("Enchantments",enchants);
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
       return stack;
    }

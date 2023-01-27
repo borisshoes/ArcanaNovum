@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -119,12 +120,11 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtCompound locNbt = magicTag.getCompound("location");
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      newTag.getCompound("arcananovum").putInt("heat",magicTag.getInt("heat"));
-      newTag.getCompound("arcananovum").put("location",locNbt.copy());
+      NbtCompound locNbt = magicTag.getCompound("location").copy();
+      int heat = magicTag.getInt("heat");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("heat",heat);
+      newTag.getCompound("arcananovum").put("location",locNbt);
       stack.setNbt(newTag);
       redoLore(stack);
       return stack;
@@ -195,6 +195,8 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
       
       player.teleport(to,x,y,z,yaw,pitch);
       setEnergy(item,0);
+      if(to.getRegistryKey().getValue().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,"back_to_hell");
+      if(to.getRegistryKey().getValue().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,"ascending_to_heaven");
       SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_PORTAL_TRAVEL,1,2f);
       ParticleEffectUtils.recallTeleport(to,player.getPos());
    }

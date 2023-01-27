@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -83,6 +84,7 @@ public class LightCharm extends MagicItem implements TickingItem, UsableItem {
                world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
                PLAYER_DATA.get(player).addXP(100); // Add xp
+               ArcanaAchievements.progress(player,"enlightened",1);
             }
          }
          if(vision){

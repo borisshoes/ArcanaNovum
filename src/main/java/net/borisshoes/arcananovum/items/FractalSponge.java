@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.core.BlockItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
@@ -145,7 +146,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
-      ItemStack drop = getPrefItem();
+      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"));
       drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
       drops.add(drop);
       return drops;
@@ -177,6 +178,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
          NbtCompound spongeData = new NbtCompound();
          spongeData.putString("UUID",getUUID(item));
          spongeData.putString("id",this.id);
+         spongeData.putString("crafter",getCrafter(item));
          spongeBlock.setData(spongeData);
          int absorbed = absorb(world, pos);
          Block block = absorbed > 0 ? Blocks.WET_SPONGE : Blocks.SPONGE;
@@ -190,6 +192,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
          if(absorbed > 0){
             SoundUtils.playSound(player.getWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
             PLAYER_DATA.get(player).addXP(absorbed); // Add xp
+            ArcanaAchievements.progress(player,"ocean_cleanup",absorbed);
          }
       }catch(Exception e){
          e.printStackTrace();

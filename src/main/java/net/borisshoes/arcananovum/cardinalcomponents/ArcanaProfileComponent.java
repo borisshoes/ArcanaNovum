@@ -1,11 +1,14 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.advancement.Advancement;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -18,16 +21,14 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ArcanaProfileComponent implements IArcanaProfileComponent{
    private final PlayerEntity player;
    private final List<String> crafted = new ArrayList<>();
-   private final List<String> recipes = new ArrayList<>();
+   //private final List<String> recipes = new ArrayList<>();
    private final HashMap<String, NbtElement> miscData = new HashMap<>();
+   private final HashMap<String,List<ArcanaAchievement>> achievements = new HashMap<>();
    private int level;
    private int xp;
    
@@ -38,9 +39,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    @Override
    public void readFromNbt(NbtCompound tag){
       crafted.clear();
-      recipes.clear();
+      miscData.clear();
+      achievements.clear();
+      //recipes.clear();
       tag.getList("crafted", NbtType.STRING).forEach(item -> crafted.add(item.asString()));
-      tag.getList("recipes", NbtType.STRING).forEach(item -> recipes.add(item.asString()));
+      //tag.getList("recipes", NbtType.STRING).forEach(item -> recipes.add(item.asString()));
       NbtCompound miscDataTag = tag.getCompound("miscData");
       Set<String> keys = miscDataTag.getKeys();
       keys.forEach(key ->{
@@ -48,6 +51,19 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       });
       level = tag.getInt("level");
       xp = tag.getInt("xp");
+      
+      NbtCompound achievementsTag = tag.getCompound("achievements");
+      Set<String> achieveItemKeys = achievementsTag.getKeys();
+      for(String itemKey : achieveItemKeys){
+         List<ArcanaAchievement> itemAchs = new ArrayList<>();
+         NbtCompound itemAchsTag = achievementsTag.getCompound(itemKey);
+   
+         for(String achieveKey : itemAchsTag.getKeys()){
+            NbtCompound achTag = itemAchsTag.getCompound(achieveKey);
+            itemAchs.add(ArcanaAchievements.registry.get(achieveKey).fromNbt(achieveKey,achTag));
+         }
+         achievements.put(itemKey,itemAchs);
+      }
    }
    
    @Override
@@ -58,15 +74,27 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       crafted.forEach(item -> {
          craftedTag.add(NbtString.of(item));
       });
-      recipes.forEach(item -> {
-         recipesTag.add(NbtString.of(item));
-      });
+//      recipes.forEach(item -> {
+//         recipesTag.add(NbtString.of(item));
+//      });
       miscData.forEach(miscDataTag::put);
       tag.put("crafted",craftedTag);
       tag.put("recipes",recipesTag);
       tag.put("miscData",miscDataTag);
       tag.putInt("level",level);
       tag.putInt("xp",xp);
+      
+      NbtCompound achievementsTag = new NbtCompound();
+      for(Map.Entry<String, List<ArcanaAchievement>> entry : achievements.entrySet()){
+         String item = entry.getKey();
+         List<ArcanaAchievement> itemAchs = entry.getValue();
+         NbtCompound itemAchsTag = new NbtCompound();
+         for(ArcanaAchievement itemAch : itemAchs){
+            itemAchsTag.put(itemAch.id,itemAch.toNbt());
+         }
+         achievementsTag.put(item,itemAchsTag);
+      }
+      tag.put("achievements",achievementsTag);
    }
    
    @Override
@@ -74,14 +102,19 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       return crafted;
    }
    
-   @Override
-   public List<String> getRecipes(){
-      return recipes;
-   }
+//   @Override
+//   public List<String> getRecipes(){
+//      return recipes;
+//   }
    
    @Override
    public NbtElement getMiscData(String id){
       return miscData.get(id);
+   }
+   
+   @Override
+   public HashMap<String, List<ArcanaAchievement>> getAchievements(){
+      return achievements;
    }
    
    @Override
@@ -178,10 +211,33 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public boolean addRecipe(String item){
-      if (recipes.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
-      return recipes.add(item);
+   public boolean setAchievement(String item, ArcanaAchievement achievement){
+      if(achievements.containsKey(item)){
+         List<ArcanaAchievement> itemAchs = achievements.get(item);
+         for(ArcanaAchievement itemAch : itemAchs){
+            if(itemAch.id.equals(achievement.id)){
+               // Update data
+               itemAchs.remove(itemAch);
+               itemAchs.add(achievement);
+               return false;
+            }
+         }
+         // Add achievement
+         itemAchs.add(achievement);
+      }else{
+         // Add item and achievement
+         List<ArcanaAchievement> itemAchs = new ArrayList<>();
+         itemAchs.add(achievement);
+         achievements.put(item,itemAchs);
+      }
+      return true;
    }
+
+//   @Override
+//   public boolean addRecipe(String item){
+//      if (recipes.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
+//      return recipes.add(item);
+//   }
    
    @Override
    public boolean removeCrafted(String item){
@@ -190,10 +246,24 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public boolean removeRecipe(String item){
-      if (recipes.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
-      return recipes.removeIf(i -> i.equalsIgnoreCase(item));
+   public boolean removeAchievement(String item, String achievementId){
+      if(achievements.containsKey(item)){
+         List<ArcanaAchievement> itemAchs = achievements.get(item);
+         for(ArcanaAchievement itemAch : itemAchs){
+            if(itemAch.id.equals(achievementId)){
+               itemAchs.remove(itemAch);
+               return true;
+            }
+         }
+      }
+      return false;
    }
+
+//   @Override
+//   public boolean removeRecipe(String item){
+//      if (recipes.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
+//      return recipes.removeIf(i -> i.equalsIgnoreCase(item));
+//   }
    
    @Override
    public void addMiscData(String id, NbtElement data){
@@ -203,6 +273,32 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    @Override
    public void removeMiscData(String id){
       miscData.remove(id);
+   }
+   
+   @Override
+   public boolean hasAcheivement(String item, String achievementId){
+      if(achievements.containsKey(item)){
+         List<ArcanaAchievement> itemAchs = achievements.get(item);
+         for(ArcanaAchievement itemAch : itemAchs){
+            if(itemAch.id.equals(achievementId)){
+               return itemAch.isAcquired();
+            }
+         }
+      }
+      return false;
+   }
+   
+   @Override
+   public ArcanaAchievement getAchievement(String item, String achievementId){
+      if(achievements.containsKey(item)){
+         List<ArcanaAchievement> itemAchs = achievements.get(item);
+         for(ArcanaAchievement itemAch : itemAchs){
+            if(itemAch.id.equals(achievementId)){
+               return itemAch;
+            }
+         }
+      }
+      return null;
    }
    
    

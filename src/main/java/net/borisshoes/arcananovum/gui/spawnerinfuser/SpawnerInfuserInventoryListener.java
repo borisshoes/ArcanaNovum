@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.gui.spawnerinfuser;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.items.ShulkerCore;
@@ -51,6 +52,7 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
             blockData.put("soulstone", soulstoneSlot.writeNbt(new NbtCompound()));
             if(!prevStone){
                SoundUtils.soulSounds(gui.getPlayer(),1,20);
+               if(Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot)) == Soulstone.tiers.length) ArcanaAchievements.grant(gui.getPlayer(),"innocent_souls");
             }
    
             ItemStack pointsSlot = inv.getStack(1);
@@ -70,6 +72,8 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
                   if(blockData.getInt("points") == maxPoints){
                      SoundUtils.playSongToPlayer(gui.getPlayer(), SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1, 2f);
                   }
+                  if(blockData.getInt("points") >= 512) ArcanaAchievements.grant(gui.getPlayer(),"archlich");
+                  if(blockData.getInt("points") >= 1024) ArcanaAchievements.grant(gui.getPlayer(),"power_overwhelming");
                }
             }
             prevStone = true;

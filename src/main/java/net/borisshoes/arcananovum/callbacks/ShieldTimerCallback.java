@@ -16,6 +16,10 @@ public class ShieldTimerCallback extends TickTimerCallback{
       this.hearts = hearts;
    }
    
+   public float getHearts(){
+      return hearts;
+   }
+   
    @Override
    public void onTimer(){
       try{

@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items;
 
 import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.arcanetome.*;
 import net.borisshoes.arcananovum.items.core.MagicItem;
@@ -89,11 +91,6 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       if(profile.getLevel() == 0){
          // Profile needs initialization
          profile.setLevel(1);
-         
-         // Right now all recipes are unlocked
-         for(MagicItem item : MagicItems.registry.values()){
-            profile.addRecipe(item.getId());
-         }
       }
       // update level from xp just in case leveling changed
       profile.setLevel(LevelUtils.levelFromXp(profile.getXP()));
@@ -582,18 +579,44 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       tag = achievePane.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Achievements (Coming Soon):\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      display.putString("Name","[{\"text\":\"Achievements:\",\"italic\":false,\"color\":\"dark_purple\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Earning Achievements Grants Skill Points!\",\"color\":\"light_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
    
-      int[] achieveSlots = dynamicSlots[0];
+      List<ArcanaAchievement> achievements = ArcanaAchievements.getItemAchievements(magicItem);
+      int[] achieveSlots = dynamicSlots[achievements.size()];
       for(int i = 0; i < 7; i++){
          gui.setSlot(46+i,GuiElementBuilder.from(achievePane));
       }
-      for(int i = 0; i < achieveSlots.length; i++){
+      for(int i = 0; i < achievements.size(); i++){
+         ArcanaAchievement achievement = achievements.get(i);
          gui.clearSlot(46+achieveSlots[i]);
+         
+         GuiElementBuilder achievementItem = new GuiElementBuilder(achievement.getDisplayItem().getItem());
+         achievementItem.setName(Text.literal(achievement.name).formatted(Formatting.LIGHT_PURPLE))
+               .addLoreLine(Text.literal("")
+                     .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
+                     .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal("  |  ").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal(""+achievement.pointsReward).formatted(Formatting.AQUA))
+                     .append(Text.literal(achievement.pointsReward != 1 ? " Skill Points" : " Skill Point").formatted(Formatting.DARK_AQUA)));
+   
+         for(String s : achievement.getDescription()){
+            achievementItem.addLoreLine(Text.literal(s).formatted(Formatting.GRAY));
+         }
+         
+         MutableText[] statusText = achievement.getStatusDisplay(player);
+         if(statusText != null){
+            for(MutableText mutableText : statusText){
+               achievementItem.addLoreLine(mutableText);
+            }
+         }
+         
+         if(profile.hasAcheivement(magicItem.getId(),achievement.id)) achievementItem.glow();
+   
+         gui.setSlot(46+achieveSlots[i], achievementItem);
       }
    
       gui.setTitle(Text.literal(magicItem.getName()));
@@ -799,7 +822,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       ARROWS("Arrows"),
       ARMOR("Armor"),
       EQUIPMENT("Equipment"),
-      CHARMS("Charms");
+      CHARMS("Charms"),
+      CATALYSTS("Catalysts");
    
       public final String label;
    
@@ -823,6 +847,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
             case ARMOR -> text.formatted(Formatting.BLUE);
             case EQUIPMENT -> text.formatted(Formatting.DARK_RED);
             case CHARMS -> text.formatted(Formatting.YELLOW);
+            case CATALYSTS -> text.formatted(Formatting.DARK_GRAY);
          };
       }
    

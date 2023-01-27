@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
@@ -40,6 +41,7 @@ public class BowMixin {
          MagicItem magicBow = MagicItemUtils.identifyItem(stack);
          MagicItem magicArrow = MagicItemUtils.identifyItem(itemStack);
          if(magicBow instanceof RunicBow && magicArrow instanceof RunicArrow){
+            if(playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.progress(player,"just_like_archer",1);
             if(magicArrow instanceof PhotonicArrows photonArrows){
                photonArrows.shoot(world,user,persistentProjectileEntity);
                persistentProjectileEntity.kill();

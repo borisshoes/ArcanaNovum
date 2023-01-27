@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -14,6 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.EntityDamageSource;
+import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
@@ -21,6 +23,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -82,6 +85,7 @@ public class ArcaneFlakArrows extends MagicItem implements RunicArrow {
    
    public static void detonate(PersistentProjectileEntity arrow){
       double damageRange = 4;
+      int deadPhantomCount = 0;
       List<Entity> triggerTargets = arrow.getEntityWorld().getOtherEntities(arrow,arrow.getBoundingBox().expand(damageRange*2),
             e -> !e.isSpectator() && e.distanceTo(arrow) <= damageRange && e instanceof LivingEntity);
       for(Entity entity : triggerTargets){
@@ -91,8 +95,10 @@ public class ArcaneFlakArrows extends MagicItem implements RunicArrow {
             damage *= e.distanceTo(arrow) > 3 ? 0.5 : 1;
             DamageSource source = arrow.getOwner() == null ? (new DamageSource("explosion.player")).setExplosive() : (new EntityDamageSource("explosion.player", arrow.getOwner())).setExplosive();
             e.damage(source,damage);
+            if(e instanceof PhantomEntity && e.isDead()) deadPhantomCount++;
          }
       }
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,"aa_artillery");
    
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          ParticleEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getPos(),0);

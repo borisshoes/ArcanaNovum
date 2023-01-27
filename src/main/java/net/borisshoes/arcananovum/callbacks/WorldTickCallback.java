@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ContinuumAnchor;
@@ -29,6 +31,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -43,8 +46,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static net.borisshoes.arcananovum.Arcananovum.*;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.*;
 
 public class WorldTickCallback {
    
@@ -198,6 +200,16 @@ public class WorldTickCallback {
          if(active && serverWorld.getServer().getTicks() % 20 == 0){
             fuel = Math.max(0,fuel-1);
             blockData.putInt("fuel",fuel);
+            
+            String crafterId = blockData.getString("crafter");
+            if(!crafterId.isEmpty()){
+               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
+               if(player == null){
+                  Arcananovum.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
+               }else{
+                  ArcanaAchievements.progress(player,"timey_wimey",1);
+               }
+            }
          }
          int fuelMarks = (int)Math.min(Math.ceil(4.0*fuel/600000.0),4);
          serverWorld.setBlockState(pos, Blocks.RESPAWN_ANCHOR.getDefaultState().with(Properties.CHARGES,fuelMarks), Block.NOTIFY_ALL);
@@ -395,6 +407,17 @@ public class WorldTickCallback {
                }
             
                SoundUtils.playSound(serverWorld,pos,SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
+   
+               String crafterId = blockData.getString("crafter");
+               if(!crafterId.isEmpty()){
+                  ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
+                  if(player == null){
+                     Arcananovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
+                  }else{
+                     ArcanaAchievements.progress(player,"endless_extrusion",1);
+                     if(obby.isOf(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,"expensive_infusion");
+                  }
+               }
             }
          
             cooldown = IgneousCollider.COOLDOWN-1;

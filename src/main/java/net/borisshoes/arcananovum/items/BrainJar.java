@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.gui.brainjar.BrainJarGui;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -76,11 +77,9 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      newTag.getCompound("arcananovum").putInt("mode",magicTag.getInt("mode"));
+      int mode = magicTag.getInt("mode");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("mode",mode);
       stack.setNbt(newTag);
       editStatusLore(stack);
       return stack;
@@ -117,11 +116,12 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
                int durability = nbt != null ? nbt.getInt("Damage") : 0;
                if(durability <= 0)
                   continue;
-               durability = MathHelper.clamp(durability - 2, 0, Integer.MAX_VALUE);
+               int newDura = MathHelper.clamp(durability - 2, 0, Integer.MAX_VALUE);
+               ArcanaAchievements.progress(player,"certified_repair",durability-newDura);
                addEnergy(item,-1);
                PLAYER_DATA.get(player).addXP(5);
                editStatusLore(item);
-               nbt.putInt("Damage", durability);
+               nbt.putInt("Damage", newDura);
                tool.setNbt(nbt);
             }
          }
@@ -297,6 +297,7 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       }
       addEnergy(item,xpToStore);
       player.addExperience(-xpToStore);
+      if(xpToStore > 0 && getEnergy(item) == maxEnergy) ArcanaAchievements.grant(player,"break_bank");
    
       ItemStack echest = new ItemStack(Items.ENDER_CHEST);
       NbtCompound tag = echest.getOrCreateNbt();

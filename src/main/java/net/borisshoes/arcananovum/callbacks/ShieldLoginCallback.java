@@ -57,4 +57,10 @@ public class ShieldLoginCallback extends LoginCallback{
       this.data = data;
       return this.data;
    }
+   
+   @Override
+   public void combineCallbacks(LoginCallback callback){
+      if(callback instanceof ShieldLoginCallback newCallback)
+         this.hearts += newCallback.hearts;
+   }
 }

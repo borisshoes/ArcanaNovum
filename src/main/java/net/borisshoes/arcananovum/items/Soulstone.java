@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.AttackingItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -44,6 +45,7 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       name = "Soulstone";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
+      itemVersion = 1;
       
       ItemStack item = new ItemStack(Items.FIRE_CHARGE);
       NbtCompound tag = item.getOrCreateNbt();
@@ -69,6 +71,7 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       NbtCompound magicTag = tag.getCompound("arcananovum");
       magicTag.putString("type","unattuned");
       magicTag.putInt("souls",0);
+      magicTag.putInt("maxTier",0);
       prefNBT = tag;
       item.setNbt(prefNBT);
       prefItem = item;
@@ -78,11 +81,13 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putString("type",magicTag.getString("type"));
-      newTag.getCompound("arcananovum").putInt("souls",magicTag.getInt("souls"));
+      int souls = magicTag.getInt("souls");
+      int maxTier = magicTag.getInt("maxTier");
+      String type = magicTag.getString("type");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("souls",souls);
+      newTag.getCompound("arcananovum").putInt("maxTier",maxTier);
+      newTag.getCompound("arcananovum").putString("type",type);
       stack.setNbt(newTag);
       redoLore(stack);
       return stack;
@@ -128,6 +133,7 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       int souls = magicNbt.getInt("souls");
+      int maxTier = magicNbt.getInt("maxTier");
       
       String entityTypeId = EntityType.getId(dead.getType()).toString();
       String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
@@ -138,7 +144,13 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
          // Level up notification
          player.sendMessage(Text.translatable("Your Soulstone crackles with new power!").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1,1f);
-         PLAYER_DATA.get(player).addXP(souls*50); // Add xp
+         if(tier > maxTier){
+            PLAYER_DATA.get(player).addXP(souls*50); // Add xp
+            magicNbt.putInt("maxTier",tier);
+         }
+         if(tier == 7) ArcanaAchievements.grant(player,"prime_evil");
+         if(tier == 5) ArcanaAchievements.grant(player,"philosopher_stone");
+         if(tier == 3 && entityTypeId.equals("minecraft:villager")) ArcanaAchievements.grant(player,"took_a_village");
       }
       magicNbt.putInt("souls",souls);
       

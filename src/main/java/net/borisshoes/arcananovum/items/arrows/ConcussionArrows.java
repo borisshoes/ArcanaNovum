@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -17,6 +18,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -93,8 +95,10 @@ public class ConcussionArrows extends MagicItem implements RunicArrow {
       float range = (float) MathHelper.clamp(arrow.getVelocity().length()*2.5,1,6);
       List<Entity> entities = world.getOtherEntities(null,rangeBox,e -> !e.isSpectator() && e.squaredDistanceTo(pos) < range*range && e instanceof LivingEntity);
       float percent = range/6;
+      int mobsHit = 0;
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e){
+            if(e instanceof MobEntity) mobsHit++;
             
             StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS, (int)(25*percent), 0, false, false, true);
             StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA, (int)(120*percent), 0, false, false, true);
@@ -124,6 +128,7 @@ public class ConcussionArrows extends MagicItem implements RunicArrow {
             }
          }
       }
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,"shock_awe");
       if(world instanceof ServerWorld serverWorld){
          SoundUtils.playSound(world, new BlockPos(pos), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1, .8f);
          ParticleEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);

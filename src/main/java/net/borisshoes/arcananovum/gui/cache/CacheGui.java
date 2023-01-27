@@ -138,7 +138,8 @@ public class CacheGui extends SimpleGui {
          for(int j = 0; j < 7; j++){
             setSlotRedirect((i*9+10)+j,new Slot(inv,k,j,i));
             if(k < pageItems.size()){
-               inv.setStack(k,pageItems.get(k).getNewItem());
+               MagicItem item = pageItems.get(k);
+               inv.setStack(k,item.addCrafter(item.getNewItem(),player.getUuidAsString()));
             }else{
                inv.setStack(k,ItemStack.EMPTY);
             }

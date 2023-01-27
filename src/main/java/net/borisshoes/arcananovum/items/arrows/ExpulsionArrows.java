@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -80,7 +81,7 @@ public class ExpulsionArrows extends MagicItem implements RunicArrow {
    public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         expulsionPulse(serverWorld,null,entityHitResult.getEntity(),duration,0);
+         expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,0);
       }
    }
    
@@ -88,11 +89,11 @@ public class ExpulsionArrows extends MagicItem implements RunicArrow {
    public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         expulsionPulse(serverWorld,blockHitResult.getPos(),null,duration,0);
+         expulsionPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,0);
       }
    }
    
-   private void expulsionPulse(ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, int calls){
+   private void expulsionPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, int calls){
       if(start == null && entity == null) return;
       Vec3d pos = entity == null ? start : entity.getPos();
       double range = 4;
@@ -106,6 +107,8 @@ public class ExpulsionArrows extends MagicItem implements RunicArrow {
          entity1.setVelocity(motion.x,motion.y,motion.z);
          if(entity1 instanceof ServerPlayerEntity player){
             player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+            
+            if(arrow.getOwner() != null && arrow.getOwner().getUuid().equals(player.getUuid()) && motion.y > 2) ArcanaAchievements.grant(player,"jump_pad");
          }
       }
       
@@ -121,7 +124,7 @@ public class ExpulsionArrows extends MagicItem implements RunicArrow {
          Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
             @Override
             public void run(){
-               expulsionPulse(world, pos, entity,duration,calls + 1);
+               expulsionPulse(arrow, world, pos, entity,duration,calls + 1);
             }
          }));
       }

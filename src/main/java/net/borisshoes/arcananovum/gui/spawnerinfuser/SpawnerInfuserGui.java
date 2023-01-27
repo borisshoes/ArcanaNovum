@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.spawnerinfuser;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.gui.SoulstoneSlot;
 import net.borisshoes.arcananovum.items.Soulstone;
@@ -157,6 +158,8 @@ public class SpawnerInfuserGui extends SimpleGui {
       SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_CHIME, 1, (.5f+((float)newInd/(lvlArr.length-1))));
       blockData.putInt("SpentPoints",spentPoints-pointDif);
       stats.putShort(nbtKey, (short) newVal);
+      if(spentPoints-pointDif >= 1) ArcanaAchievements.grant(player,"humble_necromancer");
+      if(pointArr[newInd] >= 256) ArcanaAchievements.grant(player,"sculk_hungers");
       
       build();
    

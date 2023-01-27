@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventory;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
@@ -24,6 +25,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
@@ -101,14 +103,17 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      newTag.getCompound("arcananovum").putInt("souls",magicTag.getInt("souls"));
-      newTag.getCompound("arcananovum").putInt("stall",magicTag.getInt("stall"));
-      newTag.getCompound("arcananovum").putInt("glowstone",magicTag.getInt("glowstone"));
-      newTag.getCompound("arcananovum").putBoolean("wasFlying",magicTag.getBoolean("wasFlying"));
+      int souls = magicTag.getInt("souls");
+      int stall = magicTag.getInt("stall");
+      int glowstone = magicTag.getInt("glowstone");
+      boolean wasFlying = magicTag.getBoolean("wasFlying");
+      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("souls",souls);
+      newTag.getCompound("arcananovum").putInt("stall",stall);
+      newTag.getCompound("arcananovum").putInt("glowstone",glowstone);
+      newTag.getCompound("arcananovum").putBoolean("wasFlying",wasFlying);
+      if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
       redoLore(stack);
       return stack;
@@ -196,6 +201,8 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       if(world.getServer().getTicks() % 20 == 0){
          if(chestItem && flying && survival){
             addEnergy(item,-1);
+            ArcanaAchievements.progress(player,"frequent_flier",1);
+            if(player.getY() >= 1000) ArcanaAchievements.grant(player,"to_the_moon");
             if(getEnergy(item) % 60 == 0){
                int souls = magicTag.getInt("souls");
                int glowstone = magicTag.getInt("glowstone");

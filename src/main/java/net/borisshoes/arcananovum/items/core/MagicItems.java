@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items.core;
 
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.arrows.*;
+import net.borisshoes.arcananovum.items.catalysts.*;
 import net.borisshoes.arcananovum.items.charms.*;
 
 import java.util.ArrayList;
@@ -60,6 +61,13 @@ public class MagicItems {
    public static final MagicItem SPAWNER_INFUSER = MagicItems.register("spawner_infuser", new SpawnerInfuser());
    public static final MagicItem RUNIC_QUIVER = MagicItems.register("runic_quiver", new RunicQuiver());
    
+   // 1.4 Items
+   public static final MagicItem CATALYST_MUNDANE = MagicItems.register("catalyst_mundane", new catalyst_mundane());
+   public static final MagicItem CATALYST_EMPOWERED = MagicItems.register("catalyst_empowered", new catalyst_empowered());
+   public static final MagicItem CATALYST_EXOTIC = MagicItems.register("catalyst_exotic", new catalyst_exotic());
+   public static final MagicItem CATALYST_LEGENDARY = MagicItems.register("catalyst_legendary", new catalyst_legendary());
+   public static final MagicItem CATALYST_MYTHICAL = MagicItems.register("catalyst_mythical", new catalyst_mythical());
+   
    private static MagicItem register(String id, MagicItem item){
       registry.put(id,item);
       return item;
@@ -108,6 +116,11 @@ public class MagicItems {
          PHOTONIC_ARROWS,
          WINGS_OF_ZEPHYR,
          PICKAXE_OF_PLUTO,
-         LEADERSHIP_CHARM
+         LEADERSHIP_CHARM,
+         CATALYST_MUNDANE,
+         CATALYST_EMPOWERED,
+         CATALYST_EXOTIC,
+         CATALYST_LEGENDARY,
+         CATALYST_MYTHICAL
    ));
 }

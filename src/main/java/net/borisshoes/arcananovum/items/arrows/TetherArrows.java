@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -104,6 +105,8 @@ public class TetherArrows extends MagicItem implements RunicArrow {
          player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          ParticleEffectUtils.tetherArrowGrapple(player.getWorld(),player,blockHitResult.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_2, SoundCategory.PLAYERS,.8f,.6f);
+         
+         if(motion.y >= 12) ArcanaAchievements.progress(player,"spiderman",1);
       }
       
    }

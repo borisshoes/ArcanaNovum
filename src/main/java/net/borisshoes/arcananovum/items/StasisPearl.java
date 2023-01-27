@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -86,11 +87,11 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      newTag.getCompound("arcananovum").putString("pearlID",magicTag.getString("pearlID"));
-      newTag.getCompound("arcananovum").putBoolean("active",magicTag.getBoolean("active"));
+      boolean active = magicTag.getBoolean("active");
+      String pearlID = magicTag.getString("pearlID");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putBoolean("active",active);
+      newTag.getCompound("arcananovum").putString("pearlID",pearlID);
       stack.setNbt(newTag);
       redoLore(stack);
       return stack;
@@ -215,6 +216,7 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
                   if(pearlEntity != null){
                      magicNbt.putBoolean("active", false);
                      pearlData.putBoolean("stasis",false);
+                     if(pearlData.getInt("keepAlive") <= 6000 && playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.grant(player,"pearl_hang");
                      pearlData.remove("pearlData");
                      playerEntity.getItemCooldownManager().set(Items.ENDER_PEARL, 0);
                      return false;

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.*;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -158,6 +159,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             return !playerEntity.isCreative();
          }
       } else {
+         if(CandleCakeBlock.canBeLit(blockState) && playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.grant(player,"cake_day");
          SoundUtils.playSound(world,blockPos,SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
          world.setBlockState(blockPos, (BlockState)blockState.with(Properties.LIT, true), 11);
          world.emitGameEvent(playerEntity, GameEvent.BLOCK_CHANGE, blockPos);
@@ -238,6 +240,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    
                if(player instanceof ServerPlayerEntity serverPlayer){
                   PLAYER_DATA.get(serverPlayer).addXP(energyToConsume*4); // Add xp
+                  if(recipe.getOutput().isOf(Items.GLASS)) ArcanaAchievements.progress(serverPlayer,"glassblower",stack.getCount());
                }
                return stack;
             }
@@ -294,25 +297,26 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       Vec3d boxEnd = playerEntity.getPos().add(mul,mul,mul);
       Box rangeBox = new Box(boxStart,boxEnd);
    
-      if(serverWorld.getServer().getTicks() % 3 == 0){
-         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS, 0.6f, (float) (Math.random() * .5 + .5));
-      }
+      SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS, 0.6f, (float) (Math.random() * .5 + .5));
    
-      if(serverWorld.getServer().getTicks() % 5 == 0){
-         List<Entity> entities = serverWorld.getOtherEntities(playerEntity,rangeBox, e -> e instanceof LivingEntity);
-         for(Entity e : entities){
-            if(!(e instanceof LivingEntity entity)) continue;
-            if(inCone(playerEntity,e.getEyePos())){
-               if(!entity.isFireImmune()){
-                  entity.setOnFireFor((2*energy+60)/20);
-                  entity.damage(DamageSource.IN_FIRE,1.5f);
-                  
-                  if(playerEntity instanceof ServerPlayerEntity serverPlayer){
-                     PLAYER_DATA.get(serverPlayer).addXP(5); // Add xp
-                  }
+      List<Entity> entities = serverWorld.getOtherEntities(playerEntity,rangeBox, e -> e instanceof LivingEntity);
+      int ignited = 0;
+      for(Entity e : entities){
+         if(!(e instanceof LivingEntity entity)) continue;
+         if(inCone(playerEntity,e.getEyePos())){
+            if(!entity.isFireImmune()){
+               entity.setOnFireFor((2*energy+60)/20);
+               entity.damage(DamageSource.IN_FIRE,2.5f);
+               if(entity instanceof MobEntity) ignited++;
+            
+               if(playerEntity instanceof ServerPlayerEntity serverPlayer){
+                  PLAYER_DATA.get(serverPlayer).addXP(5); // Add xp
                }
             }
          }
+      }
+      if(playerEntity instanceof ServerPlayerEntity serverPlayer && ignited >= 12){
+         ArcanaAchievements.grant(serverPlayer,"pyromaniac");
       }
    
 
@@ -323,7 +327,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       Vec3d rotVec = Vec3d.fromPolar(60,yaw).crossProduct(Vec3d.fromPolar(0,yaw)).normalize();
       Vec3d origin = playerEntity.getEyePos().add(playerEntity.getRotationVecClient().multiply(-ri*Math.cos(ha)));
       
-      for(int i = 0; i < 20; i++){
+      for(int i = 0; i < 40; i++){
          int tries = 0;
          Vec3d pos;
          do{
@@ -356,7 +360,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          }while(!inCone(playerEntity,pos) && tries < 12);
          //if(tries >= 11) System.out.println("Tries exceeded");
          
-         serverWorld.spawnParticles(ParticleTypes.FLAME,pos.getX(),pos.getY(),pos.getZ(),3,0.1,0.1,0.1,0);
+         serverWorld.spawnParticles(ParticleTypes.FLAME,pos.getX(),pos.getY(),pos.getZ(),1,0.1,0.1,0.1,0);
       }
       return false;
    }
@@ -411,11 +415,9 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      newTag.getCompound("arcananovum").putBoolean("active",magicTag.getBoolean("active"));
+      boolean active = magicTag.getBoolean("active");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putBoolean("active",active);
       stack.setNbt(newTag);
       return stack;
    }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -10,6 +11,7 @@ import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -98,14 +100,13 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      newTag.getCompound("arcananovum").putString("lastAttacked",magicTag.getString("lastAttacked"));
-      newTag.getCompound("arcananovum").putInt("tether",magicTag.getInt("tether"));
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      newTag.put("Enchantments",enchants);
+      String lastAttacked = magicTag.getString("lastAttacked");
+      int tether = magicTag.getInt("tether");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      if(enchants != null) newTag.put("Enchantments", enchants);
+      newTag.getCompound("arcananovum").putInt("tether",tether);
+      newTag.getCompound("arcananovum").putString("lastAttacked",lastAttacked);
       stack.setNbt(newTag);
       return stack;
    }
@@ -187,6 +188,9 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
                }
                player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
                PLAYER_DATA.get(player).addXP(500); // Add xp
+               
+               if(target instanceof ServerPlayerEntity || target instanceof WardenEntity) ArcanaAchievements.progress(player,"omae_wa",0);
+               if(target instanceof MobEntity) ArcanaAchievements.progress(player,"shadow_fury",0);
                return false;
             }
          }else{

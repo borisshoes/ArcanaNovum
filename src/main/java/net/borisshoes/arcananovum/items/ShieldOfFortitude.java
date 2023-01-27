@@ -53,14 +53,11 @@ public class ShieldOfFortitude extends MagicItem {
    @Override
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      newTag.put("Enchantments",enchants);
-      if(itemNbt.contains("BlockEntityTag"))
-         newTag.put("BlockEntityTag",itemNbt.getCompound("BlockEntityTag"));
+      NbtCompound banner = itemNbt.getCompound("BlockEntityTag");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      if(enchants != null) newTag.put("Enchantments", enchants);
+      if(banner != null) newTag.put("BlockEntityTag", banner);
       stack.setNbt(newTag);
       return stack;
    }

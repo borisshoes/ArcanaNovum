@@ -4,6 +4,7 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
@@ -132,7 +133,7 @@ public class TomeGui extends SimpleGui {
                MagicItemRecipe recipe = magicItem.getRecipe();
                Inventory inv = getSlotRedirect(1).inventory;
    
-               ItemStack newMagicItem = magicItem.forgeItem(inv);
+               ItemStack newMagicItem = magicItem.addCrafter(magicItem.forgeItem(inv),player.getUuidAsString());
                if(newMagicItem == null){
                   return false;
                }
@@ -140,7 +141,13 @@ public class TomeGui extends SimpleGui {
                if(!PLAYER_DATA.get(player).addCrafted(magicItem.getId()) && !(magicItem instanceof ArcaneTome)){
                   PLAYER_DATA.get(player).addXP(MagicRarity.getCraftXp(magicItem.getRarity()));
                }
-               
+   
+               if(magicItem.getRarity() != MagicRarity.MUNDANE){
+                  ArcanaAchievements.grant(player,"intro_arcana");
+                  ArcanaAchievements.progress(player,"intermediate_artifice",1);
+               }
+               if(magicItem.getRarity() == MagicRarity.LEGENDARY) ArcanaAchievements.grant(player,"artificial_divinity");
+   
                ItemStack[][] ingredients = new ItemStack[5][5];
                for(int i = 0; i < inv.size(); i++){
                   ingredients[i/5][i%5] = inv.getStack(i);

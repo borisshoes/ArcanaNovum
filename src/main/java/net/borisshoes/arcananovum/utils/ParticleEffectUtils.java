@@ -88,8 +88,10 @@ public class ParticleEffectUtils {
       
       List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(pos) < 15000);
       for(ServerPlayerEntity player : players){
-         world.spawnParticles(player,ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,true,pos.x,pos.y,pos.z,count,range,range,range,.01);
-         world.spawnParticles(player,ParticleTypes.LARGE_SMOKE,true,pos.x,pos.y,pos.z,count,range,range,range,.01);
+         world.spawnParticles(player,ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,true,pos.x,pos.y,pos.z,count/2,range,range,range,.01);
+         world.spawnParticles(player,ParticleTypes.LARGE_SMOKE,true,pos.x,pos.y,pos.z,count/3,range,range,range,.01);
+         world.spawnParticles(player,ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,false,pos.x,pos.y,pos.z,count/2,range,range,range,.01);
+         world.spawnParticles(player,ParticleTypes.LARGE_SMOKE,false,pos.x,pos.y,pos.z,2*count/3,range,range,range,.01);
       }
       
       if(calls < 20){

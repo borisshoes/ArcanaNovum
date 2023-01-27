@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -16,6 +17,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
@@ -23,6 +25,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
@@ -98,9 +101,13 @@ public class PhotonicArrows extends MagicItem implements RunicArrow {
       
       float damage = (float)MathHelper.clamp(proj.getVelocity().length()*5,1,20);
       
+      int killCount = 0;
       for(Entity hit : hits){
          hit.damage(DamageSource.magic(proj,entity), damage);
+         if(hit instanceof MobEntity mob && mob.isDead()) killCount++;
       }
+      if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,"x");
+      
       if(world instanceof ServerWorld serverWorld){
          ParticleEffectUtils.photonArrowShot(serverWorld,entity,raycast.getPos(), MathHelper.clamp(damage/15,.4f,1f));
       }

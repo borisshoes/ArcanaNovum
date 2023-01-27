@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -131,6 +132,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
          item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
          PLAYER_DATA.get(player).addXP(5); // Add xp
       }
+      if(items.size() >= 25) ArcanaAchievements.grant(player,"magnets");
    }
    
    private boolean itemInRange(Vec3d itemPos, Vec3d start, Vec3d end){

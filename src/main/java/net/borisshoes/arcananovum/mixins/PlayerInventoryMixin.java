@@ -23,6 +23,7 @@ public abstract class PlayerInventoryMixin {
    private void arcananovum_onPickup(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       try{
          PlayerInventory inv = (PlayerInventory) (Object) this;
+         if(inv.player.isSneaking()) return;
    
          for(int i = 0; i < inv.size(); i++){
             ItemStack item = inv.getStack(i);

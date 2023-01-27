@@ -19,6 +19,12 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    @Override
    public boolean addCallback(LoginCallback callback){
       if (callbacks.contains(callback)) return false;
+      for(LoginCallback loginCallback : callbacks){
+         if(callback.getId().equals(loginCallback.getId()) && callback.getPlayer().equals(loginCallback.getPlayer())){
+            loginCallback.combineCallbacks(callback);
+            return true;
+         }
+      }
       return callbacks.add(callback);
    }
    

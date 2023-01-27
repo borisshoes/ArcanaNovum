@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -67,6 +68,7 @@ public class BlinkArrows extends MagicItem implements RunicArrow {
    public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d tpPos = entityHitResult.getPos();
+         if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,"now_you_see_me");
          player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
          ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
@@ -78,6 +80,7 @@ public class BlinkArrows extends MagicItem implements RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
          Vec3d tpPos = blockHitResult.getPos().add(offset);
+         if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,"now_you_see_me");
          player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
          ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);

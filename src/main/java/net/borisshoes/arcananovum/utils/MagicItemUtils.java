@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.*;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
@@ -308,6 +309,30 @@ public class MagicItemUtils {
       }
       
       return list;
+   }
+   
+   public static int countItemsTakingConc(ServerPlayerEntity player){
+      List<MagicInvItem> magicInv = getMagicInventory(player);
+      int itemsTakingConc = 0;
+      
+      for(MagicInvItem magicInvItem : magicInv){
+         MagicItem magicItem = magicInvItem.item;
+         int prefCount = magicItem.getPrefItem().getCount();
+         int multiplier = (int)Math.ceil(magicInvItem.count/(double)prefCount);
+         int itemConc = multiplier * (int)Math.round(MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod());
+
+         if(itemConc > 0) itemsTakingConc += multiplier;
+      }
+      return itemsTakingConc;
+   }
+   
+   public static int countRarityInList(List<String> ids, MagicRarity rarity, boolean exclude){
+      int count = 0;
+      for(String id : ids){
+         if(!MagicItems.registry.containsKey("id")) continue;
+         if(getItemFromId(id).getRarity() == rarity ^ exclude) count++;
+      }
+      return count;
    }
    
    public static MagicItem getItemFromId(String id){

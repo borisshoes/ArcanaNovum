@@ -22,6 +22,8 @@ public abstract class LoginCallback {
    
    public abstract NbtCompound getData();
    
+   public abstract void combineCallbacks(LoginCallback callback);
+   
    public void setPlayer(String playerUUID){ this.playerUUID = playerUUID;}
    
    public String getId(){

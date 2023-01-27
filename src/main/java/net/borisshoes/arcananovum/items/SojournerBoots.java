@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -107,13 +108,9 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
    @Override
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
-      NbtList enchants = itemNbt.getList("Enchantments",NbtElement.COMPOUND_TYPE);
-      newTag.put("Enchantments",enchants);
+      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
       return stack;
    }
@@ -162,6 +159,10 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
                if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
                   player.sendMessage(Text.translatable("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                PLAYER_DATA.get(player).addXP(1); // Add xp
+               
+               if(newEnergy == maxEnergy){
+                  ArcanaAchievements.progress(player,"running",1);
+               }
             }else{
                addEnergy(item,-10);
             }

@@ -1,6 +1,9 @@
 package net.borisshoes.arcananovum.items.core;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
+import net.borisshoes.arcananovum.items.OverflowingQuiver;
+import net.borisshoes.arcananovum.items.RunicQuiver;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -30,11 +33,11 @@ public abstract class QuiverItem extends MagicItem{
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").put("arrows",magicTag.getCompound("type"));
-      newTag.getCompound("arcananovum").putInt("slot",magicTag.getInt("slot"));
+      NbtList arrowsList = magicTag.getList("arrows", NbtElement.COMPOUND_TYPE).copy();
+      int slot = magicTag.getInt("slot");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("slot",slot);
+      newTag.getCompound("arcananovum").put("arrows",arrowsList);
       stack.setNbt(newTag);
       return stack;
    }
@@ -62,6 +65,11 @@ public abstract class QuiverItem extends MagicItem{
       byte count = stack.getByte("Count");
       stack.putByte("Count", (byte) (count+1));
       PLAYER_DATA.get(player).addXP(50); // Add xp
+      if(this instanceof OverflowingQuiver){
+         ArcanaAchievements.progress(player,"spare_stock",1);
+      }else if(this instanceof RunicQuiver){
+         ArcanaAchievements.progress(player,"unlimited_stock",1);
+      }
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayerEntity player, ItemStack bow){

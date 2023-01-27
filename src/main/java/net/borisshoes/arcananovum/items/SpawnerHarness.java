@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -77,11 +78,10 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").put("spawner",magicTag.getCompound("spawner"));
+      NbtCompound spawnerNbt = magicTag.getCompound("spawner").copy();
       String loreData = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE).getString(4);
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").put("spawner",spawnerNbt);
       newTag.getCompound("display").getList("Lore", NbtElement.STRING_TYPE).set(4,NbtString.of(loreData));
       stack.setNbt(newTag);
       return stack;
@@ -141,6 +141,8 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
             player.sendMessage(Text.translatable("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
             PLAYER_DATA.get(player).addXP(3000); // Add xp
+            
+            if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,"finally_useful");
          }
       }catch (Exception e){
       

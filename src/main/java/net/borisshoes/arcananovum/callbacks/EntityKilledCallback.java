@@ -1,12 +1,17 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.items.WingsOfZephyr;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -54,6 +59,18 @@ public class EntityKilledCallback {
                   }
                   player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
                }
+   
+               if(livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity && ArcanaAchievements.isTimerActive(player,"omae_wa")){
+                  ArcanaAchievements.progress(player,"omae_wa",1);
+               }
+               if(livingEntity instanceof MobEntity && ArcanaAchievements.isTimerActive(player,"shadow_fury")){ //TODO Fix this achieve
+                  ArcanaAchievements.progress(player,"shadow_fury",1);
+               }
+            }
+   
+            ItemStack chestItem = player.getEquippedStack(EquipmentSlot.CHEST);
+            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr wings && player.isFallFlying() && livingEntity instanceof MobEntity){
+               ArcanaAchievements.grant(player,"angel_of_death");
             }
          }
       }catch(Exception e){

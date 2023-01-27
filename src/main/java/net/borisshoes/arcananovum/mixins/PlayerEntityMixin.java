@@ -1,10 +1,9 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.items.OverflowingQuiver;
-import net.borisshoes.arcananovum.items.PearlOfRecall;
-import net.borisshoes.arcananovum.items.RunicBow;
-import net.borisshoes.arcananovum.items.RunicQuiver;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -17,6 +16,7 @@ import net.minecraft.util.Hand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -24,6 +24,19 @@ import java.util.function.Predicate;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
+   
+   @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/entity/player/PlayerEntity;increaseStat(Lnet/minecraft/util/Identifier;I)V", ordinal = 4))
+   private void arcananovum_sprintStat(double dx, double dy, double dz, CallbackInfo ci){
+      PlayerEntity playerEntity = (PlayerEntity) (Object) this;
+      if(playerEntity instanceof ServerPlayerEntity player){
+         ItemStack bootsItem = player.getEquippedStack(EquipmentSlot.FEET);
+         if(MagicItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
+            if(boots.getEnergy(bootsItem) == boots.getMaxEnergy(bootsItem)){
+               ArcanaAchievements.progress(player, "pheidippides", Math.round((float)Math.sqrt(dx * dx + dz * dz) * 100.0F));
+            }
+         }
+      }
+   }
    
    @Inject(method = "getArrowType", at = @At(value="INVOKE",target="Lnet/minecraft/item/RangedWeaponItem;getProjectiles()Ljava/util/function/Predicate;", shift = At.Shift.BEFORE), cancellable = true)
    private void arcananovum_quiverCheck(ItemStack stack, CallbackInfoReturnable<ItemStack> cir){

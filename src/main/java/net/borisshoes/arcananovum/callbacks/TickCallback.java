@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -9,9 +11,12 @@ import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.passive.ParrotEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -28,6 +33,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
@@ -59,7 +65,7 @@ public class TickCallback {
                // Guidebook Craft Check
                if(item.hasNbt()){
                   if(item.getNbt().contains("ArcanaGuideBook")){
-                     ItemStack newArcanaTome = MagicItems.ARCANE_TOME.getNewItem();
+                     ItemStack newArcanaTome = MagicItems.ARCANE_TOME.addCrafter(MagicItems.ARCANE_TOME.getNewItem(),player.getUuidAsString());
                      inv.setStack(i,newArcanaTome);
                      arcaneProfile.addCrafted(MagicItems.ARCANE_TOME.getId());
                   }
@@ -82,6 +88,14 @@ public class TickCallback {
                   TickingItem magicItem = MagicItemUtils.identifyTickingItem(item);
                   magicItem.onTick(player.getWorld(),player,item);
                }
+   
+               // Achievements
+               if(MagicItemUtils.identifyItem(item) instanceof ShulkerCore){
+                  if(player.getY() > 1610 && player.getActiveStatusEffects().containsKey(StatusEffects.LEVITATION)) ArcanaAchievements.grant(player,"mile_high");
+               }
+               if(server.getTicks() % 20 == 0 && MagicItemUtils.identifyItem(item).getRarity() == MagicRarity.MYTHICAL){
+                  ArcanaAchievements.grant(player,"god_boon");
+               }
             }
             
             wingsTick(player);
@@ -91,11 +105,21 @@ public class TickCallback {
          
          // Tick Timer Callbacks
          ArrayList<TickTimerCallback> toRemove = new ArrayList<>();
+         HashMap<ServerPlayerEntity,Float> shieldTotals = new HashMap<>();
          for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
             TickTimerCallback t = SERVER_TIMER_CALLBACKS.get(i);
             if(t.decreaseTimer() == 0){
                t.onTimer();
                toRemove.add(t);
+               continue;
+            }
+            if(t instanceof ShieldTimerCallback st){
+               if(shieldTotals.containsKey(st.player)){
+                  shieldTotals.put(st.player,shieldTotals.get(st.player)+st.getHearts());
+                  if(shieldTotals.get(st.player) >= 200 && st.player.getAbsorptionAmount() >= 200) ArcanaAchievements.grant(st.player,"built_like_tank");
+               }else{
+                  shieldTotals.put(st.player,st.getHearts());
+               }
             }
          }
          SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
@@ -131,6 +155,7 @@ public class TickCallback {
       // Check to make sure everyone is under concentration limit
       int maxConc = LevelUtils.concFromXp(arcaneProfile.getXP());
       int curConc = MagicItemUtils.getUsedConcentration(player);
+      if(MagicItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,"arcane_addict");
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
          player.sendMessage(Text.translatable("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
@@ -149,19 +174,26 @@ public class TickCallback {
                   .append(Text.translatable(player.getEntityName()).formatted(playerColor).formatted())
                   .append(Text.translatable(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
             server.getPlayerManager().broadcast(deathMsg, false);
+         }else if(player.getHealth() <= 1.5f){
+            ArcanaAchievements.grant(player,"close_call");
          }
       }
    }
    
    private static void wingsTick(ServerPlayerEntity player){
-      if(player.isFallFlying()){ // Wings of Zephyr
-         ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
-         if(MagicItemUtils.isMagic(item)){
-            if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr wings){
-               wings.addEnergy(item,1); // Add 1 energy for each tick of flying
-               if(wings.getEnergy(item) % 1000 == 999)
-                  player.sendMessage(Text.translatable("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
-               PLAYER_DATA.get(player).addXP(2); // Add xp
+      ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
+      if(MagicItemUtils.identifyItem(item) instanceof WingsOfZephyr wings){
+         if(player.isFallFlying()){ // Wings of Zephyr
+            wings.addEnergy(item,1); // Add 1 energy for each tick of flying
+            if(wings.getEnergy(item) % 1000 == 999)
+               player.sendMessage(Text.translatable("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
+            PLAYER_DATA.get(player).addXP(2); // Add xp
+         }
+         NbtCompound leftShoulder = player.getShoulderEntityLeft();
+         NbtCompound rightShoulder = player.getShoulderEntityRight();
+         if(leftShoulder != null && rightShoulder != null && leftShoulder.contains("id") && rightShoulder.contains("id")){
+            if(leftShoulder.getString("id").equals("minecraft:parrot") && rightShoulder.getString("id").equals("minecraft:parrot")){
+               ArcanaAchievements.grant(player, "crow_father");
             }
          }
       }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -95,6 +96,7 @@ public class LeadershipCharm extends MagicItem implements TickingItem {
             }
          }
       }
+      if(inRangePlayers.size() >= 6) ArcanaAchievements.grant(player,"raid_leader");
       
       // Particle effects
       if(tickCount % 10 == 0){

@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.items.core;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 
 public abstract class EnergyItem extends MagicItem{
    protected int maxEnergy;
@@ -12,10 +14,9 @@ public abstract class EnergyItem extends MagicItem{
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putInt("energy",magicTag.getInt("energy"));
+      int energy = magicTag.getInt("energy");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("energy",energy);
       stack.setNbt(newTag);
       return stack;
    }
@@ -46,14 +47,9 @@ public abstract class EnergyItem extends MagicItem{
    
    @Override
    protected NbtCompound addMagicNbt(NbtCompound compound){
-      NbtCompound magic = new NbtCompound();
-      magic.putString("id",id);
-      magic.putInt("Rarity", MagicRarity.getRarityInt(rarity));
-      magic.putInt("Version",version);
-      magic.putString("UUID", "-");
-      magic.putInt("energy",initEnergy);
-      compound.put("arcananovum",magic);
-      return compound;
+      NbtCompound comp = super.addMagicNbt(compound);
+      comp.getCompound("arcananovum").putInt("energy",initEnergy);
+      return comp;
    }
    
 }

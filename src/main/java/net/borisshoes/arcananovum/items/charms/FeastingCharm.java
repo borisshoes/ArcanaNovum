@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -103,6 +104,20 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
                      if (world.isClient || pair.getFirst() == null || !(world.random.nextFloat() < pair.getSecond().floatValue())) continue;
                      player.addStatusEffect(new StatusEffectInstance(pair.getFirst()));
                   }
+                  if(invItem.isOf(Items.POISONOUS_POTATO)){
+                     ArcanaAchievements.setCondition(player,"tarrare",0,true);
+                  }else if(invItem.isOf(Items.SPIDER_EYE)){
+                     ArcanaAchievements.setCondition(player,"tarrare",1,true);
+                  }else if(invItem.isOf(Items.ROTTEN_FLESH)){
+                     ArcanaAchievements.setCondition(player,"tarrare",2,true);
+                  }else if(invItem.isOf(Items.SUSPICIOUS_STEW)){
+                     ArcanaAchievements.setCondition(player,"tarrare",3,true);
+                  }else if(invItem.isOf(Items.CHICKEN)){
+                     ArcanaAchievements.setCondition(player,"tarrare",4,true);
+                  }else if(invItem.isOf(Items.PUFFERFISH)){
+                     ArcanaAchievements.setCondition(player,"tarrare",5,true);
+                  }
+                  
                   invItem.decrement(1);
                   if(invItem.getCount() == 0)
                      invItem.setNbt(new NbtCompound());

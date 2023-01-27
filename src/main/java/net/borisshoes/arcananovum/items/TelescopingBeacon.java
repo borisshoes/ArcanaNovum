@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -93,14 +94,13 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
+      NbtCompound blocksNbt = magicTag.getCompound("blocks").copy();
       boolean ready = magicTag.getBoolean("beacon");
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").put("blocks",blocksNbt);
       newTag.getCompound("arcananovum").putBoolean("beacon",ready);
-      newTag.getCompound("arcananovum").put("blocks",magicTag.getCompound("blocks"));
       stack.setNbt(newTag);
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      NbtList loreList = newTag.getCompound("display").getList("Lore", NbtType.STRING);
       if(ready){
          loreList.set(4,NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ready\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       }else{
@@ -316,6 +316,19 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
             }));
          }
          PLAYER_DATA.get(player).addXP(10); // Add xp
+   
+         if(blockTypes.size() == 1 && blockTypes.getCompound(0).getInt("count") >= 164){
+            BlockState blockType = blocks.get(0);
+            if(blockType.isOf(Blocks.DIAMOND_BLOCK)){
+               ArcanaAchievements.grant(player,"bejeweled");
+            }else if(blockType.isOf(Blocks.EMERALD_BLOCK)){
+               ArcanaAchievements.grant(player,"art_of_the_deal");
+            }else if(blockType.isOf(Blocks.GOLD_BLOCK)){
+               ArcanaAchievements.grant(player,"acquisition_rules");
+            }else if(blockType.isOf(Blocks.NETHERITE_BLOCK)){
+               ArcanaAchievements.grant(player,"clinically_insane");
+            }
+         }
       }catch(Exception e){
          e.printStackTrace();
       }

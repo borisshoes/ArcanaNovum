@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
@@ -23,6 +24,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -33,6 +35,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
+   
+   @Shadow protected abstract void playBlockFallSound();
    
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
@@ -134,27 +138,26 @@ public abstract class LivingEntityMixin {
       LivingEntity entity = (LivingEntity) (Object) this;
       if(source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL)){
          ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
-         if(MagicItemUtils.isMagic(chestItem)){
-            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr wings){
-               int energy = wings.getEnergy(chestItem);
-               double maxDmgReduction = reduced*.5;
-               double dmgReduction = Math.min(energy/100.0,maxDmgReduction);
-               if(entity instanceof ServerPlayerEntity player){
-                  if(dmgReduction == maxDmgReduction || dmgReduction > 12){
-                     player.sendMessage(Text.translatable("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
-                     SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
-                     Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
-                        @Override
-                        public void run(){
-                           player.sendMessage(Text.translatable("Wing Energy Remaining: "+wings.getEnergy(chestItem)).formatted(Formatting.GRAY),true);
-                        }
-                     }));
-                  }
-                  PLAYER_DATA.get(player).addXP((int)dmgReduction*25); // Add xp
+         if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr wings){
+            int energy = wings.getEnergy(chestItem);
+            double maxDmgReduction = reduced*.5;
+            double dmgReduction = Math.min(energy/100.0,maxDmgReduction);
+            if(entity instanceof ServerPlayerEntity player){
+               if(dmgReduction == maxDmgReduction || dmgReduction > 12){
+                  player.sendMessage(Text.translatable("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1,1.3f);
+                  Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
+                     @Override
+                     public void run(){
+                        player.sendMessage(Text.translatable("Wing Energy Remaining: "+wings.getEnergy(chestItem)).formatted(Formatting.GRAY),true);
+                     }
+                  }));
                }
-               wings.addEnergy(chestItem,(int)-dmgReduction*100);
-               newReturn = (float) (reduced - dmgReduction);
+               PLAYER_DATA.get(player).addXP((int)dmgReduction*25); // Add xp
+               if(source.equals(DamageSource.FLY_INTO_WALL) && reduced > player.getHealth() && (reduced - dmgReduction) < player.getHealth()) ArcanaAchievements.grant(player,"see_glass");
             }
+            wings.addEnergy(chestItem,(int)-dmgReduction*100);
+            newReturn = (float) (reduced - dmgReduction);
          }
          
          // Felidae Charm
@@ -175,6 +178,7 @@ public abstract class LivingEntityMixin {
                   float oldReturn = newReturn;
                   newReturn = newReturn/2 < 2 ? 0 : newReturn / 2; // Half the damage, if the remaining damage is less than a heart, remove all of it.
                   PLAYER_DATA.get(player).addXP(10*(int)(oldReturn-newReturn)); // Add xp
+                  if(oldReturn > player.getHealth() && newReturn < player.getHealth()) ArcanaAchievements.grant(player,"land_on_feet");
                   break; // Make it so multiple charms don't stack
                }
             }

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -82,7 +83,7 @@ public class GravitonArrows extends MagicItem implements RunicArrow {
    public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20);// Measured in quarter seconds
-         gravitonPulse(serverWorld,null,entityHitResult.getEntity(),duration,0);
+         gravitonPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,0);
       }
    }
    
@@ -90,14 +91,15 @@ public class GravitonArrows extends MagicItem implements RunicArrow {
    public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         gravitonPulse(serverWorld,blockHitResult.getPos(),null,duration,0);
+         gravitonPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,0);
       }
    }
    
-   private void gravitonPulse(ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, int calls){
+   private void gravitonPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, int calls){
       if(start == null && entity == null) return;
       Vec3d pos = entity == null ? start : entity.getPos();
       double range = 3;
+      int mobsHit = 0;
       
       Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
       List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 2*range*range && !(e instanceof PersistentProjectileEntity));
@@ -111,11 +113,14 @@ public class GravitonArrows extends MagicItem implements RunicArrow {
          }
    
          if(entity1 instanceof LivingEntity e){
+            if(e instanceof MobEntity) mobsHit++;
+            
             int amp = (int) (5-diff.length());
             StatusEffectInstance slowness = new StatusEffectInstance(StatusEffects.SLOWNESS, 20, amp, false, false, true);
             e.addStatusEffect(slowness);
          }
       }
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,"bring_together");
       
       ParticleEffectUtils.gravitonArrowEmit(world,pos,entities);
       if(calls % 10 == 1){
@@ -126,7 +131,7 @@ public class GravitonArrows extends MagicItem implements RunicArrow {
          Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
             @Override
             public void run(){
-               gravitonPulse(world, pos, entity,duration,calls + 1);
+               gravitonPulse(arrow, world, pos, entity,duration,calls + 1);
             }
          }));
       }

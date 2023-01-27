@@ -1,16 +1,23 @@
 package net.borisshoes.arcananovum.gui.quivers;
 
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.QuiverItem;
+import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.TippedArrowItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.potion.PotionUtil;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuiverGui extends SimpleGui {
@@ -78,6 +85,18 @@ public class QuiverGui extends SimpleGui {
       }
       if(arrows.isEmpty()) magicTag.putInt("slot",-1);
       magicTag.put("arrows",arrows);
+   
+      List<Integer> tippedTypes = new ArrayList<>();
+      if(!runic){
+         for(int i = 0; i < inv.size(); i++){
+            ItemStack arrowStack = inv.getStack(i);
+            if(arrowStack.isOf(Items.TIPPED_ARROW)){
+               int color = PotionUtil.getColor(arrowStack);
+               if(!tippedTypes.contains(color)) tippedTypes.add(color);
+            }
+         }
+         if(tippedTypes.size() == 9) ArcanaAchievements.grant(player,"diverse_arsenal");
+      }
    }
    
    

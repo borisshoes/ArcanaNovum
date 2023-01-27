@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -7,7 +9,9 @@ import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -24,6 +28,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimerTask;
 
 public class SiphoningArrows extends MagicItem implements RunicArrow {
    
@@ -66,6 +71,16 @@ public class SiphoningArrows extends MagicItem implements RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          double damage = MathHelper.ceil(MathHelper.clamp(arrow.getVelocity().length() * arrow.getDamage(), 0.0, 2.147483647E9)) / 5.5;
          damage += arrow.isCritical() ? damage/4 : 0;
+   
+         if(player.getHealth() < 1.5f){
+            Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2, new TimerTask() {
+               @Override
+               public void run(){
+                  if(entityHitResult.getEntity() instanceof MobEntity mob && mob.isDead()) ArcanaAchievements.grant(player,"circle_of_life");
+               }
+            }));
+         }
+         
          player.heal((float)damage);
          player.getWorld().spawnParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
       }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.AttackingItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -89,14 +90,14 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putString("type",magicTag.getString("type"));
-      newTag.getCompound("arcananovum").putInt("uses",magicTag.getInt("uses"));
+      int uses = magicTag.getInt("uses");
+      String type = magicTag.getString("type");
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      newTag.getCompound("arcananovum").putInt("uses",uses);
+      newTag.getCompound("arcananovum").putString("type",type);
       stack.setNbt(newTag);
-      setType(stack,magicTag.getString("type"));
-      setUses(stack,magicTag.getInt("uses"));
+      setType(stack,type);
+      setUses(stack,uses);
       return stack;
    }
    
@@ -135,6 +136,7 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
                      player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
                      PLAYER_DATA.get(playerEntity).addXP(2500); // Add xp
+                     ArcanaAchievements.grant(player,"soul_conversion");
                   }
                }
             }else{
@@ -157,6 +159,7 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
                   if(playerEntity instanceof ServerPlayerEntity player){
                      SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
                      PLAYER_DATA.get(playerEntity).addXP(500); // Add xp
+                     ArcanaAchievements.progress(player,"soul_for_soul",1);
                   }
                }
             }

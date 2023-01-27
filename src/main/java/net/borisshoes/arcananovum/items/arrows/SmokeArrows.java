@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -16,6 +17,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
@@ -25,6 +27,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -82,7 +85,7 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          ParticleEffectUtils.smokeArrowEmit(serverWorld,null,entityHitResult.getEntity(),range,0);
-         smokeEffects(serverWorld,null,entityHitResult.getEntity(),range,0);
+         smokeEffects(arrow,serverWorld,null,entityHitResult.getEntity(),range,0);
       }
    }
    
@@ -91,16 +94,18 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          ParticleEffectUtils.smokeArrowEmit(serverWorld,blockHitResult.getPos(),null,range,0);
-         smokeEffects(serverWorld,blockHitResult.getPos(),null,range,0);
+         smokeEffects(arrow,serverWorld,blockHitResult.getPos(),null,range,0);
       }
    }
    
-   private void smokeEffects(ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range, int calls){
+   private void smokeEffects(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range, int calls){
       if(start == null && entity == null) return;
       Vec3d pos = entity == null ? start : entity.getPos();
       
       Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
       List<Entity> entities = world.getOtherEntities(null,rangeBox,e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 4*range*range && e instanceof LivingEntity);
+      int mobCount = 0;
+      boolean withOwner = false;
       for(Entity entity1 : entities){
          if(entity1 instanceof LivingEntity e){
             int amp = e instanceof MobEntity ? 5 : 0;
@@ -108,8 +113,17 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
             StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 60, amp, false, false, true);
             e.addStatusEffect(blind);
             e.addStatusEffect(weakness);
+            
+            if(e instanceof HostileEntity mob){
+               mob.setAttacking(false);
+               //mob.clearGoalsAndTasks();
+               mobCount++;
+            }
+            if(arrow.getOwner() instanceof ServerPlayerEntity player && player.getUuid().equals(e.getUuid())) withOwner = true;
          }
       }
+      
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,"smoke_screen");
    
       SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.PLAYERS,.5f,1);
    
@@ -117,7 +131,7 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
          Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
             @Override
             public void run(){
-               smokeEffects(world, pos, entity,range,calls + 1);
+               smokeEffects(arrow,world, pos, entity,range,calls + 1);
             }
          }));
       }

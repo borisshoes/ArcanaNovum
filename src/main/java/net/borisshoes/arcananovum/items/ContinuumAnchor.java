@@ -155,6 +155,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
          NbtCompound anchorData = new NbtCompound();
          anchorData.putString("UUID",getUUID(item));
          anchorData.putString("id",this.id);
+         anchorData.putString("crafter",getCrafter(item));
          anchorData.putBoolean("active",false);
          anchorData.putInt("fuel",0);
          anchorData.putInt("range",2);
@@ -175,7 +176,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
-      ItemStack drop = getPrefItem();
+      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"));
       drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
       drops.add(drop);
       

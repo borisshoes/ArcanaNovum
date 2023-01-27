@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.core.LeftClickItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
@@ -92,12 +93,9 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
    @Override
    public ItemStack updateItem(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      // For default just replace everything but UUID
-      NbtCompound newTag = prefNBT.copy();
-      newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      newTag.put("Enchantments",enchants);
+      NbtCompound newTag = super.updateItem(stack).getNbt();
+      if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
       return stack;
    }
@@ -129,6 +127,7 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
 
          //System.out.println("Last Tick: "+lastTick + " | Cur energy: "+energy+" | Haste Amp: "+speed);
          StatusEffectInstance haste = new StatusEffectInstance(StatusEffects.HASTE, 20, speed, false, false, false);
+         if(speed == 10) ArcanaAchievements.progress(player,"back_in_the_mine",1);
          player.addStatusEffect(haste);
       }
    }
@@ -186,6 +185,7 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
       for(ItemStack stack : drops){
          Block.dropStack(world, pos, stack);
       }
+      if(toMine.size() >= 12 && (type == Blocks.DIAMOND_ORE || type == Blocks.DEEPSLATE_DIAMOND_ORE) && player instanceof ServerPlayerEntity serverPlayer) ArcanaAchievements.grant(serverPlayer,"mine_diamonds");
    }
    
    private List<String> makeLore(){
