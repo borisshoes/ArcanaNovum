@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,10 +74,10 @@ public class WingsOfZephyr extends EnergyItem {
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
       return stack;

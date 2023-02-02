@@ -5,17 +5,18 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.MinecraftServer;
 
 public abstract class EnergyItem extends MagicItem{
    protected int maxEnergy;
    protected int initEnergy = 0;
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       int energy = magicTag.getInt("energy");
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putInt("energy",energy);
       stack.setNbt(newTag);
       return stack;

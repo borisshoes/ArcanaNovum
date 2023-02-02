@@ -1,5 +1,9 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -42,6 +46,48 @@ public enum MagicRarity {
          case EXOTIC -> text.formatted(Formatting.AQUA);
          case LEGENDARY -> text.formatted(Formatting.GOLD);
          case MYTHICAL -> text.formatted(Formatting.LIGHT_PURPLE);
+      };
+   }
+   
+   public static Formatting getColor(MagicRarity rarity){
+      if(rarity == null){
+         return null;
+      }
+   
+      return switch(rarity){
+         case MUNDANE -> Formatting.GRAY;
+         case EMPOWERED -> Formatting.GREEN;
+         case EXOTIC -> Formatting.AQUA;
+         case LEGENDARY -> Formatting.GOLD;
+         case MYTHICAL -> Formatting.LIGHT_PURPLE;
+      };
+   }
+   
+   public static Item getColoredConcrete(MagicRarity rarity){
+      if(rarity == null){
+         return Items.BLACK_CONCRETE;
+      }
+   
+      return switch(rarity){
+         case MUNDANE -> Items.LIGHT_GRAY_CONCRETE;
+         case EMPOWERED -> Items.LIME_CONCRETE;
+         case EXOTIC -> Items.LIGHT_BLUE_CONCRETE;
+         case LEGENDARY -> Items.ORANGE_CONCRETE;
+         case MYTHICAL -> Items.MAGENTA_CONCRETE;
+      };
+   }
+   
+   public static MagicItem getAugmentCatalyst(MagicRarity rarity){
+      if(rarity == null){
+         return null;
+      }
+   
+      return switch(rarity){
+         case MUNDANE -> MagicItems.CATALYST_MUNDANE;
+         case EMPOWERED -> MagicItems.CATALYST_EMPOWERED;
+         case EXOTIC -> MagicItems.CATALYST_EXOTIC;
+         case LEGENDARY -> MagicItems.CATALYST_LEGENDARY;
+         case MYTHICAL -> MagicItems.CATALYST_MYTHICAL;
       };
    }
    

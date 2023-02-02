@@ -14,6 +14,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -30,12 +31,12 @@ public abstract class QuiverItem extends MagicItem{
    protected int refillMod;
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       NbtList arrowsList = magicTag.getList("arrows", NbtElement.COMPOUND_TYPE).copy();
       int slot = magicTag.getInt("slot");
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putInt("slot",slot);
       newTag.getCompound("arcananovum").put("arrows",arrowsList);
       stack.setNbt(newTag);

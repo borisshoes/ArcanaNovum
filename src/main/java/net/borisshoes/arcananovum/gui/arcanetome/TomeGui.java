@@ -4,13 +4,19 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -23,8 +29,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import javax.annotation.Nullable;
-
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -33,6 +37,8 @@ public class TomeGui extends SimpleGui {
    private ArcaneTome.TomeMode mode;
    private ArcaneTome tome;
    private CompendiumSettings settings;
+   private final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
+   
    /**
     * Constructs a new simple container gui for the supplied player.
     *
@@ -133,7 +139,7 @@ public class TomeGui extends SimpleGui {
                MagicItemRecipe recipe = magicItem.getRecipe();
                Inventory inv = getSlotRedirect(1).inventory;
    
-               ItemStack newMagicItem = magicItem.addCrafter(magicItem.forgeItem(inv),player.getUuidAsString());
+               ItemStack newMagicItem = magicItem.addCrafter(magicItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
                if(newMagicItem == null){
                   return false;
                }
@@ -197,7 +203,7 @@ public class TomeGui extends SimpleGui {
                LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.RECIPE,settings, magicItem.getId());
                loreGui.open();
             }else{
-               player.sendMessage(Text.translatable("No Lore Found For That Item").formatted(Formatting.RED),false);
+               player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
             }
          }else if(index == 43){
             tome.openGui(player, ArcaneTome.TomeMode.CRAFTING,settings,magicItem.getId());
@@ -208,12 +214,12 @@ public class TomeGui extends SimpleGui {
          
          if(index == 2){
             if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-               player.sendMessage(Text.translatable("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
+               player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
             }else{
                if(magicItem.getRecipe() != null){
                   tome.openRecipeGui(player,settings, magicItem.getId());
                }else{
-                  player.sendMessage(Text.translatable("You Cannot Craft This Item").formatted(Formatting.RED),false);
+                  player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
                }
             }
          }
@@ -229,7 +235,33 @@ public class TomeGui extends SimpleGui {
                LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
                loreGui.open();
             }else{
-               player.sendMessage(Text.translatable("No Lore Found For That Item").formatted(Formatting.RED),false);
+               player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
+            }
+         }
+         if(index >= 28 && index <= 35){ // Unlock augment
+            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
+            int[] augmentSlots = dynamicSlots[augments.size()];
+            ArcanaAugment augment = null;
+            for(int i = 0; i < augmentSlots.length; i++){
+               if(index == 28+augmentSlots[i]){
+                  augment = augments.get(i);
+                  break;
+               }
+            }
+            
+            if(augment != null){
+               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+               int augmentLvl = profile.getAugmentLevel(augment.id);
+               MagicRarity[] tiers = augment.getTiers();
+               if(augmentLvl >= tiers.length) return true;
+               int cost = tiers[augmentLvl].rarity+1;
+               int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
+               if(cost <= unallocated){
+                  profile.setAugmentLevel(augment.id,augmentLvl+1);
+                  tome.openItemGui(player,settings, magicItem.getId());
+               }else{
+                  player.sendMessage(Text.literal("Not Enough Skill Points").formatted(Formatting.RED),false);
+               }
             }
          }
       }else if(mode == ArcaneTome.TomeMode.TINKER){
@@ -245,17 +277,58 @@ public class TomeGui extends SimpleGui {
                returnItems(inv);
                tome.openGui(player, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
             }else{
-               player.sendMessage(Text.translatable("Insert an Item to Tinker").formatted(Formatting.RED),false);
+               player.sendMessage(Text.literal("Insert an Item to Tinker").formatted(Formatting.RED),false);
             }
          }else if(index ==  22){
             if(magicItem != null){
                RenameGui renameGui = new RenameGui(player,tome,settings,item);
-               renameGui.setTitle(Text.translatable("Rename Magic Item"));
+               renameGui.setTitle(Text.literal("Rename Magic Item"));
                renameGui.setSlot(0, GuiElementBuilder.from(item));
                renameGui.setSlot(2, GuiElementBuilder.from(item));
                renameGui.open();
             }else{
-               player.sendMessage(Text.translatable("Insert an Item to Tinker").formatted(Formatting.RED),false);
+               player.sendMessage(Text.literal("Insert an Item to Tinker").formatted(Formatting.RED),false);
+            }
+         }else if(index >= 37 && index <= 44){
+            if(magicItem != null){
+               List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
+               int[] augmentSlots = dynamicSlots[augments.size()];
+               ArcanaAugment augment = null;
+               for(int i = 0; i < augmentSlots.length; i++){
+                  if(index == 37 + augmentSlots[i]){
+                     augment = augments.get(i);
+                     break;
+                  }
+               }
+               
+               if(augment != null){
+                  IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+                  int augmentLvl = profile.getAugmentLevel(augment.id);
+                  MagicRarity[] tiers = augment.getTiers();
+                  int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment.id);
+                  if(curItemLevel == -2){
+                     Arcananovum.log(3, "Magic item errored in Tinker's Screen: " + magicItem.getId());
+                  }else if(curItemLevel == -1) curItemLevel = 0;
+   
+                  boolean generic = magicItem.getId().equals(MagicItems.ARCANE_TOME.getId());
+                  
+                  if(generic){
+                     player.sendMessage(Text.literal("These augments are active by default").formatted(Formatting.AQUA), false);
+                  }else if(curItemLevel >= tiers.length){ // Item Level = max: End Crystal
+                     player.sendMessage(Text.literal("You have already maxed this augment").formatted(Formatting.AQUA), false);
+                  }else if(augmentLvl == 0 && curItemLevel == 0){ // Item & player lvl = 0: Obsidian
+                     player.sendMessage(Text.literal("You must unlock this augment first").formatted(Formatting.RED), false);
+                  }else if(curItemLevel >= augmentLvl){ // Item level != max & >= player level: Obsidian
+                     player.sendMessage(Text.literal("You must unlock higher levels to augment further").formatted(Formatting.RED), false);
+                  }else if(ArcanaAugments.isIncompatible(item, augment.id)){ // Incompatible augment: Structure Void
+                     player.sendMessage(Text.literal("This augment is incompatible with existing augments").formatted(Formatting.RED), false);
+                  }else{ // Item level = 0 | (Item level != max & < player level): Augment Catalyst
+                     if(attemptAugment(item, augment, curItemLevel + 1)){
+                        //tome.openGui(player, ArcaneTome.TomeMode.TINKER, settings);
+                        inv.setStack(0,item);
+                     }
+                  }
+               }
             }
          }
       }
@@ -305,6 +378,27 @@ public class TomeGui extends SimpleGui {
             }
          }
       }
+   }
+   
+   private boolean attemptAugment(ItemStack item, ArcanaAugment augment, int level){
+      PlayerInventory playerInv = player.getInventory();
+      MagicRarity tier = augment.getTiers()[level-1];
+      
+      for(int i=0; i<playerInv.size(); i++){
+         ItemStack cata = playerInv.getStack(i);
+         MagicItem magicItem = MagicItemUtils.identifyItem(cata);
+         if(magicItem != null && magicItem.getId().equals(MagicRarity.getAugmentCatalyst(tier).getId())){
+            //Found catalyst
+            if(ArcanaAugments.applyAugment(item,augment.id,level)){
+               playerInv.removeStack(i);
+               return true;
+            }else{
+               Arcananovum.log(3,"Error applying augment "+augment.id+" to "+magicItem.getId());
+            }
+         }
+      }
+      player.sendMessage(Text.literal("No Augment Catalyst Found").formatted(Formatting.RED),false);
+      return false;
    }
    
    public ArcaneTome.TomeMode getMode(){

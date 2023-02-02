@@ -14,6 +14,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.*;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
@@ -91,10 +92,10 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
       return stack;

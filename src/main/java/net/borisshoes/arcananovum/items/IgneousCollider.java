@@ -99,6 +99,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem 
          colliderData.putString("UUID",getUUID(item));
          colliderData.putString("id",this.id);
          colliderData.putString("crafter",getCrafter(item));
+         colliderData.putBoolean("synthetic",isSynthetic(item));
          colliderData.putInt("cooldown", COOLDOWN);
          colliderBlock.setData(colliderData);
          world.setBlockState(pos, Blocks.LODESTONE.getDefaultState(), Block.NOTIFY_ALL);
@@ -116,7 +117,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem 
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
-      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"));
+      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
       drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
       drops.add(drop);
       return drops;

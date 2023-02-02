@@ -22,6 +22,7 @@ import net.minecraft.potion.Potions;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -106,10 +107,10 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
       return stack;

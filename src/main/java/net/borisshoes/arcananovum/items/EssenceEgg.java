@@ -29,6 +29,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -87,12 +88,12 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       int uses = magicTag.getInt("uses");
       String type = magicTag.getString("type");
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack, server).getNbt();
       newTag.getCompound("arcananovum").putInt("uses",uses);
       newTag.getCompound("arcananovum").putString("type",type);
       stack.setNbt(newTag);

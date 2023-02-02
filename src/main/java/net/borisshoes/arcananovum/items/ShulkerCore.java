@@ -30,6 +30,7 @@ import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -93,13 +94,13 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       int speed = magicTag.getInt("speed");
       int speedCD = magicTag.getInt("speedCD");
       boolean stone = magicTag.getBoolean("stone");
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putInt("speed",speed);
       newTag.getCompound("arcananovum").putInt("speedCD",speedCD);
       newTag.getCompound("arcananovum").putBoolean("stone",stone);

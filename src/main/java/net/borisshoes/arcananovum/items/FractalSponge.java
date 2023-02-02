@@ -146,7 +146,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
-      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"));
+      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
       drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
       drops.add(drop);
       return drops;
@@ -179,6 +179,7 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
          spongeData.putString("UUID",getUUID(item));
          spongeData.putString("id",this.id);
          spongeData.putString("crafter",getCrafter(item));
+         spongeData.putBoolean("synthetic",isSynthetic(item));
          spongeBlock.setData(spongeData);
          int absorbed = absorb(world, pos);
          Block block = absorbed > 0 ? Blocks.WET_SPONGE : Blocks.SPONGE;

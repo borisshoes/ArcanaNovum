@@ -65,7 +65,7 @@ public class TickCallback {
                // Guidebook Craft Check
                if(item.hasNbt()){
                   if(item.getNbt().contains("ArcanaGuideBook")){
-                     ItemStack newArcanaTome = MagicItems.ARCANE_TOME.addCrafter(MagicItems.ARCANE_TOME.getNewItem(),player.getUuidAsString());
+                     ItemStack newArcanaTome = MagicItems.ARCANE_TOME.addCrafter(MagicItems.ARCANE_TOME.getNewItem(),player.getUuidAsString(),false,server);
                      inv.setStack(i,newArcanaTome);
                      arcaneProfile.addCrafted(MagicItems.ARCANE_TOME.getId());
                   }
@@ -77,7 +77,7 @@ public class TickCallback {
                   continue; // Item not magic, skip
                if(MagicItemUtils.needsVersionUpdate(item)){
                   MagicItem magicItem = MagicItemUtils.identifyItem(item);
-                  magicItem.updateItem(item);
+                  magicItem.updateItem(item,server);
                   //System.out.println("updated item");
                }
                

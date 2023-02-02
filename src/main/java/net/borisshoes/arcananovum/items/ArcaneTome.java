@@ -11,11 +11,14 @@ import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -35,7 +38,6 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.*;
 
-import static net.borisshoes.arcananovum.Arcananovum.devMode;
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.items.core.MagicItems.RECOMMENDED_LIST;
@@ -212,32 +214,34 @@ public class ArcaneTome extends MagicItem implements UsableItem {
             }
          }
       }
-   
+      
       ItemStack shelf = new ItemStack(Items.BOOKSHELF);
       tag = shelf.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Skill Points (Coming Soon!)\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Total Skill Points: "+0+"\",\"italic\":false,\"color\":\"aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Allocated Points: "+0+"/"+0+"\",\"italic\":false,\"color\":\"aqua\"}]"));
+      int totalSkillPoints = profile.getTotalSkillPoints();
+      int spentSkillPoints = profile.getSpentSkillPoints();
+      display.putString("Name","[{\"text\":\"Skill Points\",\"italic\":false,\"color\":\"dark_aqua\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Total Skill Points: "+totalSkillPoints+"\",\"italic\":false,\"color\":\"aqua\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Allocated Points: "+spentSkillPoints+"/"+totalSkillPoints+"\",\"italic\":false,\"color\":\"aqua\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Points From Leveling: "+0+"\",\"italic\":false,\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Points From Achievements: "+0+"\",\"italic\":false,\"color\":\"blue\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Points From Leveling: "+LevelUtils.getLevelSkillPoints(level)+"\",\"italic\":false,\"color\":\"blue\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Points From Achievements: "+profile.getAchievementSkillPoints()+"\",\"italic\":false,\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Allocate Skill Points to Upgrade Items!\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Allocate Skill Points to Augment Items!\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Earn Skill Points From Leveling Up or From Achievements!\",\"italic\":false,\"color\":\"light_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
       gui.setSlot(19,GuiElementBuilder.from(shelf));
    
-      int books = 0;
+      int books = (int)((double)spentSkillPoints/totalSkillPoints * 6.0);
       for(int i = 20; i <= 25; i++){
          if(i >= books+20){
-            gui.setSlot(i,new GuiElementBuilder(Items.BOOK).setName(Text.literal("Allocated Skill Points: "+0+"/"+0).formatted(Formatting.DARK_AQUA)));
+            gui.setSlot(i,new GuiElementBuilder(Items.BOOK).setName(Text.literal("Allocated Skill Points: "+spentSkillPoints+"/"+totalSkillPoints).formatted(Formatting.DARK_AQUA)));
          
          }else{
-            gui.setSlot(i,new GuiElementBuilder(Items.ENCHANTED_BOOK).setName(Text.literal("Allocated Skill Points: "+0+"/"+0).formatted(Formatting.DARK_AQUA)));
+            gui.setSlot(i,new GuiElementBuilder(Items.ENCHANTED_BOOK).setName(Text.literal("Allocated Skill Points: "+spentSkillPoints+"/"+totalSkillPoints).formatted(Formatting.DARK_AQUA)));
          }
       }
    
@@ -455,7 +459,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display = new NbtCompound();
       loreList = new NbtList();
       display.putString("Name","[{\"text\":\"Item Page\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"green\"},{\"text\":\"to go to the Item Page and unlock Upgrades!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"green\"},{\"text\":\"to go to the Item Page and unlock Augments!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -472,20 +476,19 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       tag.putInt("HideFlags",103);
       gui.setSlot(22,GuiElementBuilder.from(nameItem));
    
-      ItemStack upgradePane = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
-      tag = upgradePane.getOrCreateNbt();
+      ItemStack augmentPane = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
+      tag = augmentPane.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Upgrades (Coming Soon):\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Unlocked upgrades can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Augments:\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Unlocked augments can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
    
       for(int i = 0; i < 7; i++){
-         gui.setSlot(28+i,GuiElementBuilder.from(upgradePane));
-         gui.setSlot(37+i,GuiElementBuilder.from(upgradePane));
-         gui.setSlot(46+i,GuiElementBuilder.from(upgradePane));
+         gui.setSlot(28+i,GuiElementBuilder.from(augmentPane));
+         gui.setSlot(37+i,GuiElementBuilder.from(augmentPane));
       }
    
       ItemStack itemWindow = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
@@ -493,7 +496,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display = new NbtCompound();
       loreList = new NbtList();
       display.putString("Name","[{\"text\":\"Insert a Magic Item to Tinker with it\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Apply upgrades or rename your item!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Apply augments or rename your item!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -555,24 +558,75 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    
       gui.setSlot(4,GuiElementBuilder.from(magicItem.getPrefItem()).glow());
       
-      ItemStack upgradePane = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
-      tag = upgradePane.getOrCreateNbt();
+      ItemStack augmentPane = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
+      tag = augmentPane.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Upgrades (Coming Soon):\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Unlocked upgrades can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Augments:\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Unlocked augments can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
-   
-      int[] upgradeSlots = dynamicSlots[0];
+      
+      List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
+      int[] augmentSlots = dynamicSlots[augments.size()];
       for(int i = 0; i < 7; i++){
-         gui.setSlot(19+i,GuiElementBuilder.from(upgradePane));
-         gui.setSlot(28+i,GuiElementBuilder.from(upgradePane));
+         gui.setSlot(19+i,GuiElementBuilder.from(augmentPane));
+         gui.setSlot(28+i,GuiElementBuilder.from(augmentPane));
       }
-      for(int i = 0; i < upgradeSlots.length; i++){
-         gui.clearSlot(19+upgradeSlots[i]);
-         gui.clearSlot(28+upgradeSlots[i]);
+      for(int i = 0; i < augmentSlots.length; i++){
+         ArcanaAugment augment = augments.get(i);
+         gui.clearSlot(19+augmentSlots[i]);
+         gui.clearSlot(28+augmentSlots[i]);
+   
+         int augmentLvl = profile.getAugmentLevel(augment.id);
+         
+         GuiElementBuilder augmentItem1 = new GuiElementBuilder(augment.getDisplayItem().getItem());
+         augmentItem1.hideFlags().setName(Text.literal(augment.name).formatted(Formatting.DARK_PURPLE)).addLoreLine(augment.getTierDisplay());
+   
+         for(String s : augment.getDescription()){
+            augmentItem1.addLoreLine(Text.literal(s).formatted(Formatting.GRAY));
+         }
+         if(augmentLvl > 0) augmentItem1.glow();
+         
+         int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
+         MutableText titleText = augmentLvl == 0 ? Text.literal("Unlock Level 1").formatted(Formatting.LIGHT_PURPLE) : Text.literal("Current Level: ").formatted(Formatting.DARK_PURPLE).append(Text.literal(""+augmentLvl).formatted(Formatting.LIGHT_PURPLE));
+         MagicRarity[] tiers = augment.getTiers();
+         Item concrete = augmentLvl == tiers.length ? Items.WHITE_CONCRETE : MagicRarity.getColoredConcrete(tiers[augmentLvl]);
+         
+         GuiElementBuilder augmentItem2 = new GuiElementBuilder(concrete);
+         
+   
+         if(augmentLvl == tiers.length){
+            augmentItem2.hideFlags().setName(
+                  Text.literal("Level ").formatted(Formatting.DARK_PURPLE)
+                        .append(Text.literal(""+augmentLvl).formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(" Unlocked").formatted(Formatting.DARK_PURPLE)));
+            augmentItem2.addLoreLine(Text.literal("")
+                  .append(Text.literal("Max Level").formatted(Formatting.AQUA)));
+            augmentItem2.glow();
+         }else{
+            augmentItem2.hideFlags().setName(titleText);
+            augmentItem2.addLoreLine(Text.literal("")
+                  .append(Text.literal("Next Level: ").formatted(Formatting.BLUE))
+                  .append(Text.literal((augmentLvl+1)+"").formatted(Formatting.DARK_AQUA))
+                  .append(Text.literal(" (").formatted(Formatting.BLUE))
+                  .append(MagicRarity.getColoredLabel(tiers[augmentLvl],false))
+                  .append(Text.literal(")").formatted(Formatting.BLUE)));
+            augmentItem2.addLoreLine(Text.literal("")
+                  .append(Text.literal("Skill Point Cost: ").formatted(Formatting.BLUE))
+                  .append(Text.literal((tiers[augmentLvl].rarity+1)+"").formatted(Formatting.DARK_AQUA)));
+            augmentItem2.addLoreLine(Text.literal(""));
+            augmentItem2.addLoreLine(Text.literal("")
+                  .append(Text.literal("(").formatted(Formatting.BLUE))
+                  .append(Text.literal(unallocated+"").formatted(Formatting.DARK_AQUA))
+                  .append(Text.literal(" Unallocated Points)").formatted(Formatting.BLUE)));
+            augmentItem2.addLoreLine(Text.literal("")
+                  .append(Text.literal("Click To Unlock").formatted(Formatting.AQUA)));
+         }
+   
+         gui.setSlot(19+augmentSlots[i], augmentItem1);
+         gui.setSlot(28+augmentSlots[i], augmentItem2);
       }
    
       ItemStack achievePane = new ItemStack(Items.WHITE_STAINED_GLASS_PANE);
@@ -580,7 +634,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display = new NbtCompound();
       loreList = new NbtList();
       display.putString("Name","[{\"text\":\"Achievements:\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Earning Achievements Grants Skill Points!\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Earning Achievements Grants Skill Points and XP!\",\"color\":\"light_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);

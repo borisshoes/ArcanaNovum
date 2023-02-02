@@ -20,6 +20,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -97,13 +98,13 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
       String lastAttacked = magicTag.getString("lastAttacked");
       int tether = magicTag.getInt("tether");
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
       newTag.getCompound("arcananovum").putInt("tether",tether);
       newTag.getCompound("arcananovum").putString("lastAttacked",lastAttacked);

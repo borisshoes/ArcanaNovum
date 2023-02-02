@@ -111,6 +111,7 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
          infuserData.putString("UUID",getUUID(item));
          infuserData.putString("id",this.id);
          infuserData.putString("crafter",getCrafter(item));
+         infuserData.putBoolean("synthetic",isSynthetic(item));
          
          infuserData.putBoolean("active",false);
          infuserData.put("soulstone",new NbtCompound());
@@ -144,7 +145,7 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
-      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"));
+      ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
       drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
       drops.add(drop);
       

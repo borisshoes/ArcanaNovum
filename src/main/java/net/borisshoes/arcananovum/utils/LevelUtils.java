@@ -28,6 +28,10 @@ public class LevelUtils {
       }
    }
    
+   public static int getLevelSkillPoints(int level){
+      return level*3;
+   } // 3 Skill points per level
+   
    public static String readableInt(int num){
       return String.format("%,d", num);
    }

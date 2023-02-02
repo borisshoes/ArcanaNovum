@@ -1,5 +1,11 @@
 package net.borisshoes.arcananovum.items.core;
 
+import com.mojang.authlib.AuthenticationService;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.yggdrasil.request.AuthenticationRequest;
+import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
@@ -7,8 +13,10 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,10 +72,34 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       return stack;
    }
    
-   public ItemStack addCrafter(ItemStack stack, String player){
+   public ItemStack addCrafter(ItemStack stack, String player, boolean synthetic, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       magicTag.putString("crafter", player);
+      magicTag.putBoolean("synthetic",synthetic);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+      String crafterName = server.getUserCache().getByUuid(UUID.fromString(player)).orElse(new GameProfile(UUID.fromString(player),"???")).getName();
+   
+      int index = -1;
+      for(int i = 0; i < loreList.size(); i++){
+         NbtString nbtString = (NbtString) loreList.get(i);
+         if(nbtString.asString().contains("Crafted by ")){
+            loreList.set(i,NbtString.of("[{\"text\":\"Crafted by \",\"italic\":true,\"color\":\"dark_purple\"},{\"text\":\""+crafterName+"\",\"color\":\"light_purple\"}]"));
+            index = -1;
+            break;
+         }else if(nbtString.asString().contains("Synthesized by ")){
+            loreList.set(i,NbtString.of("[{\"text\":\"Synthesized by \",\"italic\":true,\"color\":\"dark_purple\"},{\"text\":\""+crafterName+"\",\"color\":\"light_purple\"}]"));
+            index = -1;
+            break;
+         }else if(nbtString.asString().contains("Magic Item")){
+            index = i+1;
+         }
+      }
+      if(index != -1){
+         String crafted = synthetic ? "Synthesized by" : "Crafted by";
+         loreList.add(index,NbtString.of("[{\"text\":\""+crafted+" \",\"italic\":true,\"color\":\"dark_purple\"},{\"text\":\""+crafterName+"\",\"color\":\"light_purple\"}]"));
+      }
+      
       stack.setNbt(itemNbt);
       return stack;
    }
@@ -80,19 +112,29 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       return magicTag.getString("crafter");
    }
    
+   public boolean isSynthetic(ItemStack item){
+      if(!MagicItemUtils.isMagic(item))
+         return false;
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      return magicTag.getBoolean("synthetic");
+   }
+   
    public NbtCompound getPrefNBT(){
       return prefNBT;
    }
    
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       // For default just replace everything but UUID and crafter and update version
       NbtCompound newTag = prefNBT.copy();
       newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
-      newTag.getCompound("arcananovum").putString("crafter",magicTag.getString("crafter"));
       newTag.getCompound("arcananovum").putInt("Version",MagicItem.version + getItemVersion());
+      if(magicTag.contains("augments")) newTag.getCompound("arcananovum").put("augments",magicTag.getCompound("augments"));
       stack.setNbt(newTag);
+      addCrafter(stack,magicTag.getString("crafter"),magicTag.getBoolean("synthetic"),server);
+      redoAugmentLore(stack);
    
       return stack;
    }
@@ -138,6 +180,37 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       loreList.add(NbtString.of("[{\"text\":\"Runic Arrows\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" will \",\"color\":\"dark_purple\"},{\"text\":\"only \",\"color\":\"dark_aqua\",\"italic\":true},{\"text\":\"activate their effect when fired from a \",\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"arrows\",\"color\":\"light_purple\"},{\"text\":\" can be refilled inside a \"},{\"text\":\"Runic Quiver\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+   }
+   
+   public void redoAugmentLore(ItemStack item){
+      if(!MagicItemUtils.isMagic(item)) return;
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+      if(magicTag.contains("augments")){
+         NbtCompound augmentTag = magicTag.getCompound("augments");
+   
+         int index = -1;
+         for(int i = 0; i < loreList.size(); i++){
+            NbtString nbtString = (NbtString) loreList.get(i);
+            if(nbtString.asString().contains("Augmentations:")){
+               index = i;
+               break;
+            }
+         }
+         if(index != -1){
+            while(loreList.size() > index-1){
+               loreList.remove(index-1);
+            }
+         }
+         loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":true,\"color\":\"light_purple\"}]"));
+         loreList.add(NbtString.of("[{\"text\":\"Augmentations:\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+         for(String key : augmentTag.getKeys()){
+            ArcanaAugment augment = ArcanaAugments.registry.get(key);
+            String str = augment.name +" "+augmentTag.getInt(key);
+            loreList.add(NbtString.of("[{\"text\":\""+str+"\",\"italic\":false,\"color\":\"blue\"}]"));
+         }
+      }
    }
    
    protected void setBookLore(List<String> lines){

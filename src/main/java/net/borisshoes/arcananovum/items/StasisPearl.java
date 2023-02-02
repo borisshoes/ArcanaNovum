@@ -23,6 +23,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -84,12 +85,12 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       boolean active = magicTag.getBoolean("active");
       String pearlID = magicTag.getString("pearlID");
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putBoolean("active",active);
       newTag.getCompound("arcananovum").putString("pearlID",pearlID);
       stack.setNbt(newTag);

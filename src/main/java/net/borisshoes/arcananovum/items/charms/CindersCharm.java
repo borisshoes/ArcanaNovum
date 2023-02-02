@@ -34,6 +34,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -412,11 +413,11 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       boolean active = magicTag.getBoolean("active");
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putBoolean("active",active);
       stack.setNbt(newTag);
       return stack;

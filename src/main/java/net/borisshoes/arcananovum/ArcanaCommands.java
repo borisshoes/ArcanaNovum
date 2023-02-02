@@ -527,7 +527,7 @@ public class ArcanaCommands {
             source.getPlayerOrThrow().sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC), false);
             return 0;
          }
-         ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString());
+         ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),true,source.getServer());
          
          if(item == null){
             source.getPlayerOrThrow().sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getName()).formatted(Formatting.RED, Formatting.ITALIC), false);

@@ -30,6 +30,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -100,7 +101,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       int souls = magicTag.getInt("souls");
@@ -108,7 +109,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       int glowstone = magicTag.getInt("glowstone");
       boolean wasFlying = magicTag.getBoolean("wasFlying");
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putInt("souls",souls);
       newTag.getCompound("arcananovum").putInt("stall",stall);
       newTag.getCompound("arcananovum").putInt("glowstone",glowstone);

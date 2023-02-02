@@ -23,6 +23,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -75,12 +76,12 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack){
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       NbtCompound spawnerNbt = magicTag.getCompound("spawner").copy();
       String loreData = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE).getString(4);
-      NbtCompound newTag = super.updateItem(stack).getNbt();
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").put("spawner",spawnerNbt);
       newTag.getCompound("display").getList("Lore", NbtElement.STRING_TYPE).set(4,NbtString.of(loreData));
       stack.setNbt(newTag);
@@ -117,7 +118,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
                   magicNbt.put("spawner",new NbtCompound());
                }else{
-                  player.sendMessage(Text.translatable("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                  player.sendMessage(Text.translatable("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.ITEM_SHIELD_BREAK, 1,.5f);
                   item.decrement(item.getCount());
                   item.setNbt(new NbtCompound());

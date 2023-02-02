@@ -3,12 +3,13 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.advancement.Advancement;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -28,6 +29,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    private final List<String> crafted = new ArrayList<>();
    //private final List<String> recipes = new ArrayList<>();
    private final HashMap<String, NbtElement> miscData = new HashMap<>();
+   private final HashMap<ArcanaAugment, Integer> augments = new HashMap<>();
    private final HashMap<String,List<ArcanaAchievement>> achievements = new HashMap<>();
    private int level;
    private int xp;
@@ -41,6 +43,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       crafted.clear();
       miscData.clear();
       achievements.clear();
+      augments.clear();
       //recipes.clear();
       tag.getList("crafted", NbtType.STRING).forEach(item -> crafted.add(item.asString()));
       //tag.getList("recipes", NbtType.STRING).forEach(item -> recipes.add(item.asString()));
@@ -63,6 +66,13 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             itemAchs.add(ArcanaAchievements.registry.get(achieveKey).fromNbt(achieveKey,achTag));
          }
          achievements.put(itemKey,itemAchs);
+      }
+      
+      NbtCompound augmentsTag = tag.getCompound("augments");
+      Set<String> augmentKeys = augmentsTag.getKeys();
+      for(String augmentKey : augmentKeys){
+         int augmentLvl = augmentsTag.getInt(augmentKey);
+         if(augmentLvl > 0) augments.put(ArcanaAugments.registry.get(augmentKey),augmentLvl);
       }
    }
    
@@ -95,6 +105,12 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          achievementsTag.put(item,itemAchsTag);
       }
       tag.put("achievements",achievementsTag);
+   
+      NbtCompound augmentsTag = new NbtCompound();
+      for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+         augmentsTag.putInt(entry.getKey().id, entry.getValue());
+      }
+      tag.put("augments",augmentsTag);
    }
    
    @Override
@@ -118,6 +134,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
+   public HashMap<ArcanaAugment, Integer> getAugments(){
+      return augments;
+   }
+   
+   @Override
    public int getLevel(){
       return level;
    }
@@ -125,6 +146,36 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    @Override
    public int getXP(){
       return xp;
+   }
+   
+   @Override
+   public int getAchievementSkillPoints(){
+      int points = 0;
+      for(Map.Entry<String, List<ArcanaAchievement>> entry : achievements.entrySet()){
+         List<ArcanaAchievement> achieves = entry.getValue();
+         for(ArcanaAchievement achieve : achieves){
+            if(achieve.isAcquired()) points += achieve.pointsReward;
+         }
+      }
+      return points;
+   }
+   
+   @Override
+   public int getTotalSkillPoints(){
+      return getAchievementSkillPoints() + LevelUtils.getLevelSkillPoints(level);
+   }
+   
+   @Override
+   public int getSpentSkillPoints(){
+      int spent = 0;
+      for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+         ArcanaAugment augment = entry.getKey();
+         MagicRarity[] tiers = augment.getTiers();
+         for(int i = 0; i < entry.getValue(); i++){
+            spent += tiers[i].rarity + 1;
+         }
+      }
+      return spent;
    }
    
    @Override
@@ -299,6 +350,40 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          }
       }
       return null;
+   }
+   
+   @Override
+   public int getAugmentLevel(String id){
+      for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+         if(entry.getKey().id.equals(id)){
+            return entry.getValue();
+         }
+      }
+      return 0;
+   }
+   
+   // Returns whether the player already had that augment or not
+   @Override
+   public boolean setAugmentLevel(String id, int level){
+      ArcanaAugment baseAugment = ArcanaAugments.registry.get(id);
+      if(baseAugment == null) return false;
+      if(level < 0 || baseAugment.getTiers().length < level) return false;
+      
+      for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+         if(entry.getKey().id.equals(id)){
+            entry.setValue(level);
+            return true;
+         }
+      }
+      augments.put(ArcanaAugments.registry.get(id),level);
+      return false;
+   }
+   
+   // Returns if the operation was successful or not
+   @Override
+   public boolean removeAugment(String id){
+      if (augments.entrySet().stream().noneMatch(e -> e.getKey().id.equals(id))) return false;
+      return augments.entrySet().removeIf(e -> e.getKey().id.equals(id));
    }
    
    

@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.items.SpawnerInfuser;
 import net.borisshoes.arcananovum.items.arrows.ExpulsionArrows;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.fluid.LavaFluid;
 import net.minecraft.item.ItemStack;
@@ -20,6 +21,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class ArcanaAchievements {
    public static final HashMap<String, ArcanaAchievement> registry = new HashMap<>();
+   public static final List<ArcanaAchievement> allNonMythical = new ArrayList<>();
+   public static final List<ArcanaAchievement> allMythical = new ArrayList<>();
    
    // Arcane Flak Arrows
    public static final ArcanaAchievement AA_ARTILLERY = ArcanaAchievements.register("aa_artillery",
@@ -172,9 +175,9 @@ public class ArcanaAchievements {
          new String[]{"Have 30 Magic Items taking concentration"}
    ));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register("all_achievements",
-         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), MagicItems.ARCANE_TOME, 100000,10,
+         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), MagicItems.ARCANE_TOME, 100000,25,
          new String[]{"Unlock all Non-Mythical related Achievements", "(Grants Mythical Achievements honorarily)"}
-   )); //TODO
+   ));
    
    // Brain in a Jar
    public static final ArcanaAchievement BREAK_BANK = ArcanaAchievements.register("break_bank",
@@ -402,10 +405,15 @@ public class ArcanaAchievements {
          new String[]{"Have two parrots on your shoulders while","wearing The Armored Wings of Zephyr"}
    ));
    
-   
+   // 157 possible points gained from achievements
    
    private static ArcanaAchievement register(String id, ArcanaAchievement achievement){
       registry.put(id,achievement);
+      if(achievement.getMagicItem().getRarity() != MagicRarity.MYTHICAL && !id.equals("god_boon") && !id.equals("all_achievements")){
+         allNonMythical.add(achievement);
+      }else{
+         allMythical.add(achievement);
+      }
       return achievement;
    }
    

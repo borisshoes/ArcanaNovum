@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.achievements;
 
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.item.ItemStack;
@@ -11,6 +12,8 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public abstract class ArcanaAchievement {
    public final String name;
@@ -76,17 +79,47 @@ public abstract class ArcanaAchievement {
       
       MinecraftServer server = player.getServer();
       if(server != null){
-         MutableText acquiredMsg = Text.literal("")
-               .append(player.getDisplayName())
-               .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal("["+name+"]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                           Text.literal("")
-                                 .append(Text.literal(name).formatted(Formatting.AQUA))
-                                 .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))))
-                     .withColor(Formatting.AQUA)))
-               .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE));
-         server.getPlayerManager().broadcast(acquiredMsg, false);
+         if(pointsReward >= 5){
+            MutableText acquiredMsg = Text.literal("")
+                  .append(player.getDisplayName())
+                  .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                              Text.literal("")
+                                    .append(Text.literal(name).formatted(Formatting.DARK_AQUA))
+                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))))
+                        .withColor(Formatting.DARK_AQUA).withBold(true)))
+                  .append(Text.literal("!!!").formatted(Formatting.DARK_PURPLE));
+            server.getPlayerManager().broadcast(acquiredMsg, false);
+            SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
+         }else{
+            MutableText acquiredMsg = Text.literal("")
+                  .append(player.getDisplayName())
+                  .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                              Text.literal("")
+                                    .append(Text.literal(name).formatted(Formatting.AQUA))
+                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))))
+                        .withColor(Formatting.AQUA)))
+                  .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE));
+            server.getPlayerManager().broadcast(acquiredMsg, false);
+            SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PLAYER_LEVELUP,1,1);
+         }
       }
-      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PLAYER_LEVELUP,1,1);
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      profile.addXP(xpReward); // Add xp
+   
+      boolean abyssCheck = true;
+      for(ArcanaAchievement achievement : ArcanaAchievements.allNonMythical){
+         if(!profile.hasAcheivement(achievement.getMagicItem().getId(),achievement.id)){
+            abyssCheck = false;
+            break;
+         }
+      }
+      if(abyssCheck){
+         for(ArcanaAchievement achievement : ArcanaAchievements.allMythical){
+            ArcanaAchievements.grant(player,achievement.id);
+         }
+         ArcanaAchievements.grant(player,"all_achievements");
+      }
    }
 }
