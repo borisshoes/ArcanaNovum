@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -37,7 +39,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -81,24 +82,26 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
+         int gasLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"tear_gas"));;
          ParticleEffectUtils.smokeArrowEmit(serverWorld,null,entityHitResult.getEntity(),range,0);
-         smokeEffects(arrow,serverWorld,null,entityHitResult.getEntity(),range,0);
+         smokeEffects(arrow,serverWorld,null,entityHitResult.getEntity(),range,gasLvl,0);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
+         int gasLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"tear_gas"));;
          ParticleEffectUtils.smokeArrowEmit(serverWorld,blockHitResult.getPos(),null,range,0);
-         smokeEffects(arrow,serverWorld,blockHitResult.getPos(),null,range,0);
+         smokeEffects(arrow,serverWorld,blockHitResult.getPos(),null,range,gasLvl,0);
       }
    }
    
-   private void smokeEffects(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range, int calls){
+   private void smokeEffects(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range,int gasLvl, int calls){
       if(start == null && entity == null) return;
       Vec3d pos = entity == null ? start : entity.getPos();
       
@@ -109,8 +112,8 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
       for(Entity entity1 : entities){
          if(entity1 instanceof LivingEntity e){
             int amp = e instanceof MobEntity ? 5 : 0;
-            StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS, 60, 0, false, false, true);
-            StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 60, amp, false, false, true);
+            StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS, 60*(gasLvl+1), 0, false, false, true);
+            StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 60*(gasLvl+1), amp+gasLvl, false, false, true);
             e.addStatusEffect(blind);
             e.addStatusEffect(weakness);
             
@@ -131,7 +134,7 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
          Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
             @Override
             public void run(){
-               smokeEffects(arrow,world, pos, entity,range,calls + 1);
+               smokeEffects(arrow,world, pos, entity,range,gasLvl,calls + 1);
             }
          }));
       }

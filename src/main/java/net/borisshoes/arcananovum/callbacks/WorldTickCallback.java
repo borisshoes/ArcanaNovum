@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ContinuumAnchor;
@@ -36,6 +37,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.*;
 
@@ -165,7 +168,19 @@ public class WorldTickCallback {
                         e -> !e.isSpectator() && e.distanceTo(found) <= senseRange && e instanceof LivingEntity && !e.isOnGround());
                   if(triggerTargets.size() > 0){
                      iter2.remove();
-                     ArcaneFlakArrows.detonate(arrow);
+                     double radius = 4 + 1.25*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"airburst"));
+                     ArcaneFlakArrows.detonate(arrow,radius);
+                  }
+               }
+            }else if(id.equals(MagicItems.TETHER_ARROWS.getId())){
+               String ownerId = magicData.getString("owner");
+               boolean severed = magicData.getBoolean("severed");
+               
+               if(!ownerId.isEmpty() && !severed){
+                  PlayerEntity owner = serverWorld.getPlayerByUuid(UUID.fromString(ownerId));
+                  if(owner != null && owner.isSneaking() && ArcanaAugments.getAugmentFromCompound(magicData, "quick_release") == 1){
+                     magicData.putBoolean("severed", true);
+                     owner.sendMessage(Text.literal("Arcane Tethers Severed").formatted(Formatting.GRAY, Formatting.ITALIC), true);
                   }
                }
             }
@@ -189,6 +204,7 @@ public class WorldTickCallback {
       }
    }
    
+   private static final double[] anchorEfficiency = {0,.05,.1,.15,.2,.5};
    private static void continuumAnchorTick(ServerWorld serverWorld, BlockPos pos, ChunkPos chunkPos, NbtCompound blockData){
       if(serverWorld.getServer().getTicks() % 5 == 0){ // Anchor only ticks redstone and load update every quarter second
       
@@ -198,8 +214,11 @@ public class WorldTickCallback {
          int range = blockData.getInt("range");
          blockData.putBoolean("active",active); // Update redstone power
          if(active && serverWorld.getServer().getTicks() % 20 == 0){
-            fuel = Math.max(0,fuel-1);
-            blockData.putInt("fuel",fuel);
+            int lvl = Math.max(0,ArcanaAugments.getAugmentFromCompound(blockData,"temporal_relativity"));
+            if(Math.random() >= anchorEfficiency[lvl]){
+               fuel = Math.max(0, fuel - 1);
+               blockData.putInt("fuel", fuel);
+            }
             
             String crafterId = blockData.getString("crafter");
             if(!crafterId.isEmpty()){
@@ -285,6 +304,7 @@ public class WorldTickCallback {
             BlockPos hasInventory = null;
             BlockPos hasNetherite = null;
             Inventory output = null;
+            boolean canUseIce = Math.max(0,ArcanaAugments.getAugmentFromCompound(blockData,"cryogenic_cooling")) >= 1;
          
             Direction[] dirs = Direction.values();
             int numDirs = dirs.length;
@@ -303,6 +323,8 @@ public class WorldTickCallback {
                   }else if(block2 == Blocks.LAVA_CAULDRON){
                      hasLava = pos2;
                   }else if(block2 == Blocks.WATER_CAULDRON){
+                     hasWater = pos2;
+                  }else if(canUseIce && block2 == Blocks.BLUE_ICE){
                      hasWater = pos2;
                   }
                }else if(direction.getId() == 1){ // Check for chest
@@ -395,15 +417,18 @@ public class WorldTickCallback {
                }
             
                // Remove Source Blocks
-               if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
-                  serverWorld.setBlockState(hasLava, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
-               }else{
-                  serverWorld.setBlockState(hasLava, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
-               }
-               if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER){
-                  serverWorld.setBlockState(hasWater, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
-               }else{
-                  serverWorld.setBlockState(hasWater, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+               int efficiencyLvl = Math.max(0,ArcanaAugments.getAugmentFromCompound(blockData,"thermal_expansion"));
+               if(Math.random() >= .1*efficiencyLvl){
+                  if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
+                     serverWorld.setBlockState(hasLava, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                  }else if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA_CAULDRON){
+                     serverWorld.setBlockState(hasLava, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                  }
+                  if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER){
+                     serverWorld.setBlockState(hasWater, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+                  }else if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER_CAULDRON){
+                     serverWorld.setBlockState(hasWater, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                  }
                }
             
                SoundUtils.playSound(serverWorld,pos,SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
@@ -419,8 +444,9 @@ public class WorldTickCallback {
                   }
                }
             }
-         
-            cooldown = IgneousCollider.COOLDOWN-1;
+   
+            int injectionLvl = Math.max(0,ArcanaAugments.getAugmentFromCompound(blockData,"magmatic_injection"));
+            cooldown = IgneousCollider.COOLDOWN-1-2*injectionLvl;
          }
          blockData.putInt("cooldown",cooldown);
       }

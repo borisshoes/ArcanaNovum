@@ -2,6 +2,10 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.OverhealTimerCallback;
+import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -11,6 +15,9 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
@@ -22,6 +29,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
@@ -31,6 +39,8 @@ import java.util.List;
 import java.util.TimerTask;
 
 public class SiphoningArrows extends MagicItem implements RunicArrow {
+   
+   private static final int[] overhealCap = {0,2,4,10};
    
    public SiphoningArrows(){
       id = "siphoning_arrows";
@@ -67,7 +77,7 @@ public class SiphoningArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          double damage = MathHelper.ceil(MathHelper.clamp(arrow.getVelocity().length() * arrow.getDamage(), 0.0, 2.147483647E9)) / 5.5;
          damage += arrow.isCritical() ? damage/4 : 0;
@@ -81,13 +91,22 @@ public class SiphoningArrows extends MagicItem implements RunicArrow {
             }));
          }
          
+         int overhealLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"overheal"));
+         float overheal = (float) MathHelper.clamp((damage+player.getHealth()) - player.getMaxHealth(),0,overhealCap[overhealLvl]);
+         if(overheal > 0){
+            float curAbs = player.getAbsorptionAmount();
+            Arcananovum.addTickTimerCallback(new OverhealTimerCallback(100,player,overheal));
+            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
+            player.setAbsorptionAmount((curAbs + overheal));
+         }
+
          player.heal((float)damage);
          player.getWorld().spawnParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){}
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){}
    
    private MagicItemRecipe makeRecipe(){
       MagicItemIngredient a = MagicItemIngredient.EMPTY;

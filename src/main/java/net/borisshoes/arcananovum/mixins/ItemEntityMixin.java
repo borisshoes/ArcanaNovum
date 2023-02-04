@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.FractalSponge;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.ItemEntity;
@@ -36,6 +37,18 @@ public class ItemEntityMixin {
       }catch(Exception e){
          Arcananovum.log(2,"Error in Arcana Novum ItemEntity Mixin");
          e.printStackTrace();
+      }
+   }
+   
+   @Inject(method="isFireImmune",at=@At(value="RETURN"),cancellable = true)
+   private void arcananovum_fireImmuneItems(CallbackInfoReturnable<Boolean> cir){
+      ItemEntity itemEntity = (ItemEntity) (Object) this;
+      ItemStack stack = itemEntity.getStack();
+      if(MagicItemUtils.identifyItem(stack) instanceof FractalSponge sponge){
+         boolean fireRes = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,"heat_treatment")) >= 1;
+         if(fireRes){
+            cir.setReturnValue(true);
+         }
       }
    }
 }

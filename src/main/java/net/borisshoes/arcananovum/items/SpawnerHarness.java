@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -15,6 +16,7 @@ import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
@@ -111,21 +113,24 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
                   blockEntity.readNbt(spawnerData);
                }
    
-               if(Math.random() > .15){ // 15% of the harness breaking after use
+               double breakChance = new double[]{.15,.13,.11,.09,.07,0}[Math.max(0,ArcanaAugments.getAugmentOnItem(item,"reinforced_chassis"))];
+               if(Math.random() > breakChance){ // Chance of the harness breaking after use
                   NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
                   loreList.set(4,NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
-                  player.sendMessage(Text.translatable("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                  player.sendMessage(Text.literal("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
                   magicNbt.put("spawner",new NbtCompound());
                }else{
-                  player.sendMessage(Text.translatable("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                  int scrapLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"salvageable_frame"));
+                  player.sendMessage(Text.literal("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.ITEM_SHIELD_BREAK, 1,.5f);
                   item.decrement(item.getCount());
                   item.setNbt(new NbtCompound());
+                  if(scrapLvl > 0) giveScrap(player,scrapLvl);
                }
                PLAYER_DATA.get(player).addXP(3000); // Add xp
             }else{
-               player.sendMessage(Text.translatable("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+               player.sendMessage(Text.literal("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
             }
          }else if(world.getBlockState(result.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(result.getBlockPos()) instanceof MobSpawnerBlockEntity){
@@ -139,7 +144,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
             
             NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
             loreList.set(4,NbtString.of("[{\"text\":\"Type - "+entityTypeName+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
-            player.sendMessage(Text.translatable("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
             PLAYER_DATA.get(player).addXP(3000); // Add xp
             
@@ -149,6 +154,30 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
       
       }
       return false;
+   }
+   
+   private void giveScrap(PlayerEntity player, int level){
+      int scrapNum = (int)(Math.random() * (level*3+1) + level);
+      
+      ItemStack stack = new ItemStack(Items.NETHERITE_SCRAP);
+      stack.setCount(scrapNum);
+      if(!stack.isEmpty()){
+      
+         ItemEntity itemEntity;
+         boolean bl = player.getInventory().insertStack(stack);
+         if (!bl || !stack.isEmpty()) {
+            itemEntity = player.dropItem(stack, false);
+            if (itemEntity == null) return;
+            itemEntity.resetPickupDelay();
+            itemEntity.setOwner(player.getUuid());
+            return;
+         }
+         stack.setCount(1);
+         itemEntity = player.dropItem(stack, false);
+         if (itemEntity != null) {
+            itemEntity.setDespawnImmediately();
+         }
+      }
    }
    
    private List<String> makeLore(){

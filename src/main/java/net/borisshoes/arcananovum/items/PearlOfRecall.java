@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -37,12 +38,13 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem {
    
+   public static final int[] cdReduction = {0,60,120,240,360,480};
+   
    public PearlOfRecall(){
       id = "pearl_of_recall";
       name = "Pearl of Recall";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
-      maxEnergy = 600; // 10 minute recharge time
       initEnergy = 600;
    
       ItemStack item = new ItemStack(Items.ENDER_EYE);
@@ -78,6 +80,12 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
    }
    
    @Override
+   public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
+      int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"recall_acceleration"));
+      return 600 - cdReduction[cdLvl];
+   }
+   
+   @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
@@ -95,7 +103,7 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
          ParticleEffectUtils.recallTeleportCancel(world,player.getPos());
          SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
          magicTag.putInt("heat",0);
-         setEnergy(item,(int)(maxEnergy*0.75));
+         setEnergy(item,(int)(getMaxEnergy(item)*0.75));
       }
       
       if((item.isItemEqual(player.getMainHandStack()) && ItemStack.areNbtEqual(item,player.getMainHandStack())) || (item.isItemEqual(player.getOffHandStack()) && ItemStack.areNbtEqual(item,player.getOffHandStack()))){
@@ -138,7 +146,7 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
       String dim = locNbt.getString("dim");
       
       NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
-      int charge = (getEnergy(stack)*100/maxEnergy);
+      int charge = (getEnergy(stack)*100/getMaxEnergy(stack));
       String charging = charge == 100 ? "Charged" : "Charging";
       if(!dim.equals("unattuned")){
          int x = (int) locNbt.getDouble("x");
@@ -205,28 +213,40 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
       ItemStack item = playerEntity.getStackInHand(hand);
+      boolean canClear = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"chrono_tear")) >= 1;
       if (playerEntity instanceof ServerPlayerEntity player){
          NbtCompound itemNbt = item.getNbt();
          NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
          NbtCompound locNbt = magicNbt.getCompound("location");
          String dim = locNbt.getString("dim");
          
-         if(dim.equals("unattuned")){
-            locNbt.putString("dim",playerEntity.getWorld().getRegistryKey().getValue().toString());
-            locNbt.putDouble("x",playerEntity.getPos().x);
-            locNbt.putDouble("y",playerEntity.getPos().y);
-            locNbt.putDouble("z",playerEntity.getPos().z);
-            locNbt.putFloat("yaw",playerEntity.getYaw());
-            locNbt.putFloat("pitch",playerEntity.getPitch());
-            redoLore(item);
-         }else{
-            int curEnergy = getEnergy(item);
-            if(curEnergy == maxEnergy){
-               magicNbt.putInt("heat",1); // Starts the heat up process
-               SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1,1);
+         if(canClear && player.isSneaking()){
+            if(dim.equals("unattuned")){
+               locNbt.putString("dim", playerEntity.getWorld().getRegistryKey().getValue().toString());
+               locNbt.putDouble("x", playerEntity.getPos().x);
+               locNbt.putDouble("y", playerEntity.getPos().y);
+               locNbt.putDouble("z", playerEntity.getPos().z);
+               locNbt.putFloat("yaw", playerEntity.getYaw());
+               locNbt.putFloat("pitch", playerEntity.getPitch());
+               redoLore(item);
             }else{
-               playerEntity.sendMessage(Text.translatable("Pearl Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.DARK_AQUA),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+               int curEnergy = getEnergy(item);
+               if(curEnergy == getMaxEnergy(item)){
+                  magicNbt.putInt("heat", 1); // Starts the heat up process
+                  SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
+               }else{
+                  playerEntity.sendMessage(Text.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").formatted(Formatting.DARK_AQUA), true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
+               }
+            }
+         }else{ // Clear location
+            if(!dim.equals("unattuned")){
+               locNbt = new NbtCompound();
+               locNbt.putString("dim", "unattuned");
+               magicNbt.put("location", locNbt);
+   
+               playerEntity.sendMessage(Text.literal("Saved Location Cleared").formatted(Formatting.DARK_AQUA), true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, .7f);
             }
          }
       }

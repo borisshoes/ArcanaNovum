@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.gui.brainjar.BrainJarGui;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -43,7 +44,6 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       name = "Brain in a Jar";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
-      maxEnergy = 1000000;
       
       ItemStack item = new ItemStack(Items.ZOMBIE_HEAD);
       NbtCompound tag = item.getOrCreateNbt();
@@ -72,6 +72,11 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       prefNBT = tag;
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      return 1000000;
    }
    
    @Override
@@ -115,9 +120,10 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
             if(hasMending){
                NbtCompound nbt = tool.getNbt();
                int durability = nbt != null ? nbt.getInt("Damage") : 0;
+               int repairAmount = 2 + Math.max(0, ArcanaAugments.getAugmentOnItem(item,"trade_school"));
                if(durability <= 0)
                   continue;
-               int newDura = MathHelper.clamp(durability - 2, 0, Integer.MAX_VALUE);
+               int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
                ArcanaAchievements.progress(player,"certified_repair",durability-newDura);
                addEnergy(item,-1);
                PLAYER_DATA.get(player).addXP(5);
@@ -126,6 +132,11 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
                tool.setNbt(nbt);
             }
          }
+      }
+      
+      if(world.getServer().getTicks() % 1200 == 0 && getEnergy(item) < getMaxEnergy(item)){
+         double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(item,"knowledge_bank"));
+         addEnergy(item, (int) (interestRate*getEnergy(item)));
       }
    }
    
@@ -292,13 +303,13 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       if(single){
          int xpDiff = player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel);
          xpToStore = xpDiff == 0 ? player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel - 1): xpDiff;
-         xpToStore = Math.min(xpToStore, maxEnergy - getEnergy(item));
+         xpToStore = Math.min(xpToStore, getMaxEnergy(item) - getEnergy(item));
       }else{
-         xpToStore = Math.min(player.totalExperience, maxEnergy - getEnergy(item));
+         xpToStore = Math.min(player.totalExperience, getMaxEnergy(item) - getEnergy(item));
       }
       addEnergy(item,xpToStore);
       player.addExperience(-xpToStore);
-      if(xpToStore > 0 && getEnergy(item) == maxEnergy) ArcanaAchievements.grant(player,"break_bank");
+      if(xpToStore > 0 && getEnergy(item) == getMaxEnergy(item)) ArcanaAchievements.grant(player,"break_bank");
    
       ItemStack echest = new ItemStack(Items.ENDER_CHEST);
       NbtCompound tag = echest.getOrCreateNbt();

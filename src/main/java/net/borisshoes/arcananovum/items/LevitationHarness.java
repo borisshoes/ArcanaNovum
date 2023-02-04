@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventory;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
@@ -47,12 +48,13 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class LevitationHarness extends EnergyItem implements UsableItem, TickingItem {
    
+   private static final double[] efficiencyChance = {0,.05,.1,.15,.25,.5};
+   
    public LevitationHarness(){
       id = "levitation_harness";
       name = "Levitation Harness";
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARMOR};
-      maxEnergy = Integer.MAX_VALUE;
       initEnergy = 3600; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
    
       ItemStack item = new ItemStack(Items.LEATHER_CHESTPLATE);
@@ -98,6 +100,11 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       prefNBT = tag;
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      return Integer.MAX_VALUE;
    }
    
    @Override
@@ -199,11 +206,16 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       boolean survival = !(player.isCreative() || player.isSpectator());
       boolean flying = player.getAbilities().flying;
       boolean wasFlying = magicTag.getBoolean("wasFlying");
+   
+      int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"harness_recycler"));
+      
       if(world.getServer().getTicks() % 20 == 0){
          if(chestItem && flying && survival){
-            addEnergy(item,-1);
+            if(Math.random() >= efficiencyChance[efficiency]) addEnergy(item,-1);
+            
             ArcanaAchievements.progress(player,"frequent_flier",1);
             if(player.getY() >= 1000) ArcanaAchievements.grant(player,"to_the_moon");
+            
             if(getEnergy(item) % 60 == 0){
                int souls = magicTag.getInt("souls");
                int glowstone = magicTag.getInt("glowstone");

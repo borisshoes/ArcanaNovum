@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -44,7 +45,6 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
       name = "Ancient Dowsing Rod";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
-      maxEnergy = 30; // 30 second recharge
    
       ItemStack item = new ItemStack(Items.BLAZE_ROD);
       NbtCompound tag = item.getOrCreateNbt();
@@ -72,13 +72,20 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
    }
    
    @Override
+   public int getMaxEnergy(ItemStack item){
+      // 30 second base recharge
+      int lvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"sonic_reabsorption"));
+      return 30 - 5*lvl;
+   }
+   
+   @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
       ItemStack item = playerEntity.getStackInHand(hand);
       if (playerEntity instanceof ServerPlayerEntity player){
          int curEnergy = getEnergy(item);
-         if(curEnergy == maxEnergy){
+         if(curEnergy == getMaxEnergy(item)){
             setEnergy(item,0);
-            final int scanRange = 25;
+            final int scanRange = 25 + 5*Math.max(0,ArcanaAugments.getAugmentOnItem(item,"enhanced_resonance"));
             BlockPos curBlock = playerEntity.getBlockPos();
             SoundUtils.playSound(world, curBlock, SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1f, .5f);
       
@@ -129,7 +136,7 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
                         locations[ind]++;
       
                         if(count < 12)
-                           ParticleEffectUtils.dowsingRodEmitter(serverWorld,new Vec3d(b.getX(),b.getY(),b.getZ()),1);
+                           ParticleEffectUtils.dowsingRodEmitter(serverWorld,new Vec3d(b.getX(),b.getY(),b.getZ()),1,100 + 33*Math.max(0,ArcanaAugments.getAugmentOnItem(item,"harmonic_feedback")));
                         count++;
                      }
                      double radius = 1.5;
@@ -177,7 +184,7 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
             }
       
          }else{
-            playerEntity.sendMessage(Text.translatable("Dowsing Rod Recharging: "+(curEnergy*100/maxEnergy)+"%").formatted(Formatting.GOLD),true);
+            playerEntity.sendMessage(Text.translatable("Dowsing Rod Recharging: "+(curEnergy*100/getMaxEnergy(item))+"%").formatted(Formatting.GOLD),true);
             SoundUtils.playSongToPlayer(player,SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
          }
       }

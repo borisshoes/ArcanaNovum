@@ -8,8 +8,9 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.MinecraftServer;
 
 public abstract class EnergyItem extends MagicItem{
-   protected int maxEnergy;
    protected int initEnergy = 0;
+   
+   public abstract int getMaxEnergy(ItemStack item);
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
@@ -28,21 +29,17 @@ public abstract class EnergyItem extends MagicItem{
       return magicNbt.getInt("energy");
    }
    
-   public int getMaxEnergy(ItemStack item){
-      return maxEnergy;
-   }
-   
    public void addEnergy(ItemStack item, int e){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int newE = Math.max(0, Math.min(maxEnergy, magicNbt.getInt("energy")+e));
+      int newE = Math.max(0, Math.min(getMaxEnergy(item), magicNbt.getInt("energy")+e));
       magicNbt.putInt("energy",newE);
    }
    
    public void setEnergy(ItemStack item, int e){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int newE = Math.max(0, Math.min(maxEnergy, e));
+      int newE = Math.max(0, Math.min(getMaxEnergy(item), e));
       magicNbt.putInt("energy",newE);
    }
    

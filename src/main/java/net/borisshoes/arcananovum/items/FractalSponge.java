@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.core.BlockItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
@@ -76,9 +77,11 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
    
    }
    
-   private int absorb(World world, BlockPos pos) {
-      int maxDepth = 16;
-      int maxBlocks = 512;
+   private int absorb(ItemStack item, World world, BlockPos pos) {
+      int depthLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"mandelbrot"));
+      int absorbLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"sierpinski"));
+      int maxDepth = 16 + depthLevel*2;
+      int maxBlocks = 512 + 256*absorbLevel;
       
       Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
       queue.add(new Pair(pos, 0));
@@ -147,7 +150,12 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
-      drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
+      NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
+      if(blockData.contains("augments")) {
+         magicTag.put("augments",magicTag.getCompound("augments"));
+         redoAugmentLore(drop);
+      }
+      magicTag.putString("UUID",uuid);
       drops.add(drop);
       return drops;
    }
@@ -174,14 +182,16 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
    
    private void placeSponge(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
       try{
+         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          MagicBlock spongeBlock = new MagicBlock(pos);
          NbtCompound spongeData = new NbtCompound();
          spongeData.putString("UUID",getUUID(item));
          spongeData.putString("id",this.id);
          spongeData.putString("crafter",getCrafter(item));
          spongeData.putBoolean("synthetic",isSynthetic(item));
+         if(magicTag.contains("augments")) spongeData.put("augments",spongeData.getCompound("augments"));
          spongeBlock.setData(spongeData);
-         int absorbed = absorb(world, pos);
+         int absorbed = absorb(item, world, pos);
          Block block = absorbed > 0 ? Blocks.WET_SPONGE : Blocks.SPONGE;
          world.setBlockState(pos, block.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(spongeBlock);

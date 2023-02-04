@@ -1,8 +1,10 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.AttackingItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
@@ -124,7 +126,7 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
          magicNbt.putString("type",entityTypeId);
          NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
          loreList.set(3,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
-         player.sendMessage(Text.translatable("The Soulstone attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("The Soulstone attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
       }
       return true;
@@ -139,11 +141,13 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       String entityTypeId = EntityType.getId(dead.getType()).toString();
       String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
    
-      souls++;
+      int toAdd = new int[]{1,2,3,4,5,10}[ArcanaAugments.getAugmentOnItem(item,"soul_reaper")];
+      souls += toAdd;
+      
       int tier = soulsToTier(souls);
-      if(tier != soulsToTier(souls-1)){
+      if(tier != soulsToTier(souls-toAdd)){
          // Level up notification
-         player.sendMessage(Text.translatable("Your Soulstone crackles with new power!").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("Your Soulstone crackles with new power!").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1,1f);
          if(tier > maxTier){
             PLAYER_DATA.get(player).addXP(souls*50); // Add xp
@@ -241,6 +245,11 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+   
+      NbtCompound magic = new NbtCompound();
+      magic.putString("id", MagicItems.SOULSTONE.getId());
+      magic.putString("UUID", "-");
+      tag.put("arcananovum",magic);
       
       item.setNbt(tag);
       return item;

@@ -19,8 +19,6 @@ public class WingsOfZephyr extends EnergyItem {
       name = "Armored Wings of Zephyr";
       rarity = MagicRarity.MYTHICAL;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.ARMOR};
-      maxEnergy = 10000; // Store up to 100 points of dmg mitigation at 5 seconds of flight per damage point stored
-      // aka 100 ticks/energy per 1 dmg point
       itemVersion = 1;
       
       ItemStack item = new ItemStack(Items.ELYTRA);
@@ -71,6 +69,11 @@ public class WingsOfZephyr extends EnergyItem {
       prefNBT = addMagicNbt(tag);
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      return 10000; // Store up to 100 points of dmg mitigation at 5 seconds of flight per damage point stored aka 100 ticks/energy per 1 dmg point
    }
    
    @Override

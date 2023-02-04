@@ -386,5 +386,9 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       return augments.entrySet().removeIf(e -> e.getKey().id.equals(id));
    }
    
+   @Override
+   public void removeAllAugments(){
+      augments.clear();
+   }
    
 }

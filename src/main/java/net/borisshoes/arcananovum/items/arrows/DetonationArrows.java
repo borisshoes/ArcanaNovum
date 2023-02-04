@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -17,19 +19,14 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionBehavior;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.Arcananovum.log;
 
 public class DetonationArrows extends MagicItem implements RunicArrow {
    
@@ -68,20 +65,24 @@ public class DetonationArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
-      explode(arrow,entityHitResult.getPos());
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+      int blastLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"blast_mine"));
+      int personLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"anti_personnel"));
+      explode(arrow,entityHitResult.getPos(),blastLvl,personLvl);
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
-      explode(arrow,blockHitResult.getPos());
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+      int blastLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"blast_mine"));
+      int personLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"anti_personnel"));
+      explode(arrow,blockHitResult.getPos(),blastLvl,personLvl);
    }
    
-   private void explode(PersistentProjectileEntity arrow, Vec3d pos){
+   private void explode(PersistentProjectileEntity arrow, Vec3d pos, int blastLvl, int personLvl){
       double power = MathHelper.clamp(2*arrow.getVelocity().length(),1.5,8);
       DamageSource source = DamageSource.GENERIC;
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
-         source = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows", player)).setScaledWithDifficulty().setExplosive();
+         source = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
       }
       arrow.getEntityWorld().createExplosion(null, source, null,pos.x,pos.y,pos.z,(float)power,power > 7.5, Explosion.DestructionType.BREAK);
       

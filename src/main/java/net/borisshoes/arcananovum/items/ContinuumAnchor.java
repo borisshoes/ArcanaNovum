@@ -151,6 +151,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
    
    private void placeAnchor(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
       try{
+         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          MagicBlock anchorBlock = new MagicBlock(pos);
          NbtCompound anchorData = new NbtCompound();
          anchorData.putString("UUID",getUUID(item));
@@ -160,6 +161,7 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
          anchorData.putBoolean("active",false);
          anchorData.putInt("fuel",0);
          anchorData.putInt("range",2);
+         if(magicTag.contains("augments")) anchorData.put("augments",magicTag.getCompound("augments"));
          anchorBlock.setData(anchorData);
          world.setBlockState(pos, Blocks.RESPAWN_ANCHOR.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(anchorBlock);
@@ -178,7 +180,12 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
-      drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
+      NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
+      if(blockData.contains("augments")) {
+         magicTag.put("augments",magicTag.getCompound("augments"));
+         redoAugmentLore(drop);
+      }
+      magicTag.putString("UUID",uuid);
       drops.add(drop);
       
       int fuel = blockData.getInt("fuel");

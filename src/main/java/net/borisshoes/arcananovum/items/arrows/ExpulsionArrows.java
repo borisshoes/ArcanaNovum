@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -14,7 +16,6 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
@@ -38,8 +39,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
-
-import static net.borisshoes.arcananovum.Arcananovum.log;
 
 public class ExpulsionArrows extends MagicItem implements RunicArrow {
    
@@ -78,31 +77,32 @@ public class ExpulsionArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,0);
+         double range = 4 + 1.5*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"repulsion"));;
+         expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         expulsionPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,0);
+         double range = 4 + 1.5*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"repulsion"));;
+         expulsionPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);
       }
    }
    
-   private void expulsionPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, int calls){
+   private void expulsionPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, double range, int calls){
       if(start == null && entity == null) return;
       Vec3d pos = entity == null ? start : entity.getPos();
-      double range = 4;
       
       Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
       List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && !(e instanceof PersistentProjectileEntity) && !(e instanceof EnderDragonEntity));
       for(Entity entity1 : entities){
          Vec3d diff = entity1.getPos().subtract(pos);
-         double multiplier = MathHelper.clamp(3-diff.length()*.5,.1,5);
+         double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,5);
          Vec3d motion = diff.add(0,0,0).normalize().multiply(multiplier);
          entity1.setVelocity(motion.x,motion.y,motion.z);
          if(entity1 instanceof ServerPlayerEntity player){
@@ -124,7 +124,7 @@ public class ExpulsionArrows extends MagicItem implements RunicArrow {
          Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
             @Override
             public void run(){
-               expulsionPulse(arrow, world, pos, entity,duration,calls + 1);
+               expulsionPulse(arrow, world, pos, entity,duration,range,calls + 1);
             }
          }));
       }

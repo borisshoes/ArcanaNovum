@@ -717,7 +717,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       MagicItemIngredient[][] ingredients = recipe.getIngredients();
       for(int i = 0; i < 25; i++){
          ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
-         gui.setSlot(craftingSlots[i], GuiElementBuilder.from(ingredient));
+         GuiElementBuilder craftingElement = GuiElementBuilder.from(ingredient);
+         if(MagicItemUtils.isMagic(ingredient)) craftingElement.glow();
+         gui.setSlot(craftingSlots[i], craftingElement);
       }
    
       ItemStack recipeList = new ItemStack(Items.PAPER);

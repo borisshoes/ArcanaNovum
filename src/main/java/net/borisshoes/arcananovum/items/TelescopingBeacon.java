@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -137,7 +138,12 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
          placePos = placePos.add(0,tier,0);
          
          if(hasSpace(world, placePos, tier) && world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, item, result)) && playerEntity instanceof ServerPlayerEntity player){
-            placeBeacon(player, world, placePos, tier, blocks);
+            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"careful_reconstruction")) >= 1;
+            if(careful && magicNbt.contains("data",NbtElement.COMPOUND_TYPE)){
+               placeBeacon(player, world, placePos, tier, blocks,magicNbt.getCompound("data"));
+            }else{
+               placeBeacon(player, world, placePos, tier, blocks,null);
+            }
    
             magicNbt.put("blocks",new NbtList());
             magicNbt.putBoolean("beacon",false);
@@ -183,6 +189,11 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
          }
          magicNbt.put("blocks",blocks);
          magicNbt.putBoolean("beacon",true);
+         
+         boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"careful_reconstruction")) >= 1;
+         if(careful){
+            magicNbt.put("data",beaconBlock.createNbt());
+         }
    
          world.setBlockState(placePos, Blocks.AIR.getDefaultState(), 3);
    
@@ -264,7 +275,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
       return true;
    }
    
-   private void placeBeacon(ServerPlayerEntity player, World world, BlockPos pos, int tier, NbtList blockTypes){
+   private void placeBeacon(ServerPlayerEntity player, World world, BlockPos pos, int tier, NbtList blockTypes, NbtCompound data){
       try{
          ArrayList<BlockState> blocks = new ArrayList<>();
          
@@ -302,6 +313,13 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
             }
          }
          world.setBlockState(pos,Blocks.BEACON.getDefaultState(),3);
+         if(data != null){
+            BlockState placeState = world.getBlockState(pos);
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if(placeState.isOf(Blocks.BEACON) && (blockEntity instanceof BeaconBlockEntity beaconBlock)){
+               beaconBlock.readNbt(data);
+            }
+         }
          
          player.teleport(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
          PLAYER_DATA.get(player).addXP(index); // Add xp

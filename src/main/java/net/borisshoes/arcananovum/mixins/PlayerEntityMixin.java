@@ -13,6 +13,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.world.spawner.PhantomSpawner;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -47,7 +48,7 @@ public class PlayerEntityMixin {
       boolean runic = (MagicItemUtils.identifyItem(bow) instanceof RunicBow);
    
       PlayerInventory inv = player.getInventory();
-   
+      
       // Switch to next arrow slot, runic quivers get priority
       if(runic){
          for(int i=0; i<inv.size();i++){

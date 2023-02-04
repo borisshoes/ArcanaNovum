@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -11,12 +13,10 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.EnchantedBookItem;
@@ -27,11 +27,8 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -40,6 +37,8 @@ import java.util.List;
 import java.util.TimerTask;
 
 public class StormArrows extends MagicItem implements RunicArrow {
+   
+   private static final double[] stormChance = {.1,.2,.4,.6,.8,1};
    
    public StormArrows(){
       id = "storm_arrows";
@@ -76,18 +75,24 @@ public class StormArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
-      strike(arrow,entityHitResult.getPos());
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+      int stableLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"storm_stabilization"));
+      int chainLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"chain_lightning"));
+      int shockLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"aftershock"));
+      strike(arrow,entityHitResult.getPos(),stableLvl,chainLvl,shockLvl);
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
-      strike(arrow,blockHitResult.getPos());
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+      int stableLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"storm_stabilization"));
+      int chainLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"chain_lightning"));
+      int shockLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"aftershock"));
+      strike(arrow,blockHitResult.getPos(),stableLvl,chainLvl,shockLvl);
    }
    
-   private void strike(PersistentProjectileEntity arrow, Vec3d pos){
+   private void strike(PersistentProjectileEntity arrow, Vec3d pos, int stableLevel, int chainLvl, int shockLvl){
       World world = arrow.getEntityWorld();
-      if(world.isRaining() || world.isThundering() || Math.random() < .1){
+      if(world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel]){
          LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getEntityWorld());
          lightning.setPosition(pos);
          world.spawnEntity(lightning);

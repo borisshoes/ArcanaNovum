@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -46,7 +47,6 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
       name = "Sojourner's Boots";
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARMOR};
-      maxEnergy = 500; // +500% speed
       
       ItemStack item = new ItemStack(Items.LEATHER_BOOTS);
       NbtCompound tag = item.getOrCreateNbt();
@@ -107,6 +107,12 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
    }
    
    @Override
+   public int getMaxEnergy(ItemStack item){ // +500% speed base
+      int boostLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"marathon_runner"));
+      return 500 + 50*boostLvl;
+   }
+   
+   @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
@@ -155,13 +161,15 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
             
             if(player.isSprinting()){
                int curEnergy = getEnergy(item);
-               addEnergy(item,2);
+               int sprintLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"sprinter"));
+               
+               addEnergy(item,2*(1+sprintLvl));
                int newEnergy = getEnergy(item);
                if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
                   player.sendMessage(Text.translatable("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                PLAYER_DATA.get(player).addXP(1); // Add xp
                
-               if(newEnergy == maxEnergy){
+               if(newEnergy == getMaxEnergy(item)){
                   ArcanaAchievements.progress(player,"running",1);
                }
             }else{

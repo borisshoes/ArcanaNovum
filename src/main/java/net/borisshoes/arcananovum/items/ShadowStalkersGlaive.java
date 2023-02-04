@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -10,6 +11,9 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -46,7 +50,6 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
       name = "Shadow Stalkers Glaive";
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
-      maxEnergy = 100; // 100 Damage stored
    
       ItemStack item = new ItemStack(Items.NETHERITE_SWORD);
       NbtCompound tag = item.getOrCreateNbt();
@@ -95,6 +98,11 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
       item.setNbt(prefNBT);
       prefItem = item;
       
+   }
+   
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      return 100; // 100 damage stored
    }
    
    @Override
@@ -152,7 +160,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
                for(int i=1; i<=5; i++){
                   message.append(20 >= i * 20 ? "✦ " : "✧ ");
                }
-               player.sendMessage(Text.translatable(message.toString()).formatted(Formatting.BLACK),true);
+               player.sendMessage(Text.literal(message.toString()).formatted(Formatting.BLACK),true);
             }
          }
       }
@@ -172,7 +180,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
          if(energy >= 80){
             Entity target = player.getWorld().getEntity(UUID.fromString(lastAtk));
             if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
-               player.sendMessage(Text.translatable("The Glaive Has No Target").formatted(Formatting.BLACK),true);
+               player.sendMessage(Text.literal("The Glaive Has No Target").formatted(Formatting.BLACK),true);
             }else{
                Vec3d targetPos = target.getPos();
                Vec3d targetView = target.getRotationVecClient();
@@ -187,15 +195,25 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
                for(int i=1; i<=5; i++){
                   message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
                }
-               player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
+               player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
                PLAYER_DATA.get(player).addXP(500); // Add xp
                
                if(target instanceof ServerPlayerEntity || target instanceof WardenEntity) ArcanaAchievements.progress(player,"omae_wa",0);
                if(target instanceof MobEntity) ArcanaAchievements.progress(player,"shadow_fury",0);
+               
+               int blindDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,"paranoia"))];
+               int invisDur = new int[]{0,20,100,200}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shadow_stride"))];
+               StatusEffectInstance invis = new StatusEffectInstance(StatusEffects.INVISIBILITY, invisDur, 0, false, false, true);
+               player.addStatusEffect(invis);
+               if(target instanceof LivingEntity living){
+                  StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS, blindDur, 0, false, true, true);
+                  living.addStatusEffect(blind);
+               }
+               
                return false;
             }
          }else{
-            player.sendMessage(Text.translatable("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
+            player.sendMessage(Text.literal("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
             SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
          }
       }else if(player.isSneaking()){
@@ -213,11 +231,16 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
             for(int i=1; i<=5; i++){
                message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
             }
-            player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
+            player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
             PLAYER_DATA.get(player).addXP(100); // Add xp
+   
+            int invisDur = new int[]{0,20,100,200}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shadow_stride"))];
+            StatusEffectInstance invis = new StatusEffectInstance(StatusEffects.INVISIBILITY, invisDur, 0, false, false, true);
+            player.addStatusEffect(invis);
+            
             return false;
          }else{
-            player.sendMessage(Text.translatable("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
+            player.sendMessage(Text.literal("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
             SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
          }
       }

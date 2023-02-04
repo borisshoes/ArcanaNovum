@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -11,6 +13,8 @@ import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -28,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlinkArrows extends MagicItem implements RunicArrow {
+   
+   private static final int[] phaseDur = {0,20,60,100};
    
    public BlinkArrows(){
       id = "blink_arrows";
@@ -65,18 +71,22 @@ public class BlinkArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d tpPos = entityHitResult.getPos();
          if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,"now_you_see_me");
          player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
          ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
+         
+         int phaseLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"phase_in"));
+         StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.WEAKNESS,phaseDur[phaseLvl], 4, false, false, true);
+         player.addStatusEffect(invuln);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
          Vec3d tpPos = blockHitResult.getPos().add(offset);
@@ -84,6 +94,10 @@ public class BlinkArrows extends MagicItem implements RunicArrow {
          player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
          ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
+   
+         int phaseLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"phase_in"));
+         StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.RESISTANCE,phaseDur[phaseLvl], 4, false, false, true);
+         player.addStatusEffect(invuln);
       }
    }
    

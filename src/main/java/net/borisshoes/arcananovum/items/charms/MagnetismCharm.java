@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -35,10 +36,6 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 
 public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem {
-   
-   private final int activeLength = 15;
-   private final int activeRange = 3;
-   private final int passiveRange = 5;
    
    public MagnetismCharm(){
       id = "magnetism_charm";
@@ -77,6 +74,8 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
    
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack charm){
+      int passiveRange = 5 + Math.max(0, ArcanaAugments.getAugmentOnItem(charm,"ferrite_core"));
+      
       //log("Tick Check"+charm.getNbt().getCompound("arcananovum").getBoolean("active"));
       if(!player.isSneaking()){
          boolean active = charm.getNbt().getCompound("arcananovum").getBoolean("active");
@@ -115,12 +114,15 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
    }
    
    public void activeUse(ServerPlayerEntity player, World world, ItemStack charm){
+      int activeLength = 15 + 3*Math.max(0, ArcanaAugments.getAugmentOnItem(charm,"electromagnet"));;
+      int activeRange = 3;
+      
       Vec3d playerPos = player.getEyePos();
       Vec3d view = player.getRotationVecClient();
       Vec3d rayEnd = playerPos.add(view.multiply(activeLength));
       
       Box box = new Box(playerPos,playerPos).expand(activeLength+activeRange);
-      List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd));
+      List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange));
       SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_FOX_TELEPORT, 1,.9f);
    
       for(ItemEntity item : items){
@@ -135,7 +137,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
       if(items.size() >= 25) ArcanaAchievements.grant(player,"magnets");
    }
    
-   private boolean itemInRange(Vec3d itemPos, Vec3d start, Vec3d end){
+   private boolean itemInRange(Vec3d itemPos, Vec3d start, Vec3d end, int activeRange){
       double dist = itemPos.subtract(start).crossProduct(end.subtract(start)).length() / end.subtract(start).length();
       return dist <= activeRange;
    }

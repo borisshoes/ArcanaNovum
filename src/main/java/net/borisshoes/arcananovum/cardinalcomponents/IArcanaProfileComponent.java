@@ -36,4 +36,5 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    int getAugmentLevel(String id);
    boolean setAugmentLevel(String id, int level);
    boolean removeAugment(String id);
+   void removeAllAugments();
 }

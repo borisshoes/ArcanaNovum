@@ -62,11 +62,12 @@ public class MagicItems {
    public static final MagicItem RUNIC_QUIVER = MagicItems.register("runic_quiver", new RunicQuiver());
    
    // 1.4 Items
-   public static final MagicItem CATALYST_MUNDANE = MagicItems.register("catalyst_mundane", new catalyst_mundane());
-   public static final MagicItem CATALYST_EMPOWERED = MagicItems.register("catalyst_empowered", new catalyst_empowered());
-   public static final MagicItem CATALYST_EXOTIC = MagicItems.register("catalyst_exotic", new catalyst_exotic());
-   public static final MagicItem CATALYST_LEGENDARY = MagicItems.register("catalyst_legendary", new catalyst_legendary());
-   public static final MagicItem CATALYST_MYTHICAL = MagicItems.register("catalyst_mythical", new catalyst_mythical());
+   public static final MagicItem CATALYST_MUNDANE = MagicItems.register("catalyst_mundane", new CatalystMundane());
+   public static final MagicItem CATALYST_EMPOWERED = MagicItems.register("catalyst_empowered", new CatalystEmpowered());
+   public static final MagicItem CATALYST_EXOTIC = MagicItems.register("catalyst_exotic", new CatalystExotic());
+   public static final MagicItem CATALYST_LEGENDARY = MagicItems.register("catalyst_legendary", new CatalystLegendary());
+   public static final MagicItem CATALYST_MYTHICAL = MagicItems.register("catalyst_mythical", new CatalystMythical());
+   public static final MagicItem NUL_MEMENTO = MagicItems.register("nul_memento", new NulMemento());
    
    private static MagicItem register(String id, MagicItem item){
       registry.put(id,item);
@@ -121,6 +122,7 @@ public class MagicItems {
          CATALYST_EMPOWERED,
          CATALYST_EXOTIC,
          CATALYST_LEGENDARY,
-         CATALYST_MYTHICAL
+         CATALYST_MYTHICAL,
+         NUL_MEMENTO
    ));
 }

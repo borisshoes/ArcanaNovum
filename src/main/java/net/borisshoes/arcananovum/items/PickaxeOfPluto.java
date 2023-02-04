@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.core.LeftClickItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
@@ -103,13 +104,17 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
    
    @Override
    public boolean attackBlock(PlayerEntity playerEntity, World world, Hand hand, BlockPos blockPos, Direction direction){
+      ItemStack item = playerEntity.getStackInHand(hand);
+      int energyGain = 16 + 5*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"wardens_haste"));
+      int maxEnergy = 1000 + 100*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"wardens_haste"));
       IArcanaProfileComponent profile = PLAYER_DATA.get(playerEntity);
+      
       profile.addMiscData("plutoPickTick", NbtInt.of(0));
       NbtInt energy = (NbtInt) profile.getMiscData("plutoPickEnergy");
       if(energy == null){
          profile.addMiscData("plutoPickEnergy", NbtInt.of(0));
       }else{
-         profile.addMiscData("plutoPickEnergy", NbtInt.of(Math.min(energy.intValue()+16,1000)));
+         profile.addMiscData("plutoPickEnergy", NbtInt.of(Math.min(energy.intValue()+energyGain,maxEnergy)));
       }
       return true;
    }
@@ -128,8 +133,8 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
 
          //System.out.println("Last Tick: "+lastTick + " | Cur energy: "+energy+" | Haste Amp: "+speed);
          StatusEffectInstance haste = new StatusEffectInstance(StatusEffects.HASTE, 20, speed, false, false, false);
-         if(speed == 10) ArcanaAchievements.progress(player,"back_in_the_mine",1);
          player.addStatusEffect(haste);
+         if(speed == 10) ArcanaAchievements.progress(player,"back_in_the_mine",1);
       }
    }
    
@@ -137,8 +142,9 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
       Block type = world.getBlockState(pos).getBlock();
       if(!VEIN_ORES.contains(type)) return;
    
-      int maxDepth = 8;
-      int maxBlocks = 64;
+      int veinLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"hades_reach"));
+      int maxDepth = 8 + 2*veinLevel;
+      int maxBlocks = 64 + 32*veinLevel;
    
       Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
       Queue<BlockPos> visited = Lists.newLinkedList();
@@ -171,15 +177,28 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
          }
       }
    
+      int greedLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"greed"));
+      final int[] greed = {0,1,3,5};
+      
       List<ItemStack> drops = new ArrayList<>();
+      ItemStack veinPick = new ItemStack(Items.NETHERITE_PICKAXE);
+      NbtCompound tag = item.getOrCreateNbt();
+      NbtList enchants = new NbtList();
+      NbtCompound fortune = new NbtCompound();
+      fortune.putString("id","fortune");
+      fortune.putInt("lvl",5 + greed[greedLvl]);
+      enchants.add(fortune);
+      tag.put("Enchantments",enchants);
+      tag.putInt("Unbreakable",1);
+      
       for(BlockPos blockPos : toMine){
-         drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), (ServerWorld)world, blockPos, null, player, player.getMainHandStack()));
+         drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), (ServerWorld)world, blockPos, null, player, veinPick));
          world.breakBlock(blockPos,false,player);
          if(type instanceof OreBlock ore){
-            ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, player.getMainHandStack(),true);
+            ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, veinPick,true);
          }
          if(type instanceof RedstoneOreBlock ore){
-            ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, player.getMainHandStack(),true);
+            ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, veinPick,true);
          }
          PLAYER_DATA.get(player).addXP(5);
       }

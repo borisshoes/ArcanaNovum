@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.AttackingItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
@@ -125,14 +126,15 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
             BlockEntity blockEntity;
             BlockState blockState = world.getBlockState(blockPos);
             if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof MobSpawnerBlockEntity){
-               if(getUses(item) >= 5){
+               int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"willing_captive"));
+               if(getUses(item) >= 5-captiveLevel){
                   MobSpawnerLogic mobSpawnerLogic = ((MobSpawnerBlockEntity) blockEntity).getLogic();
                   EntityType<?> entityType = EntityType.get(getType(item)).get();
                   mobSpawnerLogic.setEntityId(entityType);
                   blockEntity.markDirty();
                   world.updateListeners(blockPos, blockState, blockState, Block.NOTIFY_ALL);
    
-                  addUses(item, -5);
+                  addUses(item, -5+captiveLevel);
                   if(playerEntity instanceof ServerPlayerEntity player){
                      player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
@@ -141,22 +143,30 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
                   }
                }
             }else{
+               int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"soul_split"));
+               int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"determined_spirit"));
                if(getUses(item) > 0){
                   ServerWorld serverWorld = playerEntity.getServer().getWorld(world.getRegistryKey());
                   Vec3d summonPos = result.getPos().add(0,0.5,0);
       
                   NbtCompound nbtCompound = new NbtCompound();
                   nbtCompound.putString("id", getType(item));
-                  Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, entity -> {
-                     entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
-                     return entity;
-                  });
-                  if (newEntity instanceof MobEntity) {
-                     ((MobEntity)newEntity).initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_EGG, null, null);
+                  int spawns = Math.random() >= 0.1*splitLevel ? 1 : 2;
+                  
+                  for(int i = 0; i < spawns; i++){
+                     Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, entity -> {
+                        entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
+                        return entity;
+                     });
+                     if(newEntity instanceof MobEntity){
+                        ((MobEntity) newEntity).initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_EGG, null, null);
+                     }
+                     serverWorld.spawnNewEntityAndPassengers(newEntity);
                   }
-                  serverWorld.spawnNewEntityAndPassengers(newEntity);
    
-                  addUses(item,-1);
+                  if(Math.random() >= 0.1*efficiencyLevel){
+                     addUses(item,-1);
+                  }
                   if(playerEntity instanceof ServerPlayerEntity player){
                      SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
                      PLAYER_DATA.get(playerEntity).addXP(500); // Add xp

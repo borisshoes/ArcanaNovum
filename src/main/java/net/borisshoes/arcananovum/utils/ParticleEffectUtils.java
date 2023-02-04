@@ -33,9 +33,9 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, (double)pos.getX() + 0.5, (double)pos.getY() + 2.5, (double)pos.getZ() + 0.5, 5,0.3, 0.3, 0.3,0.02);
    }
    
-   public static void arcaneFlakArrowDetonate(ServerWorld world, Vec3d pos, int calls){
+   public static void arcaneFlakArrowDetonate(ServerWorld world, Vec3d pos, double range, int calls){
       //ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x0085de)),1.4f);
-      double radius = .5+calls*(4.0/5.0);
+      double radius = .5+calls*(range/5.0);
       double radius2 = radius*.75;
       sphere(world,null,pos,ParticleTypes.WITCH,radius,(int)(radius*radius+radius*20+10),3,0.3,0,0);
       sphere(world,null,pos,ParticleTypes.DRAGON_BREATH,radius2,(int)(radius2*radius2+radius2*20+10),3,0.3,0,0);
@@ -45,7 +45,7 @@ public class ParticleEffectUtils {
          Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
             @Override
             public void run(){
-               arcaneFlakArrowDetonate(world, pos,calls + 1);
+               arcaneFlakArrowDetonate(world, pos,range,calls + 1);
             }
          }));
       }
@@ -176,16 +176,16 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,pos.x,pos.y+0.5,pos.z,15,.4,.6,.4,0.07);
    }
    
-   public static void dowsingRodEmitter(ServerWorld world, Vec3d pos, int calls){
+   public static void dowsingRodEmitter(ServerWorld world, Vec3d pos, int calls, int duration){
       if(world.getBlockState(new BlockPos(pos)).getBlock() != Blocks.ANCIENT_DEBRIS) return;
       
       world.spawnParticles(ParticleTypes.FLAME,pos.x+0.5,pos.y+0.5,pos.z+0.5,3,.4,.4,.4,0.05);
       
-      if(calls < (100)){
+      if(calls < (duration)){
          Arcananovum.addTickTimerCallback(world, new GenericTimer(3, new TimerTask() {
             @Override
             public void run(){
-               dowsingRodEmitter(world, pos, calls + 1);
+               dowsingRodEmitter(world, pos, calls + 1, duration);
             }
          }));
       }

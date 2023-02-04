@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -18,7 +20,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -42,8 +43,6 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
-
-import static net.borisshoes.arcananovum.Arcananovum.log;
 
 public class ConcussionArrows extends MagicItem implements RunicArrow {
    
@@ -81,20 +80,22 @@ public class ConcussionArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
-      concuss(arrow, arrow.getEntityWorld(),entityHitResult.getPos());
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+      int lvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"shellshock"));
+      concuss(arrow, arrow.getEntityWorld(),entityHitResult.getPos(), lvl);
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
-      concuss(arrow, arrow.getEntityWorld(),blockHitResult.getPos());
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+      int lvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"shellshock"));
+      concuss(arrow, arrow.getEntityWorld(),blockHitResult.getPos(), lvl);
    }
    
-   private void concuss(PersistentProjectileEntity arrow, World world, Vec3d pos){
+   private void concuss(PersistentProjectileEntity arrow, World world, Vec3d pos, int levelBoost){
       Box rangeBox = new Box(pos.x+10,pos.y+10,pos.z+10,pos.x-10,pos.y-10,pos.z-10);
       float range = (float) MathHelper.clamp(arrow.getVelocity().length()*2.5,1,6);
       List<Entity> entities = world.getOtherEntities(null,rangeBox,e -> !e.isSpectator() && e.squaredDistanceTo(pos) < range*range && e instanceof LivingEntity);
-      float percent = range/6;
+      float percent = (1+levelBoost*.75f)*range/6;
       int mobsHit = 0;
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e){
@@ -104,8 +105,8 @@ public class ConcussionArrows extends MagicItem implements RunicArrow {
             StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA, (int)(120*percent), 0, false, false, true);
             StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, (int)(40*percent), 4, false, false, true);
             StatusEffectInstance slow2 = new StatusEffectInstance(StatusEffects.SLOWNESS, (int)(120*percent), 2, false, false, true);
-            StatusEffectInstance fatigue = new StatusEffectInstance(StatusEffects.MINING_FATIGUE, (int)(80*percent), 2, false, false, true);
-            StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, (int)(120*percent), 1, false, false, true);
+            StatusEffectInstance fatigue = new StatusEffectInstance(StatusEffects.MINING_FATIGUE, (int)(80*percent), 2+levelBoost, false, false, true);
+            StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, (int)(120*percent), 1+levelBoost, false, false, true);
             e.addStatusEffect(blind);
             e.addStatusEffect(nausea);
             e.addStatusEffect(slow);

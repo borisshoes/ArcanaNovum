@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -16,7 +18,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -29,7 +30,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
@@ -74,17 +74,18 @@ public class ArcaneFlakArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){
-      detonate(arrow);
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+      double radius = 4 + 1.25*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"airburst"));
+      detonate(arrow,radius);
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){
-      detonate(arrow);
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+      double radius = 4 + 1.25*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"airburst"));
+      detonate(arrow,radius);
    }
    
-   public static void detonate(PersistentProjectileEntity arrow){
-      double damageRange = 4;
+   public static void detonate(PersistentProjectileEntity arrow, double damageRange){
       int deadPhantomCount = 0;
       List<Entity> triggerTargets = arrow.getEntityWorld().getOtherEntities(arrow,arrow.getBoundingBox().expand(damageRange*2),
             e -> !e.isSpectator() && e.distanceTo(arrow) <= damageRange && e instanceof LivingEntity);
@@ -92,7 +93,7 @@ public class ArcaneFlakArrows extends MagicItem implements RunicArrow {
          if(entity instanceof LivingEntity e){
             float damage = (float) MathHelper.clamp(arrow.getVelocity().length()*4,1,10);
             damage *= e.isOnGround() ? 0.5 : 3.5;
-            damage *= e.distanceTo(arrow) > 3 ? 0.5 : 1;
+            damage *= e.distanceTo(arrow) > damageRange*.75 ? 0.5 : 1;
             DamageSource source = arrow.getOwner() == null ? (new DamageSource("explosion.player")).setExplosive() : (new EntityDamageSource("explosion.player", arrow.getOwner())).setExplosive();
             e.damage(source,damage);
             if(e instanceof PhantomEntity && e.isDead()) deadPhantomCount++;
@@ -101,7 +102,7 @@ public class ArcaneFlakArrows extends MagicItem implements RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,"aa_artillery");
    
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
-         ParticleEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getPos(),0);
+         ParticleEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getPos(),damageRange,0);
          SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS,1f,1f);
          SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,1f,1f);
       }

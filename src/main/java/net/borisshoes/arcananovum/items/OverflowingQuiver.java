@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.QuiverItem;
@@ -30,13 +31,15 @@ import java.util.List;
 
 public class OverflowingQuiver extends QuiverItem implements UsableItem, TickingItem{
    
+   private static final int[] refillReduction = {0,300,600,900,1200,1800};
+   private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
+   
    public OverflowingQuiver(){
       id = "overflowing_quiver";
       name = "Overflowing Quiver";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
       color = Formatting.DARK_AQUA;
-      refillMod = 3000; // Ticks between arrow refill, once per two and a half minutes
       
       ItemStack item = new ItemStack(Items.RABBIT_HIDE);
       NbtCompound tag = item.getOrCreateNbt();
@@ -69,6 +72,18 @@ public class OverflowingQuiver extends QuiverItem implements UsableItem, Ticking
    }
    
    @Override
+   protected int getRefillMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
+      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"abundant_ammo"));
+      return 3000 - refillReduction[refillLvl];
+   }
+   
+   @Override
+   protected double getEfficiencyMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
+      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"overflowing_bottomless"));
+      return efficiencyChance[effLvl];
+   }
+   
+   @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
       // Open GUI
       if(playerEntity instanceof ServerPlayerEntity player){
@@ -82,7 +97,7 @@ public class OverflowingQuiver extends QuiverItem implements UsableItem, Ticking
    
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      if(world.getServer().getTicks() % refillMod == 0) refillArrow(player, item);
+      if(world.getServer().getTicks() % getRefillMod(item) == 0) refillArrow(player, item);
    }
    
    @Override

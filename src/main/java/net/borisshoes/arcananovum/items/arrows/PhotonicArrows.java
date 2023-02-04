@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -10,11 +11,7 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
@@ -27,7 +24,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -38,9 +34,10 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.items.core.MagicItems.RECOMMENDED_LIST;
 
 public class PhotonicArrows extends MagicItem implements RunicArrow {
    
@@ -78,7 +75,7 @@ public class PhotonicArrows extends MagicItem implements RunicArrow {
       prefItem = item;
    }
    
-   public void shoot(World world, LivingEntity entity, PersistentProjectileEntity proj){
+   public void shoot(World world, LivingEntity entity, PersistentProjectileEntity proj, int alignmentLvl){
       Vec3d startPos = entity.getEyePos();
       Vec3d view = entity.getRotationVecClient();
       Vec3d rayEnd = startPos.add(view.multiply(100));
@@ -98,13 +95,17 @@ public class PhotonicArrows extends MagicItem implements RunicArrow {
       // Secondary hitscan check to add lenience
       List<Entity> hits2 = world.getOtherEntities(entity, box, (e)-> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e) && inRange(e,startPos,raycast.getPos()));
       hits.addAll(hits2);
+      hits.sort(Comparator.comparingDouble(e->e.distanceTo(entity)));
       
       float damage = (float)MathHelper.clamp(proj.getVelocity().length()*5,1,20);
+      if(alignmentLvl == 5) damage += 5 + damage*0.25;
+      float bonusDmg = 0;
       
       int killCount = 0;
       for(Entity hit : hits){
-         hit.damage(DamageSource.magic(proj,entity), damage);
+         hit.damage(DamageSource.magic(proj,entity), damage+bonusDmg);
          if(hit instanceof MobEntity mob && mob.isDead()) killCount++;
+         bonusDmg += alignmentLvl;
       }
       if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,"x");
       
@@ -133,10 +134,10 @@ public class PhotonicArrows extends MagicItem implements RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult){}
+   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){}
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult){}
+   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){}
    
    private MagicItemRecipe makeRecipe(){
       MagicItemIngredient a = MagicItemIngredient.EMPTY;

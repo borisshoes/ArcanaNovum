@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
 import net.borisshoes.arcananovum.items.core.*;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
@@ -30,6 +31,8 @@ import java.util.List;
 public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
    
    public static final int size = 9;
+   private static final int[] refillReduction = {0,100,200,400,600,900};
+   private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
    
    public RunicQuiver(){
       id = "runic_quiver";
@@ -37,7 +40,6 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS};
       color = Formatting.LIGHT_PURPLE;
-      refillMod = 1200; // Ticks between arrow refill, once per minute
       
       ItemStack item = new ItemStack(Items.LEATHER);
       NbtCompound tag = item.getOrCreateNbt();
@@ -71,6 +73,18 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
    }
    
    @Override
+   protected int getRefillMod(ItemStack item){ // Ticks between arrow refill, once per minute
+      int refillLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"quiver_duplication"));
+      return 1200 - refillReduction[refillLvl];
+   }
+   
+   @Override
+   protected double getEfficiencyMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
+      int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"runic_bottomless"));
+      return efficiencyChance[effLvl];
+   }
+   
+   @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
       // Open GUI
       if(playerEntity instanceof ServerPlayerEntity player){
@@ -84,7 +98,7 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
    
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      if(world.getServer().getTicks() % refillMod == 0) refillArrow(player, item);
+      if(world.getServer().getTicks() % getRefillMod(item) == 0) refillArrow(player, item);
    }
    
    @Override

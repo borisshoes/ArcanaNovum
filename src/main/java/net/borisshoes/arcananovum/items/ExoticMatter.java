@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -21,12 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExoticMatter extends EnergyItem implements UsableItem {
+   
+   private static final double[] lvlMultiplier = {1,1.5,2,2.5,3,5};
+   
    public ExoticMatter(){
       id = "exotic_matter";
       name = "Exotic Matter";
       rarity = MagicRarity.MUNDANE;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
-      maxEnergy = 600000; // Maximum seconds of chunk loading per exotic matter fuel (1 week)
+      initEnergy = 600000;
       
       ItemStack item = new ItemStack(Items.STRUCTURE_BLOCK);
       NbtCompound tag = item.getOrCreateNbt();
@@ -49,9 +53,15 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
-      prefNBT.getCompound("arcananovum").putInt("energy",maxEnergy);
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      // Maximum seconds of chunk loading per exotic matter fuel (1 week baseline)
+      int level = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"time_in_a_bottle"));
+      return (int) (600000 * lvlMultiplier[level]);
    }
    
    @Override
@@ -68,7 +78,7 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
       NbtCompound itemNbt = item.getNbt();
       NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
       
-      int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, maxEnergy);
+      int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
       loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(item)+"\",\"color\":\"blue\"}]"));
       return newFuel;
@@ -78,7 +88,7 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
       NbtCompound itemNbt = item.getNbt();
       NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
    
-      int newFuel = MathHelper.clamp(fuel, 0, maxEnergy);
+      int newFuel = MathHelper.clamp(fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
       loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(item)+"\",\"color\":\"blue\"}]"));
    }

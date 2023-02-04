@@ -35,7 +35,7 @@ public class ProjectileMixin {
             String id = magicEntity.getData().getString("id");
             MagicItem item = MagicItemUtils.getItemFromId(id);
             if(item instanceof RunicArrow runicArrow){
-               runicArrow.blockHit(arrow,blockHitResult);
+               runicArrow.blockHit(arrow,blockHitResult,magicEntity);
                arrow.discard();
             }
             break;
@@ -52,7 +52,7 @@ public class ProjectileMixin {
             String id = magicEntity.getData().getString("id");
             MagicItem item = MagicItemUtils.getItemFromId(id);
             if(item instanceof RunicArrow runicArrow){
-               runicArrow.entityHit(arrow,entityHitResult);
+               runicArrow.entityHit(arrow,entityHitResult,magicEntity);
                
                if(arrow.getOwner() instanceof ServerPlayerEntity player){
                   if(player.getPos().distanceTo(arrow.getPos()) >= 100) ArcanaAchievements.grant(player, "aimbot");

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
@@ -56,7 +57,6 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       name = "Shulker Core";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
-      maxEnergy = Integer.MAX_VALUE;
       initEnergy = 1000;
    
       ItemStack item = new ItemStack(Items.SHULKER_BOX);
@@ -91,6 +91,11 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       item.setNbt(prefNBT);
       prefItem = item;
    
+   }
+   
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      return Integer.MAX_VALUE;
    }
    
    @Override
@@ -197,7 +202,7 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
          }
          if(!hasBetter){
             StatusEffectInstance levit = new StatusEffectInstance(StatusEffects.LEVITATION, duration, speed, false, false, false);
-            addEnergy(item,-(speed/2+1));
+            if(Math.random() >= .1*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shulker_recycler"))) addEnergy(item,-(speed/2+1));
             playerEntity.addStatusEffect(levit);
             SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
             PLAYER_DATA.get(playerEntity).addXP(50*(speed/2+1)); // Add xp

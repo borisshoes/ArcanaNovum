@@ -96,6 +96,11 @@ public class TickCallback {
                if(server.getTicks() % 20 == 0 && MagicItemUtils.identifyItem(item).getRarity() == MagicRarity.MYTHICAL){
                   ArcanaAchievements.grant(player,"god_boon");
                }
+   
+               // Reset Nul Memento
+               if(MagicItemUtils.identifyItem(item) instanceof NulMemento nulMemento && nulMemento.isActive(item) && i != 39){
+                  item.getNbt().getCompound("arcananovum").putBoolean("active",false);
+               }
             }
             
             wingsTick(player);
@@ -132,11 +137,11 @@ public class TickCallback {
       ServerScoreboard scoreboard = server.getScoreboard();
       if(scoreboard.getNullableObjective("arcananovum_sojourn_walk") == null){
          ScoreboardCriterion walked = ScoreboardCriterion.getOrCreateStatCriterion("minecraft.custom:minecraft.walk_one_cm").orElseThrow();
-         scoreboard.addObjective("arcananovum_sojourn_walk",walked,Text.translatable("dist_walked_sojourn"),walked.getDefaultRenderType());
+         scoreboard.addObjective("arcananovum_sojourn_walk",walked,Text.literal("dist_walked_sojourn"),walked.getDefaultRenderType());
       }
       if(scoreboard.getNullableObjective("arcananovum_sojourn_sprint") == null){
          ScoreboardCriterion sprinted = ScoreboardCriterion.getOrCreateStatCriterion("minecraft.custom:minecraft.sprint_one_cm").orElseThrow();
-         scoreboard.addObjective("arcananovum_sojourn_sprint",sprinted,Text.translatable("dist_sprinted_sojourn"),sprinted.getDefaultRenderType());
+         scoreboard.addObjective("arcananovum_sojourn_sprint",sprinted,Text.literal("dist_sprinted_sojourn"),sprinted.getDefaultRenderType());
       }
    }
    
@@ -157,7 +162,7 @@ public class TickCallback {
       int curConc = MagicItemUtils.getUsedConcentration(player);
       if(MagicItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,"arcane_addict");
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
-         player.sendMessage(Text.translatable("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
+         player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
          player.damage(DamageSource.OUT_OF_WORLD, 8);
          if(player.isDead()){
@@ -170,12 +175,19 @@ public class TickCallback {
                   "'s items consumed too much concentration",
                   " couldn't channel enough Arcana to their items"
             };
-            final Text deathMsg = Text.translatable("")
-                  .append(Text.translatable(player.getEntityName()).formatted(playerColor).formatted())
-                  .append(Text.translatable(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
+            final Text deathMsg = Text.literal("")
+                  .append(Text.literal(player.getEntityName()).formatted(playerColor).formatted())
+                  .append(Text.literal(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
             server.getPlayerManager().broadcast(deathMsg, false);
-         }else if(player.getHealth() <= 1.5f){
-            ArcanaAchievements.grant(player,"close_call");
+         }else{
+            if(player.getHealth() <= 1.5f){
+               ArcanaAchievements.grant(player,"close_call");
+            }
+            // Nul Memento
+            ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
+            if(MagicItemUtils.identifyItem(headStack) instanceof NulMemento nulMemento && !nulMemento.isActive(headStack)){
+               nulMemento.forgor(headStack,player);
+            }
          }
       }
    }
@@ -186,7 +198,7 @@ public class TickCallback {
          if(player.isFallFlying()){ // Wings of Zephyr
             wings.addEnergy(item,1); // Add 1 energy for each tick of flying
             if(wings.getEnergy(item) % 1000 == 999)
-               player.sendMessage(Text.translatable("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
+               player.sendMessage(Text.literal("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
             PLAYER_DATA.get(player).addXP(2); // Add xp
          }
          NbtCompound leftShoulder = player.getShoulderEntityLeft();

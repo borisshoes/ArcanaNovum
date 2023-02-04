@@ -94,6 +94,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem 
    
    private void placeCollider(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
       try{
+         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          MagicBlock colliderBlock = new MagicBlock(pos);
          NbtCompound colliderData = new NbtCompound();
          colliderData.putString("UUID",getUUID(item));
@@ -101,6 +102,7 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem 
          colliderData.putString("crafter",getCrafter(item));
          colliderData.putBoolean("synthetic",isSynthetic(item));
          colliderData.putInt("cooldown", COOLDOWN);
+         if(magicTag.contains("augments")) colliderData.put("augments",magicTag.getCompound("augments"));
          colliderBlock.setData(colliderData);
          world.setBlockState(pos, Blocks.LODESTONE.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(colliderBlock);
@@ -118,7 +120,12 @@ public class IgneousCollider extends MagicItem implements UsableItem, BlockItem 
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
-      drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
+      NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
+      if(blockData.contains("augments")) {
+         magicTag.put("augments",magicTag.getCompound("augments"));
+         redoAugmentLore(drop);
+      }
+      magicTag.putString("UUID",uuid);
       drops.add(drop);
       return drops;
    }

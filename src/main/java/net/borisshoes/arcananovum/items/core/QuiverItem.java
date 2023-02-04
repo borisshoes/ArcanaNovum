@@ -28,7 +28,6 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public abstract class QuiverItem extends MagicItem{
    public static final int size = 9;
    protected Formatting color;
-   protected int refillMod;
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
@@ -42,6 +41,10 @@ public abstract class QuiverItem extends MagicItem{
       stack.setNbt(newTag);
       return stack;
    }
+   
+   protected abstract int getRefillMod(ItemStack item);
+   
+   protected abstract double getEfficiencyMod(ItemStack item);
    
    protected void refillArrow(ServerPlayerEntity player, ItemStack item){
       NbtCompound itemNbt = item.getNbt();
@@ -84,7 +87,7 @@ public abstract class QuiverItem extends MagicItem{
             byte count = stack.getByte("Count");
             if(count <= 0 || stack.getString("id").equals("minecraft:air")) return false;
             if(EnchantmentHelper.getLevel(Enchantments.INFINITY, bow) > 0 && item.isOf(Items.ARROW)) return true;
-            count--;
+            if(Math.random() >= getEfficiencyMod(item)) count--;
             
             if(count == 0){
                arrows.remove(i);

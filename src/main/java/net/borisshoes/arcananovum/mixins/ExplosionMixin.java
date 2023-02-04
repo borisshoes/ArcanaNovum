@@ -17,7 +17,7 @@ public class ExplosionMixin {
    @Redirect(method="collectBlocksAndDamageEntities",at=@At(value="INVOKE",target="Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
    private boolean arcananovum_redirectDamage(Entity entity, DamageSource source, float amount){
       Explosion explosion = (Explosion) (Object) this;
-      if(explosion.getDamageSource().name.equals("explosion.player.ArcanaNovum.DetonationArrows")){
+      if(explosion.getDamageSource().name.contains("explosion.player.ArcanaNovum.DetonationArrows")){
          if(entity instanceof ServerPlayerEntity hitPlayer){
             float newDmg = amount / 3;
             Entity attacker = explosion.getDamageSource().getAttacker();

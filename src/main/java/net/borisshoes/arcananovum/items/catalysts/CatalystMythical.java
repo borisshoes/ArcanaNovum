@@ -2,7 +2,10 @@ package net.borisshoes.arcananovum.items.catalysts;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,9 +21,9 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class catalyst_mythical extends MagicItem implements UsableItem {
+public class CatalystMythical extends MagicItem implements UsableItem {
    
-   public catalyst_mythical(){
+   public CatalystMythical(){
       id = "catalyst_mythical";
       name = "Mythical Augment Catalyst";
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.CATALYSTS};
@@ -43,7 +46,7 @@ public class catalyst_mythical extends MagicItem implements UsableItem {
       tag.put("Enchantments",enchants);
       
       setBookLore(makeLore());
-//setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -52,15 +55,27 @@ public class catalyst_mythical extends MagicItem implements UsableItem {
    
    
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,64,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.NETHER_STAR,16,null);
+      GenericMagicIngredient h = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.CATALYST_LEGENDARY,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,b,a,b,a},
+            {b,g,h,g,b},
+            {a,h,m,h,a},
+            {b,g,h,g,b},
+            {a,b,a,b,a}};
+      return new MagicItemRecipe(ingredients);
+   
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\" Mythical Augmentation\\n         Catalyst\\n\\nRarity: Mundane\\n\\n!Temp. Crafting Recipe!\\n\\nThe Mythical Artifacts are examples of divine Arcana, the Runic Matrix should be able to replicate that divine magic to some degree. But how?\"}");
+      list.add("{\"text\":\" Mythical Augmentation\\n         Catalyst\\n\\nAha! I need to expose my best Catalyst to some divine Arcana.\\nMaybe there is a demi-god somewhere I can summon to bring out the Gods' power.\\nThe Wither is an interesting creature, perhaps there lies my answer.\"}");
       return list;
    }
    

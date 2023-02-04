@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.*;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
@@ -70,8 +71,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    public CindersCharm(){
       id = "cinders_charm";
       name = "Charm of Cinders";
-      maxEnergy = 100;
-      initEnergy = maxEnergy;
+      initEnergy = 100;
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 1;
@@ -115,7 +115,8 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          }
          return false;
       }
-      if(getEnergy(itemStack) < 5) {
+      int cinderConsumption = ArcanaAugments.getAugmentOnItem(itemStack,"firestarter") >= 1 ? 0 : 5;
+      if(getEnergy(itemStack) < cinderConsumption) {
          playerEntity.sendMessage(Text.literal("The Charm has no Cinders").formatted(Formatting.RED), true);
          return true;
       }
@@ -126,12 +127,12 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             TntBlock.primeTnt(world,blockPos);
             world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 11);
             
-            addEnergy(itemStack, -5);
+            addEnergy(itemStack, -cinderConsumption);
             String message = "Cinders: ";
-            for(int i=1; i<=5; i++){
+            for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
                message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
             }
-            playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+            playerEntity.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
    
             if(playerEntity instanceof ServerPlayerEntity player){
                PLAYER_DATA.get(player).addXP(50); // Add xp
@@ -144,12 +145,12 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             world.setBlockState(blockPos2, blockState2, 11);
             world.emitGameEvent(playerEntity, GameEvent.BLOCK_PLACE, blockPos);
    
-            addEnergy(itemStack, -5);
+            addEnergy(itemStack, -cinderConsumption);
             String message = "Cinders: ";
-            for(int i=1; i<=5; i++){
+            for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
                message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
             }
-            playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+            playerEntity.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
             
             if(playerEntity instanceof ServerPlayerEntity player){
                PLAYER_DATA.get(player).addXP(15); // Add xp
@@ -165,12 +166,12 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          world.setBlockState(blockPos, (BlockState)blockState.with(Properties.LIT, true), 11);
          world.emitGameEvent(playerEntity, GameEvent.BLOCK_CHANGE, blockPos);
    
-         addEnergy(itemStack, -5);
+         addEnergy(itemStack, -cinderConsumption);
          String message = "Cinders: ";
-         for(int i=1; i<=5; i++){
+         for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
             message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
          }
-         playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+         playerEntity.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
    
          if(playerEntity instanceof ServerPlayerEntity player){
             PLAYER_DATA.get(player).addXP(15); // Add xp
@@ -201,10 +202,10 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          SoundUtils.playSound(world,attackedEntity.getBlockPos(),SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
          addEnergy(item, -5);
          String message = "Cinders: ";
-         for(int i=1; i<=5; i++){
+         for(int i=1; i<=getMaxEnergy(item)/20; i++){
             message += getEnergy(item) >= i*20 ? "✦ " : "✧ ";
          }
-         playerEntity.sendMessage(Text.translatable(message.toString()).formatted(Formatting.RED), true);
+         playerEntity.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
       }
       return true;
    }
@@ -232,7 +233,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
                int newEnergy = getEnergy(item);
                if(oldEnergy/20 != newEnergy/20){
                   String message = "Cinders: ";
-                  for(int i=1; i<=5; i++){
+                  for(int i=1; i<=getMaxEnergy(item)/20; i++){
                      message += newEnergy >= i*20 ? "✦ " : "✧ ";
                   }
                   player.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
@@ -255,16 +256,17 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
       int oldEnergy = getEnergy(item);
-      if(oldEnergy < maxEnergy && world.getServer().getTicks() % 15 == 0){
-         addEnergy(item,3);
+      if(oldEnergy < getMaxEnergy(item) && world.getServer().getTicks() % 15 == 0){
+         int bonusEnergy = ArcanaAugments.getAugmentOnItem(item,"wildfire") == 5 ? 7 : 0;
+         addEnergy(item,3 + bonusEnergy);
          int newEnergy = getEnergy(item);
          
          if(oldEnergy/20 != newEnergy/20){
-            String message = "Cinders: ";
-            for(int i=1; i<=5; i++){
-               message += newEnergy >= i*20 ? "✦ " : "✧ ";
+            StringBuilder message = new StringBuilder("Cinders: ");
+            for(int i=1; i<=getMaxEnergy(item)/20; i++){
+               message.append(newEnergy >= i * 20 ? "✦ " : "✧ ");
             }
-            player.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
+            player.sendMessage(Text.literal(message.toString().toString()).formatted(Formatting.RED), true);
          }
       }
       if(world.getServer().getTicks() % 20 == 0){
@@ -287,7 +289,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       if(energy/20 != getEnergy(itemStack)/20){
          energy = getEnergy(itemStack);
          StringBuilder message = new StringBuilder("Cinders: ");
-         for(int i = 1; i <= 5; i++){
+         for(int i = 1; i <= getMaxEnergy(itemStack)/20; i++){
             message.append(energy >= i * 20 ? "✦ " : "✧ ");
          }
          playerEntity.sendMessage(Text.literal(message.toString()).formatted(Formatting.RED), true);
@@ -374,10 +376,10 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
       if(active){
-         player.sendMessage(Text.translatable("The Charm's Heat Intensifies").formatted(Formatting.RED,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("The Charm's Heat Intensifies").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_BLAZE_AMBIENT, .5f,1f);
       }else{
-         player.sendMessage(Text.translatable("The Charm's Heat Calms").formatted(Formatting.RED,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("The Charm's Heat Calms").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, .3f,.8f);
       }
       return false;
@@ -410,6 +412,12 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
       return false;
+   }
+   
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      int wildfireLevel = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"wildfire"));
+      return 100 + 20*wildfireLevel;
    }
    
    @Override

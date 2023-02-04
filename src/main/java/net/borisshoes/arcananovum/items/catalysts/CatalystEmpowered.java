@@ -2,6 +2,9 @@ package net.borisshoes.arcananovum.items.catalysts;
 
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;
@@ -13,9 +16,9 @@ import net.minecraft.nbt.NbtString;
 import java.util.ArrayList;
 import java.util.List;
 
-public class catalyst_empowered extends MagicItem {
+public class CatalystEmpowered extends MagicItem {
    
-   public catalyst_empowered(){
+   public CatalystEmpowered(){
       id = "catalyst_empowered";
       name = "Empowered Augment Catalyst";
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.CATALYSTS};
@@ -38,7 +41,7 @@ public class catalyst_empowered extends MagicItem {
       tag.put("Enchantments",enchants);
       
       setBookLore(makeLore());
-      //setRecipe(makeRecipe());
+      setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       item.setNbt(prefNBT);
@@ -47,15 +50,26 @@ public class catalyst_empowered extends MagicItem {
    
    
    
-   //TODO: Make Recipe
    private MagicItemRecipe makeRecipe(){
-      return null;
+      MagicItemIngredient a = MagicItemIngredient.EMPTY;
+      MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,16,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.CRYING_OBSIDIAN,16,null);
+      MagicItemIngredient g = new MagicItemIngredient(Items.EMERALD,32,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.NETHER_STAR,8,null);
+      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.CATALYST_MUNDANE,1);
+   
+      MagicItemIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,g,m,g,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new MagicItemRecipe(ingredients);
    }
    
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("{\"text\":\"  Empowered Augment\\n         Catalyst\\n\\nRarity: Mundane\\n\\nMy previous endeavor was successful, at least somewhat. The Matrix destabilized with more demanding augmentations. I believe I can press it further if I use some better crystals.\"}");
       return list;
    }
 }

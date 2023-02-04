@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
@@ -61,7 +62,9 @@ public class LeadershipCharm extends MagicItem implements TickingItem {
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack itemStack){
       //System.out.println("Ticking Charm of Leadership");
       // Give AoE resistance, regen, and strength, and repair gear.
-      double effectRange = 8.5;
+      int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(itemStack,"invigoration"));
+      
+      double effectRange = 8.5+invigor;
       Vec3d playerPos = player.getPos();
       List<ServerPlayerEntity> inRangePlayers = world.getPlayers(p -> p.squaredDistanceTo(playerPos) <= effectRange*effectRange);
       
@@ -70,9 +73,9 @@ public class LeadershipCharm extends MagicItem implements TickingItem {
       
       for(ServerPlayerEntity plyr: inRangePlayers){
          //System.out.println(world.isPlayerInRange(playerPos.getX(),playe));
-         StatusEffectInstance str = new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 5 + 5, 1, false, false, true);
-         StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 5 + 5, 1, false, false, true);
-         StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 20 * 5 + 5, 1, false, false, true);
+         StatusEffectInstance str = new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 5 + 5, 1+invigor, false, false, true);
+         StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 5 + 5, 1+invigor/2, false, false, true);
+         StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 20 * 5 + 5, 1+invigor, false, false, true);
          plyr.addStatusEffect(str);
          plyr.addStatusEffect(res);
          plyr.addStatusEffect(regen);
@@ -89,7 +92,7 @@ public class LeadershipCharm extends MagicItem implements TickingItem {
                int durability = nbt != null ? nbt.getInt("Damage") : 0;
                if(durability <= 0)
                   continue;
-               durability = MathHelper.clamp(durability - 15, 0, Integer.MAX_VALUE);
+               durability = MathHelper.clamp(durability - 15*(1+invigor), 0, Integer.MAX_VALUE);
                
                nbt.putInt("Damage", durability);
                item.setNbt(nbt);

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.core.EnergyItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -48,7 +49,6 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
       name = "Stasis Pearl";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
-      maxEnergy = 60; // 1 minute recharge time
       initEnergy = 60;
    
       ItemStack item = new ItemStack(Items.ENDER_PEARL);
@@ -81,7 +81,11 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
       prefNBT = tag;
       item.setNbt(prefNBT);
       prefItem = item;
+   }
    
+   @Override
+   public int getMaxEnergy(ItemStack item){ // 1 minute base recharge time
+      return 60 - 10*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"stasis_acceleration"));
    }
    
    @Override
@@ -103,7 +107,7 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
       
-      int charge = (getEnergy(stack)*100/maxEnergy);
+      int charge = (getEnergy(stack)*100/getMaxEnergy(stack));
       String charging = charge == 100 ? "Charged" : "Charging";
       loreList.set(6,NbtString.of("[{\"text\":\""+charging+" - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+charge+"%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
    
@@ -170,10 +174,11 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       String pearlID = magicNbt.getString("pearlID");
       boolean active = magicNbt.getBoolean("active");
-   
+      boolean canDelete = playerEntity.isSneaking() && Math.max(0, ArcanaAugments.getAugmentOnItem(item,"spatial_fold")) >= 1;
+      
       try{
          if(pearlID.isEmpty()){ // Throw new pearl
-            if(getEnergy(item) == maxEnergy){
+            if(getEnergy(item) == getMaxEnergy(item)){
                SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.ENTITY_ENDER_PEARL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F);
                playerEntity.getItemCooldownManager().set(Items.ENDER_PEARL, 0);
                if (!world.isClient) {
@@ -189,6 +194,7 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
                   pearlData.putString("id",this.id);
                   pearlData.putBoolean("alive",true);
                   pearlData.putBoolean("stasis",false);
+                  if(magicNbt.contains("augments")) pearlData.put("augments",magicNbt.getCompound("augments"));
                   pearlData.putInt("keepAlive",12000); // 10 minute lifespan for a stasis pearl
                   pearlData.putString("player", playerEntity.getUuidAsString());
                   MagicEntity magicPearl = new MagicEntity(newPearlID,pearlData);
@@ -200,12 +206,27 @@ public class StasisPearl extends EnergyItem implements TickingItem, UsableItem {
             }else{
                playerEntity.getItemCooldownManager().set(Items.ENDER_PEARL, 0);
                if(playerEntity instanceof ServerPlayerEntity player){
-                  playerEntity.sendMessage(Text.translatable("Pearl Recharging: "+(getEnergy(item)*100/maxEnergy)+"%").formatted(Formatting.BLUE),true);
+                  playerEntity.sendMessage(Text.literal("Pearl Recharging: "+(getEnergy(item)*100/getMaxEnergy(item))+"%").formatted(Formatting.BLUE),true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
                }
             }
+         }else if(canDelete){ // Delete current pearl
+            for(MagicEntity entity : MAGIC_ENTITY_LIST.get(world).getEntities()){
+               if(entity.getUuid().equals(pearlID) && world instanceof ServerWorld serverWorld){
+                  Entity pearlEntity = serverWorld.getEntity(UUID.fromString(pearlID));
+                  if(pearlEntity != null) pearlEntity.kill(); // Kill any flying pearl
+                  MAGIC_ENTITY_LIST.get(world).removeEntity(entity); // remove from list
+                  break;
+               }
+            }
+            // Reset data
+            magicNbt.putString("pearlID","");
+            magicNbt.putBoolean("active",false);
+            if(playerEntity instanceof ServerPlayerEntity player){
+               playerEntity.sendMessage(Text.literal("Pearl Cancelled").formatted(Formatting.BLUE),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT, 1, .5f);
+            }
          }else if(active){ // Un-stasis to pearl
-   
             for(MagicEntity entity : MAGIC_ENTITY_LIST.get(world).getEntities()){
                if(entity.getUuid().equals(pearlID) && world instanceof ServerWorld serverWorld){
                   NbtCompound pearlData = entity.getData();
