@@ -9,6 +9,8 @@ import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.TickingItem;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.block.*;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -182,7 +184,7 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
       
       List<ItemStack> drops = new ArrayList<>();
       ItemStack veinPick = new ItemStack(Items.NETHERITE_PICKAXE);
-      NbtCompound tag = item.getOrCreateNbt();
+      NbtCompound tag = veinPick.getOrCreateNbt();
       NbtList enchants = new NbtList();
       NbtCompound fortune = new NbtCompound();
       fortune.putString("id","fortune");

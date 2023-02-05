@@ -42,7 +42,7 @@ public class SoulstoneIngredient extends MagicItemIngredient{
    }
    
    @Override
-   public ItemStack getRemainder(ItemStack stack){
+   public ItemStack getRemainder(ItemStack stack, int resourceLvl){
       if(!validStack(stack)){
          return ItemStack.EMPTY;
       }else{

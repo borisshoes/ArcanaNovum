@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.core.BlockItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
@@ -106,6 +107,7 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
    
    private void placeInfuser(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
       try{
+         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          MagicBlock infuserBlock = new MagicBlock(pos);
          NbtCompound infuserData = new NbtCompound();
          infuserData.putString("UUID",getUUID(item));
@@ -117,6 +119,8 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
          infuserData.put("soulstone",new NbtCompound());
          infuserData.putInt("points",0);
          infuserData.putInt("SpentPoints",0);
+   
+         if(magicTag.contains("augments")) infuserData.put("augments",magicTag.getCompound("augments"));
    
          NbtCompound stats = new NbtCompound();
          stats.putShort("MinSpawnDelay", (short)200);
@@ -145,20 +149,27 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
+      NbtCompound augmentsTag = blockData.contains("augments") ? blockData.getCompound("augments").copy() : null;
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
-      drop.getNbt().getCompound("arcananovum").putString("UUID",uuid);
+      NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
+      if(augmentsTag != null) {
+         magicTag.put("augments",augmentsTag);
+         redoAugmentLore(drop);
+      }
+      magicTag.putString("UUID",uuid);
       drops.add(drop);
-      
+   
+      int ratio = (int) Math.pow(2,Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"augmented_apparatus")));
       int points = blockData.getInt("points");
       if(points > 0){
-         while(points > 64){
-            ItemStack dropItem = new ItemStack(pointsItem);
+         while(points/ratio > 64){
+            ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
             dropItem.setCount(64);
             drops.add(dropItem.copy());
-            points -= 64;
+            points -= 64*ratio;
          }
-         ItemStack dropItem = new ItemStack(pointsItem);
-         dropItem.setCount(points);
+         ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+         dropItem.setCount(points/ratio);
          drops.add(dropItem.copy());
       }
       

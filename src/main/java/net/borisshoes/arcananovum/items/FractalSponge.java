@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
@@ -9,6 +10,7 @@ import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.*;
@@ -37,6 +39,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -149,10 +152,11 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
+      NbtCompound augmentsTag = blockData.contains("augments") ? blockData.getCompound("augments").copy() : null;
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
       NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
-      if(blockData.contains("augments")) {
-         magicTag.put("augments",magicTag.getCompound("augments"));
+      if(augmentsTag != null) {
+         magicTag.put("augments",augmentsTag);
          redoAugmentLore(drop);
       }
       magicTag.putString("UUID",uuid);
@@ -189,25 +193,57 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
          spongeData.putString("id",this.id);
          spongeData.putString("crafter",getCrafter(item));
          spongeData.putBoolean("synthetic",isSynthetic(item));
-         if(magicTag.contains("augments")) spongeData.put("augments",spongeData.getCompound("augments"));
+         if(magicTag.contains("augments")){
+            spongeData.put("augments",magicTag.getCompound("augments"));
+         }
          spongeBlock.setData(spongeData);
-         int absorbed = absorb(item, world, pos);
+         
+         int absorbed = absorbHelper(player,world,item,pos,false);
+   
          Block block = absorbed > 0 ? Blocks.WET_SPONGE : Blocks.SPONGE;
          world.setBlockState(pos, block.getDefaultState(), Block.NOTIFY_ALL);
          MAGIC_BLOCK_LIST.get(world).addBlock(spongeBlock);
+   
+         boolean cantor = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"cantor")) >= 1;
+         if(cantor && absorbed > 0){
+            Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(50, new TimerTask() {
+               @Override
+               public void run(){
+                  absorbHelper(player,world,item,pos,true);
+               }
+            }));
+            Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(100, new TimerTask() {
+               @Override
+               public void run(){
+                  absorbHelper(player,world,item,pos,true);
+               }
+            }));
+            Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(150, new TimerTask() {
+               @Override
+               public void run(){
+                  absorbHelper(player,world,item,pos,true);
+               }
+            }));
+         }
          
          SoundUtils.playSound(player.getWorld(),pos,SoundEvents.BLOCK_WET_GRASS_PLACE, SoundCategory.BLOCKS,1,.6f);
          item.decrement(item.getCount());
          item.setNbt(new NbtCompound());
          
-         if(absorbed > 0){
-            SoundUtils.playSound(player.getWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
-            PLAYER_DATA.get(player).addXP(absorbed); // Add xp
-            ArcanaAchievements.progress(player,"ocean_cleanup",absorbed);
-         }
       }catch(Exception e){
          e.printStackTrace();
       }
+   }
+   
+   private int absorbHelper(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos, boolean doCheck){
+      if(doCheck && !(world.getBlockState(pos).isOf(Blocks.SPONGE) || world.getBlockState(pos).isOf(Blocks.WET_SPONGE))) return 0;
+      int absorbed = absorb(item, world, pos);
+      if(absorbed > 0){
+         SoundUtils.playSound(player.getWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
+         PLAYER_DATA.get(player).addXP(absorbed); // Add xp
+         ArcanaAchievements.progress(player,"ocean_cleanup",absorbed);
+      }
+      return absorbed;
    }
    
    private MagicItemRecipe makeRecipe(){

@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -26,6 +27,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -135,6 +137,7 @@ public class TomeGui extends SimpleGui {
          }else if(index == 25){
             ItemStack item = this.getSlot(index).getItemStack();
             if(MagicItemUtils.isMagic(item)){
+               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
                MagicItem magicItem = MagicItemUtils.identifyItem(item);
                MagicItemRecipe recipe = magicItem.getRecipe();
                Inventory inv = getSlotRedirect(1).inventory;
@@ -143,6 +146,28 @@ public class TomeGui extends SimpleGui {
                if(newMagicItem == null){
                   return false;
                }
+               
+               if(!(magicItem instanceof ArcaneTome)){
+                  int skillLvl = profile.getAugmentLevel("skill");
+                  double skillChance = new double[]{0, .25, .5, .75, 1, 2}[skillLvl];
+                  List<ArcanaAugment> allAugs = ArcanaAugments.getAugmentsForItem(magicItem);
+                  allAugs.removeIf(aug -> profile.getAugmentLevel(aug.id) <= 0);
+                  if(Math.random() < skillChance && allAugs.size() > 0){
+                     int ind = (int) (Math.random() * allAugs.size());
+                     ArcanaAugment aug = allAugs.get(ind);
+                     ArcanaAugments.applyAugment(newMagicItem, aug.id, profile.getAugmentLevel(aug.id));
+                     if(skillLvl == 5 && allAugs.size() > 1){
+                        int newInd = (int) (Math.random() * allAugs.size());
+                        while(newInd == ind){
+                           newInd = (int) (Math.random() * allAugs.size());
+                        }
+                        ArcanaAugment aug2 = allAugs.get(newInd);
+                        ArcanaAugments.applyAugment(newMagicItem, aug2.id, profile.getAugmentLevel(aug2.id));
+                     }
+                  }
+                  magicItem.redoAugmentLore(newMagicItem);
+               }
+               
                
                if(!PLAYER_DATA.get(player).addCrafted(magicItem.getId()) && !(magicItem instanceof ArcaneTome)){
                   PLAYER_DATA.get(player).addXP(MagicRarity.getCraftXp(magicItem.getRarity()));
@@ -154,11 +179,13 @@ public class TomeGui extends SimpleGui {
                }
                if(magicItem.getRarity() == MagicRarity.LEGENDARY) ArcanaAchievements.grant(player,"artificial_divinity");
    
+               int resourceLvl = profile.getAugmentLevel("resourceful");
+               
                ItemStack[][] ingredients = new ItemStack[5][5];
                for(int i = 0; i < inv.size(); i++){
                   ingredients[i/5][i%5] = inv.getStack(i);
                }
-               ItemStack[][] remainders = recipe.getRemainders(ingredients);
+               ItemStack[][] remainders = recipe.getRemainders(ingredients,resourceLvl);
                for(int i = 0; i < inv.size(); i++){
                   inv.setStack(i,remainders[i/5][i%5]);
                }
@@ -207,6 +234,12 @@ public class TomeGui extends SimpleGui {
             }
          }else if(index == 43){
             tome.openGui(player, ArcaneTome.TomeMode.CRAFTING,settings,magicItem.getId());
+         }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
+            ItemStack ingredStack = this.getSlot(index).getItemStack();
+            MagicItem magicItem1 = MagicItemUtils.identifyItem(ingredStack);
+            if(magicItem1 != null){
+               tome.openRecipeGui(player,settings, magicItem1.getId());
+            }
          }
       }else if(mode == ArcaneTome.TomeMode.ITEM){
          ItemStack item = this.getSlot(4).getItemStack();
@@ -258,6 +291,7 @@ public class TomeGui extends SimpleGui {
                int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
                if(cost <= unallocated){
                   profile.setAugmentLevel(augment.id,augmentLvl+1);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(augmentLvl+1)/(tiers.length-1))));
                   tome.openItemGui(player,settings, magicItem.getId());
                }else{
                   player.sendMessage(Text.literal("Not Enough Skill Points").formatted(Formatting.RED),false);
@@ -325,6 +359,7 @@ public class TomeGui extends SimpleGui {
                   }else{ // Item level = 0 | (Item level != max & < player level): Augment Catalyst
                      if(attemptAugment(item, augment, curItemLevel + 1)){
                         //tome.openGui(player, ArcaneTome.TomeMode.TINKER, settings);
+                        SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(curItemLevel+1)/(tiers.length-1))));
                         inv.setStack(0,item);
                      }
                   }

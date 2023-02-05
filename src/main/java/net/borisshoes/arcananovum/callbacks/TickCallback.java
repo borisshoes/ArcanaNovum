@@ -158,7 +158,8 @@ public class TickCallback {
    
    private static void concCheck(MinecraftServer server, ServerPlayerEntity player, IArcanaProfileComponent arcaneProfile){
       // Check to make sure everyone is under concentration limit
-      int maxConc = LevelUtils.concFromXp(arcaneProfile.getXP());
+      int resolve = arcaneProfile.getAugmentLevel("resolve");
+      int maxConc = LevelUtils.concFromXp(arcaneProfile.getXP(),resolve);
       int curConc = MagicItemUtils.getUsedConcentration(player);
       if(MagicItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,"arcane_addict");
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){

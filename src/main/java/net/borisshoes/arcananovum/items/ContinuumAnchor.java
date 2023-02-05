@@ -179,10 +179,11 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
    public List<ItemStack> dropFromBreak(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, NbtCompound blockData){
       List<ItemStack> drops = new ArrayList<>();
       String uuid = blockData.getString("UUID");
+      NbtCompound augmentsTag = blockData.contains("augments") ? blockData.getCompound("augments").copy() : null;
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
       NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
-      if(blockData.contains("augments")) {
-         magicTag.put("augments",magicTag.getCompound("augments"));
+      if(augmentsTag != null) {
+         magicTag.put("augments",augmentsTag);
          redoAugmentLore(drop);
       }
       magicTag.putString("UUID",uuid);

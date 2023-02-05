@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.gui.spawnerinfuser;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.items.ShulkerCore;
@@ -47,6 +48,8 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
          ItemStack soulstoneSlot = inv.getStack(0);
          ItemStack extraPoints = ItemStack.EMPTY;
          int points = blockData.getInt("points");
+         int bonusCap = new int[]{0,64,128,192,256,352}[Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"soul_reservoir"))];
+         int ratio = (int) Math.pow(2,Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"augmented_apparatus")));
          
          if(!soulstoneSlot.isEmpty()){
             blockData.put("soulstone", soulstoneSlot.writeNbt(new NbtCompound()));
@@ -57,13 +60,13 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
    
             ItemStack pointsSlot = inv.getStack(1);
             if(!pointsSlot.isEmpty()){
-               int maxPoints = SpawnerInfuser.pointsFromTier[Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot))];
-               int toAdd = pointsSlot.getCount();
+               int maxPoints = SpawnerInfuser.pointsFromTier[Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot))] + bonusCap;
+               int toAdd = pointsSlot.getCount() * ratio;
                
                if(maxPoints-points < toAdd){
                   blockData.putInt("points",maxPoints);
                   extraPoints = pointsSlot.copy();
-                  extraPoints.setCount(toAdd-(maxPoints-points));
+                  extraPoints.setCount((toAdd-(maxPoints-points))/ratio);
                }else{
                   blockData.putInt("points",points+toAdd);
                }
@@ -79,18 +82,18 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
             prevStone = true;
          }else{
             blockData.put("soulstone", new NbtCompound());
-            points += inv.getStack(1).getCount();
+            points += inv.getStack(1).getCount() * ratio;
    
             List<ItemStack> drops = new ArrayList<>();
             if(points > 0){
-               while(points > 64){
+               while(points/ratio > 64){
                   ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
                   dropItem.setCount(64);
                   drops.add(dropItem.copy());
-                  points -= 64;
+                  points -= 64*ratio;
                }
                ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
-               dropItem.setCount(points);
+               dropItem.setCount(points/ratio);
                drops.add(dropItem.copy());
             }
    

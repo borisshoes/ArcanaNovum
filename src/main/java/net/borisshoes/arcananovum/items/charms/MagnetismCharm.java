@@ -10,9 +10,11 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -30,12 +32,33 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 
 public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem {
+   
+   private static final ArrayList<Item> IRON_ITEMS = new ArrayList<>(Arrays.asList(
+         Items.IRON_INGOT,
+         Items.IRON_BLOCK,
+         Items.IRON_BARS,
+         Items.IRON_AXE,
+         Items.IRON_BOOTS,
+         Items.IRON_CHESTPLATE,
+         Items.IRON_DOOR,
+         Items.IRON_HELMET,
+         Items.IRON_HOE,
+         Items.IRON_HORSE_ARMOR,
+         Items.IRON_LEGGINGS,
+         Items.IRON_NUGGET,
+         Items.IRON_PICKAXE,
+         Items.IRON_SHOVEL,
+         Items.IRON_SWORD,
+         Items.IRON_TRAPDOOR
+   ));
    
    public MagnetismCharm(){
       id = "magnetism_charm";
@@ -135,6 +158,42 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
          PLAYER_DATA.get(player).addXP(5); // Add xp
       }
       if(items.size() >= 25) ArcanaAchievements.grant(player,"magnets");
+      
+      if(ArcanaAugments.getAugmentOnItem(charm,"neodymium") >= 1){
+         List<Entity> entities = world.getOtherEntities(player, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange) && entity instanceof LivingEntity);
+         for(Entity entity : entities){
+            LivingEntity e = (LivingEntity) entity;
+            if(e instanceof ServerPlayerEntity hitPlayer){
+               hitPlayer.getItemCooldownManager().set(Items.SHIELD, 100);
+               hitPlayer.clearActiveItem();
+               hitPlayer.world.sendEntityStatus(hitPlayer, (byte)30);
+            }else{
+               HashMap<EquipmentSlot,ItemStack> equipment = new HashMap<>();
+               ItemStack head = e.getEquippedStack(EquipmentSlot.HEAD);
+               ItemStack chest = e.getEquippedStack(EquipmentSlot.CHEST);
+               ItemStack legs = e.getEquippedStack(EquipmentSlot.LEGS);
+               ItemStack feet = e.getEquippedStack(EquipmentSlot.FEET);
+               ItemStack hand1 = e.getEquippedStack(EquipmentSlot.MAINHAND);
+               ItemStack hand2 = e.getEquippedStack(EquipmentSlot.OFFHAND);
+               equipment.put(EquipmentSlot.HEAD,head);
+               equipment.put(EquipmentSlot.CHEST,chest);
+               equipment.put(EquipmentSlot.LEGS,legs);
+               equipment.put(EquipmentSlot.FEET,feet);
+               equipment.put(EquipmentSlot.MAINHAND,hand1);
+               equipment.put(EquipmentSlot.OFFHAND,hand2);
+   
+               
+               
+               for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
+                  ItemStack item = entry.getValue();
+                  if(IRON_ITEMS.contains(item.getItem())){
+                     e.dropStack(item);
+                     e.equipStack(entry.getKey(),ItemStack.EMPTY);
+                  }
+               }
+            }
+         }
+      }
    }
    
    private boolean itemInRange(Vec3d itemPos, Vec3d start, Vec3d end, int activeRange){

@@ -29,4 +29,8 @@ public abstract class TickTimerCallback {
    public void setTimer(int timer){
       this.timer = timer;
    }
+   
+   public ServerPlayerEntity getPlayer(){
+      return player;
+   }
 }

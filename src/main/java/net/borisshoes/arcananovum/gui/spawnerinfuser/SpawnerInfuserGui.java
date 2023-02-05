@@ -4,6 +4,7 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.gui.SoulstoneSlot;
 import net.borisshoes.arcananovum.items.Soulstone;
@@ -46,7 +47,7 @@ public class SpawnerInfuserGui extends SimpleGui {
    private final int[] spawnRangeLvls = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
    private final int[] spawnRangePoints = {8,4,2,0,1,2,4,8,12,16,24,32,48,64,96};
    
-   private final int[] playerRangeLvls = {2,5,8,10,12,14,16,18,20,22,25,30,35,40,45,50,60,75,90,100};
+   private final int[] playerRangeLvls;
    private final int[] playerRangePoints = {16,8,6,4,2,1,0,1,2,4,8,16,24,32,48,64,96,128,192,256};
    
    private final int[] spawnCountLvls = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
@@ -60,6 +61,13 @@ public class SpawnerInfuserGui extends SimpleGui {
       super(ScreenHandlerType.GENERIC_9X5, player, false);
       this.block = block;
       this.world = world;
+      
+      boolean emulator = ArcanaAugments.getAugmentFromCompound(block.getData(),"spirit_emulator") >= 1;
+      if(emulator){
+         this.playerRangeLvls = new int[]{2, 5, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 75, 90, 9999};
+      }else{
+         this.playerRangeLvls = new int[]{2, 5, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 75, 90, 100};
+      }
    }
    
    @Override
@@ -227,9 +235,10 @@ public class SpawnerInfuserGui extends SimpleGui {
       
       if(usable){
          setSlotRedirect(40, new SpawnerInfuserPointsSlot(inv,1,0,0)); // Points item slot
-         
+   
+         int bonusCap = new int[]{0,64,128,192,256,352}[Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"soul_reservoir"))];
          int soulstoneTier = Soulstone.soulsToTier(Soulstone.getSouls(stone));
-         int maxPoints = SpawnerInfuser.pointsFromTier[soulstoneTier];
+         int maxPoints = SpawnerInfuser.pointsFromTier[soulstoneTier] + bonusCap;
          int pips = (int)Math.ceil((double)points*3.0/(double)maxPoints);
    
          for(int i = 0; i < 3; i++){

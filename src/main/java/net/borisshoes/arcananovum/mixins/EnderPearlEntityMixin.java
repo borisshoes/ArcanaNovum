@@ -41,7 +41,7 @@ public class EnderPearlEntityMixin {
                if(player.getPos().distanceTo(pearlEntity.getPos()) >= 1000){
                   ArcanaAchievements.grant(player, "instant_transmission");
                }
-               int reconstructLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicData,"reconstructive_teleport"));
+               int reconstructLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicData,"stasis_reconstruction"));
                if(reconstructLvl > 0){
                   StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 100, reconstructLvl, false, true, true);
                   StatusEffectInstance resist = new StatusEffectInstance(StatusEffects.RESISTANCE, 60, reconstructLvl-1, false, true, true);

@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.items.*;
+import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.utils.GenericTimer;
@@ -152,7 +153,7 @@ public abstract class LivingEntityMixin {
    
    // Mixin for damage mitigation for Wings of Zephyr, Charm of Felidae
    @Inject(method = "modifyAppliedDamage", at = @At("RETURN"), cancellable = true)
-   private void arcananovum_kineticDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
+   private void arcananovum_modifyDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
       float reduced = cir.getReturnValueF();
       float newReturn = reduced;
       LivingEntity entity = (LivingEntity) (Object) this;
@@ -166,7 +167,9 @@ public abstract class LivingEntityMixin {
             double dmgReduction = Math.min(energy / 100.0, maxDmgReduction);
             if(entity instanceof ServerPlayerEntity player){
                if(dmgReduction == maxDmgReduction || dmgReduction > 12){
-                  player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY, Formatting.ITALIC), true);
+                  if(source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL)){
+                     player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY, Formatting.ITALIC), true);
+                  }
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, 1.3f);
                   Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
                      @Override
@@ -214,8 +217,9 @@ public abstract class LivingEntityMixin {
             boolean isMagic = MagicItemUtils.isMagic(item);
             if(!isMagic)
                continue; // Item not magic, skip
+            MagicItem magicItem = MagicItemUtils.identifyItem(item);
          
-            if(MagicItemUtils.identifyItem(item) instanceof FelidaeCharm && source.equals(DamageSource.FALL)){ // Felidae Charm
+            if(magicItem instanceof FelidaeCharm && source.equals(DamageSource.FALL)){ // Felidae Charm
                int graceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"feline_grace"));
                float dmgMod = (float) (0.5 - 0.125*graceLvl);
                SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
@@ -225,7 +229,7 @@ public abstract class LivingEntityMixin {
                if(oldReturn > player.getHealth() && newReturn < player.getHealth()) ArcanaAchievements.grant(player,"land_on_feet");
                break; // Make it so multiple charms don't stack
                
-            }else if(MagicItemUtils.identifyItem(item) instanceof PearlOfRecall pearl){ // Cancel all Pearls of Recall
+            }else if(magicItem instanceof PearlOfRecall pearl){ // Cancel all Pearls of Recall
                NbtCompound itemNbt = item.getNbt();
                NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
                int defenseLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"phase_defense"));
@@ -238,6 +242,22 @@ public abstract class LivingEntityMixin {
                   }else{
                      newReturn = 0;
                   }
+               }
+            }else if(magicItem instanceof CindersCharm cinders){ // Cinders Charm Cremation
+               boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"cremation")) >= 1;
+               if(cremation){
+                  float oldReturn = newReturn;
+                  int energy = cinders.getEnergy(item);
+                  float dmgReduction = (float) Math.min(energy / 4.0, oldReturn);
+                  newReturn = oldReturn - dmgReduction;
+                  cinders.addEnergy(item, (int) -dmgReduction * 4);
+   
+                  energy = cinders.getEnergy(item);
+                  StringBuilder message = new StringBuilder("Cinders: ");
+                  for(int j = 1; j <= cinders.getMaxEnergy(item)/20; j++){
+                     message.append(energy >= j * 20 ? "✦ " : "✧ ");
+                  }
+                  player.sendMessage(Text.literal(message.toString()).formatted(Formatting.AQUA), true);
                }
             }
          }

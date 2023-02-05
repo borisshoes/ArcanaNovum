@@ -6,8 +6,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.NotNull;
 
-public class ArcanaAugment {
+public class ArcanaAugment implements Comparable<ArcanaAugment>{
    public final String name;
    public final String id;
    private final ItemStack displayItem;
@@ -56,5 +57,10 @@ public class ArcanaAugment {
    
    public boolean matches(ArcanaAugment other){
       return other.id.matches(this.id);
+   }
+   
+   @Override
+   public int compareTo(@NotNull ArcanaAugment other){
+      return other.id.compareTo(this.id);
    }
 }

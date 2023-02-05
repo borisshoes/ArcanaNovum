@@ -13,10 +13,19 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.EntityDamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.EnchantedBookItem;
@@ -25,13 +34,21 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
@@ -79,18 +96,18 @@ public class StormArrows extends MagicItem implements RunicArrow {
       int stableLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"storm_stabilization"));
       int chainLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"chain_lightning"));
       int shockLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"aftershock"));
-      strike(arrow,entityHitResult.getPos(),stableLvl,chainLvl,shockLvl);
+      strike(arrow,entityHitResult.getPos(),stableLvl,shockLvl);
+      if(chainLvl > 0) chainLightning(arrow,entityHitResult.getEntity(),chainLvl);
    }
    
    @Override
    public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
       int stableLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"storm_stabilization"));
-      int chainLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"chain_lightning"));
       int shockLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"aftershock"));
-      strike(arrow,blockHitResult.getPos(),stableLvl,chainLvl,shockLvl);
+      strike(arrow,blockHitResult.getPos(),stableLvl,shockLvl);
    }
    
-   private void strike(PersistentProjectileEntity arrow, Vec3d pos, int stableLevel, int chainLvl, int shockLvl){
+   private void strike(PersistentProjectileEntity arrow, Vec3d pos, int stableLevel, int shockLvl){
       World world = arrow.getEntityWorld();
       if(world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel]){
          LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getEntityWorld());
@@ -109,6 +126,71 @@ public class StormArrows extends MagicItem implements RunicArrow {
          if(world instanceof ServerWorld serverWorld && !world.isRaining() && !world.isThundering()){
             serverWorld.setWeather(0, 1200, true, false);
          }
+   
+         if(shockLvl > 0 && world instanceof ServerWorld serverWorld){
+            aftershockPulse(arrow,serverWorld,pos,shockLvl,0);
+            SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.2f,1f);
+         }
+      }
+   }
+   
+   private void chainLightning(PersistentProjectileEntity arrow, Entity hitEntity, int lvl){
+      World world = arrow.getEntityWorld();
+      Vec3d pos = hitEntity.getPos();
+      double range = 5;
+      
+      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
+      List<Entity> entities = world.getOtherEntities(arrow.getOwner(),rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < range*range && !(e instanceof PersistentProjectileEntity));
+      
+      List<LivingEntity> hits = new ArrayList<>();
+      if(hitEntity instanceof LivingEntity le) hits.add(le);
+      for(Entity entity : entities){
+         if(entity instanceof LivingEntity e && !entity.getUuidAsString().equals(hitEntity.getUuidAsString())){
+            if(hits.size() < lvl+1){
+               if(hits.size() > 0){
+                  LivingEntity lastHit = hits.get(hits.size() - 1);
+                  double dist = lastHit.getPos().distanceTo(e.getPos());
+                  
+                  if(world instanceof ServerWorld serverWorld)
+                     ParticleEffectUtils.line(serverWorld,null,lastHit.getPos().add(0,lastHit.getHeight()/2,0),e.getPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
+               }
+               
+               DamageSource source = new EntityDamageSource("lightningBolt",arrow.getOwner());
+               e.damage(source,6);
+               hits.add(e);
+            }
+         }
+      }
+      SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
+   }
+   
+   private void aftershockPulse(PersistentProjectileEntity arrow, ServerWorld world, Vec3d pos, int level, int calls){
+      double range = level >= 4 ? 4 : 2.5;
+      float dmg = level >= 4 ? 4 : 2;
+      int duration = 30 + 20*level;
+      
+      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
+      List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.25*range*range && !(e instanceof PersistentProjectileEntity));
+      for(Entity entity : entities){
+         if(entity instanceof LivingEntity e){
+            DamageSource source = new EntityDamageSource("lightningBolt",arrow.getOwner());
+            e.damage(source,dmg);
+         }
+      }
+      
+      world.spawnParticles(ParticleTypes.WAX_OFF,pos.x,pos.y,pos.z,30,range,1,range,.1);
+      
+      if(calls % 2 == 0){
+         SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.PLAYERS,.07f,2f);
+      }
+      
+      if(calls < duration/3){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(3, new TimerTask() {
+            @Override
+            public void run(){
+               aftershockPulse(arrow, world, pos, level,calls + 1);
+            }
+         }));
       }
    }
    

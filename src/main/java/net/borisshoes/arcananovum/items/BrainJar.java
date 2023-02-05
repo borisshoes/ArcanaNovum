@@ -137,6 +137,7 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       if(world.getServer().getTicks() % 1200 == 0 && getEnergy(item) < getMaxEnergy(item)){
          double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(item,"knowledge_bank"));
          addEnergy(item, (int) (interestRate*getEnergy(item)));
+         editStatusLore(item);
       }
    }
    

@@ -1,6 +1,9 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.core.*;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
@@ -17,6 +20,7 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.devPrint;
 import static net.borisshoes.arcananovum.Arcananovum.log;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class MagicItemUtils {
    
@@ -250,7 +254,7 @@ public class MagicItemUtils {
          
       
          MagicItem magicItem = identifyItem(item);
-         MagicInvItem invItem = new MagicInvItem(magicItem,item.getCount(),enderChest,shulker);
+         MagicInvItem invItem = new MagicInvItem(magicItem,item.getCount(),enderChest,shulker,ArcanaAugments.getAugmentsOnItem(item));
          int contains = MagicInvItem.invContains(magicInv,invItem);
          if(contains >= 0){
             magicInv.get(contains).count += invItem.count;
@@ -263,15 +267,32 @@ public class MagicItemUtils {
    }
    
    public static int getUsedConcentration(ServerPlayerEntity player){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       int concSum = 0;
+      int focus = profile.getAugmentLevel("focus");
+      int adaptability = profile.getAugmentLevel("adaptability");
       List<MagicInvItem> magicInv = getMagicInventory(player);
       for(MagicInvItem magicInvItem : magicInv){
          MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
          double containerMod = 1;
-         if(magicInvItem.eChest) containerMod *= 0.5;
-         if(magicInvItem.shulker) containerMod *= 0.5;
+         if(magicInvItem.eChest && magicInvItem.shulker){
+            containerMod *= focus >= 1 ? 0 : 0.25;
+         }else if(magicInvItem.eChest){
+            containerMod *= focus >= 2 ? 0 : 0.5;
+         }else if(magicInvItem.shulker){
+            containerMod *= focus >= 3 ? 0 : 0.5;
+         }
          concSum += Math.ceil(magicInvItem.count/(double)prefCount) * Math.round(containerMod*MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod());
+         
+         int augmentConc = 0;
+         for(Map.Entry<ArcanaAugment, Integer> entry : magicInvItem.getAugments().entrySet()){
+            ArcanaAugment aug = entry.getKey();
+            int itemLvl = entry.getValue();
+            int profileLvl = profile.getAugmentLevel(aug.id);
+            augmentConc += Math.max(0,itemLvl-profileLvl);
+         }
+         concSum += Math.max(0,augmentConc-adaptability);
       }
       
       return concSum;
@@ -280,6 +301,9 @@ public class MagicItemUtils {
    
    public static List<String> getConcBreakdown(ServerPlayerEntity player){
       ArrayList<String> list = new ArrayList<>();
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      int focus = profile.getAugmentLevel("focus");
+      int adaptability = profile.getAugmentLevel("adaptability");
       
       List<MagicInvItem> magicInv = getMagicInventory(player);
       Comparator<MagicInvItem> comparator = (MagicInvItem i1, MagicInvItem i2) -> {
@@ -297,10 +321,25 @@ public class MagicItemUtils {
          MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
          double containerMod = 1;
-         if(magicInvItem.eChest) containerMod *= 0.5;
-         if(magicInvItem.shulker) containerMod *= 0.5;
+         if(magicInvItem.eChest && magicInvItem.shulker){
+            containerMod *= focus >= 1 ? 0 : 0.25;
+         }else if(magicInvItem.eChest){
+            containerMod *= focus >= 2 ? 0 : 0.5;
+         }else if(magicInvItem.shulker){
+            containerMod *= focus >= 3 ? 0 : 0.5;
+         }
          int multiplier = (int)Math.ceil(magicInvItem.count/(double)prefCount);
-         int itemConc = multiplier * (int)Math.round(containerMod*MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod());
+         int augmentConc = 0;
+         
+         for(Map.Entry<ArcanaAugment, Integer> entry : magicInvItem.getAugments().entrySet()){
+            ArcanaAugment aug = entry.getKey();
+            int itemLvl = entry.getValue();
+            int profileLvl = profile.getAugmentLevel(aug.id);
+            augmentConc += Math.max(0,itemLvl-profileLvl);
+         }
+   
+         int itemConc = multiplier * (int)Math.round(containerMod*MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod()) + Math.max(0,augmentConc-adaptability);;
+         
          String multStr = multiplier > 1 ? " x"+multiplier : "";
          String contStr = magicInvItem.eChest && magicInvItem.shulker ? " [Ender Chest + Shulker Box]" : magicInvItem.eChest ? " [Ender Chest]" : magicInvItem.shulker ? " [Shulker Box]" : "";
          //String line = magicItem.getName()+multStr+" ("+itemConc+")"+contStr;
@@ -346,14 +385,21 @@ public class MagicItemUtils {
       public final MagicItem item;
       public final String hash;
       private final ArrayList<String> uuids;
+      private final TreeMap<ArcanaAugment,Integer> augments;
    
-      public MagicInvItem(MagicItem item, int count, boolean eChest, boolean shulker){
+      public MagicInvItem(MagicItem item, int count, boolean eChest, boolean shulker, TreeMap<ArcanaAugment,Integer> augments){
          this.eChest = eChest;
          this.shulker = shulker;
          this.count = count;
          this.item = item;
-         this.hash = item.getId() + eChest + shulker;
          this.uuids = new ArrayList<>();
+         this.augments = augments;
+   
+         StringBuilder augHash = new StringBuilder();
+         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+            augHash.append(entry.getKey().id).append(entry.getValue());
+         }
+         this.hash = item.getId() + eChest + shulker + augHash;
       }
    
       public static int invContains(List<MagicInvItem> inv, MagicInvItem invItem){
@@ -376,6 +422,10 @@ public class MagicItemUtils {
    
       public int getCount(){
          return count;
+      }
+      
+      public TreeMap<ArcanaAugment,Integer> getAugments(){
+         return augments;
       }
    }
 }

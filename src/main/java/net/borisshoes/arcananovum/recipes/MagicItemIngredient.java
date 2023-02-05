@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes;
 
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -54,12 +55,18 @@ public class MagicItemIngredient {
       }
    }
    
-   public ItemStack getRemainder(ItemStack stack){
-      if(stack.getCount() <= count){
+   public ItemStack getRemainder(ItemStack stack, int resourceLvl){
+      int saved = 0;
+      for(int i = 0; i < count; i++){
+         if(Math.random() < 0.05*resourceLvl) saved++;
+      }
+      int newCount = MagicItemUtils.isMagic(stack) ? count : count - saved;
+      
+      if(stack.getCount() <= newCount){
          return ItemStack.EMPTY;
       }else{
          ItemStack stackCopy = stack.copy();
-         stackCopy.decrement(count);
+         stackCopy.decrement(newCount);
          return stackCopy;
       }
    }

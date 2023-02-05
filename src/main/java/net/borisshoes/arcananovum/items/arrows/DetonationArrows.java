@@ -80,11 +80,14 @@ public class DetonationArrows extends MagicItem implements RunicArrow {
    
    private void explode(PersistentProjectileEntity arrow, Vec3d pos, int blastLvl, int personLvl){
       double power = MathHelper.clamp(2*arrow.getVelocity().length(),1.5,8);
-      DamageSource source = DamageSource.GENERIC;
+      DamageSource source1 = DamageSource.GENERIC;
+      DamageSource source2 = DamageSource.GENERIC;
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
-         source = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
+         source1 = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows.Terrain"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
+         source2 = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows.Damage"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
       }
-      arrow.getEntityWorld().createExplosion(null, source, null,pos.x,pos.y,pos.z,(float)power,power > 7.5, Explosion.DestructionType.BREAK);
+      if(personLvl < 3) arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),power > 7.5, Explosion.DestructionType.BREAK);
+      arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power/2.0),power > 7.5, Explosion.DestructionType.NONE);
       
       arrow.discard();
    }

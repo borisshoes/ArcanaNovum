@@ -219,9 +219,10 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             }
          }
          SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
+         int resolve = getAugmentLevel("resolve");
          player.sendMessage(Text.literal(""),false);
          player.sendMessage(Text.literal("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
-         player.sendMessage(Text.literal("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
+         player.sendMessage(Text.literal("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel,resolve)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
          player.sendMessage(Text.literal(""),false);
       }
       this.xp += xp;

@@ -90,7 +90,7 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
             if(invItem.isFood() && !MagicItemUtils.isMagic(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
                FoodComponent foodComponent = invItem.getItem().getFoodComponent();
                availableFoods.add(new Pair<>(i,foodComponent));
-               if(bestFoodInd == -1 || availableFoods.get(bestFoodInd).getSecond().getHunger() < foodComponent.getHunger()){
+               if(bestFoodInd == -1 ||inv.getStack(bestFoodInd).getItem().getFoodComponent().getHunger() < foodComponent.getHunger()){
                   bestFoodInd = i;
                }
             }

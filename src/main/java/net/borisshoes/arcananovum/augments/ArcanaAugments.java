@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.augments;
 
 import net.borisshoes.arcananovum.items.ExoticMatter;
+import net.borisshoes.arcananovum.items.charms.LightCharm;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
@@ -11,10 +12,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.utils.MagicRarity.MUNDANE;
 import static net.borisshoes.arcananovum.utils.MagicRarity.EMPOWERED;
@@ -51,12 +49,12 @@ public class ArcanaAugments {
          new ArcanaAugment("Anti-Personnel", "anti_personnel", new ItemStack(Items.ROTTEN_FLESH), MagicItems.DETONATION_ARROWS,
          new String[]{"Increases damage to creatures per level","Final level grants no terrain damage","Mutually Exclusive with Blast Mine"},
          new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED}
-   )); //TODO
+   ));
    public static final ArcanaAugment BLAST_MINE = ArcanaAugments.register("blast_mine",
          new ArcanaAugment("Blast Mine", "blast_mine", new ItemStack(Items.COBBLESTONE), MagicItems.DETONATION_ARROWS,
          new String[]{"Increases terrain and lowers mob damage","Higher levels amplify these effects","Mutually Exclusive with Anti-Personnel"},
          new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED}
-   )); //TODO
+   ));
    
    // Expulsion Arrows
    public static final ArcanaAugment REPULSION = ArcanaAugments.register("repulsion",
@@ -101,14 +99,14 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment CHAIN_LIGHTNING = ArcanaAugments.register("chain_lightning",
          new ArcanaAugment("Chain Lightning", "chain_lightning", new ItemStack(Items.PRISMARINE_CRYSTALS), MagicItems.STORM_ARROWS,
-         new String[]{"Striking an enemy chains a shock to","an additional creature for each level","Effect occurs independent of lightning"},
+         new String[]{"Striking an enemy chains a shock to","an additional creature for each level","Effect occurs independent of lightning","Mutually Exclusive with Aftershock"},
          new MagicRarity[]{EXOTIC,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC}
-   )); //TODO
+   ));
    public static final ArcanaAugment AFTERSHOCK = ArcanaAugments.register("aftershock",
          new ArcanaAugment("Aftershock", "aftershock", new ItemStack(Items.LIGHTNING_ROD), MagicItems.STORM_ARROWS,
-         new String[]{"Lightning strikes charge the ground","Higher levels increase charge duration","Final Level increases damage and size"},
+         new String[]{"Lightning strikes charge the ground","Higher levels increase charge duration","Final Level increases damage and size","Mutually Exclusive with Chain Lightning"},
          new MagicRarity[]{EXOTIC,EMPOWERED,EXOTIC,LEGENDARY}
-   )); //TODO
+   ));
    
    // Tether Arrows
    public static final ArcanaAugment QUICK_RELEASE = ArcanaAugments.register("quick_release",
@@ -122,17 +120,17 @@ public class ArcanaAugments {
          new ArcanaAugment("Pyroblast", "pyroblast", new ItemStack(Items.FIRE_CHARGE), MagicItems.CINDERS_CHARM,
          new String[]{"Cone of Flame becomes a powerful Fireball","The fireball does not damage terrain","Higher levels cause higher radius and damage","Mutually Exclusive with Web of Fire"},
          new MagicRarity[]{MYTHICAL,EMPOWERED,EXOTIC,LEGENDARY}
-   )); //TODO
+   ));
    public static final ArcanaAugment WEB_OF_FIRE = ArcanaAugments.register("web_of_fire",
          new ArcanaAugment("Web of Fire", "web_of_fire", new ItemStack(Items.FIRE_CORAL), MagicItems.CINDERS_CHARM,
          new String[]{"Cone of Flame becomes an AoE precision"," strike on creatures around you.","Higher levels adds more targets and damage","Mutually Exclusive with Pyroblast"},
          new MagicRarity[]{MYTHICAL,EMPOWERED,EXOTIC,LEGENDARY}
-   )); //TODO
+   ));
    public static final ArcanaAugment CREMATION = ArcanaAugments.register("cremation",
          new ArcanaAugment("Cremation", "cremation", new ItemStack(Items.SOUL_CAMPFIRE), MagicItems.CINDERS_CHARM,
          new String[]{"The Charm's Flames become blue soul-flame","Soul-flame does double damage to creatures","The Charm now uses cinders to negate fire damage"},
          new MagicRarity[]{MYTHICAL}
-   )); //TODO
+   ));
    public static final ArcanaAugment FIRESTARTER = ArcanaAugments.register("firestarter",
          new ArcanaAugment("Firestarter", "firestarter", new ItemStack(Items.FLINT_AND_STEEL), MagicItems.CINDERS_CHARM,
          new String[]{"The Charm's Left Click abilities no","longer consumes cinders on use"},
@@ -185,22 +183,22 @@ public class ArcanaAugments {
          new ArcanaAugment("Mood Lighting", "mood_lighting", new ItemStack(Items.LANTERN), MagicItems.LIGHT_CHARM,
          new String[]{"Unlocks the ability to change the","threshold for light placement","Sneak Right Click to change modes","Right Click in threshold mode to configure"},
          new MagicRarity[]{EMPOWERED}
-   )); //TODO
+   ));
    public static final ArcanaAugment SELECTIVE_PLACEMENT = ArcanaAugments.register("selective_placement",
          new ArcanaAugment("Selective Placement", "selective_placement", new ItemStack(Items.TORCH), MagicItems.LIGHT_CHARM,
          new String[]{"Unlocks manual placement mode","Sneak Right Click to change modes","Right Click in manual mode to place"},
          new MagicRarity[]{EXOTIC}
-   )); //TODO
+   ));
    public static final ArcanaAugment DIMMER_SWITCH = ArcanaAugments.register("dimmer_switch",
          new ArcanaAugment("Dimmer Switch", "dimmer_switch", new ItemStack(Items.REDSTONE_TORCH), MagicItems.LIGHT_CHARM,
          new String[]{"Unlocks the ability to change the","brightness of the lights being placed","Sneak Right Click to change modes","Right Click in brightness mode to configure"},
          new MagicRarity[]{EMPOWERED}
-   )); //TODO
+   ));
    public static final ArcanaAugment RADIANCE = ArcanaAugments.register("radiance",
          new ArcanaAugment("Charm of Radiance", "radiance", new ItemStack(Items.GLOWSTONE), MagicItems.LIGHT_CHARM,
          new String[]{"Unlocks the Radiant Nova ability","The ability lights up a large radius","Sneak Right Click to change modes","Right Click in Radiant Nova mode to use"},
          new MagicRarity[]{LEGENDARY}
-   )); //TODO
+   ));
    
    // Charm of Magnetism
    public static final ArcanaAugment ELECTROMAGNET = ArcanaAugments.register("electromagnet",
@@ -215,9 +213,9 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment NEODYMIUM = ArcanaAugments.register("neodymium",
          new ArcanaAugment("Charm of Neodymium", "neodymium", new ItemStack(Items.NETHERITE_INGOT), MagicItems.MAGNETISM_CHARM,
-         new String[]{"The Charm's active ability now pulls","Iron Armor and Tools off of creatures","and disables equipped shields briefly"},
+         new String[]{"The Charm's active ability now pulls","Iron Armor and Tools off of mobs","and disables all equipped shields briefly"},
          new MagicRarity[]{LEGENDARY}
-   )); //TODO
+   ));
    
    // Ancient Dowsing Rod
    public static final ArcanaAugment ENHANCED_RESONANCE = ArcanaAugments.register("enhanced_resonance",
@@ -241,27 +239,27 @@ public class ArcanaAugments {
          new ArcanaAugment("Resourceful", "resourceful", new ItemStack(Items.QUARTZ), MagicItems.ARCANE_TOME,
          new String[]{"Chance to not consume ingredient when crafting","5% chance per level per individual item","Does not apply to Magical Ingredients"},
          new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC,LEGENDARY,LEGENDARY,MYTHICAL,MYTHICAL}
-   )); //TODO
+   ));
    public static final ArcanaAugment RESOLVE = ArcanaAugments.register("resolve",
          new ArcanaAugment("Resolve", "resolve", new ItemStack(Items.DIAMOND), MagicItems.ARCANE_TOME,
          new String[]{"Grants 10 extra concentration for each level"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
-   )); //TODO
+   ));
    public static final ArcanaAugment FOCUS = ArcanaAugments.register("focus",
          new ArcanaAugment("Focus", "focus", new ItemStack(Items.ENDER_EYE), MagicItems.ARCANE_TOME,
          new String[]{"Level 1 grants no concentration for items"," in Shulker Boxes in your Ender Chest","Level 2 extends to your whole Ender Chest","Level 3 extends to Shulker Boxes in your inventory"},
          new MagicRarity[]{LEGENDARY,LEGENDARY,MYTHICAL}
-   )); //TODO
+   ));
    public static final ArcanaAugment SKILL = ArcanaAugments.register("skill",
          new ArcanaAugment("Skill", "skill", new ItemStack(Items.BOOK), MagicItems.ARCANE_TOME,
-         new String[]{"Chance to forge an item with some"," unlocked augments already applied","Chance Per Level: 25%/50%/75%/100%/200%","Final level is at least two guaranteed"},
+         new String[]{"Chance to forge an item with some"," unlocked augments already applied","Chance Per Level: 25%/50%/75%/100%/200%","Final level attempts to add a second augment"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
-   )); //TODO
+   ));
    public static final ArcanaAugment ADAPTABILITY = ArcanaAugments.register("adaptability",
          new ArcanaAugment("Adaptability", "adaptability", new ItemStack(Items.AMETHYST_SHARD), MagicItems.ARCANE_TOME,
          new String[]{"Negates 1 point of the concentration penalty","from carrying items with augments beyond","your capacity per item for each level"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
-   )); //TODO
+   ));
    
    // Brain in a Jar
    public static final ArcanaAugment KNOWLEDGE_BANK = ArcanaAugments.register("knowledge_bank",
@@ -296,7 +294,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment WILLING_CAPTIVE = ArcanaAugments.register("willing_captive",
          new ArcanaAugment("Willing Captive", "willing_captive", new ItemStack(Items.SPAWNER), MagicItems.ESSENCE_EGG,
          new String[]{"Converting a spawner type consumes","one less use per level"},
-         new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,EXOTIC,LEGENDARY}
+         new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
    
    // Exotic Matter
@@ -321,7 +319,7 @@ public class ArcanaAugments {
          new ArcanaAugment("Cantor's Sponge", "cantor", new ItemStack(Items.EMERALD_BLOCK), MagicItems.FRACTAL_SPONGE,
          new String[]{"Causes the Fractal Sponge to pulse three times","Each pulse re-drains the area"},
          new MagicRarity[]{EXOTIC}
-   )); //TODO
+   ));
    public static final ArcanaAugment HEAT_TREATMENT = ArcanaAugments.register("heat_treatment",
          new ArcanaAugment("Heat Treatment", "heat_treatment", new ItemStack(Items.LAVA_BUCKET), MagicItems.FRACTAL_SPONGE,
          new String[]{"Makes the Fractal Sponge no longer burn in lava or fire"},
@@ -369,7 +367,7 @@ public class ArcanaAugments {
    
    // Overflowing Quiver
    public static final ArcanaAugment ABUNDANT_AMMO = ArcanaAugments.register("abundant_ammo",
-         new ArcanaAugment("Abundant Ammo", "sturdy_construction", new ItemStack(Items.SPECTRAL_ARROW), MagicItems.OVERFLOWING_QUIVER,
+         new ArcanaAugment("Abundant Ammo", "abundant_ammo", new ItemStack(Items.SPECTRAL_ARROW), MagicItems.OVERFLOWING_QUIVER,
          new String[]{"Decreases time between arrow restocks","Decrease per level: 15/30/45/60/90 seconds"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
@@ -421,9 +419,9 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment BOW_ACCELERATION = ArcanaAugments.register("bow_acceleration",
          new ArcanaAugment("Acceleration Runes", "bow_acceleration", new ItemStack(Items.CLOCK), MagicItems.RUNIC_BOW,
-         new String[]{"Decreases the draw time of the Runic Bow","Decrease per level: 10%/15%/20%/25%/50%"},
+         new String[]{"Runic Bow reaches max charge at lower draw strength","Max charge % per level: 90%/85%/80%/75%/50%"},
          new MagicRarity[]{EXOTIC,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
-   )); // TODO
+   ));
    public static final ArcanaAugment ENHANCED_INFINITY = ArcanaAugments.register("enhanced_infinity",
          new ArcanaAugment("Enhanced Infinity", "enhanced_infinity", new ItemStack(Items.SPECTRAL_ARROW), MagicItems.RUNIC_BOW,
          new String[]{"Applies infinity to tipped and spectral arrows"},
@@ -469,14 +467,14 @@ public class ArcanaAugments {
          new ArcanaAugment("Shield Bash", "shield_bash", new ItemStack(Items.IRON_AXE), MagicItems.SHIELD_OF_FORTITUDE,
          new String[]{"Unlocks the Shield Bash ability","Attack with the Shield to consume absorption"," hearts and deal damage per heart consumed","This places the Shield on a brief cooldown"},
          new MagicRarity[]{MYTHICAL}
-   )); //TODO
+   ));
    
    // Shulker Core
    public static final ArcanaAugment LEVITATIVE_REABSORPTION = ArcanaAugments.register("levitative_reabsorption",
          new ArcanaAugment("Levitative Reabsorption", "levitative_reabsorption", new ItemStack(Items.FEATHER), MagicItems.SHULKER_CORE,
-         new String[]{"Unlocks the Cleanse Levitation ability","This can be activated through speed selection","Cleansed levitation restores souls"},
+         new String[]{"Unlocks the Cleanse Levitation ability","This can be activated through speed selection"},
          new MagicRarity[]{EXOTIC}
-   )); //TODO
+   ));
    public static final ArcanaAugment SHULKER_RECYCLER = ArcanaAugments.register("shulker_recycler",
          new ArcanaAugment("Soul Recycler", "shulker_recycler", new ItemStack(Items.FIRE_CHARGE), MagicItems.SHULKER_CORE,
          new String[]{"Grants a 10% chance to not consume souls per level"},
@@ -488,7 +486,7 @@ public class ArcanaAugments {
          new ArcanaAugment("Hiking Boots", "hiking_boots", new ItemStack(Items.GRAVEL), MagicItems.SOJOURNER_BOOTS,
          new String[]{"Increases step assist height to two blocks"},
          new MagicRarity[]{LEGENDARY}
-   )); //TODO
+   ));
    public static final ArcanaAugment MARATHON_RUNNER = ArcanaAugments.register("marathon_runner",
          new ArcanaAugment("Marathon Runner", "marathon_runner", new ItemStack(Items.FEATHER), MagicItems.SOJOURNER_BOOTS,
          new String[]{"Increases speed boost max by +50% per level"},
@@ -529,17 +527,17 @@ public class ArcanaAugments {
          new ArcanaAugment("Augmented Apparatus", "augmented_apparatus", new ItemStack(Items.SCULK_CATALYST), MagicItems.SPAWNER_INFUSER,
          new String[]{"Increases item to point conversion ratio","Ratio per level: 2/4/8/16/32"},
          new MagicRarity[]{EXOTIC,LEGENDARY,LEGENDARY,MYTHICAL,MYTHICAL}
-   )); //TODO
+   ));
    public static final ArcanaAugment SOUL_RESERVOIR = ArcanaAugments.register("soul_reservoir",
          new ArcanaAugment("Soul Reservoir", "soul_reservoir", new ItemStack(Items.SOUL_LANTERN), MagicItems.SPAWNER_INFUSER,
-         new String[]{"Gives the Spawner Infuser extra point capacity","Extra capacity per level: 64/128/196/256/352"},
+         new String[]{"Gives the Spawner Infuser extra point capacity","Extra capacity per level: 64/128/192/256/352"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
-   )); //TODO
+   ));
    public static final ArcanaAugment SPIRIT_EMULATOR = ArcanaAugments.register("spirit_emulator",
          new ArcanaAugment("Spirit Emulator", "spirit_emulator", new ItemStack(Items.PLAYER_HEAD), MagicItems.SPAWNER_INFUSER,
          new String[]{"The highest level of player range now","lets the spawner function without a player"},
          new MagicRarity[]{MYTHICAL}
-   )); //TODO
+   ));
    
    // Stasis Pearl
    public static final ArcanaAugment SPATIAL_FOLD = ArcanaAugments.register("spatial_fold",
@@ -592,13 +590,14 @@ public class ArcanaAugments {
       return augments;
    }
    
-   public static HashMap<ArcanaAugment,Integer> getAugmentsOnItem(ItemStack item){
+   public static TreeMap<ArcanaAugment,Integer> getAugmentsOnItem(ItemStack item){
       MagicItem magicItem = MagicItemUtils.identifyItem(item);
       if(magicItem == null) return null;
-      HashMap<ArcanaAugment,Integer> map = new HashMap<>();
+      TreeMap<ArcanaAugment,Integer> map = new TreeMap<>();
       NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
       if(!magicTag.contains("augments")) return map;
       NbtCompound augmentTag = magicTag.getCompound("augments");
+      
       for(String key : augmentTag.getKeys()){
          if(registry.containsKey(key)){
             map.put(registry.get(key),augmentTag.getInt(key));
@@ -608,7 +607,7 @@ public class ArcanaAugments {
    }
    
    public static boolean isIncompatible(ItemStack item, String id){
-      HashMap<ArcanaAugment,Integer> curAugments = getAugmentsOnItem(item);
+      TreeMap<ArcanaAugment,Integer> curAugments = getAugmentsOnItem(item);
       if(curAugments == null) return true;
       if(!registry.containsKey(id)) return true;
       MagicItem magicItem = MagicItemUtils.identifyItem(item);
@@ -622,6 +621,9 @@ public class ArcanaAugments {
          
          if(id.equals(ArcanaAugments.ANTI_PERSONNEL.id) && other.id.equals(ArcanaAugments.BLAST_MINE.id)) return true;
          if(id.equals(ArcanaAugments.BLAST_MINE.id) && other.id.equals(ArcanaAugments.ANTI_PERSONNEL.id)) return true;
+   
+         if(id.equals(ArcanaAugments.AFTERSHOCK.id) && other.id.equals(ArcanaAugments.CHAIN_LIGHTNING.id)) return true;
+         if(id.equals(ArcanaAugments.CHAIN_LIGHTNING.id) && other.id.equals(ArcanaAugments.AFTERSHOCK.id)) return true;
       }
       return false;
    }
@@ -663,15 +665,10 @@ public class ArcanaAugments {
          magicTag.put("augments",new NbtCompound());
       }
       NbtCompound augmentTag = magicTag.getCompound("augments");
-      
-      if(curLevel <= 0){
-         //TODO: add custom data for certain augments
-         // Charm of Light Augments
-      }
       augmentTag.putInt(id,level);
    
       if(magicItem instanceof ExoticMatter matter){
-         matter.setEnergy(item,matter.getMaxEnergy(item));
+         matter.setFuel(item,matter.getMaxEnergy(item));
       }
       
       magicItem.redoAugmentLore(item);

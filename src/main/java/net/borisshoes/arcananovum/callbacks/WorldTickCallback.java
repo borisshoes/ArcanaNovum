@@ -49,6 +49,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static net.borisshoes.arcananovum.Arcananovum.*;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.*;
 
 public class WorldTickCallback {
@@ -225,8 +226,10 @@ public class WorldTickCallback {
                ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
                if(player == null){
                   Arcananovum.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
+                  if(serverWorld.getServer().getTicks() % 100 == 0) Arcananovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,1));
                }else{
                   ArcanaAchievements.progress(player,"timey_wimey",1);
+                  if(serverWorld.getServer().getTicks() % 100 == 0) PLAYER_DATA.get(player).addXP(1);
                }
             }
          }
@@ -438,8 +441,10 @@ public class WorldTickCallback {
                   ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
                   if(player == null){
                      Arcananovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
+                     Arcananovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,10));
                   }else{
                      ArcanaAchievements.progress(player,"endless_extrusion",1);
+                     PLAYER_DATA.get(player).addXP(10);
                      if(obby.isOf(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,"expensive_infusion");
                   }
                }

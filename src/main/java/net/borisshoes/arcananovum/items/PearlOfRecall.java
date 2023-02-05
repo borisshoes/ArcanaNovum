@@ -220,7 +220,7 @@ public class PearlOfRecall extends EnergyItem implements TickingItem, UsableItem
          NbtCompound locNbt = magicNbt.getCompound("location");
          String dim = locNbt.getString("dim");
          
-         if(canClear && player.isSneaking()){
+         if(!(canClear && player.isSneaking())){
             if(dim.equals("unattuned")){
                locNbt.putString("dim", playerEntity.getWorld().getRegistryKey().getValue().toString());
                locNbt.putDouble("x", playerEntity.getPos().x);

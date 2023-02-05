@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.items.RunicBow;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -26,6 +27,7 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
@@ -134,5 +136,26 @@ public class BowMixin {
          }
       }
       arrowEntity.setVelocity(player,pitch,yaw,roll,speed,newDiv);
+   }
+   
+   @Redirect(method="onStoppedUsing", at=@At(value = "INVOKE",target="Lnet/minecraft/item/BowItem;getPullProgress(I)F"))
+   private float arcananovum_bowAcceleration(int useTicks, ItemStack bow, World world, LivingEntity user, int remainingUseTicks){
+      float maxPullTicks = 20f;
+      if(MagicItemUtils.isMagic(bow)){
+         MagicItem magicBow = MagicItemUtils.identifyItem(bow);
+         if(magicBow instanceof RunicBow){
+            int accelLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,"bow_stabilization"));
+            final float[] accel = {20,18,18,15,10};
+            maxPullTicks = accel[accelLvl];
+         }
+      }
+      
+      float f = (float)useTicks / maxPullTicks;
+      f = (f * f + f * 2.0F) / 3.0F;
+      if (f > 1.0F) {
+         f = 1.0F;
+      }
+   
+      return f;
    }
 }

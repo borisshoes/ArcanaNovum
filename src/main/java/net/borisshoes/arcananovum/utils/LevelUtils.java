@@ -16,16 +16,18 @@ public class LevelUtils {
       return levelToTotalXp(levelFromXp(xp)+1) - xp;
    }
    
-   public static int concFromLevel(int lvl){
+   public static int concFromLevel(int lvl, int resolve){
+      int conc;
       if(lvl < 1){
-         return 0;
+         conc = 0;
       }else if(lvl <= 5){
-         return (int)Math.floor(8*Math.sqrt(lvl-1)+5);
+         conc = (int)Math.floor(8*Math.sqrt(lvl-1)+5);
       }else if(lvl <= 50){
-         return (int)Math.floor(2*lvl+11);
+         conc = (int)Math.floor(2*lvl+11);
       }else{
-         return (int)Math.floor(37.95*Math.sqrt(lvl+40)-249);
+         conc = (int)Math.floor(37.95*Math.sqrt(lvl+40)-249);
       }
+      return conc+10*resolve;
    }
    
    public static int getLevelSkillPoints(int level){
@@ -36,8 +38,8 @@ public class LevelUtils {
       return String.format("%,d", num);
    }
    
-   public static int concFromXp(int xp){
-      return concFromLevel(levelFromXp(xp));
+   public static int concFromXp(int xp, int resolve){
+      return concFromLevel(levelFromXp(xp),resolve);
    }
    
    public static int getCurLevelXp(int xp){

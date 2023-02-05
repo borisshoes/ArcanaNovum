@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.items.ContinuumAnchor;
+import net.borisshoes.arcananovum.items.SpawnerInfuser;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
@@ -31,6 +33,24 @@ public class MobSpawnerLogicMixin {
          if(ContinuumAnchor.isChunkLoaded(serverWorld,chunk.getPos())){
             cir.setReturnValue(true);
             cir.cancel();
+         }
+   
+         BlockPos infuserPos = pos.add(0,-2,0);
+         List<MagicBlock> blocks = MAGIC_BLOCK_LIST.get(world).getBlocks();
+         for(MagicBlock block : blocks){
+            BlockPos magicPos = block.getPos();
+            if(infuserPos.equals(magicPos) && block.getData().getString("id").equals(MagicItems.SPAWNER_INFUSER.getId())){
+               NbtCompound blockData = block.getData();
+               boolean active = blockData.getBoolean("active");
+               if(active){
+                  boolean emulator = ArcanaAugments.getAugmentFromCompound(block.getData(),"spirit_emulator") >= 1;
+                  if(emulator){
+                     cir.setReturnValue(true);
+                     cir.cancel();
+                  }
+               }
+               break;
+            }
          }
       }
    }

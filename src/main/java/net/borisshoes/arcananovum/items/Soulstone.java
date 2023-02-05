@@ -141,7 +141,7 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       String entityTypeId = EntityType.getId(dead.getType()).toString();
       String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
    
-      int toAdd = new int[]{1,2,3,4,5,10}[ArcanaAugments.getAugmentOnItem(item,"soul_reaper")];
+      int toAdd = new int[]{1,2,3,4,5,10}[Math.max(0,ArcanaAugments.getAugmentOnItem(item,"soul_reaper"))];
       souls += toAdd;
       
       int tier = soulsToTier(souls);

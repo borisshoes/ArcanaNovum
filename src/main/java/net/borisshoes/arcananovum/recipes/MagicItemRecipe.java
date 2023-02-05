@@ -30,13 +30,13 @@ public class MagicItemRecipe {
       return true;
    }
    
-   public ItemStack[][] getRemainders(ItemStack[][] items){
+   public ItemStack[][] getRemainders(ItemStack[][] items, int resourceLvl){
       if(!satisfiesRecipe(items))
          return null;
       ItemStack[][] remainders = new ItemStack[items.length][items[0].length];
       for(int i = 0; i < ingredients.length; i++){
          for(int j = 0; j < ingredients[0].length; j++){
-            remainders[i][j] = ingredients[i][j].getRemainder(items[i][j]);
+            remainders[i][j] = ingredients[i][j].getRemainder(items[i][j],resourceLvl);
          }
       }
       return remainders;

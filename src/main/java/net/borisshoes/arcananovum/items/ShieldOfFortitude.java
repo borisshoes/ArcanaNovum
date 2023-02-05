@@ -1,11 +1,23 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
+import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
+import net.borisshoes.arcananovum.items.core.AttackingItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
@@ -15,11 +27,20 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-public class ShieldOfFortitude extends MagicItem {
+import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
+
+public class ShieldOfFortitude extends MagicItem implements AttackingItem {
    public ShieldOfFortitude(){
       id = "shield_of_fortitude";
       name = "Shield of Fortitude";
@@ -61,6 +82,36 @@ public class ShieldOfFortitude extends MagicItem {
       if(banner != null) newTag.put("BlockEntityTag", banner);
       stack.setNbt(newTag);
       return stack;
+   }
+   
+   @Override
+   public boolean attackEntity(PlayerEntity player, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult){
+      ItemStack item = player.getStackInHand(hand);
+      
+      boolean bash = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shield_bash")) >= 1;
+      if(bash && entity instanceof LivingEntity living){
+         ArrayList<TickTimerCallback> toRemove = new ArrayList<>();
+         float shieldTotal = 0;
+         float absAmt = player.getAbsorptionAmount();
+         for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
+            TickTimerCallback t = SERVER_TIMER_CALLBACKS.get(i);
+            if(t instanceof ShieldTimerCallback st){
+               if(st.getPlayer().getUuidAsString().equals(player.getUuidAsString())){
+                  shieldTotal += st.getHearts();
+                  st.onTimer();
+                  toRemove.add(st);
+               }
+            }
+         }
+         shieldTotal = Math.min(absAmt,shieldTotal);
+         if(shieldTotal >= 2){
+            living.damage(DamageSource.player(player), shieldTotal / 3);
+            if(player instanceof ServerPlayerEntity serverPlayer)
+               SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.ENTITY_IRON_GOLEM_HURT, .7f, .8f);
+         }
+         SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
+      }
+      return true;
    }
    
    @Override

@@ -7,12 +7,10 @@ import net.minecraft.client.particle.FireworksSparkParticle;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.particle.ShriekParticleEffect;
+import net.minecraft.particle.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.*;
@@ -23,6 +21,19 @@ import java.util.List;
 import java.util.TimerTask;
 
 public class ParticleEffectUtils {
+   
+   public static void pyroblastExplosion(ServerWorld world, ParticleEffect type, Vec3d pos, double range, int calls){
+      double radius = .5+calls*(range/5);
+      sphere(world,null,pos,type,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,calls*Math.PI*2/5);
+      if(calls < 5){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               pyroblastExplosion(world, type,pos,range,calls + 1);
+            }
+         }));
+      }
+   }
    
    public static void spawnerInfuser(ServerWorld world, BlockPos pos, int duration){
       for(int i = 0; i < duration; i++) {
@@ -209,6 +220,7 @@ public class ParticleEffectUtils {
    }
    
    public static void shulkerCoreLevitate(ServerWorld world, PlayerEntity player, int duration){
+      if(player.getStatusEffect(StatusEffects.LEVITATION) == null) return;
       Vec3d pos = player.getPos();
       world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y+1,pos.z,1,.3,.3,.3,0.05);
    

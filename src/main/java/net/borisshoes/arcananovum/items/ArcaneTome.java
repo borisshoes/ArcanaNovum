@@ -249,8 +249,10 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       tag = crystal.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();
+      int resolve = profile.getAugmentLevel("resolve");
+      int maxConc = LevelUtils.concFromLevel(profile.getLevel(),resolve);
       display.putString("Name","[{\"text\":\"Arcane Concentration\",\"italic\":false,\"color\":\"blue\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())+"\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+maxConc+"\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Your max concentration increases with your level!\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       
@@ -268,15 +270,15 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       tag.putInt("HideFlags",103);
       gui.setSlot(37,GuiElementBuilder.from(crystal));
    
-      int used = (int)Math.ceil((double)MagicItemUtils.getUsedConcentration(player)/LevelUtils.concFromLevel(profile.getLevel()) * 6.0);
-      boolean overConc = MagicItemUtils.getUsedConcentration(player) > LevelUtils.concFromLevel(profile.getLevel());
+      int used = (int)Math.ceil((double)MagicItemUtils.getUsedConcentration(player)/maxConc * 6.0);
+      boolean overConc = MagicItemUtils.getUsedConcentration(player) > maxConc;
       for(int i = 38; i <= 43; i++){
          if(overConc){
-            gui.setSlot(i,new GuiElementBuilder(Items.FIRE_CHARGE).setName(Text.literal("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())).formatted(Formatting.RED)));
+            gui.setSlot(i,new GuiElementBuilder(Items.FIRE_CHARGE).setName(Text.literal("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+maxConc).formatted(Formatting.RED)));
          }else if(i >= used+38){
-            gui.setSlot(i,new GuiElementBuilder(Items.SLIME_BALL).setName(Text.literal("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())).formatted(Formatting.AQUA)));
+            gui.setSlot(i,new GuiElementBuilder(Items.SLIME_BALL).setName(Text.literal("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+maxConc).formatted(Formatting.AQUA)));
          }else{
-            gui.setSlot(i,new GuiElementBuilder(Items.MAGMA_CREAM).setName(Text.literal("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+LevelUtils.concFromLevel(profile.getLevel())).formatted(Formatting.AQUA)));
+            gui.setSlot(i,new GuiElementBuilder(Items.MAGMA_CREAM).setName(Text.literal("Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+maxConc).formatted(Formatting.AQUA)));
          }
          
       }

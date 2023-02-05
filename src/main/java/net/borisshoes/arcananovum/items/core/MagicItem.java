@@ -60,7 +60,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    
    // Returns item stack with preferred attributes but without a unique UUID
    public ItemStack getPrefItem(){
-      return prefItem;
+      return prefItem.copy();
    }
    
    // Returns item stack with preferred attributes and a unique UUID
@@ -78,6 +78,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       magicTag.putString("crafter", player);
       magicTag.putBoolean("synthetic",synthetic);
       NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+      if(player.isBlank()) return stack;
       String crafterName = server.getUserCache().getByUuid(UUID.fromString(player)).orElse(new GameProfile(UUID.fromString(player),"???")).getName();
    
       int index = -1;

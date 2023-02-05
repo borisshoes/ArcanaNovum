@@ -15,11 +15,14 @@ import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.HoneyBottleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -164,23 +167,30 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       int speed = magicTag.getInt("speed");
       int speedCD = magicTag.getInt("speedCD");
+      boolean reabsorb = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"levitative_reabsorption")) >= 1;
+      int maxSpeed = reabsorb ? 11 : 9;
    
       if(speedCD == 0){
          // 1 3 5 7 9
          speed += 2;
       
-         if(speed > 9){
+         if(speed > maxSpeed){
             speed = 1;
          }else if(speed < 1){
-            speed = 9;
+            speed = maxSpeed;
          }
       
          magicTag.putInt("speed",speed);
          magicTag.putInt("speedCD",5);
          if(playerEntity instanceof ServerPlayerEntity player){
-            player.sendMessage(Text.translatable("Shulker Core Speed: "+(speed/2+1)).formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),true);
-            float pitch = (float) (0.1875*speed+0.3125);
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_XYLOPHONE, 0.5f, pitch);
+            if(speed == 11){
+               player.sendMessage(Text.literal("Shulker Core Mode: Reabsorption").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, 0.5f, 1);
+            }else{
+               player.sendMessage(Text.literal("Shulker Core Speed: "+(speed/2+1)).formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),true);
+               float pitch = (float) (0.1875*speed+0.3125);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_XYLOPHONE, 0.5f, pitch);
+            }
          }
       }
    }
@@ -192,28 +202,39 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       int speed = magicTag.getInt("speed");
       final int duration = 100;
    
-      if(getEnergy(item) > 0){
-         boolean hasBetter = false;
+      if(speed == 11){
          for(Map.Entry<StatusEffect, StatusEffectInstance> effectEntry : playerEntity.getActiveStatusEffects().entrySet()){
             StatusEffectInstance effect = effectEntry.getValue();
-            if(effect.getEffectType() == StatusEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration)){
-               hasBetter = true;
+            if(effect.getEffectType() == StatusEffects.LEVITATION){
+               playerEntity.removeStatusEffect(StatusEffects.LEVITATION);
+               SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
             }
-         }
-         if(!hasBetter){
-            StatusEffectInstance levit = new StatusEffectInstance(StatusEffects.LEVITATION, duration, speed, false, false, false);
-            if(Math.random() >= .1*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shulker_recycler"))) addEnergy(item,-(speed/2+1));
-            playerEntity.addStatusEffect(levit);
-            SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
-            PLAYER_DATA.get(playerEntity).addXP(50*(speed/2+1)); // Add xp
-            if(world instanceof ServerWorld serverWorld){
-               ParticleEffectUtils.shulkerCoreLevitate(serverWorld,playerEntity,duration);
-            }
-            redoLore(item);
          }
       }else{
-         playerEntity.sendMessage(Text.translatable("The Shulker Core is empty.").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-         SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
+         if(getEnergy(item) > 0){
+            boolean hasBetter = false;
+            for(Map.Entry<StatusEffect, StatusEffectInstance> effectEntry : playerEntity.getActiveStatusEffects().entrySet()){
+               StatusEffectInstance effect = effectEntry.getValue();
+               if(effect.getEffectType() == StatusEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration)){
+                  hasBetter = true;
+               }
+            }
+            if(!hasBetter){
+               StatusEffectInstance levit = new StatusEffectInstance(StatusEffects.LEVITATION, duration, speed, false, false, false);
+               if(Math.random() >= .1 * Math.max(0, ArcanaAugments.getAugmentOnItem(item, "shulker_recycler")))
+                  addEnergy(item, -(speed / 2 + 1));
+               playerEntity.addStatusEffect(levit);
+               SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
+               PLAYER_DATA.get(playerEntity).addXP(50 * (speed / 2 + 1)); // Add xp
+               if(world instanceof ServerWorld serverWorld){
+                  ParticleEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
+               }
+               redoLore(item);
+            }
+         }else{
+            playerEntity.sendMessage(Text.literal("The Shulker Core is empty.").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+            SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
+         }
       }
    }
    
@@ -234,10 +255,10 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       String paneText = hasStone ? getEnergy(item) + " Shulker Souls" : "No Soulstone Inserted";
       Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
    
-      gui.setSlot(0,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
-      gui.setSlot(1,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
-      gui.setSlot(3,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
-      gui.setSlot(4,new GuiElementBuilder(pane).setName(Text.translatable(paneText).formatted(textColor)));
+      gui.setSlot(0,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
+      gui.setSlot(1,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
+      gui.setSlot(3,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
+      gui.setSlot(4,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
    
       ShulkerCoreInventory inv = new ShulkerCoreInventory();
       ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this,gui,item);

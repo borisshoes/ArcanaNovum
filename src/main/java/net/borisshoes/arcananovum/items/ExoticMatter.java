@@ -13,6 +13,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.MathHelper;
@@ -55,6 +56,14 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
       prefNBT = addMagicNbt(tag);
       item.setNbt(prefNBT);
       prefItem = item;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
+      stack.setNbt(newTag);
+      setFuel(stack,getEnergy(stack));
+      return stack;
    }
    
    @Override
