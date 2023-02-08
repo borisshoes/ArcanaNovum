@@ -85,7 +85,15 @@ public class TomeGui extends SimpleGui {
             if(!item.isEmpty()){
                MagicItem magicItem = MagicItemUtils.identifyItem(item);
                if(type == ClickType.MOUSE_RIGHT){
-                  tome.openRecipeGui(player,settings, magicItem.getId());
+                  if(magicItem.getRarity() == MagicRarity.MYTHICAL){
+                     player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
+                  }else{
+                     if(magicItem.getRecipe() != null){
+                        tome.openRecipeGui(player,settings, magicItem.getId());
+                     }else{
+                        player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
+                     }
+                  }
                }else{
                   tome.openItemGui(player,settings, magicItem.getId());
                }
