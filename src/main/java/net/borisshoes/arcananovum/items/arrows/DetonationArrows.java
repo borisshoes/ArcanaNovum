@@ -23,6 +23,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 
 import java.util.ArrayList;
@@ -86,8 +87,8 @@ public class DetonationArrows extends MagicItem implements RunicArrow {
          source1 = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows.Terrain"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
          source2 = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows.Damage"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
       }
-      if(personLvl < 3) arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),power > 7.5, Explosion.DestructionType.BREAK);
-      arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power/2.0),power > 7.5, Explosion.DestructionType.NONE);
+      if(personLvl < 3) arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),power > 7.5, World.ExplosionSourceType.TNT);
+      arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power/2.0),power > 7.5, World.ExplosionSourceType.NONE);
       
       arrow.discard();
    }

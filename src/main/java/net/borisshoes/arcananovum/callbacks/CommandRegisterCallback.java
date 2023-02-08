@@ -1,30 +1,13 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
-import eu.pb4.holograms.api.InteractionType;
-import eu.pb4.holograms.api.elements.clickable.CubeHitboxHologramElement;
-import eu.pb4.holograms.api.elements.clickable.EntityHologramElement;
-import eu.pb4.holograms.api.holograms.AbstractHologram;
-import eu.pb4.holograms.api.holograms.EntityHologram;
-import eu.pb4.holograms.api.holograms.WorldHologram;
+
 import net.borisshoes.arcananovum.ArcanaCommands;
-import net.borisshoes.arcananovum.Arcananovum;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.MessageArgumentType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.PigEntity;
-import net.minecraft.item.Items;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 
-import javax.annotation.Nullable;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;

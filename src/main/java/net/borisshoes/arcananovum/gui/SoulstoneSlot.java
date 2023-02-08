@@ -1,14 +1,12 @@
 package net.borisshoes.arcananovum.gui;
 
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.items.SpawnerInfuser;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
 
 public class SoulstoneSlot extends Slot {
    

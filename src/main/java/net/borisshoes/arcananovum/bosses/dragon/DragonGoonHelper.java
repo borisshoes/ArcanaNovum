@@ -108,9 +108,7 @@ public class DragonGoonHelper {
       skeleton.setEquipmentDropChance(EquipmentSlot.LEGS, 0);
       skeleton.setEquipmentDropChance(EquipmentSlot.FEET, 0);
       StatusEffectInstance fireRes = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE,100000,0,false,false,false);
-      fireRes.setPermanent(true);
       StatusEffectInstance slowFall = new StatusEffectInstance(StatusEffects.SLOW_FALLING,100000,0,false,false,false);
-      slowFall.setPermanent(true);
       skeleton.addStatusEffect(fireRes);
       skeleton.addStatusEffect(slowFall);
       skeleton.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1);

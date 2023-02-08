@@ -26,12 +26,14 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -40,7 +42,6 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.*;
@@ -182,7 +183,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
             }
             for(Map.Entry<Block, Integer> entry : blockTypes.entrySet()){
                NbtCompound blockType = new NbtCompound();
-               blockType.putString("id",Registry.BLOCK.getId(entry.getKey()).toString());
+               blockType.putString("id",Registries.BLOCK.getId(entry.getKey()).toString());
                blockType.putInt("count",entry.getValue());
                blocks.add(blockType);
             }
@@ -283,7 +284,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
             NbtCompound blockType = blockTypes.getCompound(i);
             int count = blockType.getInt("count");
             String id = blockType.getString("id");
-            Block block = Registry.BLOCK.getOrEmpty(new Identifier(id)).orElse(null);
+            Block block = Registries.BLOCK.getOrEmpty(new Identifier(id)).orElse(null);
             if(block == null){
                log(1,"Unknown Block Type Stored In Telescoping Beacon: "+id);
                return;

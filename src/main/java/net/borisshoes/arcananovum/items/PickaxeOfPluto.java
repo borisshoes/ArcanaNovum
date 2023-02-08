@@ -196,7 +196,7 @@ public class PickaxeOfPluto extends MagicItem implements LeftClickItem, TickingI
       for(BlockPos blockPos : toMine){
          drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), (ServerWorld)world, blockPos, null, player, veinPick));
          world.breakBlock(blockPos,false,player);
-         if(type instanceof OreBlock ore){
+         if(type instanceof ExperienceDroppingBlock ore){
             ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, veinPick,true);
          }
          if(type instanceof RedstoneOreBlock ore){

@@ -34,8 +34,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.log;

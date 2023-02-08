@@ -142,7 +142,7 @@ public class WorldTickCallback {
             }else if(id.equals("boss_dragon_phantom")){
                Entity found = serverWorld.getEntity(UUID.fromString(uuid));
                if(found != null){
-                  ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),3f);
+                  ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),3f);
                   ServerWorld entityWorld = (ServerWorld) found.getEntityWorld();
                   entityWorld.spawnParticles(dust,found.getX(),found.getY(),found.getZ(),1,1.5,1,1.5,0);
                }
@@ -243,7 +243,7 @@ public class WorldTickCallback {
                   ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
                }
             }
-            serverWorld.playSound(null,pos.getX(),pos.getY(),pos.getZ(), SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.MASTER,1,1.5f);
+            serverWorld.playSound(null,pos.getX(),pos.getY(),pos.getZ(), SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.MASTER,1,1.5f,0L);
          }else if(!prevActive && active){ // Power Up
             for(int i = -range; i <= range; i++){
                for(int j = -range; j <= range; j++){

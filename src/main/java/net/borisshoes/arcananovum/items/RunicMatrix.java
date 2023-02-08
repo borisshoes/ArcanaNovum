@@ -50,17 +50,17 @@ public class RunicMatrix extends MagicItem implements UsableItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,12,null);
+      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,8,null);
       MagicItemIngredient t = new MagicItemIngredient(Items.CRAFTING_TABLE,64,null);
-      MagicItemIngredient a = new MagicItemIngredient(Items.AMETHYST_SHARD,32,null);
-      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND,16,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+      MagicItemIngredient a = new MagicItemIngredient(Items.AMETHYST_SHARD,16,null);
+      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND,8,null);
+      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,1,null);
    
       MagicItemIngredient[][] ingredients = {
             {a,d,c,d,a},
-            {d,t,c,t,d},
-            {c,c,n,c,c},
-            {d,t,c,t,d},
+            {d,t,a,t,d},
+            {c,a,n,a,c},
+            {d,t,a,t,d},
             {a,d,c,d,a}};
       return new MagicItemRecipe(ingredients);
    }

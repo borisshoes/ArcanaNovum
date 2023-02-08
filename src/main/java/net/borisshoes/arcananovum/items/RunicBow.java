@@ -16,9 +16,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.Registry;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +78,7 @@ public class RunicBow extends MagicItem {
       if(nbt != null && nbt.contains("Enchantments")){
          NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
          for(int i = 0; i < enchants.size(); i++){
-            if(((NbtCompound)enchants.get(i)).getString("id").equals(Registry.ENCHANTMENT.getId(Enchantments.POWER).toString())){
+            if(((NbtCompound)enchants.get(i)).getString("id").equals(Registries.ENCHANTMENT.getId(Enchantments.POWER).toString())){
                NbtCompound power = new NbtCompound();
                power.putString("id","power");
                power.putShort("lvl", (short) 7);

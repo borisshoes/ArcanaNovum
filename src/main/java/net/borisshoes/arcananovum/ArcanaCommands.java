@@ -44,6 +44,8 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -61,7 +63,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
@@ -374,13 +375,13 @@ public class ArcanaCommands {
                      String idName = magicItem.getId().toUpperCase();
                      lines.add("GenericMagicIngredient "+letter+" = new GenericMagicIngredient(MagicItems."+idName+","+stack.getCount()+");");
                   }else if(stack.isOf(Items.POTION) || stack.isOf(Items.SPLASH_POTION) || stack.isOf(Items.LINGERING_POTION)){
-                     String idName = Registry.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
                      Potion potion = PotionUtil.getPotion(stack);
                      ItemStack potionStack = new ItemStack(stack.getItem());
                      ingred = new MagicItemIngredient(stack.getItem(),stack.getCount(), PotionUtil.setPotion(potionStack, potion).getNbt());
                      
                      lines.add("ItemStack potion"+(i * 5 + j)+" = new ItemStack(Items."+idName+");");
-                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+", PotionUtil.setPotion(potion"+(i * 5 + j)+", Potions."+Registry.POTION.getId(potion).getPath().toUpperCase()+").getNbt());");
+                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+", PotionUtil.setPotion(potion"+(i * 5 + j)+", Potions."+Registries.POTION.getId(potion).getPath().toUpperCase()+").getNbt());");
                   }else if(stack.isOf(Items.ENCHANTED_BOOK)){
                      ItemStack enchantedItem = new ItemStack(Items.ENCHANTED_BOOK);
                      lines.add("ItemStack enchantedBook"+(i * 5 + j)+" = new ItemStack(Items.ENCHANTED_BOOK);");
@@ -388,20 +389,20 @@ public class ArcanaCommands {
                      Map<Enchantment, Integer> enchants = EnchantmentHelper.get(stack);
                      for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()){
                         EnchantedBookItem.addEnchantment(enchantedItem,new EnchantmentLevelEntry(entry.getKey(),entry.getValue()));
-                        lines.add("EnchantedBookItem.addEnchantment(enchantedBook"+(i * 5 + j)+",new EnchantmentLevelEntry(Enchantments."+ Registry.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"));");
+                        lines.add("EnchantedBookItem.addEnchantment(enchantedBook"+(i * 5 + j)+",new EnchantmentLevelEntry(Enchantments."+ Registries.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"));");
                      }
                      ingred = new MagicItemIngredient(Items.ENCHANTED_BOOK,stack.getCount(),enchantedItem.getNbt());
    
                      lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items.ENCHANTED_BOOK,"+stack.getCount()+",enchantedBook"+(i * 5 + j)+".getNbt());");
                   }else if(stack.hasEnchantments()){
                      ItemStack enchantedItem = new ItemStack(stack.getItem());
-                     String idName = Registry.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
                      String line = "MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+", MagicItemIngredient.getEnchantNbt(";
    
                      Map<Enchantment, Integer> enchants = EnchantmentHelper.get(stack);
                      for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()){
                         enchantedItem.addEnchantment(entry.getKey(),entry.getValue());
-                        line += "new Pair(Enchantments."+Registry.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"),";
+                        line += "new Pair(Enchantments."+Registries.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"),";
                      }
                      ingred = new MagicItemIngredient(Items.ENCHANTED_BOOK,stack.getCount(),enchantedItem.getNbt());
                      line = line.substring(0,line.length()-1) + "));";
@@ -411,7 +412,7 @@ public class ArcanaCommands {
                      lines.add("MagicItemIngredient "+letter+" = MagicItemIngredient.EMPTY;");
                   }else{
                      ingred = new MagicItemIngredient(stack.getItem(),stack.getCount(),null);
-                     String idName = Registry.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
                      lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+",null);");
                   }
                   

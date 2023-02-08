@@ -2,6 +2,9 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -13,8 +16,12 @@ import net.minecraft.world.World;
 import java.util.TimerTask;
 
 public class SoundUtils {
-   public static void playSongToPlayer(ServerPlayerEntity player, SoundEvent event, float vol, float pitch) {
+   public static void playSongToPlayer(ServerPlayerEntity player, RegistryEntry.Reference<SoundEvent> event, float vol, float pitch) {
       player.networkHandler.sendPacket(new PlaySoundS2CPacket(event, SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch,0));
+   }
+   
+   public static void playSongToPlayer(ServerPlayerEntity player, SoundEvent event, float vol, float pitch) {
+      player.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(event), SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch,0));
    }
    
    public static void playSound(World world, BlockPos pos, SoundEvent event, SoundCategory category, float vol, float pitch){

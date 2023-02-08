@@ -136,7 +136,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
          }else if(world.getBlockState(result.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(result.getBlockPos()) instanceof MobSpawnerBlockEntity){
             MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(result.getBlockPos());
             NbtCompound spawnerNbt = spawner.createNbt();
-            String entityTypeId = EntityType.getId(spawner.getLogic().getRenderedEntity(world).getType()).toString();
+            String entityTypeId = EntityType.getId(spawner.getLogic().getRenderedEntity(world,world.getRandom(),result.getBlockPos()).getType()).toString();
             String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
             
             magicNbt.put("spawner",spawnerNbt);

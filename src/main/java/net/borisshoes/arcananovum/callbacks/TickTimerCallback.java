@@ -2,8 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class TickTimerCallback {
    private int timer;

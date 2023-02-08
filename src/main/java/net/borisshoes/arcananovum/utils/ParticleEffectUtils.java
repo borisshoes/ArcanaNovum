@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.client.particle.FireworksSparkParticle;
@@ -14,8 +15,9 @@ import net.minecraft.particle.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.*;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.List;
 import java.util.TimerTask;
@@ -45,7 +47,7 @@ public class ParticleEffectUtils {
    }
    
    public static void arcaneFlakArrowDetonate(ServerWorld world, Vec3d pos, double range, int calls){
-      //ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x0085de)),1.4f);
+      //ParticleEffect dust = new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(0x0085de)),1.4f);
       double radius = .5+calls*(range/5.0);
       double radius2 = radius*.75;
       sphere(world,null,pos,ParticleTypes.WITCH,radius,(int)(radius*radius+radius*20+10),3,0.3,0,0);
@@ -63,8 +65,8 @@ public class ParticleEffectUtils {
    }
    
    public static void gravitonArrowEmit(ServerWorld world, Vec3d center, List<Entity> entities){
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x000ea8)),1f);
-      ParticleEffect dust2 = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x000754)),1.5f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x000ea8).toVector3f(),1f);
+      ParticleEffect dust2 = new DustParticleEffect( Vec3d.unpackRgb(0x000754).toVector3f(),1.5f);
       int count = 30;
       double range = .3;
    
@@ -79,7 +81,7 @@ public class ParticleEffectUtils {
    }
    
    public static void expulsionArrowEmit(ServerWorld world, Vec3d pos, double range, int calls){
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0x0085de)),1.4f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x0085de).toVector3f(),1.4f);
       double radius = .5+calls*(range/5);
       sphere(world,null,pos,dust,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,0);
       if(calls < 5){
@@ -144,20 +146,20 @@ public class ParticleEffectUtils {
          
          float hue = i/((float)intervals);
          Color c = Color.getHSBColor(hue, 1f, brightness);
-         ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(c.getRGB())),.6f);
+         ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(c.getRGB()).toVector3f(),.6f);
    
          world.spawnParticles(dust,x,y,z,count,delta,delta,delta,speed);
       }
    }
    
    public static void tetherArrowEntity(ServerWorld world, LivingEntity entity, ServerPlayerEntity player){
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0xa6a58a)),.4f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xa6a58a).toVector3f(),.4f);
       double len = player.getPos().subtract(entity.getPos()).length();
       line(world,null,player.getPos().add(0,player.getHeight()/2,0),entity.getPos().add(0,entity.getHeight()/2,0),dust,(int)(20*len),3,0.03,1);
    }
    
    public static void tetherArrowGrapple(ServerWorld world, ServerPlayerEntity player, Vec3d pos){
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(0xa6a58a)),.4f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xa6a58a).toVector3f(),.4f);
       double len = player.getPos().subtract(pos).length();
       line(world,null,player.getPos(),pos,dust,(int)(20*len),3,0.03,1);
    }
@@ -275,8 +277,8 @@ public class ParticleEffectUtils {
    }
    
    public static void dragonBossTowerCircleInvuln(ServerWorld world, Vec3d center, int period, int calls){
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(9109665)),.8f);
-      ParticleEffect dust2 = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(9109665)),1.5f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(9109665).toVector3f(),.8f);
+      ParticleEffect dust2 = new DustParticleEffect(Vec3d.unpackRgb(9109665).toVector3f(),1.5f);
       double r = 2.5;
       float t = (float)(Math.PI/(period/100)*calls);
       double sqrt3 = Math.sqrt(3);
@@ -327,8 +329,8 @@ public class ParticleEffectUtils {
    }
    
    public static void dragonBossTowerCirclePush(ServerWorld world, Vec3d center, int period, int calls){
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),2f);
-      ParticleEffect dustLarge = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),3f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),2f);
+      ParticleEffect dustLarge = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),3f);
       double r = 1.05*4;
       float t = -(float)(Math.PI/(period/100)*calls + Math.PI);
       double sqrt3 = Math.sqrt(3);
@@ -359,7 +361,7 @@ public class ParticleEffectUtils {
    }
    
    public static void dragonReclaimTowerCircle(ServerWorld world, Vec3d center, int period, int calls){
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(4044031)),1.5f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(4044031).toVector3f(),1.5f);
       double r = 1.05*4;
       float t = -(float)(Math.PI/(period/100)*calls + Math.PI);
       double sqrt3 = Math.sqrt(3);
@@ -389,7 +391,7 @@ public class ParticleEffectUtils {
    
    public static void dragonReclaimTowerShield(ServerWorld world, Vec3d center, int calls){
       int period = 15000;
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(9694975)),1.5f);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(9694975).toVector3f(),1.5f);
       float t = -(float)(Math.PI/(period/200)*calls + Math.PI);
       
       sphere(world,null,center.add(0,2,0),dust,5.5,75,1,0,1,-t);
@@ -407,7 +409,7 @@ public class ParticleEffectUtils {
    public static void dragonBossWizardPulse(ServerWorld world, Vec3d center, int ticks){
       double radius = ticks/4.0;
       double theta = 2*Math.PI / 20.0;
-      ParticleEffect dust = new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(16711892)),(float)radius/2);
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),(float)radius/2);
       sphere(world,null,center,dust,radius,(int)radius*25,1,0,1,theta*ticks);
    }
    
@@ -466,5 +468,5 @@ public class ParticleEffectUtils {
          }
       }
    }
-   // Notes about the Dust Particle, size goes from .01 to 4, you can use an int represented rgb value with new Vec3f(Vec3d.unpackRgb(int))
+   // Notes about the Dust Particle, size goes from .01 to 4, you can use an int represented rgb value with new Vector3f(Vec3d.unpackRgb(int))
 }

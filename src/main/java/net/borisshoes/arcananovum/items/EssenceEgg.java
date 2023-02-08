@@ -27,6 +27,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -128,12 +129,13 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
             if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof MobSpawnerBlockEntity){
                int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"willing_captive"));
                if(getUses(item) >= 5-captiveLevel){
-                  MobSpawnerLogic mobSpawnerLogic = ((MobSpawnerBlockEntity) blockEntity).getLogic();
+                  MobSpawnerBlockEntity mobSpawnerBlockEntity = (MobSpawnerBlockEntity)blockEntity;
+                  MobSpawnerLogic mobSpawnerLogic = mobSpawnerBlockEntity.getLogic();
                   EntityType<?> entityType = EntityType.get(getType(item)).get();
-                  mobSpawnerLogic.setEntityId(entityType);
+                  mobSpawnerBlockEntity.setEntityType(entityType, world.getRandom());
                   blockEntity.markDirty();
                   world.updateListeners(blockPos, blockState, blockState, Block.NOTIFY_ALL);
-   
+                  
                   addUses(item, -5+captiveLevel);
                   if(playerEntity instanceof ServerPlayerEntity player){
                      player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);

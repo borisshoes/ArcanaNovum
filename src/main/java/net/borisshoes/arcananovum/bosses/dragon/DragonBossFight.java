@@ -63,8 +63,8 @@ import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.gen.feature.EndSpikeFeature;
 import net.minecraft.world.gen.feature.EndSpikeFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.devPrint;
@@ -798,8 +798,9 @@ public class DragonBossFight {
             BlockPos blockPos = var16.next();
             endWorld.removeBlock(blockPos, false);
          }
-   
-         endWorld.createExplosion((Entity)null, (double)((float)spike.getCenterX() + 0.5F), (double)spike.getHeight(), (double)((float)spike.getCenterZ() + 0.5F), 5.0F, Explosion.DestructionType.DESTROY);
+         
+
+         endWorld.createExplosion((Entity)null, (double)((float)spike.getCenterX() + 0.5F), (double)spike.getHeight(), (double)((float)spike.getCenterZ() + 0.5F), 5.0F, World.ExplosionSourceType.NONE);
          EndSpikeFeatureConfig endSpikeFeatureConfig = new EndSpikeFeatureConfig(false, ImmutableList.of(spike), (BlockPos)null);
          Feature.END_SPIKE.generateIfValid(endSpikeFeatureConfig, endWorld, endWorld.getChunkManager().getChunkGenerator(), Random.create(), new BlockPos(spike.getCenterX(), 45, spike.getCenterZ()));
       }
@@ -1206,7 +1207,7 @@ public class DragonBossFight {
                endWorld.breakBlock(block,false);
          }
       
-         endWorld.createExplosion(dragon,null,null,pos.getX(),pos.getY(),pos.getZ(),10,true, Explosion.DestructionType.DESTROY);
+         endWorld.createExplosion(dragon,null,null,pos.getX(),pos.getY(),pos.getZ(),10,true, World.ExplosionSourceType.NONE);
          hologram.hide();
          state = 3;
       }

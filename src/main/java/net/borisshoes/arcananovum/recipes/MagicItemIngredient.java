@@ -10,8 +10,9 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Pair;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import static net.borisshoes.arcananovum.Arcananovum.log;
@@ -97,7 +98,7 @@ public class MagicItemIngredient {
       NbtCompound nbt = new NbtCompound();
       NbtList enchantList = new NbtList();
       for(Pair<Enchantment,Integer> enchant : enchants){
-         enchantList.add(EnchantmentHelper.createNbt(Registry.ENCHANTMENT.getId(enchant.getLeft()),enchant.getRight()));
+         enchantList.add(EnchantmentHelper.createNbt(Registries.ENCHANTMENT.getId(enchant.getLeft()),enchant.getRight()));
       }
       nbt.put("Enchantments",enchantList);
       return nbt;

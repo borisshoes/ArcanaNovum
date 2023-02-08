@@ -39,8 +39,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
@@ -101,7 +101,7 @@ public class SmokeArrows extends MagicItem implements RunicArrow {
       }
    }
    
-   private void smokeEffects(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range,int gasLvl, int calls){
+   private void smokeEffects(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range, int gasLvl, int calls){
       if(start == null && entity == null) return;
       Vec3d pos = entity == null ? start : entity.getPos();
       

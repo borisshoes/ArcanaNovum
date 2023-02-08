@@ -8,8 +8,6 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 
-import javax.annotation.Nullable;
-
 public abstract class LoginCallback {
    protected String playerUUID;
    protected String id;
