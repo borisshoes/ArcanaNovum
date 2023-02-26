@@ -11,10 +11,7 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
@@ -161,8 +158,14 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
+   public int getBonusSkillPoints(){
+      NbtInt pointsEle = (NbtInt) getMiscData("adminSkillPoints");
+      return pointsEle == null ? 0 : pointsEle.intValue();
+   }
+   
+   @Override
    public int getTotalSkillPoints(){
-      return getAchievementSkillPoints() + LevelUtils.getLevelSkillPoints(level);
+      return getAchievementSkillPoints() + LevelUtils.getLevelSkillPoints(level) + getBonusSkillPoints();
    }
    
    @Override

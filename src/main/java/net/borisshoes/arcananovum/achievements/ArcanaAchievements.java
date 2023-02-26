@@ -458,14 +458,14 @@ public class ArcanaAchievements {
          ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             ConditionalsAchievement newAch = baseAch.makeNew();
-            for(int i = 0; i < newAch.getConditions().length; i++){
-               newAch.setCondition(i, true);
+            for(Map.Entry<String, Boolean> entry : newAch.getConditions().entrySet()){
+               newAch.setCondition(entry.getKey(),true);
             }
             profile.setAchievement(itemId, newAch);
          }else{
             if(achievement.isAcquired()) return;
-            for(int i = 0; i < achievement.getConditions().length; i++){
-               achievement.setCondition(i, true);
+            for(Map.Entry<String, Boolean> entry : achievement.getConditions().entrySet()){
+               achievement.setCondition(entry.getKey(),true);
             }
             profile.setAchievement(itemId, achievement);
          }
@@ -485,7 +485,7 @@ public class ArcanaAchievements {
       }
    }
    
-   public static void setCondition(ServerPlayerEntity player, String id, int condition, boolean set){
+   public static void setCondition(ServerPlayerEntity player, String id, String condition, boolean set){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(registry.get(id) instanceof ConditionalsAchievement baseAch){
          String itemId = baseAch.getMagicItem().getId();

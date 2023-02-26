@@ -1,11 +1,13 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructFight;
 import net.borisshoes.arcananovum.cardinalcomponents.IMagicEntityComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 
@@ -46,6 +48,11 @@ public class EntityLoadCallbacks {
                }else if(id.equals("boss_dragon_wizard")){
                   if(entity.getRemovalReason() == Entity.RemovalReason.KILLED){
                      magicData.putBoolean("dead",true);
+                  }
+               }else if(id.equals("nul_construct")){
+                  if(entity.getRemovalReason() == Entity.RemovalReason.KILLED){
+                     magicData.putBoolean("dead",true);
+                     NulConstructFight.onDeath((WitherEntity)entity,magicEntity);
                   }
                }
          

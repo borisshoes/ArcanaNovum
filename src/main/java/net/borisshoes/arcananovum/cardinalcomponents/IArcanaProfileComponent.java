@@ -19,6 +19,7 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    int getAchievementSkillPoints();
    int getTotalSkillPoints();
    int getSpentSkillPoints();
+   int getBonusSkillPoints();
    
    boolean setXP(int xp);
    boolean addXP(int xp);

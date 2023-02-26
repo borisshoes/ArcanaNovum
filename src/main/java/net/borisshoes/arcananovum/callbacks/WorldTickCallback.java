@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructFight;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ContinuumAnchor;
@@ -21,6 +22,7 @@ import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.inventory.Inventory;
@@ -154,6 +156,17 @@ public class WorldTickCallback {
                   PlayerEntity nearestPlayer = entityWorld.getClosestPlayer(found,25);
                   if(nearestPlayer != null)
                      found.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES,nearestPlayer.getEyePos());
+               }
+            }else if(id.equals("nul_construct")){
+               if(magicData.getBoolean("dead")){
+                  iter2.remove();
+               }else{
+                  WitherEntity found = (WitherEntity) serverWorld.getEntity(UUID.fromString(uuid));
+                  if(found != null){
+                     if(NulConstructFight.tickConstruct(found, magicEntity)){
+                        iter2.remove();
+                     }
+                  }
                }
             }else if(id.equals(MagicItems.ARCANE_FLAK_ARROWS.getId())){
                int armTime = magicData.getInt("armTime");

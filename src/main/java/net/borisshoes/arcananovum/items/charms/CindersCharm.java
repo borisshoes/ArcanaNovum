@@ -19,6 +19,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -136,7 +137,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
    
             if(playerEntity instanceof ServerPlayerEntity player){
-               PLAYER_DATA.get(player).addXP(50); // Add xp
+               PLAYER_DATA.get(player).addXP(50*cinderConsumption); // Add xp
             }
    
             return !playerEntity.isCreative();
@@ -154,7 +155,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
             
             if(playerEntity instanceof ServerPlayerEntity player){
-               PLAYER_DATA.get(player).addXP(15); // Add xp
+               PLAYER_DATA.get(player).addXP(15*cinderConsumption); // Add xp
             }
             
             return !playerEntity.isCreative();
@@ -175,7 +176,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
    
          if(playerEntity instanceof ServerPlayerEntity player){
-            PLAYER_DATA.get(player).addXP(15); // Add xp
+            PLAYER_DATA.get(player).addXP(15*cinderConsumption); // Add xp
          }
          
          return !playerEntity.isCreative();
@@ -188,7 +189,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
       boolean cremation = ArcanaAugments.getAugmentOnItem(item,"cremation") >= 1;
       Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
       
-      if(entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
+      if(entity instanceof LivingEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
          if(getEnergy(item) < 5) {
             playerEntity.sendMessage(Text.literal("The Charm has no Cinders").formatted(color), true);
             return true;
@@ -227,10 +228,13 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             SimpleInventory sInv = new SimpleInventory(stack);
             AbstractCookingRecipe recipe = (matchGetter.getFirstMatch(sInv,player.getEntityWorld()).orElse(null));
             if(recipe == null || recipe.getOutput().isEmpty()) return null;
-         
+            PlayerInventory inv = player.getInventory();
+            ItemStack result = recipe.getOutput().copy();
+            
             if(recipe.getOutput().getCount()*stack.getCount() <= recipe.getOutput().getItem().getMaxCount()){
-               ItemStack result = recipe.getOutput().copy();
                result.setCount(recipe.getOutput().getCount()*stack.getCount());
+               if(inv.getOccupiedSlotWithRoomForStack(result) == -1 && inv.getEmptySlot() == -1) return null;
+               
                player.addExperience(MathHelper.floor(recipe.getExperience()*stack.getCount()));
    
                int oldEnergy = getEnergy(item);
@@ -445,23 +449,19 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          return false;
       }
       int consumedEnergy = energy;
-      addEnergy(itemStack,-energy);
-      
-      if(energy/20 != getEnergy(itemStack)/20){
-         energy = getEnergy(itemStack);
-         StringBuilder message = new StringBuilder("Cinders: ");
-         for(int i = 1; i <= getMaxEnergy(itemStack)/20; i++){
-            message.append(energy >= i * 20 ? "✦ " : "✧ ");
-         }
-         player.sendMessage(Text.literal(message.toString()).formatted(color), true);
-      }
       
       Vec3d center = player.getPos();
       double effectRange = 2+lvl*2;
       int numTargets = 2*lvl;
       Box rangeBox = new Box(center.x+12,center.y+12,center.z+12,center.x-12,center.y-12,center.z-12);
-      List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(center) < 1.25*effectRange*effectRange && e instanceof LivingEntity);
+      List<Entity> entities = world.getOtherEntities(player,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(center) < 1.25*effectRange*effectRange && e instanceof LivingEntity);
       entities.sort(Comparator.comparingDouble(e->e.distanceTo(player)));
+      
+      if(entities.size() == 0){
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, .3f,.8f);
+         player.sendMessage(Text.literal("No Targets in Range").formatted(color), true);
+         return false;
+      }
       
       SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, 0.5f);
       
@@ -478,14 +478,18 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          }
          if(hits.size() >= numTargets) break;
       }
+      
+      ParticleEffectUtils.webOfFireCast(serverWorld,particleType,player,hits,effectRange,0);
    
-      for(LivingEntity hit : hits){
-         ParticleEffectUtils.line(serverWorld,null,center.add(0,0.125,0),hit.getPos().add(0,0.125,0),particleType,(int)(center.distanceTo(hit.getPos())*4),1,0.05,0);
-         for(LivingEntity other : hits){
-            if(other.getUuidAsString().equals(hit.getUuidAsString())) continue;
-            ParticleEffectUtils.line(serverWorld,null,other.getPos().add(0,0.125,0),hit.getPos().add(0,0.125,0),particleType,(int)(other.getPos().distanceTo(hit.getPos())*2.5),1,0.05,0);
+      addEnergy(itemStack,-energy);
+   
+      if(energy/20 != getEnergy(itemStack)/20){
+         energy = getEnergy(itemStack);
+         StringBuilder message = new StringBuilder("Cinders: ");
+         for(int i = 1; i <= getMaxEnergy(itemStack)/20; i++){
+            message.append(energy >= i * 20 ? "✦ " : "✧ ");
          }
-         serverWorld.spawnParticles(particleType,hit.getX(),hit.getY()+hit.getHeight()/2,hit.getZ(),20,0.1,0.1,0.1,0.4);
+         player.sendMessage(Text.literal(message.toString()).formatted(color), true);
       }
       
       return false;

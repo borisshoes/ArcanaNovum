@@ -236,7 +236,7 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient b = new MagicItemIngredient(Items.NETHERITE_BOOTS,1,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.NETHERITE_BOOTS,1,null, true);
       MagicItemIngredient o = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
       MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
       MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);

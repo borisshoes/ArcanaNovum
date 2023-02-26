@@ -39,6 +39,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.Potion;
@@ -89,6 +90,55 @@ public class ArcanaCommands {
       LoreGui loreGui = new LoreGui(player,bookBuilder,null, ArcaneTome.TomeMode.NONE,null);
       loreGui.open();
       return 1;
+   }
+   
+   public static int skillpointsCommand(CommandContext<ServerCommandSource> ctx, Collection<ServerPlayerEntity> targets, int amount, boolean set){
+      try{
+         ServerCommandSource source = ctx.getSource();
+      
+         for (ServerPlayerEntity player : targets) {
+            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+            
+            NbtInt pointsEle = (NbtInt) profile.getMiscData("adminSkillPoints");
+            int oldPoints = pointsEle == null ? 0 : pointsEle.intValue();
+            int newPoints = set ? amount : amount + oldPoints;
+            profile.addMiscData("adminSkillPoints", NbtInt.of(newPoints));
+         }
+      
+         if(targets.size() == 1 && set){
+            source.sendFeedback(Text.translatable("Set Bonus Skill Points to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+         }else if(targets.size() == 1 && !set){
+            source.sendFeedback(Text.translatable("Gave "+amount+" Bonus Skill Points to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+         }else if(targets.size() != 1 && set){
+            source.sendFeedback(Text.translatable("Set Bonus Skill Points to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+         }else if(targets.size() != 1 && !set){
+            source.sendFeedback(Text.translatable("Gave "+amount+" Bonus Skill Points to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+         }
+      
+         return targets.size();
+      }catch(Exception e){
+         e.printStackTrace();
+         return 0;
+      }
+   }
+   
+   public static int skillpointsCommandQuery(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target){
+      try{
+         ServerCommandSource source = ctx.getSource();
+         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         NbtInt pointsEle = (NbtInt) profile.getMiscData("adminSkillPoints");
+         int adminPoints = pointsEle == null ? 0 : pointsEle.intValue();
+         MutableText feedback = Text.translatable("")
+               .append(target.getDisplayName())
+               .append(Text.translatable(" has ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.translatable(Integer.toString(adminPoints)).formatted(Formatting.AQUA,Formatting.BOLD))
+               .append(Text.translatable(" Bonus Skill Points").formatted(Formatting.LIGHT_PURPLE));
+         source.sendFeedback(feedback, false);
+         return 1;
+      }catch(Exception e){
+         e.printStackTrace();
+         return 0;
+      }
    }
    
    public static int xpCommand(CommandContext<ServerCommandSource> ctx, Collection<? extends ServerPlayerEntity> targets, int amount, boolean set, boolean points){
@@ -519,6 +569,34 @@ public class ArcanaCommands {
       Set<String> items = MagicItems.registry.keySet();
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
+   }
+   
+   public static int createItems(ServerCommandSource source, String id, Collection<ServerPlayerEntity> targets){
+      try{
+         MagicItem magicItem = MagicItemUtils.getItemFromId(id);
+         if(magicItem == null){
+            source.getPlayerOrThrow().sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC), false);
+            return 0;
+         }
+   
+         for(ServerPlayerEntity target : targets){
+            ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),target.getUuidAsString(),true,source.getServer());
+   
+            if(item == null){
+               source.getPlayerOrThrow().sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getName()).formatted(Formatting.RED, Formatting.ITALIC), false);
+               return 0;
+            }else{
+               NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
+               String uuid = magicTag.getString("UUID");
+               source.getPlayerOrThrow().sendMessage(Text.translatable("Generated New: "+magicItem.getName()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
+               target.giveItemStack(item);
+            }
+         }
+         return 1;
+      }catch(Exception e){
+         e.printStackTrace();
+         return -1;
+      }
    }
    
    public static int createItem(ServerCommandSource source, String id) throws CommandSyntaxException{

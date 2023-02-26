@@ -285,7 +285,7 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient b = new MagicItemIngredient(Items.NETHERITE_BLOCK,1,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.NETHERITE_BLOCK,1,null, true);
       MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,32,null);
       MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,64,null);
       MagicItemIngredient s = new MagicItemIngredient(Items.SOUL_SAND,64,null);

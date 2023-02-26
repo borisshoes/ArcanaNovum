@@ -271,7 +271,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
       MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
       MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
       MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,64,null);
-      MagicItemIngredient t = new MagicItemIngredient(Items.NETHERITE_SWORD,1,null);
+      MagicItemIngredient t = new MagicItemIngredient(Items.NETHERITE_SWORD,1,null, true);
       
       MagicItemIngredient[][] ingredients = {
             {e,o,s,o,e},

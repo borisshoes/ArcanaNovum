@@ -52,7 +52,7 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Brain in a Jar\",\"italic\":false,\"color\":\"green\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false},{\"text\":\"zombie\",\"color\":\"dark_green\"},{\"text\":\" has more aptitude for storing \",\"color\":\"dark_purple\"},{\"text\":\"knowledge\",\"color\":\"green\"},{\"text\":\" than most mobs.\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"zombie\",\"color\":\"dark_green\"},{\"text\":\" has more aptitude for storing \",\"color\":\"dark_purple\"},{\"text\":\"knowledge\",\"color\":\"green\"},{\"text\":\" than most mobs.\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Containing its \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"brain\",\"color\":\"dark_green\"},{\"text\":\" in a jar could serve as \"},{\"text\":\"XP storage\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"It should also be capable of activating the \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"mending\",\"color\":\"light_purple\"},{\"text\":\" enchantment.\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to configure.\",\"italic\":false,\"color\":\"dark_purple\"}]"));
@@ -358,12 +358,12 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"     Brain in a Jar\\n\\nRarity: Exotic\\n\\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time similar to you or me.\\n\\nIf I can expand their\"}");
       list.add("{\"text\":\"     Brain in a Jar\\n\\ncapacity for knowledge using the extra-dimensional capabilities of Ender Chests it should hold enough XP for practical use.\\n\\nThere should also be a way to incorperate the use of Mending enchantments to have\"}");
-      list.add("{\"text\":\"     Brain in a Jar\\n\\ndirect access to the storage.\\n\\nRight Click the Brain in a Jar to open its internal storage where you can set its Mending interaction or deposit or withdraw XP.\\nIt has an internal storage of 100k XP\"}");
+      list.add("{\"text\":\"     Brain in a Jar\\n\\ndirect access to the storage.\\n\\nRight Click the Brain in a Jar to open its internal storage where you can set its Mending interaction or deposit or withdraw XP. It has an internal storage of 10 million XP\"}");
       return list;
    }
    
    private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient h = new MagicItemIngredient(Items.ZOMBIE_HEAD,1,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.ZOMBIE_HEAD,1,null, true);
       MagicItemIngredient c = new MagicItemIngredient(Items.ENDER_CHEST,32,null);
       MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
       MagicItemIngredient x = new MagicItemIngredient(Items.EXPERIENCE_BOTTLE,64,null);

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.achievements;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -79,8 +80,9 @@ public abstract class ArcanaAchievement {
       
       MinecraftServer server = player.getServer();
       if(server != null){
+         MutableText acquiredMsg;
          if(pointsReward >= 5){
-            MutableText acquiredMsg = Text.literal("")
+            acquiredMsg = Text.literal("")
                   .append(player.getDisplayName())
                   .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.DARK_PURPLE))
                   .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
@@ -89,10 +91,9 @@ public abstract class ArcanaAchievement {
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))))
                         .withColor(Formatting.DARK_AQUA).withBold(true)))
                   .append(Text.literal("!!!").formatted(Formatting.DARK_PURPLE));
-            server.getPlayerManager().broadcast(acquiredMsg, false);
             SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
          }else{
-            MutableText acquiredMsg = Text.literal("")
+            acquiredMsg = Text.literal("")
                   .append(player.getDisplayName())
                   .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
@@ -101,8 +102,13 @@ public abstract class ArcanaAchievement {
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))))
                         .withColor(Formatting.AQUA)))
                   .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE));
-            server.getPlayerManager().broadcast(acquiredMsg, false);
+            
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PLAYER_LEVELUP,1,1);
+         }
+         if((boolean) Arcananovum.config.getValue("announceAchievements")){
+            server.getPlayerManager().broadcast(acquiredMsg, false);
+         }else{
+            player.sendMessage(acquiredMsg,false);
          }
       }
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);

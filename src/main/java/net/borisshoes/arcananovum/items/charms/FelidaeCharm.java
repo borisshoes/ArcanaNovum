@@ -95,7 +95,7 @@ public class FelidaeCharm extends MagicItem implements UsableItem, TickingItem {
       MagicItemIngredient p = new MagicItemIngredient(Items.PUFFERFISH,64,null);
       MagicItemIngredient f = new MagicItemIngredient(Items.COD,64,null);
       MagicItemIngredient l = new MagicItemIngredient(Items.SALMON,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.CREEPER_HEAD,1,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.CREEPER_HEAD,1,null, true);
       MagicItemIngredient b = new MagicItemIngredient(Items.ENCHANTED_BOOK,1, EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.FEATHER_FALLING,4)).getNbt());
       
       MagicItemIngredient[][] ingredients = {

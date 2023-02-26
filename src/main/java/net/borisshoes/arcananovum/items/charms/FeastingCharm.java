@@ -123,17 +123,17 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
                   player.addStatusEffect(new StatusEffectInstance(pair.getFirst()));
                }
                if(selectedFood.isOf(Items.POISONOUS_POTATO)){
-                  ArcanaAchievements.setCondition(player,"tarrare",0,true);
+                  ArcanaAchievements.setCondition(player,"tarrare","Poisonous Potato",true);
                }else if(selectedFood.isOf(Items.SPIDER_EYE)){
-                  ArcanaAchievements.setCondition(player,"tarrare",1,true);
+                  ArcanaAchievements.setCondition(player,"tarrare","Spider Eye",true);
                }else if(selectedFood.isOf(Items.ROTTEN_FLESH)){
-                  ArcanaAchievements.setCondition(player,"tarrare",2,true);
+                  ArcanaAchievements.setCondition(player,"tarrare","Rotten Flesh",true);
                }else if(selectedFood.isOf(Items.SUSPICIOUS_STEW)){
-                  ArcanaAchievements.setCondition(player,"tarrare",3,true);
+                  ArcanaAchievements.setCondition(player,"tarrare","Suspicious Stew",true);
                }else if(selectedFood.isOf(Items.CHICKEN)){
-                  ArcanaAchievements.setCondition(player,"tarrare",4,true);
+                  ArcanaAchievements.setCondition(player,"tarrare","Raw Chicken",true);
                }else if(selectedFood.isOf(Items.PUFFERFISH)){
-                  ArcanaAchievements.setCondition(player,"tarrare",5,true);
+                  ArcanaAchievements.setCondition(player,"tarrare","Pufferfish",true);
                }
    
                selectedFood.decrement(1);
@@ -187,7 +187,7 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
    }
    
    private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient god = new MagicItemIngredient(Items.ENCHANTED_GOLDEN_APPLE,1,null);
+      MagicItemIngredient god = new MagicItemIngredient(Items.ENCHANTED_GOLDEN_APPLE,1,null, true);
       MagicItemIngredient app = new MagicItemIngredient(Items.GOLDEN_APPLE,32,null);
       MagicItemIngredient car = new MagicItemIngredient(Items.GOLDEN_CARROT,32,null);
       MagicItemIngredient sal = new MagicItemIngredient(Items.COOKED_SALMON,64,null);

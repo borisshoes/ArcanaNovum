@@ -55,7 +55,7 @@ public class CatalystExotic extends MagicItem {
       MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,32,null);
       MagicItemIngredient c = new MagicItemIngredient(Items.CRYING_OBSIDIAN,32,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.DIAMOND,16,null);
-      MagicItemIngredient l = new MagicItemIngredient(Items.NETHER_STAR,12,null);
+      MagicItemIngredient l = new MagicItemIngredient(Items.NETHER_STAR,2,null);
       GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.CATALYST_EMPOWERED,1);
    
       MagicItemIngredient[][] ingredients = {

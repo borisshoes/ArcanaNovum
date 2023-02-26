@@ -13,6 +13,6 @@ public class PlayerComponentInitializer implements EntityComponentInitializer {
    
    @Override
    public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-      registry.registerForPlayers(PLAYER_DATA, playerEntity -> new ArcanaProfileComponent(playerEntity), RespawnCopyStrategy.ALWAYS_COPY.ALWAYS_COPY);
+      registry.registerForPlayers(PLAYER_DATA, ArcanaProfileComponent::new, RespawnCopyStrategy.ALWAYS_COPY);
    }
 }

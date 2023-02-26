@@ -108,7 +108,7 @@ public class StormArrows extends MagicItem implements RunicArrow {
    
    private void strike(PersistentProjectileEntity arrow, Vec3d pos, int stableLevel, int shockLvl){
       World world = arrow.getEntityWorld();
-      if(world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel]){
+      if(arrow.isCritical() && (world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel])){
          LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getEntityWorld());
          lightning.setPosition(pos);
          world.spawnEntity(lightning);
@@ -120,10 +120,6 @@ public class StormArrows extends MagicItem implements RunicArrow {
                   if(lightning.getStruckEntities().anyMatch(e -> e instanceof MooshroomEntity)) ArcanaAchievements.grant(player,"shock_therapy");
                }
             }));
-         }
-         
-         if(world instanceof ServerWorld serverWorld && !world.isRaining() && !world.isThundering()){
-            serverWorld.setWeather(0, 1200, true, false);
          }
    
          if(shockLvl > 0 && world instanceof ServerWorld serverWorld){

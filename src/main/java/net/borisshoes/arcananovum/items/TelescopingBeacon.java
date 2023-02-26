@@ -372,7 +372,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
       MagicItemIngredient c = new MagicItemIngredient(Items.NETHER_STAR,1,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
       MagicItemIngredient h = new MagicItemIngredient(Items.IRON_BLOCK,64,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.BEACON,1,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.BEACON,1,null, true);
    
       MagicItemIngredient[][] ingredients = {
             {a,b,c,b,a},

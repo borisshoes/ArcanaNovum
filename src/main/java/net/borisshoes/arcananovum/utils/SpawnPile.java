@@ -107,16 +107,22 @@ public class SpawnPile {
       this.z = MathHelper.nextDouble(random, minZ, maxZ);
    }
    
-   public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerWorld endWorld){
+   public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerWorld world){
+      return makeSpawnLocations(num,range,world,new BlockPos(0,0,0));
+   }
+   
+   public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerWorld world, BlockPos center){
       ArrayList<BlockPos> positions = new ArrayList<>();
       for(int i = 0; i < num; i++){
          SpawnPile pile;
+         int tries = 0;
          do{
-            int x = (int) (Math.random() * range * 2 - range);
-            int z = (int) (Math.random() * range * 2 - range);
+            int x = center.getX() + (int) (Math.random() * range * 2 - range);
+            int z = center.getZ() + (int) (Math.random() * range * 2 - range);
             pile = new SpawnPile(x, z);
-         }while(!pile.isSafe(endWorld,128));
-         positions.add(new BlockPos(pile.x,pile.getY(endWorld,128),pile.z));
+            tries++;
+         }while(!pile.isSafe(world,128) && tries < 10000);
+         positions.add(new BlockPos(pile.x,pile.getY(world,128),pile.z));
       }
       return positions;
    }

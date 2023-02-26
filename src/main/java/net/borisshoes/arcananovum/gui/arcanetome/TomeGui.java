@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.recipes.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -46,15 +47,8 @@ public class TomeGui extends SimpleGui {
     *
     * @param type                        the screen handler that the client should display
     * @param player                      the player to server this gui to
-    * @param mode                        mode of screen (profile:0 items:1)
+    * @param mode                        mode of screen
     */
-   public TomeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, ArcaneTome.TomeMode mode, ArcaneTome tome){
-      super(type, player, false);
-      this.mode = mode;
-      this.tome = tome;
-      this.settings = new CompendiumSettings();
-   }
-   
    public TomeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, ArcaneTome.TomeMode mode, ArcaneTome tome, CompendiumSettings settings){
       super(type, player, false);
       this.mode = mode;
@@ -86,7 +80,11 @@ public class TomeGui extends SimpleGui {
                MagicItem magicItem = MagicItemUtils.identifyItem(item);
                if(type == ClickType.MOUSE_RIGHT){
                   if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-                     player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
+                     if(magicItem.getRecipe() != null){
+                        tome.openRecipeGui(player,settings, magicItem.getId());
+                     }else{
+                        player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
+                     }
                   }else{
                      if(magicItem.getRecipe() != null){
                         tome.openRecipeGui(player,settings, magicItem.getId());
@@ -156,21 +154,20 @@ public class TomeGui extends SimpleGui {
                }
                
                if(!(magicItem instanceof ArcaneTome)){
-                  int skillLvl = profile.getAugmentLevel("skill");
-                  double skillChance = new double[]{0, .25, .5, .75, 1, 2}[skillLvl];
+                  double skillChance = new double[]{0, .25, .5, .75, 1, 2}[settings.skillLvl];
                   List<ArcanaAugment> allAugs = ArcanaAugments.getAugmentsForItem(magicItem);
                   allAugs.removeIf(aug -> profile.getAugmentLevel(aug.id) <= 0);
                   if(Math.random() < skillChance && allAugs.size() > 0){
                      int ind = (int) (Math.random() * allAugs.size());
                      ArcanaAugment aug = allAugs.get(ind);
-                     ArcanaAugments.applyAugment(newMagicItem, aug.id, profile.getAugmentLevel(aug.id));
-                     if(skillLvl == 5 && allAugs.size() > 1){
+                     ArcanaAugments.applyAugment(newMagicItem, aug.id, Math.min(settings.skillLvl,(int)(Math.random()*profile.getAugmentLevel(aug.id)+1)));
+                     if(settings.skillLvl == 5 && allAugs.size() > 1){
                         int newInd = (int) (Math.random() * allAugs.size());
                         while(newInd == ind){
                            newInd = (int) (Math.random() * allAugs.size());
                         }
                         ArcanaAugment aug2 = allAugs.get(newInd);
-                        ArcanaAugments.applyAugment(newMagicItem, aug2.id, profile.getAugmentLevel(aug2.id));
+                        ArcanaAugments.applyAugment(newMagicItem, aug2.id, Math.min(settings.skillLvl,(int)(Math.random()*profile.getAugmentLevel(aug2.id)+1)));
                      }
                   }
                   magicItem.redoAugmentLore(newMagicItem);
@@ -241,7 +238,7 @@ public class TomeGui extends SimpleGui {
                player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
             }
          }else if(index == 43){
-            tome.openGui(player, ArcaneTome.TomeMode.CRAFTING,settings,magicItem.getId());
+            if(!(magicItem.getRecipe() instanceof ExplainRecipe)) tome.openGui(player, ArcaneTome.TomeMode.CRAFTING,settings,magicItem.getId());
          }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
             ItemStack ingredStack = this.getSlot(index).getItemStack();
             MagicItem magicItem1 = MagicItemUtils.identifyItem(ingredStack);
@@ -255,7 +252,11 @@ public class TomeGui extends SimpleGui {
          
          if(index == 2){
             if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-               player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),false);
+               if(magicItem.getRecipe() != null){
+                  tome.openRecipeGui(player,settings, magicItem.getId());
+               }else{
+                  player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
+               }
             }else{
                if(magicItem.getRecipe() != null){
                   tome.openRecipeGui(player,settings, magicItem.getId());
@@ -352,7 +353,7 @@ public class TomeGui extends SimpleGui {
                      Arcananovum.log(3, "Magic item errored in Tinker's Screen: " + magicItem.getId());
                   }else if(curItemLevel == -1) curItemLevel = 0;
    
-                  boolean generic = magicItem.getId().equals(MagicItems.ARCANE_TOME.getId());
+                  boolean generic = magicItem.getId().equals(MagicItems.ARCANE_TOME.getId()) && !augment.id.equals(ArcanaAugments.SKILL.id);
                   
                   if(generic){
                      player.sendMessage(Text.literal("These augments are active by default").formatted(Formatting.AQUA), false);
@@ -483,17 +484,20 @@ public class TomeGui extends SimpleGui {
       private ArcaneTome.TomeSort sortType;
       private ArcaneTome.TomeFilter filterType;
       private int page;
+      public final int skillLvl;
       
-      public CompendiumSettings(){
+      public CompendiumSettings(int skillLvl){
          this.sortType = ArcaneTome.TomeSort.RECOMMENDED;
          this.filterType = ArcaneTome.TomeFilter.NONE;
          this.page = 1;
+         this.skillLvl = skillLvl;
       }
       
-      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, int page){
+      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, int page, int skillLvl){
          this.sortType = sortType;
          this.filterType = filterType;
          this.page = page;
+         this.skillLvl = skillLvl;
       }
    
       public ArcaneTome.TomeFilter getFilterType(){

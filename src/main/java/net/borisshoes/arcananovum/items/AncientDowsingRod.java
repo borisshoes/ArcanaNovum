@@ -96,13 +96,15 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
                }
             }
             if(world instanceof ServerWorld serverWorld){
-               Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(30, new TimerTask() {
+               if(debris.size() > 0) ArcanaAchievements.progress(player,"archeologist",debris.size());
+               
+               Arcananovum.addTickTimerCallback(new GenericTimer(30, new TimerTask() {
                   @Override
                   public void run(){
                      SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f);
                   }
                }));
-               Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(140, new TimerTask() {
+               Arcananovum.addTickTimerCallback(new GenericTimer(140, new TimerTask() {
                   @Override
                   public void run(){
                      int[] locations = new int[8]; // N, NE, E, SE, S, SW, W, NW
@@ -169,13 +171,12 @@ public class AncientDowsingRod extends EnergyItem implements UsableItem, Ticking
                         Vec3d end = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5+3));
                         ParticleEffectUtils.dowsingRodArrow(player.getWorld(),start,end,1);
       
-                        PLAYER_DATA.get(player).addXP(100*debris.size()); // Add xp
+                        PLAYER_DATA.get(player).addXP(15*debris.size()); // Add xp
                         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
                         
                         if(debris.size() >= 10){
                            ArcanaAchievements.grant(player,"motherload");
                         }
-                        ArcanaAchievements.progress(player,"archeologist",debris.size());
                      }else{
                         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS,1,.5f);
                      }

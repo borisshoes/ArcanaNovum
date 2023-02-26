@@ -11,38 +11,33 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ConditionalsAchievement extends ArcanaAchievement{
-   private String[] conditions;
-   private boolean[] conditionFlags;
+   private HashMap<String,Boolean> conditions;
    
    public ConditionalsAchievement(String name, String id, ItemStack displayItem, MagicItem magicItem, int xpReward, int pointsReward, String[] description, String[] conditions){
       super(name, id, 2, displayItem, magicItem, xpReward, pointsReward, description);
-      this.conditions = conditions;
-      conditionFlags = new boolean[conditions.length];
+      this.conditions = new HashMap<>();
+      for(String cond : conditions){
+         this.conditions.put(cond,false);
+      }
       setAcquired(false);
    }
    
-   protected boolean setCondition(int condInd, boolean set){
+   protected boolean setCondition(String cond, boolean set){
       boolean had = isAcquired();
-      this.conditionFlags[condInd] = set;
-      boolean allConds = true;
-      for(int i = 0; i < conditionFlags.length; i++){
-         if(!conditionFlags[i]) {
-            allConds = false;
-            break;
-         }
+      if(conditions.containsKey(cond)){
+         conditions.put(cond,set);
       }
-      setAcquired(allConds);
+      
+      setAcquired(conditions.values().stream().allMatch(b -> b));
       return isAcquired() && !had;
    }
    
-   public String[] getConditions(){
+   public HashMap<String, Boolean> getConditions(){
       return conditions;
    }
    
@@ -53,8 +48,8 @@ public class ConditionalsAchievement extends ArcanaAchievement{
       nbt.putString("name",name);
       nbt.putInt("type",type);
       NbtCompound condsTag = new NbtCompound();
-      for(int i = 0; i < conditions.length; i++){
-         condsTag.putBoolean(conditions[i],conditionFlags[i]);
+      for(Map.Entry<String, Boolean> entry : conditions.entrySet()){
+         condsTag.putBoolean(entry.getKey(),entry.getValue());
       }
       nbt.put("conditions",condsTag);
       return nbt;
@@ -62,19 +57,13 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    
    @Override
    public ConditionalsAchievement fromNbt(String id, NbtCompound nbt){
+      conditions.clear();
       ConditionalsAchievement ach = (ConditionalsAchievement) ArcanaAchievements.registry.get(id);
       ach.setAcquired(nbt.getBoolean("acquired"));
       NbtCompound condsTag = nbt.getCompound("conditions");
-      String[] conds = new String[condsTag.getKeys().size()];
-      boolean[] condFlags = new boolean[conds.length];
-      int i = 0;
       for(String key : condsTag.getKeys()){
-         conds[i] = key;
-         condFlags[i] = condsTag.getBoolean(key);
-         i++;
+         conditions.put(key,condsTag.getBoolean(key));
       }
-      ach.conditions = conds;
-      ach.conditionFlags = condFlags;
       return ach;
    }
    
@@ -91,13 +80,13 @@ public class ConditionalsAchievement extends ArcanaAchievement{
       missing.add(Text.literal("Missing:").formatted(Formatting.DARK_AQUA));
       
       if(achievement == null){
-         for(int i = 0; i < conditions.length; i++){
-            missing.add(Text.literal(""+conditions[i]).formatted(Formatting.AQUA));
+         for(String cond : conditions.keySet()){
+            missing.add(Text.literal(cond).formatted(Formatting.AQUA));
          }
       }else{
-         for(int i = 0; i < achievement.conditions.length; i++){
-            if(achievement.conditionFlags[i]) continue;
-            missing.add(Text.literal(""+conditions[i]).formatted(Formatting.AQUA));
+         for(String cond : conditions.keySet()){
+            if(achievement.getConditions().get(cond)) continue;
+            missing.add(Text.literal(cond).formatted(Formatting.AQUA));
          }
       }
       
@@ -106,6 +95,6 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    
    @Override
    public ConditionalsAchievement makeNew(){
-      return new ConditionalsAchievement(name, id, getDisplayItem(), getMagicItem(), xpReward, pointsReward, getDescription(), conditions);
+      return new ConditionalsAchievement(name, id, getDisplayItem(), getMagicItem(), xpReward, pointsReward, getDescription(), conditions.keySet().toArray(new String[0]));
    }
 }

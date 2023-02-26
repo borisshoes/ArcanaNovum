@@ -21,13 +21,22 @@ public class MagicItemIngredient {
    protected final Item itemType;
    protected final int count;
    protected final NbtCompound requiredNbt;
+   protected final boolean ignoresResourceful;
    
    public static MagicItemIngredient EMPTY = new MagicItemIngredient(Items.AIR,1,null);
+   
+   public MagicItemIngredient(Item itemType, int count, @Nullable NbtCompound requiredNbt, boolean ignoresResourceful){
+      this.count = count;
+      this.itemType = itemType;
+      this.requiredNbt = requiredNbt;
+      this.ignoresResourceful = ignoresResourceful;
+   }
    
    public MagicItemIngredient(Item itemType, int count, @Nullable NbtCompound requiredNbt){
       this.count = count;
       this.itemType = itemType;
       this.requiredNbt = requiredNbt;
+      this.ignoresResourceful = false;
    }
    
    public int getCount(){
@@ -58,8 +67,10 @@ public class MagicItemIngredient {
    
    public ItemStack getRemainder(ItemStack stack, int resourceLvl){
       int saved = 0;
-      for(int i = 0; i < count; i++){
-         if(Math.random() < 0.05*resourceLvl) saved++;
+      if(!ignoresResourceful){
+         for(int i = 0; i < count; i++){
+            if(Math.random() < 0.05 * resourceLvl) saved++;
+         }
       }
       int newCount = MagicItemUtils.isMagic(stack) ? count : count - saved;
       

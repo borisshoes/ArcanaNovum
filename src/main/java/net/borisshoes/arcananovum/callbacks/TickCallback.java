@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.bosses.BossFights;
@@ -163,24 +164,14 @@ public class TickCallback {
       int curConc = MagicItemUtils.getUsedConcentration(player);
       if(MagicItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,"arcane_addict");
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
-         player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
-         SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
-         player.damage(DamageSource.OUT_OF_WORLD, 8);
-         if(player.isDead()){
-            AbstractTeam abstractTeam = player.getScoreboardTeam();
-            Formatting playerColor = abstractTeam != null && abstractTeam.getColor() != null ? abstractTeam.getColor() : Formatting.LIGHT_PURPLE;
-            String[] deathStrings = {
-                  " lost concentration on their Arcana",
-                  "'s mind was consumed by their Arcana",
-                  "'s was crushed by the power of their Arcana",
-                  "'s items consumed too much concentration",
-                  " couldn't channel enough Arcana to their items"
-            };
-            final Text deathMsg = Text.literal("")
-                  .append(Text.literal(player.getEntityName()).formatted(playerColor).formatted())
-                  .append(Text.literal(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
-            server.getPlayerManager().broadcast(deathMsg, false);
-         }else{
+         if((boolean) Arcananovum.config.getValue("doConcentrationDamage")){
+            player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
+            DamageSource concSource = new DamageSource("outOfWorld.ArcanaNovum.Concentration");
+            concSource.setBypassesArmor().setOutOfWorld();
+            player.damage(concSource, 8);
+         }
+         if(!player.isDead()){
             if(player.getHealth() <= 1.5f){
                ArcanaAchievements.grant(player,"close_call");
             }

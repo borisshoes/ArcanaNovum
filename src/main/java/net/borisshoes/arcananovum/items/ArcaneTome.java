@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.*;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
+import net.borisshoes.arcananovum.recipes.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -43,7 +44,6 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 import static net.borisshoes.arcananovum.items.core.MagicItems.RECOMMENDED_LIST;
 
 public class ArcaneTome extends MagicItem implements UsableItem {
-   private IArcanaProfileComponent profile;
    private final int[] craftingSlots = {1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
    
    public ArcaneTome(){
@@ -78,28 +78,15 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      openGui(playerEntity,TomeMode.PROFILE);
+      int skillLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(playerEntity.getStackInHand(hand),ArcanaAugments.SKILL.id));
+      openGui(playerEntity,TomeMode.PROFILE,new TomeGui.CompendiumSettings(skillLvl));
       return false;
    }
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      openGui(playerEntity,TomeMode.PROFILE);
+      //openGui(playerEntity,TomeMode.PROFILE);
       return false;
-   }
-   
-   public void getOrCreateProfile(ServerPlayerEntity player){
-      this.profile = PLAYER_DATA.get(player);
-      if(profile.getLevel() == 0){
-         // Profile needs initialization
-         profile.setLevel(1);
-      }
-      // update level from xp just in case leveling changed
-      profile.setLevel(LevelUtils.levelFromXp(profile.getXP()));
-   }
-   
-   public void openGui(PlayerEntity playerEntity, TomeMode mode){
-      openGui(playerEntity,mode,new TomeGui.CompendiumSettings(),"");
    }
    
    public void openGui(PlayerEntity playerEntity, TomeMode mode, TomeGui.CompendiumSettings settings){
@@ -110,7 +97,6 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       if(!(playerEntity instanceof ServerPlayerEntity))
          return;
       ServerPlayerEntity player = (ServerPlayerEntity) playerEntity;
-      getOrCreateProfile(player);
       TomeGui gui = null;
       if(mode == TomeMode.PROFILE){ // Profile
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
@@ -157,6 +143,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    }
    
    public void buildProfileGui(TomeGui gui, ServerPlayerEntity player){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       gui.setMode(TomeMode.PROFILE);
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
@@ -221,12 +208,14 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       loreList = new NbtList();
       int totalSkillPoints = profile.getTotalSkillPoints();
       int spentSkillPoints = profile.getSpentSkillPoints();
+      int bonusSkillPoints = profile.getBonusSkillPoints();
       display.putString("Name","[{\"text\":\"Skill Points\",\"italic\":false,\"color\":\"dark_aqua\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Total Skill Points: "+totalSkillPoints+"\",\"italic\":false,\"color\":\"aqua\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Allocated Points: "+spentSkillPoints+"/"+totalSkillPoints+"\",\"italic\":false,\"color\":\"aqua\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Points From Leveling: "+LevelUtils.getLevelSkillPoints(level)+"\",\"italic\":false,\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Points From Achievements: "+profile.getAchievementSkillPoints()+"\",\"italic\":false,\"color\":\"blue\"}]"));
+      if(bonusSkillPoints != 0) loreList.add(NbtString.of("[{\"text\":\"Bonus Skill Points: "+bonusSkillPoints+"\",\"italic\":false,\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Allocate Skill Points to Augment Items!\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Earn Skill Points From Leveling Up or From Achievements!\",\"italic\":false,\"color\":\"light_purple\"}]"));
@@ -334,10 +323,6 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       }else{
          return items.subList(28*(page-1), Math.min(items.size(), 28*page));
       }
-   }
-   
-   public void buildCompendiumGui(TomeGui gui, ServerPlayerEntity player){
-      buildCompendiumGui(gui,player,new TomeGui.CompendiumSettings());
    }
    
    public void buildCompendiumGui(TomeGui gui, ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
@@ -521,6 +506,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    }
    
    public void buildItemGui(TomeGui gui, ServerPlayerEntity player, String id){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       gui.setMode(TomeMode.ITEM);
       MagicItem magicItem = MagicItemUtils.getItemFromId(id);
       if(magicItem == null){
@@ -651,7 +637,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
          gui.clearSlot(46+achieveSlots[i]);
          
          GuiElementBuilder achievementItem = new GuiElementBuilder(achievement.getDisplayItem().getItem());
-         achievementItem.setName(Text.literal(achievement.name).formatted(Formatting.LIGHT_PURPLE))
+         achievementItem.hideFlags().setName(Text.literal(achievement.name).formatted(Formatting.LIGHT_PURPLE))
                .addLoreLine(Text.literal("")
                      .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
                      .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
@@ -702,6 +688,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       tag.putInt("HideFlags",103);
       gui.setSlot(7,GuiElementBuilder.from(book));
    
+      MagicItemRecipe recipe = magicItem.getRecipe();
+      
       ItemStack table = new ItemStack(Items.CRAFTING_TABLE);
       tag = table.getOrCreateNbt();
       display = new NbtCompound();
@@ -711,11 +699,12 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
-      gui.setSlot(43,GuiElementBuilder.from(table));
+      if(!(recipe instanceof ExplainRecipe)){
+         gui.setSlot(43,GuiElementBuilder.from(table));
+      }
    
       gui.setSlot(25,GuiElementBuilder.from(magicItem.getPrefItem()).glow());
-   
-      MagicItemRecipe recipe = magicItem.getRecipe();
+      
       MagicItemIngredient[][] ingredients = recipe.getIngredients();
       for(int i = 0; i < 25; i++){
          ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
@@ -846,8 +835,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    
    private MagicItemRecipe makeRecipe(){
       MagicItemIngredient a = new MagicItemIngredient(Items.AIR,1,null);
-      MagicItemIngredient t = new MagicItemIngredient(Items.ENCHANTING_TABLE,1,null);
-      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,1,null);
+      MagicItemIngredient t = new MagicItemIngredient(Items.ENCHANTING_TABLE,1,null, true);
+      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,1,null, true);
       
       MagicItemIngredient[][] ingredients = {
             {a,a,a,a,a},

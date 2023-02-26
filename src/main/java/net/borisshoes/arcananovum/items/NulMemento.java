@@ -245,18 +245,20 @@ public class NulMemento extends MagicItem implements UsableItem {
    private MagicItemRecipe makeRecipe(){
       GenericMagicIngredient a = new GenericMagicIngredient(MagicItems.CATALYST_EMPOWERED,1);
       GenericMagicIngredient b = new GenericMagicIngredient(MagicItems.CATALYST_EXOTIC,1);
+      GenericMagicIngredient r = new GenericMagicIngredient(MagicItems.ARCANE_TOME,1);
       GenericMagicIngredient c = new GenericMagicIngredient(MagicItems.CATALYST_LEGENDARY,1);
       GenericMagicIngredient d = new GenericMagicIngredient(MagicItems.CATALYST_MUNDANE,1);
-      GenericMagicIngredient g = new GenericMagicIngredient(MagicItems.EXOTIC_MATTER,1);
-      GenericMagicIngredient h = new GenericMagicIngredient(MagicItems.TEMPORAL_MOMENT,1);
-      GenericMagicIngredient i = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
-      MagicItemIngredient m = new MagicItemIngredient(Items.WITHER_SKELETON_SKULL,64,null);
+      GenericMagicIngredient g = new GenericMagicIngredient(MagicItems.CATALYST_MYTHICAL,1);
+      GenericMagicIngredient h = new GenericMagicIngredient(MagicItems.EXOTIC_MATTER,1);
+      GenericMagicIngredient l = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      MagicItemIngredient m = new MagicItemIngredient(Items.WITHER_SKELETON_SKULL,64,null,true);
+      GenericMagicIngredient n = new GenericMagicIngredient(MagicItems.TEMPORAL_MOMENT,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,b,c,d,a},
-            {d,g,h,i,b},
-            {c,h,m,h,c},
-            {b,i,h,g,d},
+            {d,g,h,g,b},
+            {c,l,m,n,c},
+            {b,g,r,g,d},
             {a,d,c,b,a}};
       return new MagicItemRecipe(ingredients);
    }

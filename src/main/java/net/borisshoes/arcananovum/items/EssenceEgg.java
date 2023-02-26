@@ -140,7 +140,7 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
                   if(playerEntity instanceof ServerPlayerEntity player){
                      player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
-                     PLAYER_DATA.get(playerEntity).addXP(2500); // Add xp
+                     PLAYER_DATA.get(playerEntity).addXP(Math.min(0,2500-500*captiveLevel)); // Add xp
                      ArcanaAchievements.grant(player,"soul_conversion");
                   }
                }

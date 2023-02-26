@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.callbacks;
 import com.mojang.brigadier.CommandDispatcher;
 
 import net.borisshoes.arcananovum.ArcanaCommands;
+import net.borisshoes.arcananovum.Arcananovum;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.MessageArgumentType;
 import net.minecraft.server.command.CommandManager;
@@ -24,7 +25,9 @@ public class CommandRegisterCallback {
       dispatcher.register(literal("arcana")
             .then(literal("create").requires(source -> source.hasPermissionLevel(2))
                   .then(argument("id", string()).suggests(ArcanaCommands::getItemSuggestions)
-                        .executes(ctx -> ArcanaCommands.createItem(ctx.getSource(), getString(ctx, "id")))))
+                        .executes(ctx -> ArcanaCommands.createItem(ctx.getSource(), getString(ctx, "id")))
+                        .then(argument("targets", players())
+                              .executes(ctx -> ArcanaCommands.createItems(ctx.getSource(), getString(ctx, "id"), getPlayers(ctx,"targets"))))))
             .then(literal("cache").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::cacheCommand))
             .then(literal("help").executes(ArcanaCommands::openGuideBook))
             .then(literal("guide").executes(ArcanaCommands::openGuideBook))
@@ -47,8 +50,19 @@ public class CommandRegisterCallback {
                               .then(literal("levels")
                                     .executes(context -> ArcanaCommands.xpCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true,false))))))
                   .then(literal("query")
-                        .then(argument("targets",player())
-                              .executes(context -> ArcanaCommands.xpCommandQuery(context, getPlayer(context,"targets"))))))
+                        .then(argument("target",player())
+                              .executes(context -> ArcanaCommands.xpCommandQuery(context, getPlayer(context,"target"))))))
+            .then(literal("skillpoints").requires(source -> source.hasPermissionLevel(2))
+                  .then(literal("add")
+                        .then(argument("targets", players())
+                              .then(argument("amount", integer())
+                                    .executes(context -> ArcanaCommands.skillpointsCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),false)))))
+                  .then(literal("set")
+                        .then(argument("targets", players()).then(argument("amount", integer())
+                              .executes(context -> ArcanaCommands.skillpointsCommand(context,getPlayers(context,"targets"),getInteger(context,"amount"),true)))))
+                  .then(literal("query")
+                        .then(argument("target",player())
+                              .executes(context -> ArcanaCommands.skillpointsCommandQuery(context, getPlayer(context,"target"))))))
             .then(literal("boss")
                   .then(literal("start").requires(source -> source.hasPermissionLevel(2))
                         .then(literal("dragon").executes(ArcanaCommands::startDragonBoss)))
@@ -65,6 +79,8 @@ public class CommandRegisterCallback {
                         .then(literal("all").requires(source -> source.hasPermissionLevel(2))
                               .executes(context ->ArcanaCommands.bossTeleport(context,context.getSource().getPlayer(),true)))))
       );
+   
+      dispatcher.register(Arcananovum.config.generateCommand());
    
       if(devMode){
          dispatcher.register(literal("arcana")

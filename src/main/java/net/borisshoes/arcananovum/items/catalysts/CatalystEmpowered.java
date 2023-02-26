@@ -55,7 +55,7 @@ public class CatalystEmpowered extends MagicItem {
       MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,16,null);
       MagicItemIngredient c = new MagicItemIngredient(Items.CRYING_OBSIDIAN,16,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.EMERALD,32,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.NETHER_STAR,8,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.NETHER_STAR,1,null);
       GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.CATALYST_MUNDANE,1);
    
       MagicItemIngredient[][] ingredients = {

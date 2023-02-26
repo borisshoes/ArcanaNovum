@@ -24,6 +24,77 @@ import java.util.TimerTask;
 
 public class ParticleEffectUtils {
    
+   public static void nulConstructNecroticShroud(ServerWorld world, Vec3d pos){
+      world.spawnParticles(ParticleTypes.LARGE_SMOKE,pos.getX(),pos.getY()+1.5,pos.getZ(),150,1.5,1.5,1.5,0.07);
+   }
+   
+   public static void nulConstructDarkConversion(ServerWorld world, Vec3d pos){
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x9e0945).toVector3f(),0.8f);
+      world.spawnParticles(dust, pos.getX(), pos.getY() + 1.75, pos.getZ(), 20,0.75,1,0.75,0.03);
+   }
+   
+   public static void nulConstructReflectiveArmor(ServerWorld world, Vec3d pos){
+      world.spawnParticles(ParticleTypes.END_ROD, pos.getX(), pos.getY() + 1.75, pos.getZ(), 5,0.75,1,0.75,0.03);
+   }
+   
+   public static void nulConstructCurseOfDecay(ServerWorld world, Vec3d pos){
+      world.spawnParticles(ParticleTypes.SOUL, pos.getX(), pos.getY() + 1, pos.getZ(), 20,0.5,1,0.5,0.07);
+   }
+   
+   public static void nulConstructReflexiveBlast(ServerWorld world, Vec3d pos, int calls){
+      double radius = .5+calls*4;
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x36332b).toVector3f(),1.5f);
+      sphere(world,null,pos,dust,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,calls*Math.PI*2/5);
+      if(calls < 5){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               nulConstructReflexiveBlast(world,pos,calls + 1);
+            }
+         }));
+      }
+   }
+   
+   public static void webOfFireCast(ServerWorld world, ParticleEffect type, ServerPlayerEntity caster, List<LivingEntity> hits, double range, int calls){
+      final int totalCalls = 15;
+      
+      Vec3d center = caster.getPos().add(0,caster.getHeight()*.25,0);
+      if(calls%2 == 0 && calls < 5){
+         circle(world,null,center,type,range,(int)(10*range),1,0.05,0.01);
+         circle(world,null,center,type,2,20,1,0.05,0.01);
+   
+         for(LivingEntity hit : hits){
+            Vec3d hitCircle = new Vec3d(hit.getX(),center.getY(),hit.getZ());
+            circle(world,null,hitCircle,type,hit.getWidth(),12,1,0,0);
+            line(world,null,center,hitCircle,type,(int)(center.distanceTo(hitCircle)*4),1,0,0);
+            
+            for(LivingEntity other : hits){
+               if(other.getUuidAsString().equals(hit.getUuidAsString())) continue;
+               Vec3d otherCircle = new Vec3d(other.getX(),center.getY(),other.getZ());
+               line(world,null,otherCircle,hitCircle,type,(int)(otherCircle.distanceTo(hitCircle)*2.5),1,0,0);
+            }
+         }
+      }
+   
+      for(LivingEntity hit : hits){
+         double heightMod = (double)calls/totalCalls;
+         double height = hit.getY() + hit.getHeight()*heightMod;
+         double radiusMod = 1.0 - (double)calls/(totalCalls*1.5);
+         double radius = hit.getWidth()*.75 * radiusMod;
+         Vec3d circlePos = new Vec3d(hit.getX(),height,hit.getZ());
+         circle(world,null,circlePos,type,radius,12,1,0,0.01);
+      }
+      
+      if(calls < totalCalls){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               webOfFireCast(world, type,caster,hits,range,calls + 1);
+            }
+         }));
+      }
+   }
+   
    public static void pyroblastExplosion(ServerWorld world, ParticleEffect type, Vec3d pos, double range, int calls){
       double radius = .5+calls*(range/5);
       sphere(world,null,pos,type,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,calls*Math.PI*2/5);

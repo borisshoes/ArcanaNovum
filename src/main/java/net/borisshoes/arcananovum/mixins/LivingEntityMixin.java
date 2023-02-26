@@ -3,7 +3,9 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructFight;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
@@ -44,8 +46,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
@@ -151,7 +155,7 @@ public abstract class LivingEntityMixin {
    }
    
    
-   // Mixin for damage mitigation for Wings of Zephyr, Charm of Felidae
+   // Mixin for damage mitigation for Wings of Zephyr, Charm of Felidae, Reflective Armor for Nul Construct
    @Inject(method = "modifyAppliedDamage", at = @At("RETURN"), cancellable = true)
    private void arcananovum_modifyDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
       float reduced = cir.getReturnValueF();
@@ -243,7 +247,7 @@ public abstract class LivingEntityMixin {
                      newReturn = 0;
                   }
                }
-            }else if(magicItem instanceof CindersCharm cinders){ // Cinders Charm Cremation
+            }else if(magicItem instanceof CindersCharm cinders && source.isFire()){ // Cinders Charm Cremation
                boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"cremation")) >= 1;
                if(cremation){
                   float oldReturn = newReturn;
@@ -262,6 +266,25 @@ public abstract class LivingEntityMixin {
             }
          }
       }
+   
+      // Nul Construct Reflective Armor
+      for(MagicEntity magicEntity : MAGIC_ENTITY_LIST.get(entity.getWorld()).getEntities()){
+         if(magicEntity.getUuid().equals(entity.getUuidAsString())){
+            NbtCompound magicData = magicEntity.getData();
+            if(magicData.getString("id").equals("nul_construct")){
+               NbtCompound activeAbilitiesTag = magicData.getCompound("activeAbilities");
+               if(activeAbilitiesTag.contains("reflective_armor")){
+                  Entity attacker = source.getAttacker();
+                  if(attacker != null){
+                     attacker.damage(DamageSource.thorns(entity), amount * 0.5f);
+                     NulConstructFight.conversionHeal(entity,amount*0.5f);
+                  }
+               }
+               break;
+            }
+         }
+      }
+      
       cir.setReturnValue(newReturn);
    }
    

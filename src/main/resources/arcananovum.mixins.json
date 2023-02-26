@@ -6,6 +6,7 @@
   "mixins": [
     "BowMixin",
     "CreeperMixin",
+    "DamageTrackerMixin",
     "DispenserBlockEntityMixin",
     "EnderPearlEntityMixin",
     "ExplosionMixin",

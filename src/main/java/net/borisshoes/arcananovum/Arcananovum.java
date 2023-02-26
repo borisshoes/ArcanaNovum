@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum;
 
 import net.borisshoes.arcananovum.callbacks.*;
+import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
@@ -9,7 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.recipe.RecipeUnlocker;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +25,9 @@ public class Arcananovum implements ModInitializer {
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
-   public static final boolean devMode = false;
+   public static final boolean devMode = true;
+   private static final String CONFIG_NAME = "ArcanaNovum.properties";
+   public static ConfigUtils config;
    
    @Override
    public void onInitialize(){
@@ -43,6 +46,13 @@ public class Arcananovum implements ModInitializer {
       ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathCallback::afterRespawn);
    
       logger.info("Arcana Surges Through The Server!");
+   
+      config = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, Arrays.asList(new ConfigUtils.IConfigValue[] {
+            new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true,
+                  new ConfigUtils.Command("Do Concentration Damage is %s", "Do Concentration Damage is now %s")),
+            new ConfigUtils.BooleanConfigValue("announceAchievements", true,
+                  new ConfigUtils.Command("Announce Achievements is %s", "Announce Achievements is now %s")),
+      }));
    }
    
    public static boolean addTickTimerCallback(TickTimerCallback callback){

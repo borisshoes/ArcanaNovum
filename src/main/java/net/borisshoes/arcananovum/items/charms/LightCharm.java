@@ -296,7 +296,7 @@ public class LightCharm extends MagicItem implements TickingItem, UsableItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient b = new MagicItemIngredient(Items.BEACON,1,null);
+      MagicItemIngredient b = new MagicItemIngredient(Items.BEACON,1,null, true);
       MagicItemIngredient g = new MagicItemIngredient(Items.GLOWSTONE,64,null);
       MagicItemIngredient s = new MagicItemIngredient(Items.SHROOMLIGHT,64,null);
       MagicItemIngredient f = new MagicItemIngredient(Items.PEARLESCENT_FROGLIGHT,64,null);

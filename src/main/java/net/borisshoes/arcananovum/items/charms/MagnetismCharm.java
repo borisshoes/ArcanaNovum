@@ -10,8 +10,6 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -41,7 +39,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem {
    
-   private static final ArrayList<Item> IRON_ITEMS = new ArrayList<>(Arrays.asList(
+   private static final ArrayList<Item> NEODYMIUM_TARGETS = new ArrayList<>(Arrays.asList(
          Items.IRON_INGOT,
          Items.IRON_BLOCK,
          Items.IRON_BARS,
@@ -57,7 +55,52 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
          Items.IRON_PICKAXE,
          Items.IRON_SHOVEL,
          Items.IRON_SWORD,
-         Items.IRON_TRAPDOOR
+         Items.IRON_TRAPDOOR,
+         Items.GOLD_INGOT,
+         Items.GOLD_BLOCK,
+         Items.GOLDEN_AXE,
+         Items.GOLDEN_BOOTS,
+         Items.GOLDEN_CHESTPLATE,
+         Items.GOLDEN_HELMET,
+         Items.GOLDEN_HOE,
+         Items.GOLDEN_HORSE_ARMOR,
+         Items.GOLDEN_LEGGINGS,
+         Items.GOLD_NUGGET,
+         Items.GOLDEN_PICKAXE,
+         Items.GOLDEN_SHOVEL,
+         Items.GOLDEN_SWORD,
+         Items.SHIELD,
+         Items.CROSSBOW,
+         Items.CHAIN,
+         Items.LIGHTNING_ROD,
+         Items.COPPER_BLOCK,
+         Items.COPPER_INGOT,
+         Items.TRIPWIRE_HOOK,
+         Items.CHAIN,
+         Items.CHAINMAIL_BOOTS,
+         Items.CHAINMAIL_CHESTPLATE,
+         Items.CHAINMAIL_HELMET,
+         Items.CHAINMAIL_LEGGINGS,
+         Items.BUCKET,
+         Items.LAVA_BUCKET,
+         Items.WATER_BUCKET,
+         Items.MILK_BUCKET,
+         Items.AXOLOTL_BUCKET,
+         Items.COD_BUCKET,
+         Items.POWDER_SNOW_BUCKET,
+         Items.PUFFERFISH_BUCKET,
+         Items.SALMON_BUCKET,
+         Items.TROPICAL_FISH_BUCKET,
+         Items.TADPOLE_BUCKET,
+         Items.CAULDRON,
+         Items.MINECART,
+         Items.HOPPER_MINECART,
+         Items.BLAST_FURNACE,
+         Items.SMITHING_TABLE,
+         Items.BELL,
+         Items.LANTERN,
+         Items.SOUL_LANTERN,
+         Items.HOPPER
    ));
    
    public MagnetismCharm(){
@@ -155,8 +198,8 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
          double speed = .1;
          double heightMod = .08;
          item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
-         PLAYER_DATA.get(player).addXP(5); // Add xp
       }
+      PLAYER_DATA.get(player).addXP(Math.min(100,5*items.size())); // Add xp
       if(items.size() >= 25) ArcanaAchievements.grant(player,"magnets");
       
       if(ArcanaAugments.getAugmentOnItem(charm,"neodymium") >= 1){
@@ -186,7 +229,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
                
                for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
                   ItemStack item = entry.getValue();
-                  if(IRON_ITEMS.contains(item.getItem())){
+                  if(NEODYMIUM_TARGETS.contains(item.getItem())){
                      e.dropStack(item);
                      e.equipStack(entry.getKey(),ItemStack.EMPTY);
                   }

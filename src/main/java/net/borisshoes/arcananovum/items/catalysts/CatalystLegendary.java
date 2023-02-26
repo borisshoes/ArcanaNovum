@@ -1,22 +1,56 @@
 package net.borisshoes.arcananovum.items.catalysts;
 
+import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructDialog;
+import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.WingsOfZephyr;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.advancement.criterion.Criteria;
+import net.minecraft.block.*;
+import net.minecraft.block.pattern.BlockPattern;
+import net.minecraft.block.pattern.BlockPatternBuilder;
+import net.minecraft.block.pattern.CachedBlockPosition;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.boss.WitherEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.predicate.block.BlockStatePredicate;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.function.MaterialPredicate;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.TimerTask;
 
-public class CatalystLegendary extends MagicItem {
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
+
+public class CatalystLegendary extends MagicItem implements UsableItem {
    
    public CatalystLegendary(){
       id = "catalyst_legendary";
@@ -48,13 +82,128 @@ public class CatalystLegendary extends MagicItem {
       prefItem = item;
    }
    
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
+      return false;
+   }
    
+   // Summon Nul Construct Mini Boss
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
+      BlockPos pos = result.getBlockPos();
+      BlockState state = world.getBlockState(pos);
+      if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY()){ // Check construct
+         BlockPattern.Result patternResult = getWitherBossPattern().searchAround(world, pos);
+         if (patternResult != null) {
+            WitherEntity witherEntity = (WitherEntity) EntityType.WITHER.create(world);
+            if (witherEntity != null && world instanceof ServerWorld serverWorld) {
+               CarvedPumpkinBlock.breakPatternBlocks(world, patternResult);
+               BlockPos blockPos = patternResult.translate(1, 1, 0).getBlockPos();
+               witherEntity.refreshPositionAndAngles((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
+               witherEntity.bodyYaw = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
+               witherEntity.onSummoned();
+               
+               MutableText witherName = Text.literal("")
+                     .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal(" "))
+                     .append(Text.literal("Nul Construct").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.UNDERLINE))
+                     .append(Text.literal(" "))
+                     .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("-").formatted(Formatting.DARK_GRAY));
+               witherEntity.setCustomName(witherName);
+               witherEntity.setCustomNameVisible(true);
+               witherEntity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(2500f);
+               witherEntity.setHealth(2500f);
+               witherEntity.setPersistent();
+               witherEntity.getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85f);
+               witherEntity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85f);
+               witherEntity.getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10.0f);
+               witherEntity.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(4.0f);
+               witherEntity.getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(100.0f);
+               //Iterator var8 = world.getNonSpectatingEntities(ServerPlayerEntity.class, witherEntity.getBoundingBox().expand(50.0)).iterator();
+   
+               boolean hasMythical = false;
+               boolean hasWings = false;
+               PlayerInventory inv = playerEntity.getInventory();
+               for(int i = 0; i < inv.size(); i++){
+                  ItemStack stack = inv.getStack(i);
+                  MagicItem magicItem = MagicItemUtils.identifyItem(stack);
+                  if(magicItem == null) continue;
+                  if(magicItem.getRarity() == MagicRarity.MYTHICAL) hasMythical = true;
+                  if(magicItem instanceof WingsOfZephyr) hasWings = true;
+               }
+               
+               NbtCompound witherData = new NbtCompound();
+               witherData.putString("id","nul_construct");
+               witherData.putBoolean("dead",false);
+               witherData.putString("summonerId", playerEntity.getUuidAsString());
+               witherData.putString("summonerName", playerEntity.getEntityName());
+               witherData.putBoolean("summonerHasMythical", hasMythical);
+               witherData.putBoolean("summonerHasWings", hasWings);
+               witherData.putFloat("prevHP", witherEntity.getHealth());
+               witherData.putInt("castCD",220);
+               NbtCompound abilities = new NbtCompound();
+               // Necrotic Shroud and Reflexive Blast activate automatically
+               // Summon Goons, Curse of Decay, Reflective Armor, Withering Ray and Dark Conversion all have favor weights
+               abilities.put("necrotic_shroud",makeAbilityNbt());
+               abilities.put("reflexive_blast",makeAbilityNbt());
+               abilities.put("summon_goons",makeAbilityNbt());
+               abilities.put("curse_of_decay",makeAbilityNbt());
+               abilities.put("reflective_armor",makeAbilityNbt());
+               abilities.put("withering_ray",makeAbilityNbt());
+               abilities.put("dark_conversion",makeAbilityNbt());
+               witherData.put("abilities",abilities);
+               witherData.put("activeAbilities",new NbtCompound());
+               
+               MagicEntity magicEntity = new MagicEntity(witherEntity.getUuidAsString(),witherData);
+               MAGIC_ENTITY_LIST.get(serverWorld).addEntity(magicEntity);
+               
+               NulConstructDialog.announce(playerEntity.getServer(),playerEntity,witherEntity, NulConstructDialog.Announcements.SUMMON_TEXT);
+               boolean finalHasMythical = hasMythical;
+               boolean finalHasWings = hasWings;
+               Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(witherEntity.getInvulnerableTimer(), new TimerTask() {
+                  @Override
+                  public void run(){
+                     NulConstructDialog.announce(playerEntity.getServer(),playerEntity,witherEntity, NulConstructDialog.Announcements.SUMMON_DIALOG, new boolean[]{finalHasMythical,finalHasWings});
+                  }
+               }));
+               
+         
+               world.spawnEntity(witherEntity);
+               CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
+   
+               playerEntity.getStackInHand(hand).setCount(0);
+            }
+      
+         }
+      }
+      return false;
+   }
+   
+   private NbtCompound makeAbilityNbt(){
+      NbtCompound compound = new NbtCompound();
+      compound.putInt("cooldown",0);
+      compound.putInt("weight",(int)(Math.random()*10+1));
+      return compound;
+   }
+   
+   private static BlockPattern getWitherBossPattern() {
+      return BlockPatternBuilder.start().aisle("^^^", "#@#", "~#~")
+            .where('#', (pos) -> pos.getBlockState().isIn(BlockTags.WITHER_SUMMON_BASE_BLOCKS))
+            .where('^', CachedBlockPosition.matchesBlockState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL))))
+            .where('~', CachedBlockPosition.matchesBlockState(MaterialPredicate.create(Material.AIR)))
+            .where('@', CachedBlockPosition.matchesBlockState(BlockStatePredicate.forBlock(Blocks.NETHERITE_BLOCK)))
+            .build();
+   }
    
    private MagicItemRecipe makeRecipe(){
       MagicItemIngredient a = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
       MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,64,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.GOLD_INGOT,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.NETHER_STAR,8,null);
+      MagicItemIngredient h = new MagicItemIngredient(Items.NETHER_STAR,2,null);
       GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.CATALYST_EXOTIC,1);
    
       MagicItemIngredient[][] ingredients = {

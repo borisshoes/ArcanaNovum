@@ -65,6 +65,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      tag.putInt("HideFlags",127);
    
    
       setBookLore(makeLore());
@@ -113,7 +114,8 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
                   blockEntity.readNbt(spawnerData);
                }
    
-               double breakChance = new double[]{.15,.13,.11,.09,.07,0}[Math.max(0,ArcanaAugments.getAugmentOnItem(item,"reinforced_chassis"))];
+               int reinforceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"reinforced_chassis"));
+               double breakChance = new double[]{.15,.13,.11,.09,.07,0}[reinforceLvl];
                if(Math.random() > breakChance){ // Chance of the harness breaking after use
                   NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
                   loreList.set(4,NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
@@ -128,7 +130,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
                   item.setNbt(new NbtCompound());
                   if(scrapLvl > 0) giveScrap(player,scrapLvl);
                }
-               PLAYER_DATA.get(player).addXP(3000); // Add xp
+               PLAYER_DATA.get(player).addXP((int) Math.max(0,20000*breakChance)); // Add xp
             }else{
                player.sendMessage(Text.literal("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -146,7 +148,6 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
             loreList.set(4,NbtString.of("[{\"text\":\"Type - "+entityTypeName+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
             player.sendMessage(Text.literal("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
-            PLAYER_DATA.get(player).addXP(3000); // Add xp
             
             if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,"finally_useful");
          }
