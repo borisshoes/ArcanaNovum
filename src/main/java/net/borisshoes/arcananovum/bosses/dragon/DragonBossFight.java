@@ -51,10 +51,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
@@ -502,11 +499,11 @@ public class DragonBossFight {
       if(phase == 1){ // Endermite Goons
          // Count existing goons
          List<EndermiteEntity> curGoons = endWorld.getEntitiesByType(EntityType.ENDERMITE, new Box(new BlockPos(-300,25,-300), new BlockPos(300,255,300)), e -> true);
-         if(curGoons.size() > 50) return;
-         double chance = curGoons.size() == 0 ? 0.005 : 0.002;
+         if(curGoons.size() > 25) return;
+         double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EndermiteEntity[] goons = new EndermiteEntity[Math.min(30,(int)(Math.random()*3*numPlayers+10+numPlayers))];
+         EndermiteEntity[] goons = new EndermiteEntity[MathHelper.clamp((int)(Math.random()*3*numPlayers+10+numPlayers),25,40)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermiteEntity(EntityType.ENDERMITE, endWorld);
@@ -524,11 +521,11 @@ public class DragonBossFight {
       }else if(phase == 2){ // Shulker Goons
          // Count existing goons
          List<ShulkerEntity> curGoons = endWorld.getEntitiesByType(EntityType.SHULKER, new Box(new BlockPos(-300,25,-300), new BlockPos(300,255,300)), e -> true);
-         if(curGoons.size() > 35) return;
-         double chance = curGoons.size() == 0 ? 0.005 : 0.002;
+         if(curGoons.size() > 15) return;
+         double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         ShulkerEntity[] goons = new ShulkerEntity[Math.min(20,(int)(Math.random()*2*numPlayers+6+numPlayers))];
+         ShulkerEntity[] goons = new ShulkerEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+6+numPlayers),15,25)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new ShulkerEntity(EntityType.SHULKER, endWorld);
@@ -545,11 +542,11 @@ public class DragonBossFight {
       }else if(phase == 3){ // Enderman Goons
          // Count existing goons
          List<EndermanEntity> curGoons = endWorld.getEntitiesByType(EntityType.ENDERMAN, new Box(new BlockPos(-300,25,-300), new BlockPos(300,255,300)), e -> true);
-         if(curGoons.size() > 50) return;
-         double chance = curGoons.size() == 0 ? 0.005 : 0.002;
+         if(curGoons.size() > 25) return;
+         double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EndermanEntity[] goons = new EndermanEntity[Math.min(40,(int)(Math.random()*2*numPlayers+10+numPlayers*2))];
+         EndermanEntity[] goons = new EndermanEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+10+numPlayers*2),25,40)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);

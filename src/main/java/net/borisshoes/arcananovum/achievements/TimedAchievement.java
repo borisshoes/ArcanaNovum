@@ -129,8 +129,12 @@ public class TimedAchievement extends ArcanaAchievement{
       TimedAchievement achievement = (TimedAchievement) profile.getAchievement(getMagicItem().getId(), id);
       if(achievement == null) return null;
    
-      return new MutableText[]{Text.literal("")
-            .append(Text.literal("Achieved!").formatted(Formatting.AQUA))};
+      if(achievement.isAcquired()){
+         return new MutableText[]{Text.literal("")
+               .append(Text.literal("Achieved!").formatted(Formatting.AQUA))};
+      }else{
+         return null;
+      }
    }
    
    @Override

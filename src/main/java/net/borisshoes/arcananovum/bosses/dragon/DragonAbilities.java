@@ -222,7 +222,7 @@ public class DragonAbilities {
             actions.put(DragonAbilityTypes.OBLITERATE_TOWER,10*count);
          }
       
-         int healthCount = 10 - (int)(10 * dragon.getHealth() / dragon.getMaxHealth());
+         int healthCount = 20 - (int)(20 * dragon.getHealth() / dragon.getMaxHealth());
          if(healthCount != 0) actions.put(DragonAbilityTypes.DRACONIC_RESILIENCE,healthCount);
       }
       
