@@ -47,7 +47,7 @@ public class DetonationArrows extends MagicItem implements RunicArrow {
       addRunicArrowLore(loreList);
       loreList.add(NbtString.of("[{\"text\":\"Detonation Arrows:\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"explode\",\"color\":\"red\"},{\"text\":\" on impact \"},{\"text\":\"destroying\",\"color\":\"red\"},{\"text\":\" nearby terrain.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gold\"},{\"text\":\" \"},{\"text\":\"explosion\",\"color\":\"red\"},{\"text\":\" does \"},{\"text\":\"reduced damage\",\"color\":\"red\"},{\"text\":\" to \"},{\"text\":\"players\",\"color\":\"red\"},{\"text\":\".\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" \"},{\"text\":\"explosion\",\"color\":\"red\"},{\"text\":\" does \"},{\"text\":\"reduced damage\",\"color\":\"red\"},{\"text\":\" to \"},{\"text\":\"players\",\"color\":\"red\"},{\"text\":\".\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);

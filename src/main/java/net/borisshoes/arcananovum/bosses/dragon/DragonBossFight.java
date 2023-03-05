@@ -848,7 +848,7 @@ public class DragonBossFight {
       ServerPlayerEntity gm = server.getPlayerManager().getPlayer(UUID.fromString(data.getString("GameMaster")));
       ServerWorld endWorld = server.getWorld(World.END);
       if(gm != null){
-         gm.sendMessage(Text.translatable("Boss Has Been Aborted").formatted(Formatting.RED,Formatting.ITALIC));
+         gm.sendMessage(Text.translatable("Boss Has Been Aborted :(").formatted(Formatting.RED,Formatting.ITALIC));
       }
    
       for(EnderDragonEntity dragon : endWorld.getAliveEnderDragons()){
