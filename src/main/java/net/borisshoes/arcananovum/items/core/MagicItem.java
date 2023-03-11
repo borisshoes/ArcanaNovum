@@ -80,7 +80,9 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
       if(player.isBlank()) return stack;
       String crafterName = server.getUserCache().getByUuid(UUID.fromString(player)).orElse(new GameProfile(UUID.fromString(player),"???")).getName();
-   
+      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
+      MagicRarity rarity = magicItem == null ? MagicRarity.MUNDANE : magicItem.getRarity();
+      
       int index = -1;
       for(int i = 0; i < loreList.size(); i++){
          NbtString nbtString = (NbtString) loreList.get(i);
@@ -92,12 +94,16 @@ public abstract class MagicItem implements Comparable<MagicItem>{
             loreList.set(i,NbtString.of("[{\"text\":\"Synthesized by \",\"italic\":true,\"color\":\"dark_purple\"},{\"text\":\""+crafterName+"\",\"color\":\"light_purple\"}]"));
             index = -1;
             break;
+         }else if(nbtString.asString().contains("Earned by ")){
+            loreList.set(i,NbtString.of("[{\"text\":\"Earned by \",\"italic\":true,\"color\":\"dark_purple\"},{\"text\":\""+crafterName+"\",\"color\":\"light_purple\"}]"));
+            index = -1;
+            break;
          }else if(nbtString.asString().contains("Magic Item")){
             index = i+1;
          }
       }
       if(index != -1){
-         String crafted = synthetic ? "Synthesized by" : "Crafted by";
+         String crafted = synthetic ? "Synthesized by" : rarity == MagicRarity.MYTHICAL ? "Earned by" : "Crafted by";
          loreList.add(index,NbtString.of("[{\"text\":\""+crafted+" \",\"italic\":true,\"color\":\"dark_purple\"},{\"text\":\""+crafterName+"\",\"color\":\"light_purple\"}]"));
       }
       

@@ -30,6 +30,7 @@
   "mixins": [
     "arcananovum.mixins.json"
   ],
+  "accessWidener" : "arcananovum.accesswidener",
   "depends": {
     "fabricloader": ">=0.14.13",
     "fabric": "*",

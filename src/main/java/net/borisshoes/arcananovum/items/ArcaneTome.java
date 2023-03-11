@@ -52,7 +52,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       rarity = MagicRarity.MUNDANE;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 1;
-   
+      
       ItemStack item = new ItemStack(Items.KNOWLEDGE_BOOK);
       NbtCompound tag = item.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
@@ -68,7 +68,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);

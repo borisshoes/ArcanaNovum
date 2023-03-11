@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
@@ -78,6 +79,7 @@ public class DragonBossFight {
    private static boolean quarterHPNotif = false;
    private static boolean endNotif = false;
    private static int numPlayers = 0;
+   private static int forcedPlayerCount = -1;
    private static EnderDragonEntity dragon = null;
    private static ServerPlayerEntity gameMaster = null;
    private static boolean keepInventoryBefore = false;
@@ -103,6 +105,7 @@ public class DragonBossFight {
       startTimeAnnounced = false;
       endNotif = false;
       numPlayers = 0;
+      forcedPlayerCount = -1;
       dragon = null;
       gameMaster = null;
       crystals = null;
@@ -133,11 +136,12 @@ public class DragonBossFight {
          if(state == States.WAITING_START){ // Set players and dragon name/hp, set keep inventory, make scoreboards, set crystals to be invincible
             if(!prepNotif){
                numPlayers = calcPlayers(server,false);
+               fightData.putInt("numPlayers",numPlayers);
                gameMaster = gm;
                hasDied = new ArrayList<>();
                dragon = endWorld.getAliveEnderDragons().get(0);
-               dragon.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(5000,500+numPlayers * 250));
-               dragon.setHealth(Math.min(5000,500+numPlayers * 250));
+               dragon.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024);
+               dragon.setHealth(1024);
                reclaimStates = new ArrayList<>();
    
                MutableText dragonName = Text.literal("").formatted(Formatting.BOLD)
@@ -188,6 +192,7 @@ public class DragonBossFight {
          }else if(state == States.WAITING_ONE){//Teleport players, spawn phantoms, spawn wizards
             if(!phase1Notif){
                numPlayers = calcPlayers(server,false);
+               fightData.putInt("numPlayers",numPlayers);
                DragonDialog.announce(DragonDialog.Announcements.EVENT_START,server,null);
                Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(100, new TimerTask() {
                   @Override
@@ -289,7 +294,8 @@ public class DragonBossFight {
                States.updateState(States.WAITING_TWO,server);
             }
          }else if(state == States.WAITING_TWO){ // Set wizards to be mortal
-            numPlayers = Math.min(1,calcPlayers(server,false));
+            numPlayers = Math.max(1,calcPlayers(server,false));
+            fightData.putInt("numPlayers",numPlayers);
             for(DragonGoonHelper.WizardEntity wizard : wizards){
                wizard.setInvulnerable(false);
             }
@@ -365,7 +371,8 @@ public class DragonBossFight {
                States.updateState(States.WAITING_THREE,server);
             }
          }else if(state == States.WAITING_THREE){ // Set up crystal reclamation
-            numPlayers = Math.min(1,calcPlayers(server,false));
+            numPlayers = Math.max(1,calcPlayers(server,false));
+            fightData.putInt("numPlayers",numPlayers);
             for(ReclaimState reclaimState : reclaimStates){
                WorldHologram hologram = reclaimState.getHologram();
    
@@ -470,8 +477,8 @@ public class DragonBossFight {
             
             int minTime = 60;
             if(lastGoonSpawn > 20*minTime) spawnGoons(endWorld,phase);
-            if(lastLairAction > 20*minTime*2-50 && lairActions.startAction(phase)) lastLairAction = 0;
-            if(lastDragonAction > 20*minTime/2+90 && dragonAbilities.doAbility(phase)) lastDragonAction = 0;
+            if(lastLairAction > 20*minTime-100 && lairActions.startAction(phase)) lastLairAction = 0;
+            if(lastDragonAction > 20*minTime/2 && dragonAbilities.doAbility(phase)) lastDragonAction = 0;
          }
       
          if(gm != null) gmNotifs.forEach(gm::sendMessage);
@@ -503,14 +510,14 @@ public class DragonBossFight {
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EndermiteEntity[] goons = new EndermiteEntity[MathHelper.clamp((int)(Math.random()*3*numPlayers+10+numPlayers),25,40)];
+         EndermiteEntity[] goons = new EndermiteEntity[MathHelper.clamp((int)(Math.random()*3*numPlayers+2+numPlayers),10,25)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermiteEntity(EntityType.ENDERMITE, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(20,10 + numPlayers));
-            goons[i].setHealth(Math.min(20,10 + numPlayers));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(10 + 4*numPlayers,40,100));
+            goons[i].setHealth(MathHelper.clamp(10 + 4*numPlayers,40,100));
             goons[i].setPersistent();
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(6f);
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY()+1,pos.getZ());
       
@@ -521,16 +528,16 @@ public class DragonBossFight {
       }else if(phase == 2){ // Shulker Goons
          // Count existing goons
          List<ShulkerEntity> curGoons = endWorld.getEntitiesByType(EntityType.SHULKER, new Box(new BlockPos(-300,25,-300), new BlockPos(300,255,300)), e -> true);
-         if(curGoons.size() > 15) return;
+         if(curGoons.size() > 25) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         ShulkerEntity[] goons = new ShulkerEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+6+numPlayers),15,25)];
+         ShulkerEntity[] goons = new ShulkerEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+2+numPlayers),10,25)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new ShulkerEntity(EntityType.SHULKER, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(40,20 + numPlayers*2));
-            goons[i].setHealth(Math.min(40,20 + numPlayers*2));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*numPlayers,40,100));
+            goons[i].setHealth(MathHelper.clamp(20 + 4*numPlayers,40,100));
             goons[i].setPersistent();
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
@@ -546,12 +553,13 @@ public class DragonBossFight {
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EndermanEntity[] goons = new EndermanEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+10+numPlayers*2),25,40)];
+         EndermanEntity[] goons = new EndermanEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+2+numPlayers*2),10,25)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(40,10 + numPlayers*2));
-            goons[i].setHealth(Math.min(40,10 + numPlayers*2));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*numPlayers,40,100));
+            goons[i].setHealth(MathHelper.clamp(20 + 4*numPlayers,40,100));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
       
@@ -564,101 +572,106 @@ public class DragonBossFight {
    }
    
    private static void endFight(MinecraftServer server, ServerWorld endWorld){
-      DragonDialog.announce(DragonDialog.Announcements.EVENT_END,server,null);
-   
-      // Give reward
-      List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
-      for(ServerPlayerEntity player : players){
-         ItemStack wings = MagicItems.WINGS_OF_ZEPHYR.getNewItem();
-      
-         ItemEntity itemEntity;
-         boolean bl = player.getInventory().insertStack(wings);
-         if (!bl || !wings.isEmpty()) {
-            itemEntity = player.dropItem(wings, false);
-            if (itemEntity == null) continue;
-            itemEntity.resetPickupDelay();
-            itemEntity.setOwner(player.getUuid());
-            continue;
-         }
-         wings.setCount(1);
-         itemEntity = player.dropItem(wings, false);
-         if (itemEntity != null) {
-            itemEntity.setDespawnImmediately();
-         }
-      
-         player.addExperience(5500);
-      }
-      
-      List<ScoreboardPlayerScore> scores = getLeaderboard(server);
-      ArrayList<MutableText> message = new ArrayList<>();
-      // dmg dealt, taken, deaths, kills
-   
-      message.add(Text.literal(""));
-      message.add(Text.literal("")
-            .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
-      message.add(Text.literal(""));
-      message.add(Text.literal("")
-            .append(Text.literal("                      ").formatted(Formatting.GREEN))
-            .append(Text.literal("Leaderboard").formatted(Formatting.GREEN,Formatting.UNDERLINE)));
-      message.add(Text.literal(""));
-      message.add(Text.literal("")
-            .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
-            .append(Text.literal("Most Bloodthirsty").formatted(Formatting.DARK_RED,Formatting.BOLD,Formatting.UNDERLINE))
-            .append(Text.literal(": ").formatted(Formatting.AQUA))
-            .append(Text.literal(scores.get(0).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
-            .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
-            .append(Text.literal(Integer.toString(scores.get(0).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
-            .append(Text.literal(" damage points dealt!").formatted(Formatting.AQUA,Formatting.ITALIC)));
-      message.add(Text.literal(""));
-      message.add(Text.literal("")
-            .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
-            .append(Text.literal("Tankiest Fighter").formatted(Formatting.BLUE,Formatting.BOLD,Formatting.UNDERLINE))
-            .append(Text.literal(": ").formatted(Formatting.AQUA))
-            .append(Text.literal(scores.get(1).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
-            .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
-            .append(Text.literal(Integer.toString(scores.get(1).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
-            .append(Text.literal(" damage points taken!").formatted(Formatting.AQUA,Formatting.ITALIC)));
-      message.add(Text.literal(""));
-      message.add(Text.literal("")
-            .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
-            .append(Text.literal("Most Death Prone").formatted(Formatting.DARK_GRAY,Formatting.BOLD,Formatting.UNDERLINE))
-            .append(Text.literal(": ").formatted(Formatting.AQUA))
-            .append(Text.literal(scores.get(2).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
-            .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
-            .append(Text.literal(Integer.toString(scores.get(2).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
-            .append(Text.literal(" deaths!").formatted(Formatting.AQUA,Formatting.ITALIC)));
-      message.add(Text.literal(""));
-      message.add(Text.literal("")
-            .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
-            .append(Text.literal("Goon Slayer").formatted(Formatting.RED,Formatting.BOLD,Formatting.UNDERLINE))
-            .append(Text.literal(": ").formatted(Formatting.AQUA))
-            .append(Text.literal(scores.get(3).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
-            .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
-            .append(Text.literal(Integer.toString(scores.get(3).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
-            .append(Text.literal(" mob kills!").formatted(Formatting.AQUA,Formatting.ITALIC)));
-      message.add(Text.literal(""));
-      message.add(Text.literal("")
-            .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
-   
-      Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(200, new TimerTask() {
-         @Override
-         public void run(){
-            for(MutableText msg : message){
-               endWorld.getServer().getPlayerManager().broadcast(msg, false);
+      try{
+         DragonDialog.announce(DragonDialog.Announcements.EVENT_END,server,null);
+         MagicItem magicWings = MagicItems.WINGS_OF_ZEPHYR;
+         
+         // Give reward
+         List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
+         for(ServerPlayerEntity player : players){
+            ItemStack wings = magicWings.addCrafter(magicWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
+         
+            ItemEntity itemEntity;
+            boolean bl = player.getInventory().insertStack(wings);
+            if (!bl || !wings.isEmpty()) {
+               itemEntity = player.dropItem(wings, false);
+               if (itemEntity == null) continue;
+               itemEntity.resetPickupDelay();
+               itemEntity.setOwner(player.getUuid());
+               continue;
             }
+            wings.setCount(1);
+            itemEntity = player.dropItem(wings, false);
+            if (itemEntity != null) {
+               itemEntity.setDespawnImmediately();
+            }
+         
+            player.addExperience(5500);
          }
-      }));
-   
-      GameRules rules = server.getGameRules();
-      GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);
-      rule.set(keepInventoryBefore,server);
       
-      if(gameMaster != null){
-         gameMaster.sendMessage(Text.translatable("Fight Ended, Thanks For Playing!"));
+         List<ScoreboardPlayerScore> scores = getLeaderboard(server);
+         ArrayList<MutableText> message = new ArrayList<>();
+         // dmg dealt, taken, deaths, kills
+      
+         message.add(Text.literal(""));
+         message.add(Text.literal("")
+               .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
+         message.add(Text.literal(""));
+         message.add(Text.literal("")
+               .append(Text.literal("                      ").formatted(Formatting.GREEN))
+               .append(Text.literal("Leaderboard").formatted(Formatting.GREEN,Formatting.UNDERLINE)));
+         message.add(Text.literal(""));
+         message.add(Text.literal("")
+               .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
+               .append(Text.literal("Most Bloodthirsty").formatted(Formatting.DARK_RED,Formatting.BOLD,Formatting.UNDERLINE))
+               .append(Text.literal(": ").formatted(Formatting.AQUA))
+               .append(Text.literal(scores.get(0).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
+               .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
+               .append(Text.literal(Integer.toString(scores.get(0).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
+               .append(Text.literal(" damage points dealt!").formatted(Formatting.AQUA,Formatting.ITALIC)));
+         message.add(Text.literal(""));
+         message.add(Text.literal("")
+               .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
+               .append(Text.literal("Tankiest Fighter").formatted(Formatting.BLUE,Formatting.BOLD,Formatting.UNDERLINE))
+               .append(Text.literal(": ").formatted(Formatting.AQUA))
+               .append(Text.literal(scores.get(1).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
+               .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
+               .append(Text.literal(Integer.toString(scores.get(1).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
+               .append(Text.literal(" damage points taken!").formatted(Formatting.AQUA,Formatting.ITALIC)));
+         message.add(Text.literal(""));
+         message.add(Text.literal("")
+               .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
+               .append(Text.literal("Most Death Prone").formatted(Formatting.DARK_GRAY,Formatting.BOLD,Formatting.UNDERLINE))
+               .append(Text.literal(": ").formatted(Formatting.AQUA))
+               .append(Text.literal(scores.get(2).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
+               .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
+               .append(Text.literal(Integer.toString(scores.get(2).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
+               .append(Text.literal(" deaths!").formatted(Formatting.AQUA,Formatting.ITALIC)));
+         message.add(Text.literal(""));
+         message.add(Text.literal("")
+               .append(Text.literal("  <> ").formatted(Formatting.AQUA,Formatting.BOLD))
+               .append(Text.literal("Goon Slayer").formatted(Formatting.RED,Formatting.BOLD,Formatting.UNDERLINE))
+               .append(Text.literal(": ").formatted(Formatting.AQUA))
+               .append(Text.literal(scores.get(3).getPlayerName()).formatted(Formatting.GOLD,Formatting.UNDERLINE,Formatting.BOLD))
+               .append(Text.literal(" with ").formatted(Formatting.AQUA,Formatting.ITALIC))
+               .append(Text.literal(Integer.toString(scores.get(3).getScore())).formatted(Formatting.GOLD,Formatting.ITALIC))
+               .append(Text.literal(" mob kills!").formatted(Formatting.AQUA,Formatting.ITALIC)));
+         message.add(Text.literal(""));
+         message.add(Text.literal("")
+               .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
+      
+         Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(200, new TimerTask() {
+            @Override
+            public void run(){
+               for(MutableText msg : message){
+                  endWorld.getServer().getPlayerManager().broadcast(msg, false);
+               }
+            }
+         }));
+      
+         GameRules rules = server.getGameRules();
+         GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);
+         rule.set(keepInventoryBefore,server);
+      
+         if(gameMaster != null){
+            gameMaster.sendMessage(Text.translatable("Fight Ended, Thanks For Playing!"));
+         }
+         resetVariables();
+         removeScoreboards(server);
+         BossFight.cleanBoss(server);
+      }catch(Exception e){
+         e.printStackTrace();
       }
-      resetVariables();
-      removeScoreboards(server);
-      BossFight.cleanBoss(server);
    }
    
    private static void tickCrystal(ServerWorld endWorld, EndCrystalEntity crystal, int phase){
@@ -834,6 +847,7 @@ public class DragonBossFight {
          fightData.putString("State", DragonBossFight.States.WAITING_START.name());
       }
       fightData.putString("GameMaster", player.getUuidAsString());
+      fightData.putInt("numPlayers",0);
       player.sendMessage(Text.translatable(""), false);
       player.sendMessage(Text.translatable("You are now the Game Master, please stay in The End for the duration of the fight. All errors and updates will be sent to you.").formatted(Formatting.AQUA), false);
       player.sendMessage(Text.translatable(""), false);
@@ -949,18 +963,31 @@ public class DragonBossFight {
    }
    
    public static int calcPlayers(MinecraftServer server, boolean inEnd){
+      if(forcedPlayerCount > 0) return forcedPlayerCount;
       List<ServerPlayerEntity> playerList = server.getPlayerManager().getPlayerList();
       int count = 0;
+      if(!inEnd) return playerList.size();
       for(ServerPlayerEntity player : playerList){
          if(!player.isSpectator() && !player.isCreative()){
-            if(inEnd && player.getEntityWorld() == server.getWorld(World.END)){
-               count++;
-            }else if(!inEnd){
+            if(player.getEntityWorld() == server.getWorld(World.END)){
                count++;
             }
          }
       }
       return count;
+   }
+   
+   public static int resetDragonAbilities(MinecraftServer server, ServerCommandSource source, boolean doAbility){
+      if(dragonAbilities == null) return -1;
+      dragonAbilities.resetCooldowns();
+      if(doAbility && dragonAbilities.doAbility(phase)) lastDragonAction = 0;
+      return 1;
+   }
+   
+   public static int forceLairAction(MinecraftServer server, ServerCommandSource source){
+      if(lairActions == null) return -1;
+      if(lairActions.startAction(phase)) lastLairAction = 0;
+      return 1;
    }
    
    public static int bossStatus(MinecraftServer server, ServerCommandSource source){
@@ -1006,11 +1033,14 @@ public class DragonBossFight {
       
       if(state == States.PHASE_ONE || state == States.PHASE_TWO || state == States.PHASE_THREE){
          if(dragonAbilities != null){
-            msgs.add(Text.literal("Dragon Ability Cooldowns: Next Check in "+ ((20*60/2+90) - lastDragonAction)/20 + " Seconds"));
+            msgs.add(Text.literal("Dragon Ability Cooldowns: Next Check in "+ (600 - lastDragonAction)/20 + " Seconds"));
             for(Pair<DragonAbilities.DragonAbilityTypes, Integer> cooldown : dragonAbilities.getCooldowns(phase)){
                msgs.add(Text.literal(" - "+cooldown.getLeft().name()+": "+cooldown.getRight()/20+" Seconds"));
             }
          }
+   
+         msgs.add(Text.literal(""));
+         msgs.add(Text.literal("Lair Action: Next Check in "+ (1100 - lastLairAction)/20 + " Seconds"));
       }
    
       for(MutableText msg : msgs){
@@ -1044,7 +1074,17 @@ public class DragonBossFight {
    }
    
    public static void test(){
-      lastLairAction = 10000;
+//      if(lairActions != null){
+//         lairActions.startAction(DragonLairActions.DragonLairActionTypes.TERRAIN_SHIFT);
+//      }
+      //System.out.println(Math.max(1,calcPlayers(dragon.getServer(),false)));
+      if(forcedPlayerCount == -1){
+         forcedPlayerCount = 20;
+         numPlayers = forcedPlayerCount;
+      }else{
+         forcedPlayerCount = -1;
+      }
+      devPrint(forcedPlayerCount + " " + numPlayers);
    }
    
    private static double distToLine(Vec3d pos, Vec3d start, Vec3d end){
@@ -1231,7 +1271,7 @@ public class DragonBossFight {
             if(entity instanceof LivingEntity living){
                if(scoreboardPlayerScore != null)
                   scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + 50);
-               living.damage(DamageSource.GENERIC,5f);
+               living.damage(DamageSource.player(player),5f);
             }
          }
          if(distToLine(dragon.getPos(),player.getPos(),hit) < 10){

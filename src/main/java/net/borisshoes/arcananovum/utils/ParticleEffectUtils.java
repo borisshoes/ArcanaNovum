@@ -121,8 +121,8 @@ public class ParticleEffectUtils {
       //ParticleEffect dust = new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(0x0085de)),1.4f);
       double radius = .5+calls*(range/5.0);
       double radius2 = radius*.75;
-      sphere(world,null,pos,ParticleTypes.WITCH,radius,(int)(radius*radius+radius*20+10),3,0.3,0,0);
-      sphere(world,null,pos,ParticleTypes.DRAGON_BREATH,radius2,(int)(radius2*radius2+radius2*20+10),3,0.3,0,0);
+      sphere(world,null,pos,ParticleTypes.WITCH,radius,(int)(radius*radius+radius*10+10),3,0.3,0,0);
+      sphere(world,null,pos,ParticleTypes.DRAGON_BREATH,radius2,(int)(radius2*radius2+radius2*5+10),3,0.3,0,0);
       world.spawnParticles(ParticleTypes.FLASH,pos.x,pos.y,pos.z,1,0,0,0,1);
       
       if(calls < 5){
@@ -419,7 +419,7 @@ public class ParticleEffectUtils {
          line(world,null,p3,p4,dust,12,1,0,1);
       }
       
-      sphere(world,null,center.add(0,2,0),dustLarge,5.5,50,1,0,1,-t);
+      sphere(world,null,center.add(0,2,0),dustLarge,5.5,25,1,0,1,-t);
       
       if(calls < (period/100)){
          Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
@@ -481,7 +481,7 @@ public class ParticleEffectUtils {
       double radius = ticks/4.0;
       double theta = 2*Math.PI / 20.0;
       ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),(float)radius/2);
-      sphere(world,null,center,dust,radius,(int)radius*25,1,0,1,theta*ticks);
+      sphere(world,null,center,dust,radius,(int)(radius*radius+radius*10+radius),1,0,1,theta*ticks);
    }
    
    public static void line(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d p1, Vec3d p2, ParticleEffect type, int intervals, int count, double delta, double speed){

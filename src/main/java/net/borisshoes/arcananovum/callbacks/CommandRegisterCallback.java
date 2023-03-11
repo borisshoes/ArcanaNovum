@@ -10,6 +10,8 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
 
+import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
+import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
@@ -66,6 +68,9 @@ public class CommandRegisterCallback {
             .then(literal("boss")
                   .then(literal("start").requires(source -> source.hasPermissionLevel(2))
                         .then(literal("dragon").executes(ArcanaCommands::startDragonBoss)))
+                  .then(literal("resetAbilities").requires(source -> source.hasPermissionLevel(2))
+                        .then(argument("doAbility",bool()).executes(context -> ArcanaCommands.bossResetAbilities(context,getBool(context,"doAbility")))))
+                  .then(literal("forceLairAction").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::bossForceLairAction))
                   .then(literal("abort").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::abortBoss))
                   .then(literal("clean").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::cleanBoss))
                   .then(literal("status").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::bossStatus))

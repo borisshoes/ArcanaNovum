@@ -25,7 +25,19 @@ public class SoundUtils {
    }
    
    public static void playSound(World world, BlockPos pos, SoundEvent event, SoundCategory category, float vol, float pitch){
-      world.playSound(null,pos.getX(),pos.getY(),pos.getZ(),event, category, vol, pitch);
+      try{
+         world.playSound(null,pos.getX(),pos.getY(),pos.getZ(),event, category, vol, pitch);
+      }catch(Exception e){
+         e.printStackTrace();
+      }
+   }
+   
+   public static void playSound(World world, BlockPos pos, RegistryEntry.Reference<SoundEvent> event, SoundCategory category, float vol, float pitch){
+      try{
+         world.playSound(null,pos.getX(),pos.getY(),pos.getZ(),event,category,vol,pitch,0L);
+      }catch(Exception e){
+         e.printStackTrace();
+      }
    }
    
    public static void soulSounds(ServerWorld world, BlockPos pos, int count, int duration){

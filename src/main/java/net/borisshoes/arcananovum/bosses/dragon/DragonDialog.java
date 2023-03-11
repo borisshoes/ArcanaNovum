@@ -207,7 +207,7 @@ public class DragonDialog {
             message.add(Text.literal("")
                   .append(Text.literal("A reward is due!").formatted(Formatting.GREEN, Formatting.BOLD)));
             message.add(Text.literal("")
-                  .append(Text.literal("You brave heroes shall receive the first ").formatted(Formatting.YELLOW))
+                  .append(Text.literal("You brave heroes shall receive the first discovered ").formatted(Formatting.YELLOW))
                   .append(Text.literal("Mythical").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" Magic Item!").formatted(Formatting.YELLOW)));
             message.add(Text.literal(""));
@@ -261,6 +261,16 @@ public class DragonDialog {
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             message.add(Text.literal("")
                   .append(Text.literal("   ... huff... Perhaps you arent as feeble as I thought... hmph...").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+            message.add(Text.literal(""));
+            break;
+         case ABILITY_CORRUPT_ARCANA:
+            message.add(Text.literal(""));
+            message.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
+            message.add(Text.literal("")
+                  .append(Text.literal("   Your reliance on your arcane trinkets will be your downfall!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             message.add(Text.literal(""));
             break;
          case ABILITY_BOMBARDMENT:
@@ -340,7 +350,7 @@ public class DragonDialog {
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             message.add(Text.literal("")
-                  .append(Text.literal("   Dont lose your footing now. Pitiful bipedals.").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+                  .append(Text.literal("   Don't lose your footing now. Pitiful bipedals.").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             message.add(Text.literal(""));
             break;
          case ABILITY_STARFALL:
@@ -397,6 +407,7 @@ public class DragonDialog {
       ABILITY_QUAKE,
       ABILITY_STARFALL,
       ABILITY_DRACONIC_RESILIENCE,
+      ABILITY_CORRUPT_ARCANA,
       EVENT_END
    }
 }

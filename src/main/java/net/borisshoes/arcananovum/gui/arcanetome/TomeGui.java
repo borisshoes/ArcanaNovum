@@ -428,20 +428,29 @@ public class TomeGui extends SimpleGui {
       PlayerInventory playerInv = player.getInventory();
       MagicRarity tier = augment.getTiers()[level-1];
       
+      int catalystSlot = -1;
+      boolean creative = player.isCreative();
       for(int i=0; i<playerInv.size(); i++){
          ItemStack cata = playerInv.getStack(i);
          MagicItem magicItem = MagicItemUtils.identifyItem(cata);
          if(magicItem != null && magicItem.getId().equals(MagicRarity.getAugmentCatalyst(tier).getId())){
             //Found catalyst
-            if(ArcanaAugments.applyAugment(item,augment.id,level)){
-               playerInv.removeStack(i);
-               return true;
-            }else{
-               Arcananovum.log(3,"Error applying augment "+augment.id+" to "+magicItem.getId());
-            }
+            catalystSlot = i;
+            break;
          }
       }
-      player.sendMessage(Text.literal("No Augment Catalyst Found").formatted(Formatting.RED),false);
+      if(catalystSlot == -1 && !creative){
+         player.sendMessage(Text.literal("No Augment Catalyst Found").formatted(Formatting.RED),false);
+      }else{
+         if(ArcanaAugments.applyAugment(item,augment.id,level)){
+            if(!creative) playerInv.removeStack(catalystSlot);
+            return true;
+         }else{
+            Arcananovum.log(3,"Error applying augment "+augment.id+" to "+MagicItemUtils.identifyItem(item).getId());
+         }
+      }
+      
+      
       return false;
    }
    

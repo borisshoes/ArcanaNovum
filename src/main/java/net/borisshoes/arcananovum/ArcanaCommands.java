@@ -672,6 +672,32 @@ public class ArcanaCommands {
       return -1;
    }
    
+   public static int bossResetAbilities(CommandContext<ServerCommandSource> context, boolean doAbility){
+      ServerCommandSource source = context.getSource();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+      if(bossFight == null){
+         source.sendFeedback(Text.translatable("No Boss Fight Active"),false);
+         return -1;
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         return DragonBossFight.resetDragonAbilities(source.getServer(),context.getSource(),doAbility);
+      }
+      return -1;
+   }
+   
+   public static int bossForceLairAction(CommandContext<ServerCommandSource> context){
+      ServerCommandSource source = context.getSource();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+      if(bossFight == null){
+         source.sendFeedback(Text.translatable("No Boss Fight Active"),false);
+         return -1;
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         return DragonBossFight.forceLairAction(source.getServer(),context.getSource());
+      }
+      return -1;
+   }
+   
    public static int testBoss(CommandContext<ServerCommandSource> context){
       ServerCommandSource source = context.getSource();
       devPrint("Test Boss");

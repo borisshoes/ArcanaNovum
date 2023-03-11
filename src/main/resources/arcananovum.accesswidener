@@ -1,0 +1,4 @@
+accessWidener	v1	named
+
+# Phantom Swoop Goal Access Widener for Mixin (No longer needed)
+# accessible class net/minecraft/entity/mob/PhantomEntity$SwoopMovementGoal

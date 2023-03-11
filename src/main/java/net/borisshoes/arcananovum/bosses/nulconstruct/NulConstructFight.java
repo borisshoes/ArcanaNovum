@@ -43,6 +43,7 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
+import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 
 public class NulConstructFight {
@@ -53,7 +54,7 @@ public class NulConstructFight {
          NbtCompound abilitiesTag = magicData.getCompound("abilities");
          MinecraftServer server = construct.getServer();
          ServerPlayerEntity summoner = server.getPlayerManager().getPlayer(UUID.fromString(magicData.getString("summonerId")));
-         if(summoner == null) System.out.println("Null Summoner: "+magicData.getString("summonerId"));
+         if(summoner == null) log(2,"Null Summoner: "+magicData.getString("summonerId"));
          if(summoner == null || summoner.isDead()){
             deconstruct(construct,magicEntity,summoner);
             return true;

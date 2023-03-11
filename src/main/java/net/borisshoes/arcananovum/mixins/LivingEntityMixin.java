@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructFight;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
@@ -18,6 +19,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -35,9 +37,11 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -49,6 +53,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 
 @Mixin(LivingEntity.class)
@@ -267,11 +272,18 @@ public abstract class LivingEntityMixin {
          }
       }
    
-      // Nul Construct Reflective Armor
+      
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(entity.getWorld()).getBossFight();
+      int numPlayers = 0;
+      if(bossFight != null){
+         numPlayers = bossFight.getRight().getInt("numPlayers");
+      }
+      
       for(MagicEntity magicEntity : MAGIC_ENTITY_LIST.get(entity.getWorld()).getEntities()){
          if(magicEntity.getUuid().equals(entity.getUuidAsString())){
             NbtCompound magicData = magicEntity.getData();
-            if(magicData.getString("id").equals("nul_construct")){
+            String magicId = magicData.getString("id");
+            if(magicId.equals("nul_construct")){ // Nul Construct Reflective Armor
                NbtCompound activeAbilitiesTag = magicData.getCompound("activeAbilities");
                if(activeAbilitiesTag.contains("reflective_armor")){
                   Entity attacker = source.getAttacker();
@@ -281,6 +293,21 @@ public abstract class LivingEntityMixin {
                   }
                }
                break;
+            }
+            if(numPlayers != 0){
+               float scale = 2f/numPlayers;
+               if(entity instanceof EnderDragonEntity){
+                  newReturn *= scale; //Effective Health Scale to bypass 1024 hp cap
+                  if(source.isMagic() || source.isExplosive()) newReturn *= 0.25; // Reduce damage from magic and explosive sources
+               }else if(magicId.equals("boss_dragon_phantom")){
+                  if(source.getAttacker() instanceof EnderDragonEntity) newReturn = 0;
+                  if(source.isMagic()) newReturn *= 0.25; // Reduce damage from magic sources and immune to the dragon
+                  newReturn *= scale;
+               }else if(magicId.equals("boss_dragon_wizard")){
+                  if(source.getAttacker() instanceof EnderDragonEntity) newReturn = 0;
+                  if(source.isMagic()) newReturn *= 0.25; // Reduce damage from magic sources and immune to the dragon
+                  newReturn *= scale;
+               }
             }
          }
       }

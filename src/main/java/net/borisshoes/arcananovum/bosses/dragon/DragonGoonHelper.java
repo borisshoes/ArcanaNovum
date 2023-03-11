@@ -9,10 +9,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.IllusionerEntity;
-import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.entity.mob.SkeletonEntity;
+import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -52,8 +49,8 @@ public class DragonGoonHelper {
       guardian.setCustomName(phantomName);
       guardian.setCustomNameVisible(true);
       guardian.setPhantomSize(20);
-      guardian.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(1000,numPlayers * 100 + 50));
-      guardian.setHealth(Math.min(1000,numPlayers * 100 + 50));
+      guardian.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(350f);
+      guardian.setHealth(350f);
       guardian.setPersistent();
       guardian.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(20f);
       guardian.setPos(Math.random()*50-25,100,Math.random()*50-25);
@@ -74,16 +71,15 @@ public class DragonGoonHelper {
       wizard.setNoGravity(true);
       wizard.setPersistent();
       wizard.setAiDisabled(true);
-      wizard.setHealth(Math.min(500,numPlayers * 50 + 25));
-      wizard.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(500,numPlayers * 50 + 25));
-      
+      wizard.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(64f);
+      wizard.setHealth(64f);
       return wizard;
    }
    
    private static SkeletonEntity makeSkeletons(ServerWorld endWorld, int numPlayers){
       SkeletonEntity skeleton = new SkeletonEntity(EntityType.SKELETON, endWorld);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.min(40,15+numPlayers * 2));
-      skeleton.setHealth(Math.min(40,15+numPlayers * 2));
+      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.max(40,15+numPlayers * 2));
+      skeleton.setHealth(Math.max(40,15+numPlayers * 2));
       skeleton.setPersistent();
       ItemStack bow = new ItemStack(Items.BOW);
       bow.addEnchantment(Enchantments.PUNCH,2);

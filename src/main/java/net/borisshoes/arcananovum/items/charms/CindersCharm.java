@@ -14,6 +14,7 @@ import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.CreeperEntity;
@@ -324,7 +325,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          if(inCone(playerEntity,e.getEyePos())){
             if(!entity.isFireImmune()){
                entity.setOnFireFor((2*energy+60)/20);
-               entity.damage(DamageSource.IN_FIRE,cremation ? 5f : 2.5f);
+               entity.damage(new EntityDamageSource("player",playerEntity).setFire().setBypassesArmor(),cremation ? 5f : 2.5f);
                if(entity instanceof MobEntity) ignited++;
             
                if(playerEntity instanceof ServerPlayerEntity serverPlayer){
@@ -423,7 +424,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          if(!entity.isFireImmune()){
             float dmg = (float) (Math.max(0,(1.2 - (entity.getPos().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(DamageSource.IN_FIRE,cremation ? 2*dmg : dmg);
+            entity.damage(new EntityDamageSource("player",playerEntity).setFire().setBypassesArmor(),cremation ? 2*dmg : dmg);
    
             PLAYER_DATA.get(player).addXP(5); // Add xp
          }
@@ -471,7 +472,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          if(!entity.isFireImmune()){
             float dmg = (float) ((consumedEnergy/15.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(DamageSource.IN_FIRE,cremation ? 2*dmg : dmg);
+            entity.damage(new EntityDamageSource("player",playerEntity).setFire().setBypassesArmor(),cremation ? 2*dmg : dmg);
             
             PLAYER_DATA.get(player).addXP(5); // Add xp
             hits.add(entity);

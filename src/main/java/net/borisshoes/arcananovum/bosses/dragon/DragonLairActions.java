@@ -187,9 +187,7 @@ public class DragonLairActions {
       }
    }
    
-   
-   public boolean startAction(int phase){
-      DragonLairActionTypes action = rollAction(phase);
+   public boolean startAction(DragonLairActionTypes action){
       List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300 && !p.isSpectator() && !p.isCreative());
       switch(action){
          case TERRAIN_SHIFT: // Terrain Shift
@@ -205,13 +203,13 @@ public class DragonLairActions {
                chasmBlocks = new HashMap<>();
                chasmStart = new BlockPos(x1,65,z1);
                chasmEnd = new BlockPos(x2,65,z2);
-               
+            
                makeChasm(chasmStart,chasmEnd);
             }else{
                int numSpikes = 4;
                spikes = new ArrayList<>();
                spikeBlocks = new HashMap<>();
-               
+            
                for(int i = 0; i < numSpikes; i++){
                   int x1 = (int)(Math.random()*100-50);
                   int y1 = 55;
@@ -225,12 +223,12 @@ public class DragonLairActions {
                   double y2 = length * Math.cos(theta);
                   Vec3d end = start.add(x2,y2,z2);
                   double size = Math.random() * 5 + 5;
-                  
+               
                   //log("New Spike at: "+start+" to "+end+" len: "+length+" with size: "+size);
                   spikes.add(new Spike(start,end,size));
                }
             }
-            
+         
             DragonDialog.announce(DragonDialog.Announcements.ABILITY_TERRAIN_SHIFT,endWorld.getServer(),null);
             terrainTicks = terrainDur;
             break;
@@ -266,8 +264,13 @@ public class DragonLairActions {
             DragonDialog.announce(DragonDialog.Announcements.ABILITY_STARFALL,endWorld.getServer(),null);
             break;
       }
-      
+   
       return true;
+   }
+   
+   public boolean startAction(int phase){
+      DragonLairActionTypes action = rollAction(phase);
+      return startAction(action);
    }
    
    public DragonLairActionTypes rollAction(int phase){
@@ -275,23 +278,23 @@ public class DragonLairActions {
       ArrayList<DragonLairActionTypes> weighted = new ArrayList<>();
       
       if(phase == 1){
-         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,3));
-         //actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
-         //actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
-         //actions.add(new Pair<>(DragonLairActionTypes.QUAKE,5));
-         //actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
+         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,8));
+         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
+         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
+         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,5));
+         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
       }else if(phase == 2){
          actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,4));
-         //actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
-         //actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
-         //actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
-         //actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
+         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
+         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
+         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
+         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
       }else if(phase == 3){
          actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,3));
-         //actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
-         //actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
-         //actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
-         //actions.add(new Pair<>(DragonLairActionTypes.STARFALL,4));
+         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
+         actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
+         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
+         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,4));
       }
    
       for(Pair<DragonLairActionTypes, Integer> action : actions){
@@ -316,16 +319,20 @@ public class DragonLairActions {
          tiers.add(new ArrayList<>());
       }
       
+      //System.out.println("Making Chasm: "+ start.toShortString() +" "+end.toShortString());
+      //System.out.println("Volume: "+((maxX-minX+2*extra)*(85)*(maxZ-minZ+2*extra)));
+      
+      //This can be further optimized by only looping through the surface once and adding the depth directly rather than reiterating for all 15 levels
       for(BlockPos blockPos : BlockPos.iterate(minX - extra, midY, minZ - extra, maxX + extra, midY, maxZ + extra)){
          double dist = weightDist(new Vec3d(start.getX()+.5,start.getY()+.5,start.getZ()+.5),new Vec3d(end.getX()+.5,end.getY()+.5,end.getZ()+.5),new Vec3d(blockPos.getX()+.5,blockPos.getY()+.5,blockPos.getZ()+.5));
          
          if(dist <= 15){
-            double maxDepth = Math.min(15+1,2*15/(dist-0.5)+1);
+            double maxDepth = Math.min(15+1,2*15/Math.max(0,dist-0.5)+1);
             int depth = (int) ((4.0/12.0)*maxDepth*maxDepth);
             for(int i = -3; i < depth; i++){
                // Check each tier
                for(int dm = 1; dm <= 15; dm++){
-                  double tierDepthMax = Math.min(dm+1,2*dm/(dist-0.5)+1);
+                  double tierDepthMax = Math.min(dm+1,2*dm/Math.max(0,dist-0.5)+1);
                   int tierDepth = (int) ((4.0/12.0)*tierDepthMax*tierDepthMax);
                   if(dist <= dm && i < tierDepth){
                      BlockPos pos = blockPos.add(0,-i,0);

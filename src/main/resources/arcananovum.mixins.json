@@ -16,7 +16,7 @@
     "MobEntityMixin",
     "MobSpawnerBlockEntityMixin",
     "MobSpawnerLogicMixin",
-    "PhantomMixin",
+    "PhantomSwoopGoalMixin",
     "PhantomSpawnerMixin",
     "PistonMixin",
     "PlayerEntityMixin",

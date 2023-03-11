@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.minecraft.entity.EntityType;
@@ -27,6 +28,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.explosion.Explosion;
 
@@ -47,6 +49,7 @@ public class DragonAbilities {
    private final int bombardCD = 45*20;
    private final int obliterateCD = 120*20;
    private final int resilienceCD = 150*20;
+   private final int corruptArcanaCD = 60*20;
    
    private int swoopTicks;
    private int gustTicks;
@@ -56,6 +59,7 @@ public class DragonAbilities {
    private int bombardTicks;
    private int obliterateTicks;
    private int resilienceTicks;
+   private int corruptArcanaTicks;
    
    private final MinecraftServer server;
    private final ServerWorld endWorld;
@@ -78,6 +82,7 @@ public class DragonAbilities {
       bombardTicks = bombardCD;
       obliterateTicks = obliterateCD;
       resilienceTicks = resilienceCD;
+      corruptArcanaTicks = corruptArcanaCD;
    }
    
    public ArrayList<Pair<DragonAbilityTypes,Integer>> getCooldowns(int phase){
@@ -86,11 +91,15 @@ public class DragonAbilities {
       if(phase == 1){
          cooldowns.add(new Pair<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
          cooldowns.add(new Pair<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
+         cooldowns.add(new Pair<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(new Pair<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }else if(phase == 2){
          cooldowns.add(new Pair<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
          cooldowns.add(new Pair<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
          cooldowns.add(new Pair<>(DragonAbilityTypes.OVERLOAD_CRYSTALS,overloadCD-overloadTicks));
          cooldowns.add(new Pair<>(DragonAbilityTypes.GRAVITY_AMP,ampCD-ampTicks));
+         cooldowns.add(new Pair<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
+         cooldowns.add(new Pair<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }else if(phase == 3){
          cooldowns.add(new Pair<>(DragonAbilityTypes.SWOOPING_CHARGE,swoopCD-swoopTicks));
          cooldowns.add(new Pair<>(DragonAbilityTypes.WING_GUST,gustCD-gustTicks));
@@ -98,6 +107,7 @@ public class DragonAbilities {
          cooldowns.add(new Pair<>(DragonAbilityTypes.BOMBARDMENT,bombardCD-bombardTicks));
          cooldowns.add(new Pair<>(DragonAbilityTypes.OBLITERATE_TOWER,obliterateCD-obliterateTicks));
          cooldowns.add(new Pair<>(DragonAbilityTypes.DRACONIC_RESILIENCE,resilienceCD-resilienceTicks));
+         cooldowns.add(new Pair<>(DragonAbilityTypes.CORRUPT_ARCANA,corruptArcanaCD-corruptArcanaTicks));
       }
       return cooldowns;
    }
@@ -111,6 +121,7 @@ public class DragonAbilities {
       if(bombardTicks < bombardCD) bombardTicks++;
       if(obliterateTicks < obliterateCD) obliterateTicks++;
       if(resilienceTicks < resilienceCD) resilienceTicks++;
+      if(corruptArcanaTicks < corruptArcanaCD) corruptArcanaTicks++;
       
       if(overloadTicks < 400){
          if(overloadTicks % 2 == 0){
@@ -163,6 +174,32 @@ public class DragonAbilities {
             this.dragon.world.spawnEntity(dragonFireballEntity);
          }
       }
+      
+      if(corruptArcanaTicks < 200 && corruptArcanaTicks % 20 == 0){
+         List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
+   
+         for(ServerPlayerEntity player : nearbyPlayers300){
+            float damage = MagicItemUtils.getUsedConcentration(player)/8f;
+            if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
+            
+            player.damage(DamageSource.magic(this.dragon,this.dragon),damage);
+            player.sendMessage(Text.literal("Your Magic Items surge with corrupted Arcana!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
+         }
+         
+      }
+   }
+   
+   public void resetCooldowns(){
+      swoopTicks = swoopCD;
+      gustTicks = gustCD;
+      overloadTicks = overloadCD;
+      ampTicks = ampCD;
+      conscriptTicks = conscriptCD;
+      bombardTicks = bombardCD;
+      obliterateTicks = obliterateCD;
+      resilienceTicks = resilienceCD;
+      corruptArcanaTicks = corruptArcanaCD;
    }
    
    public boolean doAbility(int phase){
@@ -177,6 +214,8 @@ public class DragonAbilities {
          if(phaseType == PhaseType.SITTING_ATTACKING || phaseType == PhaseType.SITTING_SCANNING){
             actions.put(DragonAbilityTypes.WING_GUST,5);
          }
+         actions.put(DragonAbilityTypes.BOMBARDMENT,5);
+         actions.put(DragonAbilityTypes.CORRUPT_ARCANA,5);
       }else if(phase == 2){
          if(phaseType == PhaseType.HOLDING_PATTERN){
             actions.put(DragonAbilityTypes.SWOOPING_CHARGE,2);
@@ -184,6 +223,8 @@ public class DragonAbilities {
          if(phaseType == PhaseType.SITTING_ATTACKING || phaseType == PhaseType.SITTING_SCANNING){
             actions.put(DragonAbilityTypes.WING_GUST,5);
          }
+         actions.put(DragonAbilityTypes.BOMBARDMENT,8);
+         actions.put(DragonAbilityTypes.CORRUPT_ARCANA,5);
       
          int aerialCount = 0;
          for(ServerPlayerEntity player : nearbyPlayers300){
@@ -192,7 +233,7 @@ public class DragonAbilities {
                aerialCount++;
             }
          }
-         if(aerialCount != 0) actions.put(DragonAbilityTypes.GRAVITY_AMP,aerialCount*3);
+         if(aerialCount != 0) actions.put(DragonAbilityTypes.GRAVITY_AMP,aerialCount*5);
       
          int crystalPlayerCount = 0;
          for(EndCrystalEntity crystal : crystals){
@@ -205,13 +246,13 @@ public class DragonAbilities {
       }else if(phase == 3){
          if(phaseType == PhaseType.HOLDING_PATTERN){
             actions.put(DragonAbilityTypes.SWOOPING_CHARGE,2);
-            actions.put(DragonAbilityTypes.BOMBARDMENT,8);
          }
          if(phaseType == PhaseType.SITTING_ATTACKING || phaseType == PhaseType.SITTING_SCANNING){
             actions.put(DragonAbilityTypes.WING_GUST,5);
          }
-      
+         actions.put(DragonAbilityTypes.BOMBARDMENT,8);
          actions.put(DragonAbilityTypes.CONSCRIPT_ARMY,5);
+         actions.put(DragonAbilityTypes.CORRUPT_ARCANA,5);
          
          List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
          if(reclaimStates != null){
@@ -222,7 +263,7 @@ public class DragonAbilities {
             actions.put(DragonAbilityTypes.OBLITERATE_TOWER,10*count);
          }
       
-         int healthCount = 20 - (int)(20 * dragon.getHealth() / dragon.getMaxHealth());
+         int healthCount = 30 - (int)(30 * dragon.getHealth() / dragon.getMaxHealth());
          if(healthCount != 0) actions.put(DragonAbilityTypes.DRACONIC_RESILIENCE,healthCount);
       }
       
@@ -277,8 +318,9 @@ public class DragonAbilities {
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(30);
-            goons[i].setHealth(30);
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
+            goons[i].setHealth(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
       
@@ -311,6 +353,9 @@ public class DragonAbilities {
       }else if(ability == DragonAbilityTypes.BOMBARDMENT){
          bombardTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_BOMBARDMENT,server,null);
+      }else if(ability == DragonAbilityTypes.CORRUPT_ARCANA){
+         corruptArcanaTicks = 0;
+         DragonDialog.announce(DragonDialog.Announcements.ABILITY_CORRUPT_ARCANA,server,null);
       }else if(ability == DragonAbilityTypes.OBLITERATE_TOWER){
          List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
          if(reclaimStates != null){
@@ -361,6 +406,8 @@ public class DragonAbilities {
          return conscriptTicks < conscriptCD;
       }else if(action == DragonAbilityTypes.BOMBARDMENT){
          return bombardTicks < bombardCD;
+      }else if(action == DragonAbilityTypes.CORRUPT_ARCANA){
+         return corruptArcanaTicks < corruptArcanaCD;
       }else if(action == DragonAbilityTypes.OBLITERATE_TOWER){
          return obliterateTicks < obliterateCD;
       }else if(action == DragonAbilityTypes.DRACONIC_RESILIENCE){
@@ -378,7 +425,8 @@ public class DragonAbilities {
       CONSCRIPT_ARMY,
       BOMBARDMENT,
       OBLITERATE_TOWER,
-      DRACONIC_RESILIENCE;
+      DRACONIC_RESILIENCE,
+      CORRUPT_ARCANA;
       
       public static DragonAbilityTypes fromLabel(String id){ return DragonAbilityTypes.valueOf(id.toUpperCase()); }
    }

@@ -199,7 +199,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
          double heightMod = .08;
          item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
       }
-      PLAYER_DATA.get(player).addXP(Math.min(100,5*items.size())); // Add xp
+      PLAYER_DATA.get(player).addXP(Math.min(50,2*items.size())); // Add xp
       if(items.size() >= 25) ArcanaAchievements.grant(player,"magnets");
       
       if(ArcanaAugments.getAugmentOnItem(charm,"neodymium") >= 1){
