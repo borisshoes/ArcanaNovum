@@ -28,7 +28,7 @@ public class EventAchievement extends ArcanaAchievement{
    
    @Override
    public EventAchievement fromNbt(String id, NbtCompound nbt){
-      EventAchievement ach = (EventAchievement) ArcanaAchievements.registry.get(id);
+      EventAchievement ach = (EventAchievement) ArcanaAchievements.registry.get(id).makeNew();
       ach.setAcquired(nbt.getBoolean("acquired"));
       return ach;
    }

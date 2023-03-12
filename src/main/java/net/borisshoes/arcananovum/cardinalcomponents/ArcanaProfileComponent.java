@@ -52,7 +52,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       level = tag.getInt("level");
       xp = tag.getInt("xp");
       
-      NbtCompound achievementsTag = tag.getCompound("achievements");
+      NbtCompound achievementsTag = tag.getCompound("achievements"); //TODO: Could be here
       Set<String> achieveItemKeys = achievementsTag.getKeys();
       for(String itemKey : achieveItemKeys){
          List<ArcanaAchievement> itemAchs = new ArrayList<>();
@@ -60,7 +60,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
          for(String achieveKey : itemAchsTag.getKeys()){
             NbtCompound achTag = itemAchsTag.getCompound(achieveKey);
-            itemAchs.add(ArcanaAchievements.registry.get(achieveKey).fromNbt(achieveKey,achTag));
+            itemAchs.add(ArcanaAchievements.registry.get(achieveKey).makeNew().fromNbt(achieveKey,achTag));
          }
          achievements.put(itemKey,itemAchs);
       }
@@ -269,13 +269,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public boolean setAchievement(String item, ArcanaAchievement achievement){
       if(achievements.containsKey(item)){
          List<ArcanaAchievement> itemAchs = achievements.get(item);
-         for(ArcanaAchievement itemAch : itemAchs){
-            if(itemAch.id.equals(achievement.id)){
-               // Update data
-               itemAchs.remove(itemAch);
-               itemAchs.add(achievement);
-               return false;
-            }
+         boolean removed = itemAchs.removeIf(itemAch -> itemAch.id.equals(achievement.id));
+         if(removed) {
+            // Update data and return
+            itemAchs.add(achievement);
+            return false;
          }
          // Add achievement
          itemAchs.add(achievement);

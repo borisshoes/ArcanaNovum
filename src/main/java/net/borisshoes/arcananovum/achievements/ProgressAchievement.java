@@ -56,7 +56,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    @Override
    public ProgressAchievement fromNbt(String id, NbtCompound nbt){
-      ProgressAchievement ach = (ProgressAchievement) ArcanaAchievements.registry.get(id);
+      ProgressAchievement ach = (ProgressAchievement) ArcanaAchievements.registry.get(id).makeNew();
       ach.setProgress(nbt.getInt("progress"));
       ach.setAcquired(nbt.getBoolean("acquired"));
       return ach;
