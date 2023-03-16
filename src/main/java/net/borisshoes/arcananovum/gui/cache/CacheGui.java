@@ -26,7 +26,7 @@ public class CacheGui extends SimpleGui {
    
    public CacheGui(ServerPlayerEntity player){
       super(ScreenHandlerType.GENERIC_9X6, player, false);
-      this.settings = new TomeGui.CompendiumSettings(0);
+      this.settings = new TomeGui.CompendiumSettings(0,0);
       this.inv = new CacheInventory();
    }
    

@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -35,8 +36,10 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
@@ -313,6 +316,62 @@ public abstract class LivingEntityMixin {
       }
       
       cir.setReturnValue(newReturn);
+   }
+   
+   @Inject(method = "tryUseTotem", at = @At("HEAD"), cancellable = true)
+   public void arcananovum_useTotem(DamageSource source, CallbackInfoReturnable<Boolean> cir){
+      LivingEntity livingEntity = (LivingEntity) (Object) this;
+   
+      if(source.getName().contains("ArcanaNovum.Concentration")){ // Allow totem usage on Concentration damage
+         ItemStack itemStack = null;
+         Hand[] var4 = Hand.values();
+         int var5 = var4.length;
+   
+         for(int var6 = 0; var6 < var5; ++var6) {
+            Hand hand = var4[var6];
+            ItemStack itemStack2 = livingEntity.getStackInHand(hand);
+            if (itemStack2.isOf(Items.TOTEM_OF_UNDYING)) {
+               itemStack = itemStack2.copy();
+               itemStack2.decrement(1);
+               break;
+            }
+         }
+   
+         if (itemStack != null) {
+            if (livingEntity instanceof ServerPlayerEntity serverPlayerEntity) {
+               serverPlayerEntity.incrementStat(Stats.USED.getOrCreateStat(Items.TOTEM_OF_UNDYING));
+               Criteria.USED_TOTEM.trigger(serverPlayerEntity, itemStack);
+   
+               PlayerInventory inv = serverPlayerEntity.getInventory();
+               for(int i=0; i<inv.size();i++){
+                  ItemStack item = inv.getStack(i);
+                  if(item.isEmpty()){
+                     continue;
+                  }
+   
+                  boolean isMagic = MagicItemUtils.isMagic(item);
+                  if(!isMagic)
+                     continue; // Item not magic, skip
+                  MagicItem magicItem = MagicItemUtils.identifyItem(item);
+   
+                  if(magicItem instanceof NulMemento nulMemento){ // Nul Memento Totem Death's Door
+                     if(nulMemento.isActive(item)){
+                        ArcanaAchievements.grant(serverPlayerEntity,ArcanaAchievements.DEATHS_DOOR.id);
+                     }
+                  }
+               }
+            }
+      
+            livingEntity.setHealth(1.0F);
+            livingEntity.clearStatusEffects();
+            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 900, 1));
+            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 100, 1));
+            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 800, 0));
+            livingEntity.world.sendEntityStatus(livingEntity, (byte)35);
+         }
+   
+         cir.setReturnValue(itemStack != null);
+      }
    }
    
    

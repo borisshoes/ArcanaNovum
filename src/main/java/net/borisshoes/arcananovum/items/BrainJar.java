@@ -39,6 +39,8 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
+   public static final int[] capacities = {1000000,2000000,4000000,6000000,8000000,10000000};
+   
    public BrainJar(){
       id = "brain_jar";
       name = "Brain in a Jar";
@@ -76,7 +78,8 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      return 1000000;
+      int capLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"unending_wisdom"));
+      return capacities[capLvl];
    }
    
    @Override

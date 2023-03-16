@@ -1,16 +1,14 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -94,6 +92,8 @@ public class NulMemento extends MagicItem implements UsableItem {
       player.addStatusEffect(weakness);
       
       final boolean[] cont = {true};
+      int resolve = PLAYER_DATA.get(player).getAugmentLevel("resolve");
+      final int maxConc = LevelUtils.concFromXp(PLAYER_DATA.get(player).getXP(),resolve);
    
       player.sendMessage(Text.literal(""),false);
       player.sendMessage(Text.literal(""),false);
@@ -110,7 +110,7 @@ public class NulMemento extends MagicItem implements UsableItem {
          public void run(){
             if(cont[0]){
                ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento)){
+               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
                   cont[0] = false;
                   processHalted(player);
                }else{
@@ -127,7 +127,7 @@ public class NulMemento extends MagicItem implements UsableItem {
          public void run(){
             if(cont[0]){
                ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento)){
+               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
                   cont[0] = false;
                   processHalted(player);
                }else{
@@ -151,7 +151,7 @@ public class NulMemento extends MagicItem implements UsableItem {
          public void run(){
             if(cont[0]){
                ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento)){
+               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
                   cont[0] = false;
                   processHalted(player);
                }else{
@@ -168,7 +168,7 @@ public class NulMemento extends MagicItem implements UsableItem {
          public void run(){
             if(cont[0]){
                ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento)){
+               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
                   cont[0] = false;
                   processHalted(player);
                }else{
@@ -185,7 +185,7 @@ public class NulMemento extends MagicItem implements UsableItem {
          public void run(){
             if(cont[0]){
                ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento)){
+               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
                   cont[0] = false;
                   processHalted(player);
                }else{
@@ -214,7 +214,7 @@ public class NulMemento extends MagicItem implements UsableItem {
          public void run(){
             if(cont[0]){
                ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento)){
+               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
                   cont[0] = false;
                   processHalted(player);
                }else{
@@ -226,6 +226,9 @@ public class NulMemento extends MagicItem implements UsableItem {
                   headStack.setNbt(new NbtCompound());
                   PLAYER_DATA.get(player).removeAllAugments();
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1f, 1f);
+   
+                  ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE.id);
+                  ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC.id,1);
                }
             }
          }
@@ -237,9 +240,9 @@ public class NulMemento extends MagicItem implements UsableItem {
       player.sendMessage(Text.literal(""),false);
       player.sendMessage(Text.literal(""),false);
       player.sendMessage(Text.literal("")
-            .append(Text.literal("You remove the ").formatted(Formatting.GRAY,Formatting.ITALIC))
+            .append(Text.literal("The weight of the ").formatted(Formatting.GRAY,Formatting.ITALIC))
             .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD,Formatting.ITALIC))
-            .append(Text.literal(" from your head, perhaps you arent ready...").formatted(Formatting.GRAY,Formatting.ITALIC)), false);
+            .append(Text.literal(" becomes too much to bear, perhaps you arent ready...").formatted(Formatting.GRAY,Formatting.ITALIC)), false);
    }
    
    private MagicItemRecipe makeRecipe(){

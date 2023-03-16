@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.sgui.api.elements.*;
+import net.borisshoes.arcananovum.achievements.*;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
@@ -564,11 +565,91 @@ public class ArcanaCommands {
       }
    }
    
-   public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> serverCommandSourceCommandContext, SuggestionsBuilder builder){
+   public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
       String start = builder.getRemaining().toLowerCase();
       Set<String> items = MagicItems.registry.keySet();
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
+   }
+   
+   public static CompletableFuture<Suggestions> getAchievementSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+      String start = builder.getRemaining().toLowerCase();
+      Set<String> items = ArcanaAchievements.registry.keySet();
+      items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
+      return builder.buildFuture();
+   }
+   
+   
+   public static int setAchievement(CommandContext<ServerCommandSource> ctx, String id, boolean grant, Collection<ServerPlayerEntity> targets){
+      try{
+         ServerCommandSource source = ctx.getSource();
+         ArcanaAchievement achievement = ArcanaAchievements.registry.get(id);
+         if(achievement == null){
+            source.sendError(Text.literal("That is not a valid Achievement"));
+            return -1;
+         }
+      
+         for (ServerPlayerEntity player : targets) {
+            if(grant){
+               ArcanaAchievements.grant(player,id);
+            }else{
+               ArcanaAchievements.revoke(player,id);
+            }
+         }
+      
+         MutableText feedback = Text.literal("");
+         if(grant){
+            feedback.append(Text.literal("Granted Achievement [").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Text.literal(achievement.name).formatted(Formatting.AQUA));
+            feedback.append(Text.literal("] to ").formatted(Formatting.LIGHT_PURPLE));
+         }else{
+            feedback.append(Text.literal("Revoked Achievement [").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Text.literal(achievement.name).formatted(Formatting.AQUA));
+            feedback.append(Text.literal("] from ").formatted(Formatting.LIGHT_PURPLE));
+         }
+         if(targets.size() == 1){
+            feedback.append(targets.iterator().next().getDisplayName());
+         }else{
+            feedback.append(Text.literal(targets.size() + " players").formatted(Formatting.LIGHT_PURPLE));
+         }
+         source.sendFeedback(feedback,true);
+      
+         return targets.size();
+      }catch(Exception e){
+         e.printStackTrace();
+         return 0;
+      }
+   }
+   
+   public static int getAchievement(CommandContext<ServerCommandSource> ctx, String id, ServerPlayerEntity target){
+      try{
+         ServerCommandSource source = ctx.getSource();
+         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         ArcanaAchievement baseAch = ArcanaAchievements.registry.get(id);
+         if(baseAch == null){
+            source.sendError(Text.literal("That is not a valid Achievement"));
+            return -1;
+         }
+         ArcanaAchievement achieve = profile.getAchievement(baseAch.getMagicItem().getId(),id);
+   
+         MutableText[] response = achieve.getStatusDisplay(target);
+         
+   
+         MutableText header = Text.literal("")
+               .append(target.getDisplayName().copy().append("'s"))
+               .append(Text.literal(" progress towards [").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(achieve.name).formatted(Formatting.AQUA))
+               .append(Text.literal("]: ").formatted(Formatting.LIGHT_PURPLE));
+         
+         source.sendFeedback(header,false);
+         for(MutableText mutableText : response){
+            source.sendFeedback(mutableText, false);
+         }
+         return 1;
+      }catch(Exception e){
+         e.printStackTrace();
+         return 0;
+      }
    }
    
    public static int createItems(ServerCommandSource source, String id, Collection<ServerPlayerEntity> targets){

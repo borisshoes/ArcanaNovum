@@ -24,6 +24,16 @@ public class ArcanaAchievements {
    public static final List<ArcanaAchievement> allNonMythical = new ArrayList<>();
    public static final List<ArcanaAchievement> allMythical = new ArrayList<>();
    
+   // Mythical Catalyst
+   public static final ArcanaAchievement DOOR_OF_DIVINITY = ArcanaAchievements.register("door_of_divinity",
+         new EventAchievement("Door of Divinity", "door_of_divinity", new ItemStack(Items.AMETHYST_SHARD), MagicItems.CATALYST_MYTHICAL, 1000,1,
+         new String[]{"Summon a Nul Construct"}
+   ));
+   public static final ArcanaAchievement CONSTRUCT_DECONSTRUCTED = ArcanaAchievements.register("construct_deconstructed",
+         new EventAchievement("Construct Deconstructed", "construct_deconstructed", new ItemStack(Items.NETHERITE_SCRAP), MagicItems.CATALYST_MYTHICAL, 5000,2,
+         new String[]{"Successfully Defeat a Nul Construct"}
+   ));
+   
    // Arcane Flak Arrows
    public static final ArcanaAchievement AA_ARTILLERY = ArcanaAchievements.register("aa_artillery",
          new EventAchievement("Anti-Air Artillery", "aa_artillery", new ItemStack(Items.FIREWORK_STAR), MagicItems.ARCANE_FLAK_ARROWS, 5000,2,
@@ -233,6 +243,24 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement FREQUENT_FLIER = ArcanaAchievements.register("frequent_flier",
          new ProgressAchievement("Frequent Flier", "frequent_flier", new ItemStack(Items.FEATHER), MagicItems.LEVITATION_HARNESS, 15000,3,
          new String[]{"Use the Levitation Harness for 24 Hours"}, 86400
+   ));
+   
+   // Nul Memento
+   public static final ArcanaAchievement DIVINE_FAVOR = ArcanaAchievements.register("divine_favor",
+         new EventAchievement("Divine Favor", "divine_favor", new ItemStack(Items.AMETHYST_CLUSTER), MagicItems.NUL_MEMENTO, 100000,5,
+         new String[]{"Receive a Nul Memento from a Nul Construct"}
+   ));
+   public static final ArcanaAchievement AMNESIAC = ArcanaAchievements.register("amnesiac",
+         new ProgressAchievement("Amnesiac", "amnesiac", new ItemStack(Items.SKELETON_SKULL), MagicItems.NUL_MEMENTO, 50000,5,
+         new String[]{"Use a Nul Memento 5 times"}, 5
+   ));
+   public static final ArcanaAchievement DEATHS_DOOR = ArcanaAchievements.register("deaths_door",
+         new EventAchievement("Death's Door", "deaths_door", new ItemStack(Items.TOTEM_OF_UNDYING), MagicItems.NUL_MEMENTO, 2500,1,
+         new String[]{"Use a Totem of Undying while activating a Nul Memento"}
+   ));
+   public static final ArcanaAchievement LOST_KNOWLEDGE = ArcanaAchievements.register("lost_knowledge",
+         new EventAchievement("Lost Knowledge", "lost_knowledge", new ItemStack(Items.KNOWLEDGE_BOOK), MagicItems.NUL_MEMENTO, 2500,1,
+         new String[]{"Use a Nul Memento"}
    ));
    
    // Overflowing Quiver
@@ -540,6 +568,14 @@ public class ArcanaAchievements {
          if(get) {
             baseAch.announceAcquired(player);
          }
+      }
+   }
+   
+   public static void revoke(ServerPlayerEntity player, String id){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      ArcanaAchievement achieve = registry.get(id);
+      if(achieve != null){
+         profile.removeAchievement(achieve.getMagicItem().getId(),id);
       }
    }
    

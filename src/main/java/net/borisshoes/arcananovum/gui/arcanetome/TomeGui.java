@@ -183,19 +183,15 @@ public class TomeGui extends SimpleGui {
                   ArcanaAchievements.progress(player,"intermediate_artifice",1);
                }
                if(magicItem.getRarity() == MagicRarity.LEGENDARY) ArcanaAchievements.grant(player,"artificial_divinity");
-   
-               int resourceLvl = profile.getAugmentLevel("resourceful");
                
                ItemStack[][] ingredients = new ItemStack[5][5];
                for(int i = 0; i < inv.size(); i++){
                   ingredients[i/5][i%5] = inv.getStack(i);
                }
-               ItemStack[][] remainders = recipe.getRemainders(ingredients,resourceLvl);
+               ItemStack[][] remainders = recipe.getRemainders(ingredients, settings.resourceLvl);
                for(int i = 0; i < inv.size(); i++){
                   inv.setStack(i,remainders[i/5][i%5]);
                }
-   
-               
 
                while(true){
                   ItemEntity itemEntity;
@@ -494,19 +490,22 @@ public class TomeGui extends SimpleGui {
       private ArcaneTome.TomeFilter filterType;
       private int page;
       public final int skillLvl;
+      public final int resourceLvl;
       
-      public CompendiumSettings(int skillLvl){
+      public CompendiumSettings(int skillLvl, int resourceLvl){
          this.sortType = ArcaneTome.TomeSort.RECOMMENDED;
          this.filterType = ArcaneTome.TomeFilter.NONE;
          this.page = 1;
          this.skillLvl = skillLvl;
+         this.resourceLvl = resourceLvl;
       }
       
-      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, int page, int skillLvl){
+      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, int page, int skillLvl, int resourceLvl){
          this.sortType = sortType;
          this.filterType = filterType;
          this.page = page;
          this.skillLvl = skillLvl;
+         this.resourceLvl = resourceLvl;
       }
    
       public ArcaneTome.TomeFilter getFilterType(){

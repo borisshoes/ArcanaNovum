@@ -4,15 +4,21 @@ import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.FractalSponge;
+import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
@@ -63,15 +69,35 @@ public class ItemEntityMixin {
          }
       }else if(magicItem instanceof CindersCharm){
          cir.setReturnValue(true);
+      }else if(magicItem instanceof Soulstone){
+         cir.setReturnValue(true);
       }
    }
    
    @Inject(method="tick",at=@At("TAIL"))
-   private void arcananovum_makeCryingObsidian(CallbackInfo ci){
+   private void arcananovum_worldDetection(CallbackInfo ci){
       ItemEntity itemEntity = (ItemEntity) (Object) this;
       ItemStack stack = itemEntity.getStack();
       World world = itemEntity.getWorld();
-   
+      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
+      
+      if(magicItem instanceof Soulstone){
+         boolean hasAnnihilation = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_ANNIHILATION.id) > 0;
+         if(hasAnnihilation){
+            BlockState state = world.getBlockState(itemEntity.getBlockPos());
+            if(state.isOf(Blocks.SOUL_FIRE)){
+               if(!Soulstone.getType(stack).equals("unattuned")){
+                  itemEntity.setStack(Soulstone.setUnattuned(stack));
+                  
+                  if(world instanceof ServerWorld serverWorld){
+                     SoundUtils.soulSounds(serverWorld,itemEntity.getBlockPos(),30,20);
+                     serverWorld.spawnParticles(ParticleTypes.SOUL, itemEntity.getX(), itemEntity.getY()+0.125, itemEntity.getZ(), 100,0.25,0.25,0.25,0.07);
+                  }
+               }
+            }
+         }
+      }
+      
       if(!MagicItemUtils.isMagic(stack) && stack.isOf(Items.OBSIDIAN) && itemEntity.isTouchingWater()){
          List<ItemEntity> otherEntities = world.getEntitiesByType(EntityType.ITEM,itemEntity.getBoundingBox().expand(1.25),e -> (!e.getUuid().equals(itemEntity.getUuid()) && e.isTouchingWater() && !MagicItemUtils.isMagic(e.getStack())));
    

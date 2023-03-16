@@ -194,6 +194,21 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
       return item;
    }
    
+   public static ItemStack setUnattuned(ItemStack stack){
+      if(!(MagicItemUtils.identifyItem(stack) instanceof Soulstone)){
+         return null;
+      }
+      ItemStack item = setSouls(stack,0);
+      
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      
+      magicNbt.putString("type","unattuned");
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      loreList.set(3,NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      return item;
+   }
+   
    public static int getSouls(ItemStack item){
       if(!(MagicItemUtils.identifyItem(item) instanceof Soulstone)){
          return -1;
@@ -278,7 +293,7 @@ public class Soulstone extends MagicItem implements AttackingItem, UsableItem {
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"       Soulstone\\n\\nRarity: Empowered\\n\\nHow to imprison a soul... A seemingly impossible task if it weren't for some materials the Nether-dwellers have been working with for millenia. Soulsand, Crying Obsidian and Netherite when put\"}");
+      list.add("{\"text\":\"       Soulstone\\n\\nRarity: Empowered\\n\\nHow to imprison a soul... A seemingly impossible task if it weren't for some materials the Nether-dwellers have been working with for millennia. Soulsand, Crying Obsidian and Netherite when put\"}");
       list.add("{\"text\":\"       Soulstone\\n\\ntogether seem to be capable of constructing a near inescapable bulk prison for souls of a single type.\\n\\nThe Soulstone should be able to attune to a type of mob by merely using it to draw blood. After that any souls\"}");
       list.add("{\"text\":\"       Soulstone\\n\\nof that type that are freed from their mortal existence should be sucked into the stone like a black hole, never to be released... \\n\\nUntil I find a way to use them...\"}");
       return list;

@@ -264,12 +264,17 @@ public class ArcanaAugments {
    // Brain in a Jar
    public static final ArcanaAugment KNOWLEDGE_BANK = ArcanaAugments.register("knowledge_bank",
          new ArcanaAugment("Bank of Knowledge", "knowledge_bank", new ItemStack(Items.EXPERIENCE_BOTTLE), MagicItems.BRAIN_JAR,
-         new String[]{"Gain interest on XP stored over time","Higher levels give a higher interest rate"},
+         new String[]{"Gain interest on XP stored over time","Interest Rate per level: 0.2%/0.4%/0.6% per minute"},
          new MagicRarity[]{EXOTIC,EXOTIC,LEGENDARY}
    ));
    public static final ArcanaAugment TRADE_SCHOOL = ArcanaAugments.register("trade_school",
          new ArcanaAugment("Trade School", "trade_school", new ItemStack(Items.DIAMOND_PICKAXE), MagicItems.BRAIN_JAR,
-         new String[]{"Increases repair efficiency for each level"},
+         new String[]{"Increases repair efficiency for each level","Efficiency per level: 1.5x/2x/2.5x/3x/3.5x"},
+         new MagicRarity[]{MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC}
+   ));
+   public static final ArcanaAugment UNENDING_WISDOM = ArcanaAugments.register("unending_wisdom",
+         new ArcanaAugment("Unending Wisdom", "unending_wisdom", new ItemStack(Items.ENCHANTED_BOOK), MagicItems.BRAIN_JAR,
+         new String[]{"Increases the max XP capacity for each level","Increase per level: 2x/4x/6x/8x/10x"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC}
    ));
    
@@ -508,6 +513,11 @@ public class ArcanaAugments {
          new ArcanaAugment("Soul Reaper", "soul_reaper", new ItemStack(Items.SOUL_LANTERN), MagicItems.SOULSTONE,
          new String[]{"Gain an additional soul per kill per level","Final level gives an extra 5 souls per kill"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
+   ));
+   public static final ArcanaAugment SOUL_ANNIHILATION = ArcanaAugments.register("soul_annihilation",
+         new ArcanaAugment("Soul Annihilation", "soul_annihilation", new ItemStack(Items.SOUL_CAMPFIRE), MagicItems.SOULSTONE,
+         new String[]{"Allows a Soulstone to be unattuned","Throw the Soulstone into Soul Fire to un-attune it"},
+         new MagicRarity[]{EXOTIC}
    ));
    
    // Spawner Harness

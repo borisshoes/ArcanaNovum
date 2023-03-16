@@ -125,7 +125,7 @@ public class BowMixin {
    }
    
    @Redirect(method="onStoppedUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/PersistentProjectileEntity;setVelocity(Lnet/minecraft/entity/Entity;FFFFF)V"))
-   private void arcananovum_stabilization(PersistentProjectileEntity arrowEntity, Entity player, float pitch, float yaw, float roll, float speed, float divergence, ItemStack bow, World world, LivingEntity user, int remainingUseTicks){
+   private void arcananovum_arrowVelocity(PersistentProjectileEntity arrowEntity, Entity player, float pitch, float yaw, float roll, float speed, float divergence, ItemStack bow, World world, LivingEntity user, int remainingUseTicks){
       float newDiv = divergence;
       if(MagicItemUtils.isMagic(bow)){
          MagicItem magicBow = MagicItemUtils.identifyItem(bow);
@@ -144,8 +144,8 @@ public class BowMixin {
       if(MagicItemUtils.isMagic(bow)){
          MagicItem magicBow = MagicItemUtils.identifyItem(bow);
          if(magicBow instanceof RunicBow){
-            int accelLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,"bow_stabilization"));
-            final float[] accel = {20,18,18,15,10};
+            int accelLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,"bow_acceleration"));
+            final float[] accel = {20,18,17,16,15,10};
             maxPullTicks = accel[accelLvl];
          }
       }

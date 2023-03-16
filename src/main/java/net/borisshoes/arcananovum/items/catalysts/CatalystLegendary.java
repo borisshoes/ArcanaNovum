@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.catalysts;
 
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructDialog;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -175,6 +176,10 @@ public class CatalystLegendary extends MagicItem implements UsableItem {
                world.spawnEntity(witherEntity);
                CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
    
+               if(playerEntity instanceof ServerPlayerEntity player){
+                  ArcanaAchievements.grant(player,ArcanaAchievements.DOOR_OF_DIVINITY.id);
+               }
+               
                playerEntity.getStackInHand(hand).setCount(0);
             }
       

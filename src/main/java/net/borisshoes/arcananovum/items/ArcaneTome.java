@@ -79,7 +79,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
       int skillLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(playerEntity.getStackInHand(hand),ArcanaAugments.SKILL.id));
-      openGui(playerEntity,TomeMode.PROFILE,new TomeGui.CompendiumSettings(skillLvl));
+      int resourceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(playerEntity.getStackInHand(hand),ArcanaAugments.RESOURCEFUL.id));
+      openGui(playerEntity,TomeMode.PROFILE,new TomeGui.CompendiumSettings(skillLvl,resourceLvl));
       return false;
    }
    

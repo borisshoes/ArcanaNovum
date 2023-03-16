@@ -18,6 +18,7 @@ import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.mob.WitherSkeletonEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
@@ -292,6 +293,8 @@ public class NulConstructFight {
       boolean hasMythical = magicData.getBoolean("summonerHasMythical");
       boolean hasWings = magicData.getBoolean("summonerHasWings");
       boolean dropped = false;
+   
+      PlayerEntity summoner = server.getPlayerManager().getPlayer(UUID.fromString(magicData.getString("summonerId")));
       
       for(int i = 0; i < (int)(Math.random()*25+7); i++){
          ItemStack stack = Items.NETHER_STAR.getDefaultStack();
@@ -306,7 +309,15 @@ public class NulConstructFight {
       ItemStack stack = MagicItems.CATALYST_MYTHICAL.addCrafter(MagicItems.CATALYST_MYTHICAL.getNewItem(),magicData.getString("summonerId"),false,construct.getServer());
       dropItem(construct.getWorld(),stack,construct.getPos());
    
-      NulConstructDialog.announce(server,server.getPlayerManager().getPlayer(UUID.fromString(magicData.getString("summonerId"))),construct, NulConstructDialog.Announcements.SUCCESS, new boolean[]{hasMythical,hasWings,dropped});
+      
+      NulConstructDialog.announce(server,summoner,construct, NulConstructDialog.Announcements.SUCCESS, new boolean[]{hasMythical,hasWings,dropped});
+   
+      if(summoner instanceof ServerPlayerEntity player){
+         ArcanaAchievements.grant(player,ArcanaAchievements.CONSTRUCT_DECONSTRUCTED.id);
+         if(dropped){
+            ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_FAVOR.id);
+         }
+      }
    }
    
    public static void deconstruct(WitherEntity construct, MagicEntity magicEntity, ServerPlayerEntity summoner){
