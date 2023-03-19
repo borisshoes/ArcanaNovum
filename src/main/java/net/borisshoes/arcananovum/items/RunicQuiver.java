@@ -64,7 +64,6 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
       NbtList storedArrows = new NbtList();
-      magicTag.putInt("slot",0);
       magicTag.put("arrows",storedArrows);
       prefNBT = tag;
       
@@ -115,6 +114,15 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
          NbtList arrows = nbt.getCompound("arcananovum").getList("arrows", NbtElement.COMPOUND_TYPE);
          newMagicItem.getOrCreateNbt().getCompound("arcananovum").put("arrows",arrows);
       }
+      int o = ArcanaAugments.getAugmentOnItem(quiverStack, ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
+      int r = ArcanaAugments.getAugmentOnItem(quiverStack, ArcanaAugments.ABUNDANT_AMMO.id);
+      if(o > 0){
+         ArcanaAugments.applyAugment(newMagicItem, ArcanaAugments.RUNIC_BOTTOMLESS.id, o);
+      }
+      if(r > 0){
+         ArcanaAugments.applyAugment(newMagicItem, ArcanaAugments.QUIVER_DUPLICATION.id, r);
+      }
+      
       return newMagicItem;
    }
    

@@ -40,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-public class ExpulsionArrows extends MagicItem implements RunicArrow {
+public class ExpulsionArrows extends RunicArrow {
    
    public ExpulsionArrows(){
       id = "expulsion_arrows";

@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-public class GravitonArrows extends MagicItem implements RunicArrow {
+public class GravitonArrows extends RunicArrow {
    
    public GravitonArrows(){
       id = "graviton_arrows";

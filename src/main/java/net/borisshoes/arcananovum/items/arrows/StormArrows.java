@@ -52,7 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-public class StormArrows extends MagicItem implements RunicArrow {
+public class StormArrows extends RunicArrow {
    
    private static final double[] stormChance = {.1,.2,.4,.6,.8,1};
    

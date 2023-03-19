@@ -32,6 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.minecraft.item.RangedWeaponItem.BOW_PROJECTILES;
 
 @Mixin(BowItem.class)
 public class BowMixin {
@@ -90,22 +91,37 @@ public class BowMixin {
       if(tag.contains("QuiverSlot") && tag.contains("QuiverId")){
          String quiverId = tag.getString("QuiverId");
          int slot = tag.getInt("QuiverSlot");
-         
+         boolean isInvArrow = quiverId.equals("inventory");
+   
          PlayerInventory inv = playerEntity.getInventory();
-         for(int invSlot = 0; invSlot<inv.size(); invSlot++){
-            ItemStack item = inv.getStack(invSlot);
-            if(item.isEmpty()){
-               continue;
+         if(isInvArrow){
+            ItemStack arrowStack = inv.getStack(slot);
+            if (BOW_PROJECTILES.test(arrowStack)) {
+               arrowStack.decrement(1);
+               if (arrowStack.isEmpty()) {
+                  playerEntity.getInventory().removeOne(arrowStack);
+               }
+               return;
             }
-            
-            MagicItem magicItem = MagicItemUtils.identifyItem(item);
-            if(magicItem instanceof QuiverItem quiver){
-               if(quiver.getUUID(item).equals(quiverId)){
-                  quiver.shootArrow(item,slot,player,stack);
-                  return;
+         }else{
+            for(int invSlot = 0; invSlot<inv.size(); invSlot++){
+               ItemStack item = inv.getStack(invSlot);
+               if(item.isEmpty()){
+                  continue;
+               }
+      
+               MagicItem magicItem = MagicItemUtils.identifyItem(item);
+               if(magicItem instanceof QuiverItem quiver){
+                  if(quiver.getUUID(item).equals(quiverId)){
+                     quiver.shootArrow(item,slot,player,stack);
+                     return;
+                  }
                }
             }
          }
+         
+         
+         
       }
    }
    

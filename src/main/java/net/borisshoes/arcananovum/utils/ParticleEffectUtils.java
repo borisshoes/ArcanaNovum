@@ -11,6 +11,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.particle.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -218,21 +219,22 @@ public class ParticleEffectUtils {
          float hue = i/((float)intervals);
          Color c = Color.getHSBColor(hue, 1f, brightness);
          ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(c.getRGB()).toVector3f(),.6f);
-   
-         world.spawnParticles(dust,x,y,z,count,delta,delta,delta,speed);
+         
+         spawnLongParticle(world,dust,x,y,z,delta,delta,delta,speed,count);
       }
+      spawnLongParticle(world,ParticleTypes.WAX_OFF,p2.x,p2.y,p2.z,0.2,0.2,0.2,1,10);
    }
    
    public static void tetherArrowEntity(ServerWorld world, LivingEntity entity, ServerPlayerEntity player){
       ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xa6a58a).toVector3f(),.4f);
       double len = player.getPos().subtract(entity.getPos()).length();
-      line(world,null,player.getPos().add(0,player.getHeight()/2,0),entity.getPos().add(0,entity.getHeight()/2,0),dust,(int)(20*len),3,0.03,1);
+      longDistLine(world,player.getPos().add(0,player.getHeight()/2,0),entity.getPos().add(0,entity.getHeight()/2,0),dust,(int)(20*len),3,0.03,1);
    }
    
    public static void tetherArrowGrapple(ServerWorld world, ServerPlayerEntity player, Vec3d pos){
       ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xa6a58a).toVector3f(),.4f);
       double len = player.getPos().subtract(pos).length();
-      line(world,null,player.getPos(),pos,dust,(int)(20*len),3,0.03,1);
+      longDistLine(world,player.getPos(),pos,dust,(int)(20*len),3,0.03,1);
    }
    
    public static void blinkArrowTp(ServerWorld world, Vec3d pos){
@@ -484,6 +486,19 @@ public class ParticleEffectUtils {
       sphere(world,null,center,dust,radius,(int)(radius*radius+radius*10+radius),1,0,1,theta*ticks);
    }
    
+   public static void longDistLine(ServerWorld world, Vec3d p1, Vec3d p2, ParticleEffect type, int intervals, int count, double delta, double speed){
+      double dx = (p2.x-p1.x)/intervals;
+      double dy = (p2.y-p1.y)/intervals;
+      double dz = (p2.z-p1.z)/intervals;
+      for(int i = 0; i < intervals; i++){
+         double x = p1.x + dx*i;
+         double y = p1.y + dy*i;
+         double z = p1.z + dz*i;
+   
+         spawnLongParticle(world,type,x,y,z,delta,delta,delta,speed,count);
+      }
+   }
+   
    public static void line(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d p1, Vec3d p2, ParticleEffect type, int intervals, int count, double delta, double speed){
       double dx = (p2.x-p1.x)/intervals;
       double dy = (p2.y-p1.y)/intervals;
@@ -501,6 +516,18 @@ public class ParticleEffectUtils {
       }
    }
    
+   public static void longDistCircle(ServerWorld world, Vec3d center, ParticleEffect type, double radius, int intervals, int count, double delta, double speed){
+      double dA = Math.PI * 2 / intervals;
+      for(int i = 0; i < intervals; i++){
+         double angle = dA * i;
+         double x = radius * Math.cos(angle) + center.x;
+         double z = radius * Math.sin(angle) + center.z;
+         double y = center.y;
+   
+         spawnLongParticle(world,type,x,y,z,delta,delta,delta,speed,count);
+      }
+   }
+   
    public static void circle(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int intervals, int count, double delta, double speed){
       double dA = Math.PI * 2 / intervals;
       for(int i = 0; i < intervals; i++){
@@ -514,6 +541,25 @@ public class ParticleEffectUtils {
          }else{
             world.spawnParticles(player,type,false,x,y,z,count,delta,delta,delta,speed);
          }
+      }
+   }
+   
+   public static void longDistSphere(ServerWorld world, Vec3d center, ParticleEffect type, double radius, int points, int count, double delta, double speed, double theta){
+      double phi = Math.PI * (3 - Math.sqrt(5));
+      
+      for(int i = 0; i < points; i++){
+         // Fibonacci Sphere Equations
+         double y = 1 - (i / (double)(points-1)) * 2;
+         double r = Math.sqrt(1-y*y);
+         double t = phi*i + theta;
+         double x = Math.cos(t) * r;
+         double z = Math.sin(t) * r;
+         
+         // Center Offset and Radius Scale
+         Vec3d point = new Vec3d(x,y,z);
+         point = point.multiply(radius).add(center.x, center.y, center.z);
+   
+         spawnLongParticle(world,type,point.x,point.y,point.z,delta,delta,delta,speed,count);
       }
    }
    
@@ -535,9 +581,16 @@ public class ParticleEffectUtils {
          if(player == null){
             world.spawnParticles(type,point.x,point.y,point.z,count,delta,delta,delta,speed);
          }else{
-            world.spawnParticles(player,type,false,x,y,z,count,delta,delta,delta,speed);
+            world.spawnParticles(player,type,false,point.x,point.y,point.z,count,delta,delta,delta,speed);
          }
       }
    }
    // Notes about the Dust Particle, size goes from .01 to 4, you can use an int represented rgb value with new Vector3f(Vec3d.unpackRgb(int))
+   
+   public static void spawnLongParticle(ServerWorld world, ParticleEffect type, double x, double y, double z, double dx, double dy, double dz, double speed, int count){
+      List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(new Vec3d(x,y,z)) < 512*512);
+      for(ServerPlayerEntity player : players){
+         player.networkHandler.sendPacket(new ParticleS2CPacket(type,true,x,y,z,(float)dx,(float)dy,(float)dz,(float)speed,count));
+      }
+   }
 }

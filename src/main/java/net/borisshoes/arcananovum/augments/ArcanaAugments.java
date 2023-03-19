@@ -213,7 +213,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment NEODYMIUM = ArcanaAugments.register("neodymium",
          new ArcanaAugment("Charm of Neodymium", "neodymium", new ItemStack(Items.NETHERITE_INGOT), MagicItems.MAGNETISM_CHARM,
-         new String[]{"The Charm's active ability now pulls","Iron Armor and Tools off of mobs","and disables all equipped shields briefly"},
+         new String[]{"The Charm's active ability now pulls","Metal Armor and Tools off of mobs","and disables all equipped shields briefly"},
          new MagicRarity[]{LEGENDARY}
    ));
    
@@ -373,12 +373,12 @@ public class ArcanaAugments {
    // Overflowing Quiver
    public static final ArcanaAugment ABUNDANT_AMMO = ArcanaAugments.register("abundant_ammo",
          new ArcanaAugment("Abundant Ammo", "abundant_ammo", new ItemStack(Items.SPECTRAL_ARROW), MagicItems.OVERFLOWING_QUIVER,
-         new String[]{"Decreases time between arrow restocks","Decrease per level: 15/30/45/60/90 seconds"},
+         new String[]{"Decreases time between arrow restocks","Decrease per level: 15/30/45/60/90 seconds","Linked with Runic Quiver's Duplication Runes"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
    public static final ArcanaAugment OVERFLOWING_BOTTOMLESS = ArcanaAugments.register("overflowing_bottomless",
          new ArcanaAugment("Bottomless Quiver", "overflowing_bottomless", new ItemStack(Items.ARROW), MagicItems.OVERFLOWING_QUIVER,
-         new String[]{"Grants a chance to not consume an arrow","Chance per level: 5%/10%/15%/20%/30%"},
+         new String[]{"Grants a chance to not consume an arrow","Chance per level: 5%/10%/15%/20%/30%","Linked with Runic Quiver's Bottomless Quiver"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
    
@@ -436,12 +436,12 @@ public class ArcanaAugments {
    // Runic Quiver
    public static final ArcanaAugment QUIVER_DUPLICATION = ArcanaAugments.register("quiver_duplication",
          new ArcanaAugment("Duplication Runes", "quiver_duplication", new ItemStack(Items.TIPPED_ARROW), MagicItems.RUNIC_QUIVER,
-         new String[]{"Decreases time between arrow restocks","Decrease per level: 5/10/20/30/45 seconds"},
+         new String[]{"Decreases time between arrow restocks","Decrease per level: 5/10/20/30/45 seconds","Linked with Overflowing Quiver's Abundant Ammo"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
    public static final ArcanaAugment RUNIC_BOTTOMLESS = ArcanaAugments.register("runic_bottomless",
          new ArcanaAugment("Bottomless Quiver", "runic_bottomless", new ItemStack(Items.ARROW), MagicItems.RUNIC_QUIVER,
-         new String[]{"Grants a chance to not consume an arrow","Chance per level: 5%/10%/15%/20%/30%"},
+         new String[]{"Grants a chance to not consume an arrow","Chance per level: 5%/10%/15%/20%/30%","Linked with Overflowing Quiver's Bottomless Quiver"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
    
@@ -660,6 +660,7 @@ public class ArcanaAugments {
       return 0;
    }
    
+   // Applies Augment to Item, cannot down-level existing augments
    public static boolean applyAugment(ItemStack item, String id, int level){
       int curLevel = getAugmentOnItem(item,id);
       if(curLevel == -2) return false;
@@ -669,6 +670,7 @@ public class ArcanaAugments {
       if(!augment.getMagicItem().getId().equals(magicItem.getId())) return false;
       if(level > augment.getTiers().length || curLevel >= augment.getTiers().length) return false;
       if(isIncompatible(item,id)) return false;
+      if(curLevel >= level) return false;
       
       NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
       if(curLevel == -1){

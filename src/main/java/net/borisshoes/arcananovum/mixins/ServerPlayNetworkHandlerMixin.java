@@ -18,6 +18,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,30 +42,22 @@ public class ServerPlayNetworkHandlerMixin {
       
       // Check for and rotate arrow types in quivers
       PlayerInventory inv = player.getInventory();
-   
-      // Switch to next arrow slot, runic quivers get priority
-      if(runic){
-         for(int i=0; i<inv.size();i++){
-            ItemStack item = inv.getStack(i);
-            if(item.isEmpty()){
-               continue;
-            }
-   
-            if(MagicItemUtils.identifyItem(item) instanceof RunicQuiver quiver){
-               if(quiver.switchSlot(item,player)) return;
-            }
-         }
-         
-      }
       
+      // Switch to next arrow slot if quiver is found
       for(int i=0; i<inv.size();i++){
          ItemStack item = inv.getStack(i);
          if(item.isEmpty()){
             continue;
          }
-         
-         if(MagicItemUtils.identifyItem(item) instanceof OverflowingQuiver quiver){
-            if(quiver.switchSlot(item,player)) return;
+      
+         if(MagicItemUtils.identifyItem(item) instanceof RunicQuiver && runic){
+            // Quiver found allow switching
+            QuiverItem.switchArrowOption(player,runic);
+            return;
+         }else if(MagicItemUtils.identifyItem(item) instanceof OverflowingQuiver){
+            // Quiver found allow switching
+            QuiverItem.switchArrowOption(player,runic);
+            return;
          }
       }
    }

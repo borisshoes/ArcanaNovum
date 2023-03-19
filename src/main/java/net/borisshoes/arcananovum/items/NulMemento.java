@@ -242,7 +242,7 @@ public class NulMemento extends MagicItem implements UsableItem {
       player.sendMessage(Text.literal("")
             .append(Text.literal("The weight of the ").formatted(Formatting.GRAY,Formatting.ITALIC))
             .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD,Formatting.ITALIC))
-            .append(Text.literal(" becomes too much to bear, perhaps you arent ready...").formatted(Formatting.GRAY,Formatting.ITALIC)), false);
+            .append(Text.literal(" becomes too much to bare, perhaps you arent ready...").formatted(Formatting.GRAY,Formatting.ITALIC)), false);
    }
    
    private MagicItemRecipe makeRecipe(){

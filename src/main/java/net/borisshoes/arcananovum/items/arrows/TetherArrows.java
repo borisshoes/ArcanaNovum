@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-public class TetherArrows extends MagicItem implements RunicArrow {
+public class TetherArrows extends RunicArrow {
    
    public TetherArrows(){
       id = "tether_arrows";

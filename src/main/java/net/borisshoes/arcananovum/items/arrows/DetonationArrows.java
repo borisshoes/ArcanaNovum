@@ -29,7 +29,7 @@ import net.minecraft.world.explosion.Explosion;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DetonationArrows extends MagicItem implements RunicArrow {
+public class DetonationArrows extends RunicArrow {
    
    public DetonationArrows(){
       id = "detonation_arrows";

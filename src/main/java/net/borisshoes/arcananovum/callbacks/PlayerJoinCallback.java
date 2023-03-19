@@ -1,8 +1,11 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -35,5 +38,36 @@ public class PlayerJoinCallback {
          profile.setLevel(1);
       }
       profile.setLevel(LevelUtils.levelFromXp(profile.getXP())); // update level from xp just in case leveling changed
+   
+   
+      int o1 = profile.getAugmentLevel(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
+      int r1 = profile.getAugmentLevel(ArcanaAugments.RUNIC_BOTTOMLESS.id);
+      if(o1 > r1){
+         profile.setAugmentLevel(ArcanaAugments.RUNIC_BOTTOMLESS.id,o1);
+      }else if(r1 > o1){
+         profile.setAugmentLevel(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,r1);
+      }
+   
+      int o2 = profile.getAugmentLevel(ArcanaAugments.ABUNDANT_AMMO.id);
+      int r2 = profile.getAugmentLevel(ArcanaAugments.QUIVER_DUPLICATION.id);
+      if(o2 > r2){
+         profile.setAugmentLevel(ArcanaAugments.QUIVER_DUPLICATION.id,o2);
+      }else if(r2 > o2){
+         profile.setAugmentLevel(ArcanaAugments.ABUNDANT_AMMO.id,r2);
+      }
+   
+   
+      if(profile.getMiscData("runicInvId") == null){
+         profile.addMiscData("runicInvId", NbtString.of(""));
+      }
+      if(profile.getMiscData("arrowInvId") == null){
+         profile.addMiscData("arrowInvId",NbtString.of(""));
+      }
+      if(profile.getMiscData("runicInvSlot") == null){
+         profile.addMiscData("runicInvSlot",NbtInt.of(0));
+      }
+      if(profile.getMiscData("arrowInvSlot") == null){
+         profile.addMiscData("arrowInvSlot",NbtInt.of(0));
+      }
    }
 }

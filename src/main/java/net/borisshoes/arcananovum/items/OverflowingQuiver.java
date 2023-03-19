@@ -63,7 +63,6 @@ public class OverflowingQuiver extends QuiverItem implements UsableItem, Ticking
       tag = addMagicNbt(tag);
       NbtCompound magicTag = tag.getCompound("arcananovum");
       NbtList storedArrows = new NbtList();
-      magicTag.putInt("slot",0);
       magicTag.put("arrows",storedArrows);
       prefNBT = tag;
    

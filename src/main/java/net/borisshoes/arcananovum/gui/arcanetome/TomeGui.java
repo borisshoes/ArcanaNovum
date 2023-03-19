@@ -349,7 +349,7 @@ public class TomeGui extends SimpleGui {
                      Arcananovum.log(3, "Magic item errored in Tinker's Screen: " + magicItem.getId());
                   }else if(curItemLevel == -1) curItemLevel = 0;
    
-                  boolean generic = magicItem.getId().equals(MagicItems.ARCANE_TOME.getId()) && !augment.id.equals(ArcanaAugments.SKILL.id);
+                  boolean generic = magicItem.getId().equals(MagicItems.ARCANE_TOME.getId()) && !augment.id.equals(ArcanaAugments.SKILL.id) && !augment.id.equals(ArcanaAugments.RESOURCEFUL.id);
                   
                   if(generic){
                      player.sendMessage(Text.literal("These augments are active by default").formatted(Formatting.AQUA), false);

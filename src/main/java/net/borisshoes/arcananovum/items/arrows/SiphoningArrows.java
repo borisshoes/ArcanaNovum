@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-public class SiphoningArrows extends MagicItem implements RunicArrow {
+public class SiphoningArrows extends RunicArrow {
    
    private static final int[] overhealCap = {0,2,4,10};
    

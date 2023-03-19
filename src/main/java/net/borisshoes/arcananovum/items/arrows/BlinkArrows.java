@@ -31,7 +31,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlinkArrows extends MagicItem implements RunicArrow {
+public class BlinkArrows extends RunicArrow {
    
    private static final int[] phaseDur = {0,20,60,100};
    

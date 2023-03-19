@@ -39,7 +39,7 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.items.core.MagicItems.RECOMMENDED_LIST;
 
-public class PhotonicArrows extends MagicItem implements RunicArrow {
+public class PhotonicArrows extends RunicArrow {
    
    public PhotonicArrows(){
       id = "photonic_arrows";

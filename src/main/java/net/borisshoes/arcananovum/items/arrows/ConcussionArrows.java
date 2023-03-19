@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
-public class ConcussionArrows extends MagicItem implements RunicArrow {
+public class ConcussionArrows extends RunicArrow {
    
    public ConcussionArrows(){
       id = "concussion_arrows";

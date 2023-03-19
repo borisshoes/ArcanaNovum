@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.inventory.Inventory;
@@ -33,7 +34,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    protected MagicItemRecipe recipe;
    protected NbtCompound bookLore;
    protected ArcaneTome.TomeFilter[] categories;
-   public static int version = 9;
+   public static int version = 10;
    public int itemVersion;
    
    public int getItemVersion() { return itemVersion; }
@@ -65,8 +66,8 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    
    // Returns item stack with preferred attributes and a unique UUID
    public ItemStack getNewItem(){
-      ItemStack stack = prefItem.copy();
-      NbtCompound tag = prefNBT.copy();
+      ItemStack stack = getPrefItem();
+      NbtCompound tag = getPrefNBT();
       tag.put("arcananovum",addUUID(tag.getCompound("arcananovum")));
       stack.setNbt(tag);
       return stack;
@@ -128,14 +129,14 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    }
    
    public NbtCompound getPrefNBT(){
-      return prefNBT;
+      return prefNBT.copy();
    }
    
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       // For default just replace everything but UUID and crafter and update version
-      NbtCompound newTag = prefNBT.copy();
+      NbtCompound newTag = getPrefNBT();
       newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
       newTag.getCompound("arcananovum").putInt("Version",MagicItem.version + getItemVersion());
       if(magicTag.contains("augments")) newTag.getCompound("arcananovum").put("augments",magicTag.getCompound("augments"));
@@ -214,7 +215,10 @@ public abstract class MagicItem implements Comparable<MagicItem>{
          loreList.add(NbtString.of("[{\"text\":\"Augmentations:\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
          for(String key : augmentTag.getKeys()){
             ArcanaAugment augment = ArcanaAugments.registry.get(key);
-            String str = augment.name +" "+augmentTag.getInt(key);
+            String str = augment.name;
+            if(augment.getTiers().length > 1){
+               str += " "+ LevelUtils.intToRoman(augmentTag.getInt(key));
+            }
             loreList.add(NbtString.of("[{\"text\":\""+str+"\",\"italic\":false,\"color\":\"blue\"}]"));
          }
       }

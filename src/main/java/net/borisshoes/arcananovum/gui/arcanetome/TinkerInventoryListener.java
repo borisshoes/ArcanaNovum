@@ -110,7 +110,7 @@ public class TinkerInventoryListener implements InventoryChangedListener {
             }else if(curItemLevel == -1) curItemLevel = 0;
    
             GuiElementBuilder augmentItem2;
-            if(generic && !augment.id.equals(ArcanaAugments.SKILL.id)){ // Generic
+            if(generic && !augment.id.equals(ArcanaAugments.SKILL.id) && !augment.id.equals(ArcanaAugments.RESOURCEFUL.id)){ // Generic
                augmentItem2 = new GuiElementBuilder(Items.TINTED_GLASS);
                augmentItem2.hideFlags().glow().setName(
                      Text.literal("Generic Augmentation").formatted(Formatting.DARK_PURPLE));

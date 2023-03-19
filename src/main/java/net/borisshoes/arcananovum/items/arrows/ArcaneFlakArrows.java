@@ -35,7 +35,7 @@ import net.minecraft.util.math.MathHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArcaneFlakArrows extends MagicItem implements RunicArrow {
+public class ArcaneFlakArrows extends RunicArrow {
    
    public static final int armTime = 5;
    

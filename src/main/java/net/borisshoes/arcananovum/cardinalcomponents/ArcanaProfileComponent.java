@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.items.OverflowingQuiver;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -52,7 +53,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       level = tag.getInt("level");
       xp = tag.getInt("xp");
       
-      NbtCompound achievementsTag = tag.getCompound("achievements"); //TODO: Could be here
+      NbtCompound achievementsTag = tag.getCompound("achievements");
       Set<String> achieveItemKeys = achievementsTag.getKeys();
       for(String itemKey : achieveItemKeys){
          List<ArcanaAchievement> itemAchs = new ArrayList<>();
@@ -173,6 +174,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       int spent = 0;
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
          ArcanaAugment augment = entry.getKey();
+         if(augment.getMagicItem() instanceof OverflowingQuiver) continue;
          MagicRarity[] tiers = augment.getTiers();
          for(int i = 0; i < entry.getValue(); i++){
             spent += tiers[i].rarity + 1;
@@ -371,14 +373,63 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(baseAugment == null) return false;
       if(level < 0 || baseAugment.getTiers().length < level) return false;
       
+      if(id.equals(ArcanaAugments.QUIVER_DUPLICATION.id) || id.equals(ArcanaAugments.ABUNDANT_AMMO.id) || id.equals(ArcanaAugments.RUNIC_BOTTOMLESS.id) || id.equals(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id)){
+         return setLinkedAugmentLevel(id,level);
+      }
+      
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
          if(entry.getKey().id.equals(id)){
             entry.setValue(level);
             return true;
          }
       }
-      augments.put(ArcanaAugments.registry.get(id),level);
+      augments.put(baseAugment,level);
       return false;
+   }
+   
+   private boolean setLinkedAugmentLevel(String id, int level){
+      ArcanaAugment baseAugment = ArcanaAugments.registry.get(id);
+      ArcanaAugment linkedAugment = null;
+      int oldLvl = getAugmentLevel(id);
+      
+      if(id.equals(ArcanaAugments.QUIVER_DUPLICATION.id)){
+         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.ABUNDANT_AMMO.id);
+      }else if(id.equals(ArcanaAugments.ABUNDANT_AMMO.id)){
+         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.QUIVER_DUPLICATION.id);
+      }else if(id.equals(ArcanaAugments.RUNIC_BOTTOMLESS.id)){
+         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
+      }else if(id.equals(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id)){
+         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.RUNIC_BOTTOMLESS.id);
+      }
+      
+      int otherOldLvl = 0;
+      if(linkedAugment != null){
+         otherOldLvl = getAugmentLevel(linkedAugment.id);
+      }
+   
+      if(oldLvl != 0){
+         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+            if(entry.getKey().id.equals(baseAugment.id)){
+               entry.setValue(level);
+               break;
+            }
+         }
+      }else{
+         augments.put(baseAugment,level);
+      }
+      
+      if(otherOldLvl != 0){
+         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+            if(entry.getKey().id.equals(linkedAugment.id)){
+               entry.setValue(level);
+               break;
+            }
+         }
+      }else{
+         augments.put(linkedAugment,level);
+      }
+      
+      return oldLvl > 0 || otherOldLvl > 0;
    }
    
    // Returns if the operation was successful or not
