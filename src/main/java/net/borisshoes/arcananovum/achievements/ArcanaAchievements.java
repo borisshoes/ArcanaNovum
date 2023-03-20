@@ -90,7 +90,7 @@ public class ArcanaAchievements {
    
    // Storm Arrows
    public static final ArcanaAchievement SHOCK_THERAPY = ArcanaAchievements.register("shock_therapy",
-         new EventAchievement("Shock Conversion Therapy", "shock_therapy", new ItemStack(Items.SUSPICIOUS_STEW), MagicItems.STORM_ARROWS, 3000,2,
+         new EventAchievement("Shock Conversion Therapy", "shock_therapy", new ItemStack(Items.SUSPICIOUS_STEW), MagicItems.STORM_ARROWS, 2500,1,
          new String[]{"Use a Storm Arrow to convert a red","mooshroom to a brown mooshroom"}
    ));
    
@@ -123,7 +123,7 @@ public class ArcanaAchievements {
    
    // Charm of Felidae
    public static final ArcanaAchievement LAND_ON_FEET = ArcanaAchievements.register("land_on_feet",
-         new EventAchievement("Always on Your Feet", "land_on_feet", new ItemStack(Items.LEATHER_BOOTS), MagicItems.FELIDAE_CHARM, 3000,1,
+         new EventAchievement("Always on Your Feet", "land_on_feet", new ItemStack(Items.LEATHER_BOOTS), MagicItems.FELIDAE_CHARM, 5000,2,
          new String[]{"Have the Felidae Charm save you from a lethal fall"}
    ));
    public static final ArcanaAchievement INFILTRATION = ArcanaAchievements.register("infiltration",
@@ -155,7 +155,7 @@ public class ArcanaAchievements {
          new String[]{"Reveal at least 10 debris with a single", "use of the Ancient Dowsing Rod"}
    ));
    public static final ArcanaAchievement ARCHEOLOGIST = ArcanaAchievements.register("archeologist",
-         new ProgressAchievement("Ancient Archeologist", "archeologist", new ItemStack(Items.NETHERITE_SCRAP), MagicItems.ANCIENT_DOWSING_ROD, 10000,2,
+         new ProgressAchievement("Ancient Archeologist", "archeologist", new ItemStack(Items.NETHERITE_SCRAP), MagicItems.ANCIENT_DOWSING_ROD, 5000,2,
          new String[]{"Reveal 1,000 total debris with", "the Ancient Dowsing Rod"}, 1000
    ));
    
@@ -173,7 +173,7 @@ public class ArcanaAchievements {
          new String[]{"Survive concentration damage with half a heart"}
    ));
    public static final ArcanaAchievement ARTIFICIAL_DIVINITY = ArcanaAchievements.register("artificial_divinity",
-         new EventAchievement("Artificial Divinity", "artificial_divinity", new ItemStack(Items.GOLDEN_APPLE), MagicItems.ARCANE_TOME, 10000,2,
+         new EventAchievement("Artificial Divinity", "artificial_divinity", new ItemStack(Items.GOLDEN_APPLE), MagicItems.ARCANE_TOME, 10000,3,
          new String[]{"Create a Legendary Magic Item"}
    ));
    public static final ArcanaAchievement GOD_BOON = ArcanaAchievements.register("god_boon",
@@ -181,17 +181,17 @@ public class ArcanaAchievements {
          new String[]{"Obtain a Mythical Magic Item"}
    ));
    public static final ArcanaAchievement ARCANE_ADDICT = ArcanaAchievements.register("arcane_addict",
-         new EventAchievement("Arcane Addict", "arcane_addict", new ItemStack(Items.KNOWLEDGE_BOOK), MagicItems.ARCANE_TOME, 25000,3,
+         new EventAchievement("Arcane Addict", "arcane_addict", new ItemStack(Items.KNOWLEDGE_BOOK), MagicItems.ARCANE_TOME, 50000,4,
          new String[]{"Have 30 Magic Items taking concentration"}
    ));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register("all_achievements",
-         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), MagicItems.ARCANE_TOME, 100000,25,
+         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), MagicItems.ARCANE_TOME, 1000000,25,
          new String[]{"Unlock all Non-Mythical related Achievements", "(Grants Mythical Achievements honorarily)"}
    ));
    
    // Brain in a Jar
    public static final ArcanaAchievement BREAK_BANK = ArcanaAchievements.register("break_bank",
-         new EventAchievement("Break the Bank", "break_bank", new ItemStack(Items.ENDER_CHEST), MagicItems.BRAIN_JAR, 10000,2,
+         new EventAchievement("Break the Bank", "break_bank", new ItemStack(Items.ENDER_CHEST), MagicItems.BRAIN_JAR, 10000,3,
          new String[]{"Completely fill the Brain in a Jar"}
    ));
    public static final ArcanaAchievement CERTIFIED_REPAIR = ArcanaAchievements.register("certified_repair",
@@ -201,7 +201,7 @@ public class ArcanaAchievements {
    
    // Continuum Anchor
    public static final ArcanaAchievement TIMEY_WIMEY = ArcanaAchievements.register("timey_wimey",
-         new ProgressAchievement("Timey Wimey", "timey_wimey", new ItemStack(Items.CLOCK), MagicItems.CONTINUUM_ANCHOR, 25000,3,
+         new ProgressAchievement("Timey Wimey", "timey_wimey", new ItemStack(Items.CLOCK), MagicItems.CONTINUUM_ANCHOR, 100000,5,
          new String[]{"Have your Continuum Anchors keep", "chunks loaded for a total of a month"}, 2629744
    ));
    
@@ -211,7 +211,7 @@ public class ArcanaAchievements {
          new String[]{"Use the Essence Egg to switch a spawner type"}
    ));
    public static final ArcanaAchievement SOUL_FOR_SOUL = ArcanaAchievements.register("soul_for_soul",
-         new ProgressAchievement("A Soul for a Soul", "soul_for_soul", new ItemStack(Items.CHICKEN_SPAWN_EGG), MagicItems.ESSENCE_EGG, 10000,2,
+         new ProgressAchievement("A Soul for a Soul", "soul_for_soul", new ItemStack(Items.CHICKEN_SPAWN_EGG), MagicItems.ESSENCE_EGG, 10000,3,
          new String[]{"Use the Essence Egg to spawn 25 new creatures"}, 25
    ));
    
@@ -221,7 +221,7 @@ public class ArcanaAchievements {
          new String[]{"Have one of your Fractal Sponges burn in lava"}
    ));
    public static final ArcanaAchievement OCEAN_CLEANUP = ArcanaAchievements.register("ocean_cleanup",
-         new ProgressAchievement("Ocean Cleanup", "ocean_cleanup", new ItemStack(Items.SEAGRASS), MagicItems.FRACTAL_SPONGE, 2500,2,
+         new ProgressAchievement("Ocean Cleanup", "ocean_cleanup", new ItemStack(Items.SEAGRASS), MagicItems.FRACTAL_SPONGE, 5000,2,
          new String[]{"Remove a total of 10,000 blocks of","water or lava with the Fractal Sponge"}, 10000
    ));
    
@@ -231,7 +231,7 @@ public class ArcanaAchievements {
          new String[]{"Make over 10,000 blocks of obsidian or","crying obsidian with your Igneous Colliders"},10000
    ));
    public static final ArcanaAchievement EXPENSIVE_INFUSION = ArcanaAchievements.register("expensive_infusion",
-         new EventAchievement("Expensive Infusion", "expensive_infusion", new ItemStack(Items.CRYING_OBSIDIAN), MagicItems.IGNEOUS_COLLIDER, 7500,2,
+         new EventAchievement("Expensive Infusion", "expensive_infusion", new ItemStack(Items.CRYING_OBSIDIAN), MagicItems.IGNEOUS_COLLIDER, 5000,2,
          new String[]{"Make a piece of crying obsidian with","one of your Igneous Colliders"}
    ));
    
@@ -251,7 +251,7 @@ public class ArcanaAchievements {
          new String[]{"Receive a Nul Memento from a Nul Construct"}
    ));
    public static final ArcanaAchievement AMNESIAC = ArcanaAchievements.register("amnesiac",
-         new ProgressAchievement("Amnesiac", "amnesiac", new ItemStack(Items.SKELETON_SKULL), MagicItems.NUL_MEMENTO, 50000,5,
+         new ProgressAchievement("Amnesiac", "amnesiac", new ItemStack(Items.SKELETON_SKULL), MagicItems.NUL_MEMENTO, 100000,5,
          new String[]{"Use a Nul Memento 5 times"}, 5
    ));
    public static final ArcanaAchievement DEATHS_DOOR = ArcanaAchievements.register("deaths_door",
@@ -289,7 +289,7 @@ public class ArcanaAchievements {
          new String[]{"Spend one hour at full haste"}, 72000
    ));
    public static final ArcanaAchievement DIGGY_HOLE = ArcanaAchievements.register("diggy_hole",
-         new ProgressAchievement("Diggy Diggy Hole", "diggy_hole", new ItemStack(Items.COBBLESTONE), MagicItems.PICKAXE_OF_PLUTO, 50000,5,
+         new ProgressAchievement("Diggy Diggy Hole", "diggy_hole", new ItemStack(Items.COBBLESTONE), MagicItems.PICKAXE_OF_PLUTO, 100000,5,
          new String[]{"Mine 1,000,000 stone with the Pickaxe of Pluto"},1000000
    ));
    public static final ArcanaAchievement MINE_DIAMONDS = ArcanaAchievements.register("mine_diamonds",
@@ -299,7 +299,7 @@ public class ArcanaAchievements {
    
    // Runic Bow
    public static final ArcanaAchievement JUST_LIKE_ARCHER = ArcanaAchievements.register("just_like_archer",
-         new ProgressAchievement("Just Like <Famous Fictional Archer>", "just_like_archer", new ItemStack(Items.BOW), MagicItems.RUNIC_BOW, 7500,3,
+         new ProgressAchievement("Just Like <Famous Fictional Archer>", "just_like_archer", new ItemStack(Items.BOW), MagicItems.RUNIC_BOW, 1000,3,
          new String[]{"Shoot 1,000 Runic Arrows"}, 1000
    ));
    public static final ArcanaAchievement AIMBOT = ArcanaAchievements.register("aimbot",
@@ -319,7 +319,7 @@ public class ArcanaAchievements {
    
    // Shadow Stalker's Glaive
    public static final ArcanaAchievement OMAE_WA = ArcanaAchievements.register("omae_wa",
-         new TimedAchievement("Omae Wa Mou Shinderiu", "omae_wa", new ItemStack(Items.WITHER_SKELETON_SKULL), MagicItems.SHADOW_STALKERS_GLAIVE, 7500,3,
+         new TimedAchievement("Omae Wa Mou Shindeiru", "omae_wa", new ItemStack(Items.WITHER_SKELETON_SKULL), MagicItems.SHADOW_STALKERS_GLAIVE, 7500,2,
          new String[]{"Kill a player or warden within a","second of stalking behind them"},1,20
    ));
    public static final ArcanaAchievement SHADOW_FURY = ArcanaAchievements.register("shadow_fury",
@@ -329,7 +329,7 @@ public class ArcanaAchievements {
    
    // Shield of Fortitude
    public static final ArcanaAchievement BUILT_LIKE_TANK = ArcanaAchievements.register("built_like_tank",
-         new EventAchievement("Built Like a Tank", "built_like_tank", new ItemStack(Items.IRON_BLOCK), MagicItems.SHIELD_OF_FORTITUDE, 2500,2,
+         new EventAchievement("Built Like a Tank", "built_like_tank", new ItemStack(Items.IRON_BLOCK), MagicItems.SHIELD_OF_FORTITUDE, 5000,2,
          new String[]{"Have over 100 absorption hearts at","once from the Shield of Fortitude"}
    ));
    
@@ -375,7 +375,7 @@ public class ArcanaAchievements {
          new String[]{"Upgrade a single stat in a Spawner Infuser"}
    ));
    public static final ArcanaAchievement SCULK_HUNGERS = ArcanaAchievements.register("sculk_hungers",
-         new EventAchievement("The Sculk Hungers", "sculk_hungers", new ItemStack(Items.SCULK), MagicItems.SPAWNER_INFUSER, 10000,2,
+         new EventAchievement("The Sculk Hungers", "sculk_hungers", new ItemStack(Items.SCULK), MagicItems.SPAWNER_INFUSER, 10000,3,
          new String[]{"Put 4 stacks of points into a single","stat in a Spawner Infuser"}
    ));
    public static final ArcanaAchievement ARCHLICH = ArcanaAchievements.register("archlich",
@@ -383,7 +383,7 @@ public class ArcanaAchievements {
          new String[]{"Put 8 stacks of points into a Spawner Infuser"}
    ));
    public static final ArcanaAchievement INNOCENT_SOULS = ArcanaAchievements.register("innocent_souls",
-         new EventAchievement("Souls of the Innocent", "innocent_souls", new ItemStack(Items.SOUL_SAND), MagicItems.SPAWNER_INFUSER, 50000,3,
+         new EventAchievement("Souls of the Innocent", "innocent_souls", new ItemStack(Items.SOUL_SAND), MagicItems.SPAWNER_INFUSER, 50000,4,
          new String[]{"Use a max tier Soulstone in the Spawner Infuser"}
    ));
    public static final ArcanaAchievement POWER_OVERWHELMING = ArcanaAchievements.register("power_overwhelming",
@@ -407,11 +407,11 @@ public class ArcanaAchievements {
          new String[]{"Use the Telescoping Beacon to","deploy a tier 4 Emerald Beacon"}
    ));
    public static final ArcanaAchievement ACQUISITION_RULES = ArcanaAchievements.register("acquisition_rules",
-         new EventAchievement("The Rules of Acquisition", "acquisition_rules", new ItemStack(Items.GOLD_BLOCK), MagicItems.TELESCOPING_BEACON, 10000,2,
+         new EventAchievement("The Rules of Acquisition", "acquisition_rules", new ItemStack(Items.GOLD_BLOCK), MagicItems.TELESCOPING_BEACON, 10000,3,
          new String[]{"Use the Telescoping Beacon to","deploy a tier 4 Gold Beacon"}
    ));
    public static final ArcanaAchievement BEJEWELED = ArcanaAchievements.register("bejeweled",
-         new EventAchievement("Bejeweled", "bejeweled", new ItemStack(Items.DIAMOND_BLOCK), MagicItems.TELESCOPING_BEACON, 25000,3,
+         new EventAchievement("Bejeweled", "bejeweled", new ItemStack(Items.DIAMOND_BLOCK), MagicItems.TELESCOPING_BEACON, 50000,4,
          new String[]{"Use the Telescoping Beacon to","deploy a tier 4 Diamond Beacon"}
    ));
    public static final ArcanaAchievement CLINICALLY_INSANE = ArcanaAchievements.register("clinically_insane",

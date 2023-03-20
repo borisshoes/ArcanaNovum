@@ -64,6 +64,10 @@ public abstract class ArcanaAchievement {
       return description;
    }
    
+   public String getName(){
+      return name;
+   }
+   
    public abstract NbtCompound toNbt();
    
    public abstract ArcanaAchievement fromNbt(String id, NbtCompound nbt);

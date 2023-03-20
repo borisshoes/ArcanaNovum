@@ -99,24 +99,27 @@ public class ArcaneTome extends MagicItem implements UsableItem {
          return;
       ServerPlayerEntity player = (ServerPlayerEntity) playerEntity;
       TomeGui gui = null;
-      if(mode == TomeMode.PROFILE){ // Profile
+      if(mode == TomeMode.PROFILE){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildProfileGui(gui,player);
-      }else if(mode == TomeMode.COMPENDIUM){ // Compendium
+      }else if(mode == TomeMode.COMPENDIUM){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildCompendiumGui(gui,player,settings);
-      }else if(mode == TomeMode.CRAFTING){ // Crafting
+      }else if(mode == TomeMode.CRAFTING){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X5,player,mode,this,settings);
          buildCraftingGui(gui,player,data);
-      }else if(mode == TomeMode.ITEM){ // Item
+      }else if(mode == TomeMode.ITEM){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildItemGui(gui,player,data);
-      }else if(mode == TomeMode.RECIPE){ // Recipe
+      }else if(mode == TomeMode.RECIPE){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X5,player,mode,this,settings);
          buildRecipeGui(gui,player,data);
-      }else if(mode == TomeMode.TINKER){ // Tinker
+      }else if(mode == TomeMode.TINKER){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildTinkerGui(gui,player,null);
+      }else if(mode == TomeMode.ACHIEVEMENTS){
+         gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
+         buildAchievementsGui(gui,player,settings);
       }
       gui.setMode(mode);
       gui.open();
@@ -212,7 +215,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       int bonusSkillPoints = profile.getBonusSkillPoints();
       display.putString("Name","[{\"text\":\"Skill Points\",\"italic\":false,\"color\":\"dark_aqua\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Total Skill Points: "+totalSkillPoints+"\",\"italic\":false,\"color\":\"aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Allocated Points: "+spentSkillPoints+"/"+totalSkillPoints+"\",\"italic\":false,\"color\":\"aqua\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Available Points: "+(totalSkillPoints-spentSkillPoints)+"\",\"italic\":false,\"color\":\"aqua\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Points From Leveling: "+LevelUtils.getLevelSkillPoints(level)+"\",\"italic\":false,\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Points From Achievements: "+profile.getAchievementSkillPoints()+"\",\"italic\":false,\"color\":\"blue\"}]"));
@@ -220,6 +223,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Allocate Skill Points to Augment Items!\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Earn Skill Points From Leveling Up or From Achievements!\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false},{\"text\":\" \",\"bold\":false},{\"text\":\"to see all Achievements\",\"bold\":false,\"color\":\"light_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -316,7 +321,56 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       return items;
    }
    
-   public static List<MagicItem> listToPage(List<MagicItem> items, int page){
+   public static List<ArcanaAchievement> sortedFilteredAchievementList(ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
+      AchievementFilter filterType = settings.getAchFilterType();
+      AchievementSort sortType = settings.getAchSortType();
+      List<ArcanaAchievement> achs;
+      if(filterType != null){
+         achs = new ArrayList<>();
+         for(ArcanaAchievement achievement : ArcanaAchievements.registry.values().stream().toList()){
+            if(AchievementFilter.matchesFilter(player, filterType,achievement)){
+               achs.add(achievement);
+            }
+         }
+      }else{
+         achs = new ArrayList<>(ArcanaAchievements.registry.values().stream().toList());
+      }
+      
+      switch(sortType){
+         case RECOMMENDED -> {
+            achs.sort(Comparator.comparingInt(ach -> RECOMMENDED_LIST.indexOf(ach.getMagicItem())));
+         }
+         case NAME -> {
+            Comparator<ArcanaAchievement> nameComparator = Comparator.comparing(ArcanaAchievement::getName);
+            achs.sort(nameComparator);
+         }
+         case RARITY_DESC -> {
+            Comparator<ArcanaAchievement> rarityDescComparator = (ArcanaAchievement i1, ArcanaAchievement i2) -> {
+               int rarityCompare = (i2.xpReward - i1.xpReward);
+               if(rarityCompare == 0){
+                  return i1.getName().compareTo(i2.getName());
+               }else{
+                  return rarityCompare;
+               }
+            };
+            achs.sort(rarityDescComparator);
+         }
+         case RARITY_ASC -> {
+            Comparator<ArcanaAchievement> rarityAscComparator = (ArcanaAchievement i1, ArcanaAchievement i2) -> {
+               int rarityCompare = (i1.xpReward - i2.xpReward);
+               if(rarityCompare == 0){
+                  return i1.getName().compareTo(i2.getName());
+               }else{
+                  return rarityCompare;
+               }
+            };
+            achs.sort(rarityAscComparator);
+         }
+      }
+      return achs;
+   }
+   
+   public static <T> List<T> listToPage(List<T> items, int page){
       if(page <= 0){
          return items;
       }else if(28*(page-1) >= items.size()){
@@ -419,6 +473,120 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       }
       
       gui.setTitle(Text.literal("Item Compendium"));
+   }
+   
+   public void buildAchievementsGui(TomeGui gui, ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      gui.setMode(TomeMode.ACHIEVEMENTS);
+      List<ArcanaAchievement> items = sortedFilteredAchievementList(player,settings);
+      List<ArcanaAchievement> pageItems = listToPage(items, settings.getAchPage());
+      int numPages = (int) Math.ceil((float)items.size()/28.0);
+      
+      for(int i = 0; i < gui.getSize(); i++){
+         gui.clearSlot(i);
+         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
+      }
+      
+      GameProfile gameProfile = new GameProfile(player.getUuid(),null);
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      head.setName((Text.literal("").append(Text.literal("Magic Items").formatted(Formatting.DARK_PURPLE))));
+      head.addLoreLine((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE))));
+      head.addLoreLine((Text.literal("").append(Text.literal("Right Click here").formatted(Formatting.GREEN)).append(Text.literal(" to go to the Items Page").formatted(Formatting.LIGHT_PURPLE))));
+      head.addLoreLine((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.YELLOW)).append(Text.literal(" to view its page").formatted(Formatting.LIGHT_PURPLE))));
+      gui.setSlot(4,head);
+      
+      ItemStack filterItem = new ItemStack(Items.HOPPER);
+      NbtCompound tag = filterItem.getOrCreateNbt();
+      NbtCompound display = new NbtCompound();
+      display.putString("Name","[{\"text\":\"Filter Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(filterItem);
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal(""));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(AchievementFilter.getColoredLabel(settings.getAchFilterType())));
+      gui.setSlot(8,filterBuilt);
+      
+      ItemStack sortItem = new ItemStack(Items.NETHER_STAR);
+      tag = sortItem.getOrCreateNbt();
+      display = new NbtCompound();
+      display.putString("Name","[{\"text\":\"Sort Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(sortItem);
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal(""));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(AchievementSort.getColoredLabel(settings.getAchSortType())));
+      gui.setSlot(0,sortBuilt);
+      
+      ItemStack nextPage = new ItemStack(Items.SPECTRAL_ARROW);
+      tag = nextPage.getOrCreateNbt();
+      display = new NbtCompound();
+      NbtList loreList = new NbtList();
+      display.putString("Name","[{\"text\":\"Next Page ("+settings.getAchPage()+"/"+numPages+")\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to go to the Next Page\",\"color\":\"light_purple\"}]"));
+      display.put("Lore",loreList);
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      gui.setSlot(53,GuiElementBuilder.from(nextPage));
+      
+      ItemStack prevPage = new ItemStack(Items.SPECTRAL_ARROW);
+      tag = prevPage.getOrCreateNbt();
+      display = new NbtCompound();
+      loreList = new NbtList();
+      display.putString("Name","[{\"text\":\"Previous Page ("+settings.getAchPage()+"/"+numPages+")\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to go to the Previous Page\",\"color\":\"light_purple\"}]"));
+      display.put("Lore",loreList);
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      gui.setSlot(45,GuiElementBuilder.from(prevPage));
+      
+      int k = 0;
+      for(int i = 0; i < 4; i++){
+         for(int j = 0; j < 7; j++){
+            if(k < pageItems.size()){
+               ArcanaAchievement baseAch = pageItems.get(k);
+               ArcanaAchievement profileAchievement = profile.getAchievement(baseAch.getMagicItem().getId(),baseAch.id);
+               ArcanaAchievement achievement = profileAchievement != null ? profileAchievement : baseAch;
+               
+               ItemStack displayItem = achievement.getDisplayItem();
+               NbtCompound nbt = displayItem.getOrCreateNbt();
+               nbt.putString("magicItemId",achievement.getMagicItem().getId());
+               GuiElementBuilder achievementItem = GuiElementBuilder.from(displayItem);
+               achievementItem.hideFlags().setName(Text.literal(achievement.name+" - "+achievement.getMagicItem().getName()).formatted(Formatting.LIGHT_PURPLE))
+                     .addLoreLine(Text.literal("")
+                           .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
+                           .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                           .append(Text.literal("  |  ").formatted(Formatting.DARK_AQUA))
+                           .append(Text.literal(""+achievement.pointsReward).formatted(Formatting.AQUA))
+                           .append(Text.literal(achievement.pointsReward != 1 ? " Skill Points" : " Skill Point").formatted(Formatting.DARK_AQUA)));
+   
+               for(String s : achievement.getDescription()){
+                  achievementItem.addLoreLine(Text.literal(s).formatted(Formatting.GRAY));
+               }
+   
+               MutableText[] statusText = achievement.getStatusDisplay(player);
+               if(statusText != null){
+                  for(MutableText mutableText : statusText){
+                     achievementItem.addLoreLine(mutableText);
+                  }
+               }
+   
+               if(profile.hasAcheivement(achievement.getMagicItem().getId(),achievement.id)) achievementItem.glow();
+               
+               gui.setSlot((i*9+10)+j,achievementItem);
+            }else{
+               gui.setSlot((i*9+10)+j,new GuiElementBuilder(Items.AIR));
+            }
+            k++;
+         }
+      }
+      
+      gui.setTitle(Text.literal("All Arcana Achievements"));
    }
    
    private final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
@@ -682,8 +850,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       NbtCompound tag = book.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"to return to the Compendium.\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Item Lore\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"to read about this Magic Item.\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -855,7 +1023,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       ITEM,
       RECIPE,
       NONE,
-      TINKER
+      TINKER,
+      ACHIEVEMENTS
    }
    
    public enum TomeFilter{
@@ -962,6 +1131,90 @@ public class ArcaneTome extends MagicItem implements UsableItem {
          if(ind >= sorts.length) ind = 0;
          if(ind < 0) ind = sorts.length-1;
          return sorts[ind];
+      }
+   }
+   
+   public enum AchievementSort{
+      RECOMMENDED("Item (Recommended)"),
+      RARITY_ASC("XP/SP Ascending"),
+      RARITY_DESC("XP/SP Descending"),
+      NAME("Alphabetical");
+      
+      public final String label;
+   
+      AchievementSort(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(AchievementSort sort){
+         MutableText text = Text.literal(sort.label);
+         
+         return switch(sort){
+            case RARITY_ASC -> text.formatted(Formatting.LIGHT_PURPLE);
+            case RARITY_DESC -> text.formatted(Formatting.DARK_PURPLE);
+            case NAME -> text.formatted(Formatting.GREEN);
+            case RECOMMENDED -> text.formatted(Formatting.YELLOW);
+         };
+      }
+      
+      public static AchievementSort cycleSort(AchievementSort sort, boolean backwards){
+         AchievementSort[] sorts = AchievementSort.values();
+         int ind = -1;
+         for(int i = 0; i < sorts.length; i++){
+            if(sort == sorts[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= sorts.length) ind = 0;
+         if(ind < 0) ind = sorts.length-1;
+         return sorts[ind];
+      }
+   }
+   
+   public enum AchievementFilter{
+      NONE("None"),
+      ACQUIRED("Acquired"),
+      NOT_ACQUIRED("Not Acquired");
+      
+      public final String label;
+   
+      AchievementFilter(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(AchievementFilter filter){
+         MutableText text = Text.literal(filter.label);
+         
+         return switch(filter){
+            case NONE -> text.formatted(Formatting.WHITE);
+            case ACQUIRED -> text.formatted(Formatting.AQUA);
+            case NOT_ACQUIRED -> text.formatted(Formatting.RED);
+         };
+      }
+      
+      public static AchievementFilter cycleFilter(AchievementFilter filter, boolean backwards){
+         AchievementFilter[] filters = AchievementFilter.values();
+         int ind = -1;
+         for(int i = 0; i < filters.length; i++){
+            if(filter == filters[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= filters.length) ind = 0;
+         if(ind < 0) ind = filters.length-1;
+         return filters[ind];
+      }
+      
+      public static boolean matchesFilter(ServerPlayerEntity player, AchievementFilter filter, ArcanaAchievement ach){
+         if(filter == AchievementFilter.NONE) return true;
+         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         boolean acquired = profile.hasAcheivement(ach.getMagicItem().getId(),ach.id);
+         
+         if(filter == AchievementFilter.ACQUIRED) return acquired;
+         if(filter == AchievementFilter.NOT_ACQUIRED) return !acquired;
+         return false;
       }
    }
 }

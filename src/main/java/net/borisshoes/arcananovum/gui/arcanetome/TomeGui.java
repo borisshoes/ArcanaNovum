@@ -5,6 +5,7 @@ import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.*;
@@ -68,6 +69,9 @@ public class TomeGui extends SimpleGui {
             BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
             LoreGui loreGui = new LoreGui(player,bookBuilder,tome,ArcaneTome.TomeMode.PROFILE,settings);
             loreGui.open();
+         }else if(index == 19){
+            // Achievements View
+            tome.openGui(player, ArcaneTome.TomeMode.ACHIEVEMENTS,settings);
          }
       }else if(mode == ArcaneTome.TomeMode.COMPENDIUM){
          if(index == 4){
@@ -132,6 +136,58 @@ public class TomeGui extends SimpleGui {
             if(settings.getPage() < numPages){
                settings.setPage(settings.getPage()+1);
                tome.buildCompendiumGui(this,player,settings);
+            }
+         }
+      }else if(mode == ArcaneTome.TomeMode.ACHIEVEMENTS){
+         if(index == 4){
+            if(type == ClickType.MOUSE_RIGHT){
+               tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+            }else{
+               tome.buildProfileGui(this,player);
+            }
+         }else if(index == 49){
+            tome.openGui(player,ArcaneTome.TomeMode.TINKER,settings);
+         }else if(index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8){
+            ItemStack item = this.getSlot(index).getItemStack();
+            if(!item.isEmpty()){
+               tome.openItemGui(player,settings, item.getNbt().getString("magicItemId"));
+            }
+         }else if(index == 0){
+            boolean backwards = type == ClickType.MOUSE_RIGHT;
+            boolean middle = type == ClickType.MOUSE_MIDDLE;
+            if(middle){
+               settings.setSortType(ArcaneTome.AchievementSort.RECOMMENDED);
+            }else{
+               settings.setSortType(ArcaneTome.AchievementSort.cycleSort(settings.getAchSortType(),backwards));
+            }
+      
+            tome.buildAchievementsGui(this,player,settings);
+         }else if(index == 8){
+            boolean backwards = type == ClickType.MOUSE_RIGHT;
+            boolean middle = type == ClickType.MOUSE_MIDDLE;
+            if(middle){
+               settings.setFilterType(ArcaneTome.AchievementFilter.NONE);
+            }else{
+               settings.setFilterType(ArcaneTome.AchievementFilter.cycleFilter(settings.getAchFilterType(),backwards));
+            }
+      
+            List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
+            int numPages = (int) Math.ceil((float)achs.size()/28.0);
+            if(settings.getAchPage() > numPages){
+               settings.setAchPage(numPages);
+            }
+            tome.buildAchievementsGui(this,player,settings);
+         }else if(index == 45){
+            if(settings.getAchPage() > 1){
+               settings.setAchPage(settings.getAchPage()-1);
+               tome.buildAchievementsGui(this,player,settings);
+            }
+         }else if(index == 53){
+            List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
+            int numPages = (int) Math.ceil((float)achs.size()/28.0);
+            if(settings.getAchPage() < numPages){
+               settings.setAchPage(settings.getAchPage()+1);
+               tome.buildAchievementsGui(this,player,settings);
             }
          }
       }else if(mode == ArcaneTome.TomeMode.CRAFTING){
@@ -221,8 +277,6 @@ public class TomeGui extends SimpleGui {
          ItemStack item = this.getSlot(25).getItemStack();
          MagicItem magicItem = MagicItemUtils.identifyItem(item);
          if(index == 7){
-            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-         }else if(index == 25){
             NbtCompound loreData = magicItem.getBookLore();
             if(loreData != null){
                ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
@@ -233,6 +287,8 @@ public class TomeGui extends SimpleGui {
             }else{
                player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
             }
+         }else if(index == 25){
+            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
          }else if(index == 43){
             if(!(magicItem.getRecipe() instanceof ExplainRecipe)) tome.openGui(player, ArcaneTome.TomeMode.CRAFTING,settings,magicItem.getId());
          }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
@@ -488,22 +544,31 @@ public class TomeGui extends SimpleGui {
    public static class CompendiumSettings{
       private ArcaneTome.TomeSort sortType;
       private ArcaneTome.TomeFilter filterType;
+      private ArcaneTome.AchievementSort achSortType;
+      private ArcaneTome.AchievementFilter achFilterType;
       private int page;
+      private int achPage;
       public final int skillLvl;
       public final int resourceLvl;
       
       public CompendiumSettings(int skillLvl, int resourceLvl){
          this.sortType = ArcaneTome.TomeSort.RECOMMENDED;
          this.filterType = ArcaneTome.TomeFilter.NONE;
+         this.achSortType = ArcaneTome.AchievementSort.RECOMMENDED;
+         this.achFilterType = ArcaneTome.AchievementFilter.NONE;
          this.page = 1;
+         this.achPage = 1;
          this.skillLvl = skillLvl;
          this.resourceLvl = resourceLvl;
       }
-      
-      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, int page, int skillLvl, int resourceLvl){
+   
+      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, ArcaneTome.AchievementSort achSortType, ArcaneTome.AchievementFilter achFilterType, int page, int achPage, int skillLvl, int resourceLvl){
          this.sortType = sortType;
          this.filterType = filterType;
+         this.achSortType = achSortType;
+         this.achFilterType = achFilterType;
          this.page = page;
+         this.achPage = achPage;
          this.skillLvl = skillLvl;
          this.resourceLvl = resourceLvl;
       }
@@ -516,20 +581,44 @@ public class TomeGui extends SimpleGui {
          return sortType;
       }
    
+      public ArcaneTome.AchievementSort getAchSortType(){
+         return achSortType;
+      }
+   
+      public ArcaneTome.AchievementFilter getAchFilterType(){
+         return achFilterType;
+      }
+   
       public int getPage(){
          return page;
       }
    
+      public int getAchPage(){
+         return achPage;
+      }
+      
       public void setPage(int page){
          this.page = page;
+      }
+   
+      public void setAchPage(int achPage){
+         this.achPage = achPage;
       }
    
       public void setFilterType(ArcaneTome.TomeFilter filterType){
          this.filterType = filterType;
       }
    
+      public void setFilterType(ArcaneTome.AchievementFilter filterType){
+         this.achFilterType = filterType;
+      }
+   
       public void setSortType(ArcaneTome.TomeSort sortType){
          this.sortType = sortType;
+      }
+      
+      public void setSortType(ArcaneTome.AchievementSort sortType){
+         this.achSortType = sortType;
       }
    }
 }
