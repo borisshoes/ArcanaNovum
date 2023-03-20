@@ -68,7 +68,7 @@ public class TickCallback {
                   if(item.getNbt().contains("ArcanaGuideBook")){
                      ItemStack newArcanaTome = MagicItems.ARCANE_TOME.addCrafter(MagicItems.ARCANE_TOME.getNewItem(),player.getUuidAsString(),false,server);
                      inv.setStack(i,newArcanaTome);
-                     arcaneProfile.addCrafted(MagicItems.ARCANE_TOME.getId());
+                     arcaneProfile.addCrafted(newArcanaTome);
                   }
                }
                

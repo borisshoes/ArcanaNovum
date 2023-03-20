@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 import dev.onyxstudios.cca.api.v3.component.ComponentV3;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    boolean setXP(int xp);
    boolean addXP(int xp);
    boolean setLevel(int lvl);
-   boolean addCrafted(String item);
+   boolean addCrafted(ItemStack stack);
    boolean setAchievement(String item, ArcanaAchievement achievement);
    //boolean addRecipe(String item);
    boolean removeCrafted(String item);

@@ -62,7 +62,7 @@ public abstract class QuiverItem extends MagicItem{
       for(int i = 0; i < arrows.size(); i++){
          NbtCompound stack = arrows.getCompound(i);
          byte count = stack.getByte("Count");
-         if(count <= 0 || stack.getString("id").equals("minecraft:air")) return;
+         if(count <= 0 || stack.getString("id").equals("minecraft:air")) continue;
          ItemStack itemStack = ItemStack.fromNbt(stack);
          
          if(count < itemStack.getMaxCount()){
@@ -302,76 +302,5 @@ public abstract class QuiverItem extends MagicItem{
       }
       return null;
    }
-   
-   /*
-   public boolean switchSlot(ItemStack item, ServerPlayerEntity player){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int slot = magicNbt.getInt("slot");
-      NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
-      ArrayList<Integer> slots = new ArrayList<>();
-      for(int i = 0; i < arrows.size(); i++){
-         NbtCompound stack = arrows.getCompound(i);
-         if(!stack.contains("Slot") || !stack.contains("Count") || !stack.contains("id")) continue;
-         if(stack.getByte("Count") <= 0 || stack.getString("id").equals("minecraft:air")) continue;
-         slots.add((int) stack.getByte("Slot"));
-      }
-      Collections.sort(slots);
-      int found = -1;
-      for(int i = 0; i < slots.size(); i++){
-         if(slots.get(i) == slot){
-            found = i;
-            break;
-         }
-      }
-      int newSlot = -1;
-      if(found == -1){
-         if(slots.isEmpty()){
-            magicNbt.putInt("slot",newSlot);
-            player.sendMessage(Text.literal("Your Quiver is Empty!").formatted(color,Formatting.ITALIC),true);
-            return false;
-         }else{
-            newSlot = slots.get(0);
-         }
-      }else{
-         if(slots.size() == 1){
-            newSlot = slots.get(0);
-         }else{
-            if(player.isSneaking()){
-               if(found == 0){
-                  newSlot = slots.get(slots.size()-1);
-               }else{
-                  newSlot = slots.get(found-1);
-               }
-            }else{
-               if(found == slots.size()-1){
-                  newSlot = slots.get(0);
-               }else{
-                  newSlot = slots.get(found+1);
-               }
-            }
-         }
-      }
-      magicNbt.putInt("slot",newSlot);
-      ItemStack arrow = ItemStack.EMPTY;
-      for(int i = 0; i < arrows.size(); i++){
-         NbtCompound stack = arrows.getCompound(i);
-         if((int) stack.getByte("Slot") == newSlot) arrow = ItemStack.fromNbt(stack);
-      }
-      
-      if(arrow.isEmpty()){
-         player.sendMessage(Text.literal("Your Quiver is Empty!").formatted(color,Formatting.ITALIC),true);
-         return false;
-      }else{
-         String name = arrow.getName().getString();
-         MagicItem magicArrow = MagicItemUtils.identifyItem(arrow);
-         if(magicArrow instanceof RunicArrow){
-            name = magicArrow.getName();
-         }
-         player.sendMessage(Text.literal("Switched Arrows To: "+name).formatted(color,Formatting.ITALIC),true);
-         return true;
-      }
-   }
-    */
    
 }

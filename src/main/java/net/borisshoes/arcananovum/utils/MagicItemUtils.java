@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.utils;
 
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -13,12 +12,15 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.Arcananovum.devPrint;
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -222,12 +224,14 @@ public class MagicItemUtils {
       List<MagicInvItem> magicInv = new ArrayList<>();
       PlayerInventory inv = player.getInventory();
       EnderChestInventory eChest = player.getEnderChestInventory();
-      magicInvHelper(inv,magicInv,false,false);
-      magicInvHelper(eChest,magicInv,true,false);
+      ArrayList<MagicItemContainer> eChestContainerList = new ArrayList<>();
+      eChestContainerList.add(new EnderChestMagicContainer(player));
+      magicInvHelper(inv,magicInv,new ArrayList<>());
+      magicInvHelper(eChest,magicInv,eChestContainerList);
       return magicInv;
    }
    
-   public static void magicInvHelper(Inventory inv, List<MagicInvItem> magicInv, boolean enderChest, boolean shulker){
+   public static void magicInvHelper(Inventory inv, List<MagicInvItem> magicInv, List<MagicItemContainer> containers){
       for(int i=0; i<inv.size();i++){
          ItemStack item = inv.getStack(i);
          if(item.isEmpty())
@@ -246,53 +250,40 @@ public class MagicItemUtils {
             for(int j = 0; j < shulkerItems.size(); j++){
                shulkerInv.setStack(j,shulkerItems.get(j));
             }
-            magicInvHelper(shulkerInv,magicInv,enderChest,true);
+            ArrayList<MagicItemContainer> containersCopy = new ArrayList<>(containers);
+            containersCopy.add(new ShulkerBoxMagicContainer(item));
+            magicInvHelper(shulkerInv,magicInv,containersCopy);
          }
          if(!isMagic){
             continue;
          }
-         
-      
          MagicItem magicItem = identifyItem(item);
-         MagicInvItem invItem = new MagicInvItem(magicItem,item.getCount(),enderChest,shulker,ArcanaAugments.getAugmentsOnItem(item));
+         if(magicItem instanceof MagicItemContainer magicContainer){
+            ArrayList<MagicItemContainer> containersCopy = new ArrayList<>(containers);
+            containersCopy.add(magicContainer);
+            magicInvHelper(magicContainer.getItems(item),magicInv,containersCopy);
+         }
+         
+         MagicInvItem invItem = new MagicInvItem(magicItem,item.getCount(),ArcanaAugments.getAugmentsOnItem(item),containers);
          int contains = MagicInvItem.invContains(magicInv,invItem);
          if(contains >= 0){
             magicInv.get(contains).count += invItem.count;
-            magicInv.get(contains).addId(magicItem.getUUID(item));
+            magicInv.get(contains).addItem(item);
          }else{
-            invItem.addId(magicItem.getUUID(item));
+            invItem.addItem(item);
             magicInv.add(invItem);
          }
       }
    }
    
    public static int getUsedConcentration(ServerPlayerEntity player){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       int concSum = 0;
-      int focus = profile.getAugmentLevel("focus");
-      int adaptability = profile.getAugmentLevel("adaptability");
       List<MagicInvItem> magicInv = getMagicInventory(player);
       for(MagicInvItem magicInvItem : magicInv){
          MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
-         double containerMod = 1;
-         if(magicInvItem.eChest && magicInvItem.shulker){
-            containerMod *= focus >= 1 ? 0 : 0.25;
-         }else if(magicInvItem.eChest){
-            containerMod *= focus >= 2 ? 0 : 0.5;
-         }else if(magicInvItem.shulker){
-            containerMod *= focus >= 3 ? 0 : 0.5;
-         }
-         concSum += Math.ceil(magicInvItem.count/(double)prefCount) * Math.round(containerMod*MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod());
-         
-         int augmentConc = 0;
-         for(Map.Entry<ArcanaAugment, Integer> entry : magicInvItem.getAugments().entrySet()){
-            ArcanaAugment aug = entry.getKey();
-            int itemLvl = entry.getValue();
-            int profileLvl = profile.getAugmentLevel(aug.id);
-            augmentConc += Math.max(0,itemLvl-profileLvl);
-         }
-         concSum += Math.max(0,augmentConc-adaptability);
+         double containerMod = magicInvItem.getFocusedConcMod(player);
+         concSum += Math.ceil(magicInvItem.count/(double)prefCount) * Math.ceil(containerMod*(MagicRarity.getConcentration(magicItem.getRarity())+magicInvItem.getAugmentConc(player)));
       }
       
       return concSum;
@@ -301,18 +292,13 @@ public class MagicItemUtils {
    
    public static List<String> getConcBreakdown(ServerPlayerEntity player){
       ArrayList<String> list = new ArrayList<>();
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      int focus = profile.getAugmentLevel("focus");
-      int adaptability = profile.getAugmentLevel("adaptability");
       
       List<MagicInvItem> magicInv = getMagicInventory(player);
       Comparator<MagicInvItem> comparator = (MagicInvItem i1, MagicInvItem i2) -> {
          int r1 = i1.count*MagicRarity.getConcentration(i1.item.getRarity());
-         if(i1.shulker) r1 += 50000;
-         if(i1.eChest) r1 += 100000;
+         r1 += 10000*i1.getSortMod();
          int r2 = i2.count*MagicRarity.getConcentration(i2.item.getRarity());
-         if(i2.shulker) r2 += 50000;
-         if(i2.eChest) r2 += 100000;
+         r2 += 10000*i2.getSortMod();
          return r1 - r2;
       };
       magicInv.sort(comparator);
@@ -320,30 +306,14 @@ public class MagicItemUtils {
       for(MagicInvItem magicInvItem : magicInv){
          MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
-         double containerMod = 1;
-         if(magicInvItem.eChest && magicInvItem.shulker){
-            containerMod *= focus >= 1 ? 0 : 0.25;
-         }else if(magicInvItem.eChest){
-            containerMod *= focus >= 2 ? 0 : 0.5;
-         }else if(magicInvItem.shulker){
-            containerMod *= focus >= 3 ? 0 : 0.5;
-         }
+         double containerMod = magicInvItem.getFocusedConcMod(player);
          int multiplier = (int)Math.ceil(magicInvItem.count/(double)prefCount);
-         int augmentConc = 0;
-         
-         for(Map.Entry<ArcanaAugment, Integer> entry : magicInvItem.getAugments().entrySet()){
-            ArcanaAugment aug = entry.getKey();
-            int itemLvl = entry.getValue();
-            int profileLvl = profile.getAugmentLevel(aug.id);
-            augmentConc += Math.max(0,itemLvl-profileLvl);
-         }
    
-         int itemConc = multiplier * (int)Math.round(containerMod*MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod()) + Math.max(0,augmentConc-adaptability);;
+         int itemConc = multiplier * (int)Math.ceil(containerMod*(MagicRarity.getConcentration(magicItem.getRarity())+magicInvItem.getAugmentConc(player)));
          
          String multStr = multiplier > 1 ? " x"+multiplier : "";
-         String contStr = magicInvItem.eChest && magicInvItem.shulker ? " [Ender Chest + Shulker Box]" : magicInvItem.eChest ? " [Ender Chest]" : magicInvItem.shulker ? " [Shulker Box]" : "";
-         //String line = magicItem.getName()+multStr+" ("+itemConc+")"+contStr;
-         String line = "[{\"text\":\"- "+magicItem.getName()+"\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+multStr+"\",\"color\":\"blue\"},{\"text\":\" ("+itemConc+")\",\"color\":\"dark_green\"},{\"text\":\""+contStr+"\",\"color\":\"dark_purple\"}]";
+         String contStr = magicInvItem.getContainerString();
+         String line = "[{\"text\":\"- "+magicItem.getName()+"\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+multStr+"\",\"color\":\"blue\"},{\"text\":\" ("+itemConc+")\",\"color\":\"dark_green\"},{\"text\":\" "+contStr+"\",\"color\":\"dark_purple\"}]";
          list.add(line);
       }
       
@@ -358,7 +328,8 @@ public class MagicItemUtils {
          MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
          int multiplier = (int)Math.ceil(magicInvItem.count/(double)prefCount);
-         int itemConc = multiplier * (int)Math.round(MagicRarity.getConcentration(magicItem.getRarity())+magicItem.getConcMod());
+         double containerMod = magicInvItem.getFocusedConcMod(player);
+         int itemConc = multiplier * (int)Math.ceil(containerMod*(MagicRarity.getConcentration(magicItem.getRarity())+magicInvItem.getAugmentConc(player)));
 
          if(itemConc > 0) itemsTakingConc += multiplier;
       }
@@ -379,27 +350,55 @@ public class MagicItemUtils {
    }
    
    public static class MagicInvItem {
-      public final boolean eChest;
-      public final boolean shulker;
       private int count;
       public final MagicItem item;
       public final String hash;
-      private final ArrayList<String> uuids;
+      private final ArrayList<Pair<String,ItemStack>> stacks;
       private final TreeMap<ArcanaAugment,Integer> augments;
-   
-      public MagicInvItem(MagicItem item, int count, boolean eChest, boolean shulker, TreeMap<ArcanaAugment,Integer> augments){
-         this.eChest = eChest;
-         this.shulker = shulker;
+      private final List<MagicItemContainer> containers;
+      private double concMod;
+      private int sortMod;
+      
+      public MagicInvItem(MagicItem item, int count, TreeMap<ArcanaAugment,Integer> augments, List<MagicItemContainer> containers){
          this.count = count;
          this.item = item;
-         this.uuids = new ArrayList<>();
+         this.stacks = new ArrayList<>();
          this.augments = augments;
-   
+         this.containers = containers;
+         
          StringBuilder augHash = new StringBuilder();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            augHash.append(entry.getKey().id).append(entry.getValue());
+            ArcanaAugment aug = entry.getKey();
+            int itemLvl = entry.getValue();
+            augHash.append(aug.id).append(itemLvl);
          }
-         this.hash = item.getId() + eChest + shulker + augHash;
+         
+         concMod = 1;
+         sortMod = 0;
+         containers.sort(Comparator.comparing(MagicItemContainer::getConcModStr));
+         StringBuilder contHash = new StringBuilder();
+         for(MagicItemContainer container : containers){
+            contHash.append(container.getConcModStr());
+            concMod *= container.getConcMod();
+            sortMod += container.getSortMod();
+         }
+         
+         this.hash = item.getId() + augHash + contHash;
+      }
+      
+      public ItemStack getTemplateItem(){
+         ItemStack stack = item.getPrefItem();
+         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+            ArcanaAugment aug = entry.getKey();
+            int itemLvl = entry.getValue();
+            ArcanaAugments.applyAugment(stack,aug.id,itemLvl);
+         }
+         NbtCompound itemNbt = stack.getNbt();
+         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+         loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":true,\"color\":\"light_purple\"}]"));
+         loreList.add(NbtString.of("[{\"text\":\"Not Actual Item\",\"italic\":true,\"color\":\"red\"}]"));
+         
+         return stack;
       }
    
       public static int invContains(List<MagicInvItem> inv, MagicInvItem invItem){
@@ -412,20 +411,182 @@ public class MagicItemUtils {
          return -1;
       }
       
-      public void addId(String uuid){
-         uuids.add(uuid);
+      public void addItem(ItemStack stack){
+         stacks.add(new Pair<>(item.getUUID(stack),stack));
       }
       
-      public ArrayList<String> getUuids(){
-         return uuids;
+      public ArrayList<Pair<String,ItemStack>> getStacks(){
+         return stacks;
       }
    
       public int getCount(){
          return count;
       }
       
+      public double getConcMod(){
+         return concMod;
+      }
+   
+      public double getSortMod(){
+         return sortMod;
+      }
+      
+      public int getAugmentConc(ServerPlayerEntity player){
+         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         int adaptability = profile.getAugmentLevel("adaptability");
+         int augmentConc = 0;
+         
+         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+            ArcanaAugment aug = entry.getKey();
+            int itemLvl = entry.getValue();
+            int profileLvl = profile.getAugmentLevel(aug.id);
+            augmentConc += Math.max(0,itemLvl-profileLvl);
+         }
+         return Math.max(0,augmentConc-adaptability);
+      }
+      
+      public double getFocusedConcMod(ServerPlayerEntity player){
+         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         int focus = profile.getAugmentLevel("focus");
+         if(focus == 1){
+            boolean isEChest = false;
+            boolean isShulker = false;
+   
+            for(MagicItemContainer container : containers){
+               if(container instanceof EnderChestMagicContainer){
+                  isEChest = true;
+               }else if(container instanceof ShulkerBoxMagicContainer){
+                  isShulker = true;
+               }
+            }
+            return isShulker && isEChest ? 0 : getConcMod();
+         }else if(focus == 2){
+            for(MagicItemContainer container : containers){
+               if(container instanceof EnderChestMagicContainer){
+                  return 0;
+               }
+            }
+         }else if(focus == 3){
+            for(MagicItemContainer container : containers){
+               if(container instanceof EnderChestMagicContainer){
+                  return 0;
+               }else if(container instanceof ShulkerBoxMagicContainer){
+                  return 0;
+               }
+            }
+         }
+         return getConcMod();
+      }
+   
+      public String getShortContainerString(){
+         if(containers.size() == 0) return "Inv";
+         StringBuilder str = new StringBuilder();
+         for(MagicItemContainer container : containers){
+            str.append(container.getConcModStr()).append("+");
+         }
+         return (str.substring(0,str.length()-1));
+      }
+      
+      public String getContainerString(){
+         if(containers.size() == 0) return "";
+         StringBuilder str = new StringBuilder("[");
+         for(MagicItemContainer container : containers){
+            str.append(container.getContainerName()).append(" + ");
+         }
+         if(str.length() > 30){
+            return "[" + getShortContainerString() + "]";
+         }else{
+            return (str.substring(0,str.length()-3) + "]");
+         }
+      }
+      
       public TreeMap<ArcanaAugment,Integer> getAugments(){
          return augments;
+      }
+   }
+   
+   static class EnderChestMagicContainer implements MagicItemContainer{
+      
+      private final EnderChestInventory inv;
+      
+      public EnderChestMagicContainer(ServerPlayerEntity player){
+         this.inv = player.getEnderChestInventory();
+      }
+      
+      @Override
+      public Inventory getItems(ItemStack item){
+         return inv;
+      }
+      
+      @Override
+      public double getConcMod(){
+         return 0.5;
+      }
+      
+      @Override
+      public String getConcModStr(){
+         return "EC";
+      }
+      
+      @Override
+      public String getContainerName(){
+         return "Ender Chest";
+      }
+      
+      @Override
+      public int getSize(){
+         return inv.size();
+      }
+      
+      @Override
+      public int getSortMod(){
+         return 100;
+      }
+   }
+   
+   static class ShulkerBoxMagicContainer implements MagicItemContainer{
+   
+      private final SimpleInventory inv;
+   
+      public ShulkerBoxMagicContainer(ItemStack item){
+         NbtCompound tag = item.getNbt();
+         NbtCompound bet = tag.getCompound("BlockEntityTag");
+         DefaultedList<ItemStack> shulkerItems = DefaultedList.ofSize(27, ItemStack.EMPTY);
+         Inventories.readNbt(bet, shulkerItems);
+         this.inv = new SimpleInventory(27);
+         for(int j = 0; j < shulkerItems.size(); j++){
+            inv.setStack(j,shulkerItems.get(j));
+         }
+      }
+   
+      @Override
+      public Inventory getItems(ItemStack item){
+         return inv;
+      }
+   
+      @Override
+      public double getConcMod(){
+         return 0.5;
+      }
+   
+      @Override
+      public String getConcModStr(){
+         return "SB";
+      }
+   
+      @Override
+      public String getContainerName(){
+         return "Shulker Box";
+      }
+   
+      @Override
+      public int getSize(){
+         return inv.size();
+      }
+   
+      @Override
+      public int getSortMod(){
+         return 10;
       }
    }
 }

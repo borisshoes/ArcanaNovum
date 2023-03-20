@@ -174,7 +174,7 @@ public class TomeGui extends SimpleGui {
                }
                
                
-               if(!PLAYER_DATA.get(player).addCrafted(magicItem.getId()) && !(magicItem instanceof ArcaneTome)){
+               if(!PLAYER_DATA.get(player).addCrafted(newMagicItem) && !(magicItem instanceof ArcaneTome)){
                   PLAYER_DATA.get(player).addXP(MagicRarity.getCraftXp(magicItem.getRarity()));
                }
    

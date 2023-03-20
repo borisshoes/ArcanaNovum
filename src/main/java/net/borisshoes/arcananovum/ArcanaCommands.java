@@ -55,6 +55,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -183,7 +184,6 @@ public class ArcanaCommands {
       }
    }
    
-   //TODO: Quiver Support + Better Scalable Nesting for future item holding items
    public static int uuidCommand(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
       ServerCommandSource source = ctx.getSource();
       ArrayList<MutableText> response = new ArrayList<>();
@@ -194,10 +194,12 @@ public class ArcanaCommands {
       List<MagicItemUtils.MagicInvItem> magicInv = MagicItemUtils.getMagicInventory(player);
       for(MagicItemUtils.MagicInvItem invItem : magicInv){
          MagicItem magicItem = invItem.item;
-         for(String uuid : invItem.getUuids()){
+         for(Pair<String,ItemStack> pair : invItem.getStacks()){
+            String uuid = pair.getLeft();
+            ItemStack stack = pair.getRight();
             count++;
    
-            String storage = invItem.eChest && invItem.shulker ? "EC+SB" : invItem.eChest ? "EC" : invItem.shulker ? "SB" : "Inv";
+            String storage = invItem.getShortContainerString();
             
             MutableText feedback = Text.translatable("")
                   .append(Text.translatable("(").formatted(Formatting.LIGHT_PURPLE))
@@ -208,7 +210,9 @@ public class ArcanaCommands {
                   .append(Text.translatable("] ID: ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
             response.add(feedback.styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
-            if(!uuids.add(uuid) || invItem.getUuids().size() < (invItem.getCount()/magicItem.getPrefItem().getCount())){
+            response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)))));
+            
+            if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/magicItem.getPrefItem().getCount())){
                MutableText duplicateWarning = Text.translatable("")
                      .append(Text.translatable("Duplicate: ").formatted(Formatting.RED))
                      .append(Text.translatable(magicItem.getName()).formatted(Formatting.AQUA))

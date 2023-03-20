@@ -11,6 +11,7 @@ import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -28,7 +29,7 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
+public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, MagicItemContainer{
    
    public static final int size = 9;
    private static final int[] refillReduction = {0,100,200,400,600,900};
@@ -150,5 +151,46 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem{
       list.add("{\"text\":\"      Runic Quiver\\n\\nRarity: Legendary\\n\\nMy improvments upon the overflowing quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within. I even managed to make the quiver take a set amount of Arcana\"}");
       list.add("{\"text\":\"      Runic Quiver\\n\\nregardless of how demanding the Runic Arrows within are, so its best to load the quiver up all the way.\\n\\nThe quiver acts the same as its base counterpart just with this added expansion and a quiver restock time.\"}");
       return list;
+   }
+   
+   @Override
+   public Inventory getItems(ItemStack item){
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
+      SimpleInventory inv = new SimpleInventory(getSize());
+   
+      for(int i = 0; i < arrows.size(); i++){
+         NbtCompound stack = arrows.getCompound(i);
+         ItemStack itemStack = ItemStack.fromNbt(stack);
+         inv.setStack(i,itemStack);
+      }
+      
+      return inv;
+   }
+   
+   @Override
+   public double getConcMod(){
+      return 0;
+   }
+   
+   @Override
+   public String getConcModStr(){
+      return "RQ";
+   }
+   
+   @Override
+   public String getContainerName(){
+      return "Runic Quiver";
+   }
+   
+   @Override
+   public int getSize(){
+      return 9;
+   }
+   
+   @Override
+   public int getSortMod(){
+      return 1;
    }
 }

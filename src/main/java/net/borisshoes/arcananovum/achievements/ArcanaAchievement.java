@@ -88,7 +88,13 @@ public abstract class ArcanaAchievement {
                   .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                               Text.literal("")
                                     .append(Text.literal(name).formatted(Formatting.DARK_AQUA))
-                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))))
+                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
+                                    .append(Text.literal("")
+                                          .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))
+                                          .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                                          .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
+                                          .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
+                                          .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
                         .withColor(Formatting.DARK_AQUA).withBold(true)))
                   .append(Text.literal("!!!").formatted(Formatting.DARK_PURPLE));
             SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
@@ -99,7 +105,13 @@ public abstract class ArcanaAchievement {
                   .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                               Text.literal("")
                                     .append(Text.literal(name).formatted(Formatting.AQUA))
-                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))))
+                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))
+                                    .append(Text.literal("")
+                                          .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))
+                                          .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                                          .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
+                                          .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
+                                          .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
                         .withColor(Formatting.AQUA)))
                   .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE));
             

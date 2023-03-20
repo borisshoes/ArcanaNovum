@@ -1,9 +1,6 @@
 package net.borisshoes.arcananovum.items.core;
 
-import com.mojang.authlib.AuthenticationService;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.yggdrasil.request.AuthenticationRequest;
-import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -18,7 +15,6 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -30,7 +26,6 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    protected MagicRarity rarity;
    protected ItemStack prefItem;
    protected NbtCompound prefNBT;
-   protected int concentrationModifier;
    protected MagicItemRecipe recipe;
    protected NbtCompound bookLore;
    protected ArcaneTome.TomeFilter[] categories;
@@ -50,8 +45,6 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    public MagicRarity getRarity(){
       return rarity;
    }
-   
-   public int getConcMod(){ return concentrationModifier;}
    
    public NbtCompound getBookLore(){ return bookLore; }
    

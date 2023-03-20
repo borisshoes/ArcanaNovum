@@ -12,10 +12,12 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -249,9 +251,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public boolean addCrafted(String item){
-      if (crafted.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
-      MagicItem magicItem = MagicItemUtils.getItemFromId(item);
+   public boolean addCrafted(ItemStack stack){
+      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
+      if(magicItem == null) return false;
+      String itemId = magicItem.getId();
+      if (crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
       if(player instanceof ServerPlayerEntity){
          MinecraftServer server = player.getServer();
          if(server != null){
@@ -260,11 +264,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
                   .append(Text.literal(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
                   .append(Text.literal(magicItem.getName()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
                   .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
-            server.getPlayerManager().broadcast(newCraftMsg, false);
+            server.getPlayerManager().broadcast(newCraftMsg.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)))), false);
          }
       }
       addXP(MagicRarity.getFirstCraftXp(magicItem.getRarity()));
-      return crafted.add(item);
+      return crafted.add(itemId);
    }
    
    @Override
