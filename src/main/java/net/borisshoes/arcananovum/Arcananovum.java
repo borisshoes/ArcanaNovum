@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum;
 
 import net.borisshoes.arcananovum.callbacks.*;
+import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -11,6 +12,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +27,7 @@ public class Arcananovum implements ModInitializer {
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
+   public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
    public static final boolean devMode = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static ConfigUtils config;

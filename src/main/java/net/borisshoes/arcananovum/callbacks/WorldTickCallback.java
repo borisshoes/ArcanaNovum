@@ -1,16 +1,20 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructFight;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.items.ContinuumAnchor;
 import net.borisshoes.arcananovum.items.IgneousCollider;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
+import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.*;
@@ -27,6 +31,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -44,10 +49,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static net.borisshoes.arcananovum.Arcananovum.*;
@@ -198,6 +200,37 @@ public class WorldTickCallback {
                   }
                }
             }
+         }
+         
+         // Check up on Guis
+         Iterator<Map.Entry<ServerPlayerEntity, WatchedGui>> iter3 = OPEN_GUIS.entrySet().iterator();
+         while(iter3.hasNext()){
+            Map.Entry<ServerPlayerEntity, WatchedGui> openGui = iter3.next();
+            ServerPlayerEntity player = openGui.getKey();
+            SimpleGui gui = openGui.getValue().getGui();
+            MagicBlock block = openGui.getValue().getMagicBlock();
+            
+            if(block != null){
+               BlockState state = player.getWorld().getBlockState(block.getPos());
+   
+               if(serverWorld.getRegistryKey().getValue().equals(player.getWorld().getRegistryKey().getValue())){
+//               System.out.println("Open Gui: ");
+//               System.out.println(openGui.getValue().getTokenBlock().getPos());
+//               System.out.println(state.getBlock()+" "+player.getWorld().getRegistryKey().getValue());
+      
+                  MagicItem magicItem = MagicItemUtils.getItemFromId(block.getData().getString("id"));
+                  if(magicItem == null) continue;
+                  if(!magicItem.getPrefItem().isOf(state.getBlock().asItem())){
+                     openGui.getValue().close();
+                  }
+                  if(player.currentScreenHandler == player.playerScreenHandler){
+                     block.setGuiOpen(false);
+                     iter3.remove();
+                  }
+               }
+            }
+      
+            
          }
    
          // Tick Timer Callbacks

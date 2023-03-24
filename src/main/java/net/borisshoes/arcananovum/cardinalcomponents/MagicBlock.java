@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos;
 public class MagicBlock {
    private NbtCompound data;
    private BlockPos pos;
+   private boolean guiOpen = false;
    
    public MagicBlock(BlockPos pos){
       this.pos = pos;
@@ -45,5 +46,13 @@ public class MagicBlock {
    
    public void setPos(int x, int y, int z){
       this.pos = new BlockPos(x,y,z);
+   }
+   
+   public boolean isGuiOpen(){
+      return guiOpen;
+   }
+   
+   public void setGuiOpen(boolean guiOpen){
+      this.guiOpen = guiOpen;
    }
 }

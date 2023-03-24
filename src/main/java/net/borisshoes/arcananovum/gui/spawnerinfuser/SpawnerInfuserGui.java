@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
 import net.borisshoes.arcananovum.gui.SoulstoneSlot;
+import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.SpawnerInfuser;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -32,7 +33,7 @@ import net.minecraft.world.World;
 import java.util.Arrays;
 
 
-public class SpawnerInfuserGui extends SimpleGui {
+public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
    private final MagicBlock block;
    private final World world;
    private SpawnerInfuserInventory inv;
@@ -460,6 +461,21 @@ public class SpawnerInfuserGui extends SimpleGui {
             itemEntity.setDespawnImmediately();
          }
       }
+      block.setGuiOpen(false);
    }
    
+   @Override
+   public void close(){
+      super.close();
+   }
+   
+   @Override
+   public MagicBlock getMagicBlock(){
+      return block;
+   }
+   
+   @Override
+   public SimpleGui getGui(){
+      return this;
+   }
 }

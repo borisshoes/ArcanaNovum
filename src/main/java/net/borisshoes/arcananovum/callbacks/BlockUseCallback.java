@@ -12,13 +12,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 
 import java.util.List;
 
+import static net.borisshoes.arcananovum.Arcananovum.OPEN_GUIS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 
 public class BlockUseCallback {
@@ -48,8 +51,14 @@ public class BlockUseCallback {
                      continuumAnchorUse(playerEntity,(MagicItem)magicItem,item,blockData);
                      result = ActionResult.SUCCESS;
                   }else if(id.equals(MagicItems.SPAWNER_INFUSER.getId()) && !playerEntity.isSneaking()){ // Spawner Infuser Interface
-                     spawnerHarnessUse(playerEntity,world,magicBlock);
-                     result = ActionResult.SUCCESS;
+                     if(hand == Hand.MAIN_HAND){
+                        if(!magicBlock.isGuiOpen()){
+                           spawnerHarnessUse(playerEntity, world, magicBlock);
+                           result = ActionResult.SUCCESS;
+                        }else{
+                           playerEntity.sendMessage(Text.literal("Someone else is using the Spawner Infuser").formatted(Formatting.RED, Formatting.ITALIC), true);
+                        }
+                     }
                   }
                }
             }
@@ -79,6 +88,8 @@ public class BlockUseCallback {
    private static void spawnerHarnessUse(PlayerEntity playerEntity, World world, MagicBlock block){
       if(playerEntity instanceof ServerPlayerEntity player){
          SpawnerInfuserGui gui = new SpawnerInfuserGui(player,block,world);
+         block.setGuiOpen(true);
+         OPEN_GUIS.put(player,gui);
          gui.build();
          gui.open();
       }
