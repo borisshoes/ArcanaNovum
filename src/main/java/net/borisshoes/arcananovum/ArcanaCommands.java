@@ -209,8 +209,7 @@ public class ArcanaCommands {
                   .append(Text.translatable(magicItem.getName()).formatted(Formatting.AQUA))
                   .append(Text.translatable("] ID: ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
-            response.add(feedback.styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
-            response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)))));
+            response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
             
             if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/magicItem.getPrefItem().getCount())){
                MutableText duplicateWarning = Text.translatable("")
@@ -634,8 +633,8 @@ public class ArcanaCommands {
             source.sendError(Text.literal("That is not a valid Achievement"));
             return -1;
          }
-         ArcanaAchievement achieve = profile.getAchievement(baseAch.getMagicItem().getId(),id);
-   
+         ArcanaAchievement profAchieve = profile.getAchievement(baseAch.getMagicItem().getId(),id);
+         ArcanaAchievement achieve = profAchieve == null ? baseAch : profAchieve;
          MutableText[] response = achieve.getStatusDisplay(target);
          
    
