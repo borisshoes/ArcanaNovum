@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.items.core.AttackingItem;
 import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -30,6 +31,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +42,7 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
 
-public class ShieldOfFortitude extends MagicItem implements AttackingItem {
+public class ShieldOfFortitude extends MagicItem implements AttackingItem, UsableItem {
    public ShieldOfFortitude(){
       id = "shield_of_fortitude";
       name = "Shield of Fortitude";
@@ -111,6 +113,22 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem {
          }
          SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
       }
+      return true;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
+      return true;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
+      //TODO Wash in cauldron
+      return false;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
       return true;
    }
    

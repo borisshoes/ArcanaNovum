@@ -37,6 +37,7 @@ public class Arcananovum implements ModInitializer {
       ServerTickEvents.END_WORLD_TICK.register(WorldTickCallback::onWorldTick);
       ServerTickEvents.END_SERVER_TICK.register(TickCallback::onTick);
       UseItemCallback.EVENT.register(ItemUseCallback::useItem);
+      UseEntityCallback.EVENT.register(EntityUseCallback::useEntity);
       UseBlockCallback.EVENT.register(BlockUseCallback::useBlock);
       AttackBlockCallback.EVENT.register(BlockAttackCallback::attackBlock);
       PlayerBlockBreakEvents.BEFORE.register(BlockBreakCallback::breakBlock);

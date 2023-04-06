@@ -296,11 +296,11 @@ public class NulConstructFight {
    
       PlayerEntity summoner = server.getPlayerManager().getPlayer(UUID.fromString(magicData.getString("summonerId")));
       
-      for(int i = 0; i < (int)(Math.random()*25+7); i++){
+      for(int i = 0; i < (int)(Math.random()*33+16); i++){
          ItemStack stack = Items.NETHER_STAR.getDefaultStack();
          dropItem(construct.getWorld(),stack,construct.getPos());
       }
-      if(Math.random() < 0.01){
+      if(Math.random() < 0.05){
          ItemStack stack = MagicItems.NUL_MEMENTO.addCrafter(MagicItems.NUL_MEMENTO.getNewItem(),magicData.getString("summonerId"),false,construct.getServer());
          dropItem(construct.getWorld(),stack,construct.getPos());
          dropped = true;
@@ -372,6 +372,8 @@ public class NulConstructFight {
       StatusEffectInstance fireRes = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE,100000,0,false,false,false);
       StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE,100000,1,false,false,false);
       StatusEffectInstance slowFall = new StatusEffectInstance(StatusEffects.SLOW_FALLING,100000,0,false,false,false);
+      StatusEffectInstance speed = new StatusEffectInstance(StatusEffects.SPEED,100000,0,false,false,false);
+      skeleton.addStatusEffect(speed);
       skeleton.addStatusEffect(slowFall);
       skeleton.addStatusEffect(fireRes);
       skeleton.addStatusEffect(res);
@@ -379,6 +381,7 @@ public class NulConstructFight {
       skeleton.getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10f);
       skeleton.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(4f);
       skeleton.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
+      skeleton.getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(64f);
       return skeleton;
    }
 }
