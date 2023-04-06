@@ -528,8 +528,8 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment SALVAGEABLE_FRAME = ArcanaAugments.register("salvageable_frame",
          new ArcanaAugment("Salvageable Frame", "salvageable_frame", new ItemStack(Items.NETHERITE_SCRAP), MagicItems.SPAWNER_HARNESS,
-         new String[]{"Gives 1 to 4 Netherite Scrap per level","back when the Spawner Harness breaks"},
-         new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY}
+         new String[]{"Gives 8 Netherite Scrap back when the Spawner Harness breaks"},
+         new MagicRarity[]{MUNDANE}
    ));
    
    // Spawner Infuser

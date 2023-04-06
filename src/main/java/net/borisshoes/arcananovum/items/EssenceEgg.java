@@ -185,6 +185,11 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
       }
    }
    
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
+      return true;
+   }
+   
    public static void setType(ItemStack item, String entityId){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");

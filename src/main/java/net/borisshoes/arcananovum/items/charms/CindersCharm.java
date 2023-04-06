@@ -554,6 +554,11 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    }
    
    @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
+      return true;
+   }
+   
+   @Override
    public int getMaxEnergy(ItemStack item){
       int wildfireLevel = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"wildfire"));
       return 100 + 20*wildfireLevel;

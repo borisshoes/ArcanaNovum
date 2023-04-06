@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -12,6 +13,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
@@ -54,6 +56,15 @@ public class PlayerJoinCallback {
          profile.setAugmentLevel(ArcanaAugments.QUIVER_DUPLICATION.id,o2);
       }else if(r2 > o2){
          profile.setAugmentLevel(ArcanaAugments.ABUNDANT_AMMO.id,r2);
+      }
+   
+      for(Map.Entry<ArcanaAugment, Integer> entry : profile.getAugments().entrySet()){
+         ArcanaAugment baseAug = ArcanaAugments.registry.get(entry.getKey().id);
+         if(baseAug != null){
+            if(entry.getValue() > baseAug.getTiers().length){
+               profile.setAugmentLevel(entry.getKey().id,baseAug.getTiers().length);
+            }
+         }
       }
    
    

@@ -15,6 +15,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -32,9 +33,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
       name = "Spawner Harness";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.BLOCKS};
+      itemVersion = 1;
       
       ItemStack item = new ItemStack(Items.SPAWNER);
       NbtCompound tag = item.getOrCreateNbt();
@@ -123,12 +127,12 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
                   magicNbt.put("spawner",new NbtCompound());
                }else{
-                  int scrapLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"salvageable_frame"));
+                  boolean scrap = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"salvageable_frame")) > 0;
                   player.sendMessage(Text.literal("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.ITEM_SHIELD_BREAK, 1,.5f);
                   item.decrement(item.getCount());
                   item.setNbt(new NbtCompound());
-                  if(scrapLvl > 0) giveScrap(player,scrapLvl);
+                  if(scrap) giveScrap(player);
                }
                PLAYER_DATA.get(player).addXP((int) Math.max(0,20000*breakChance)); // Add xp
             }else{
@@ -138,7 +142,13 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
          }else if(world.getBlockState(result.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(result.getBlockPos()) instanceof MobSpawnerBlockEntity){
             MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(result.getBlockPos());
             NbtCompound spawnerNbt = spawner.createNbt();
-            String entityTypeId = EntityType.getId(spawner.getLogic().getRenderedEntity(world,world.getRandom(),result.getBlockPos()).getType()).toString();
+            Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,world.getRandom(),result.getBlockPos());
+            if(renderedEntity == null){
+               player.sendMessage(Text.literal("This spawner is empty, and cannot be transported").formatted(Formatting.RED,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+               return false;
+            }
+            String entityTypeId = EntityType.getId(renderedEntity.getType()).toString();
             String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
             
             magicNbt.put("spawner",spawnerNbt);
@@ -152,16 +162,19 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
             if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,"finally_useful");
          }
       }catch (Exception e){
-      
+         e.printStackTrace();
       }
       return false;
    }
    
-   private void giveScrap(PlayerEntity player, int level){
-      int scrapNum = (int)(Math.random() * (level*3+1) + level);
-      
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
+      return true;
+   }
+   
+   private void giveScrap(PlayerEntity player){
       ItemStack stack = new ItemStack(Items.NETHERITE_SCRAP);
-      stack.setCount(scrapNum);
+      stack.setCount(8);
       if(!stack.isEmpty()){
       
          ItemEntity itemEntity;

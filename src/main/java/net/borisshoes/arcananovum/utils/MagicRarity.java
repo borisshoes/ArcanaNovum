@@ -108,10 +108,10 @@ public enum MagicRarity {
    
    public static int getFirstCraftXp(MagicRarity rarity){
       switch(rarity){
-         case MUNDANE -> {return 1000;}
-         case EMPOWERED -> {return 5000;}
-         case EXOTIC -> {return 10000;}
-         case LEGENDARY -> {return 25000;}
+         case MUNDANE -> {return 5000;}
+         case EMPOWERED -> {return 10000;}
+         case EXOTIC -> {return 50000;}
+         case LEGENDARY -> {return 100000;}
          case MYTHICAL -> {return 0;}
       }
       return 0;
@@ -119,10 +119,10 @@ public enum MagicRarity {
    
    public static int getCraftXp(MagicRarity rarity){
       switch(rarity){
-         case MUNDANE -> {return 100;}
-         case EMPOWERED -> {return 1000;}
-         case EXOTIC -> {return 5000;}
-         case LEGENDARY -> {return 15000;}
+         case MUNDANE -> {return 1000;}
+         case EMPOWERED -> {return 5000;}
+         case EXOTIC -> {return 10000;}
+         case LEGENDARY -> {return 50000;}
          case MYTHICAL -> {return 0;}
       }
       return 0;

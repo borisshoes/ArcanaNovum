@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.EnchantedBookItem;
@@ -30,8 +31,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,6 +157,11 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
       openGui(playerEntity, playerEntity.getStackInHand(hand));
       return false;
+   }
+   
+   @Override
+   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
+      return true;
    }
    
    public void openGui(PlayerEntity playerEntity, ItemStack item){

@@ -217,7 +217,8 @@ public class ParticleEffectUtils {
          double z = p1.z + dz*i;
          
          float hue = i/((float)intervals);
-         Color c = Color.getHSBColor(hue, 1f, brightness);
+         float trueBrightness = (float) Math.min(1,-0.01*(new Vec3d(x,y,z).distanceTo(entity.getEyePos())-100)+0.25) * brightness;
+         Color c = Color.getHSBColor(hue, 1f, trueBrightness);
          ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(c.getRGB()).toVector3f(),.6f);
          
          spawnLongParticle(world,dust,x,y,z,delta,delta,delta,speed,count);

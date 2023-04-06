@@ -176,7 +176,7 @@ public class NulConstructDialog {
                }
                case 3 -> {
                   message.add(Text.literal("")
-                        .append(Text.literal("Death ").formatted(Formatting.GRAY))
+                        .append(Text.literal("Death").formatted(Formatting.GRAY))
                         .append(Text.literal(" does not come for you today, I shall grant you what you have sought.").formatted(Formatting.DARK_GRAY)));
                   message.add(Text.literal(""));
                }
@@ -191,7 +191,7 @@ public class NulConstructDialog {
                }
                case 5 -> {
                   message.add(Text.literal("")
-                        .append(Text.literal("A valiant fight, ").formatted(Formatting.DARK_GRAY))
+                        .append(Text.literal("A valiant fight! ").formatted(Formatting.DARK_GRAY))
                         .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE, Formatting.BOLD))
                         .append(Text.literal(" must be getting nervous. Perhaps you have paid her a visit already?").formatted(Formatting.DARK_GRAY)));
                   message.add(Text.literal(""));

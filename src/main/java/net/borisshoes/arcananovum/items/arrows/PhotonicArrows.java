@@ -98,12 +98,13 @@ public class PhotonicArrows extends RunicArrow {
       hits.sort(Comparator.comparingDouble(e->e.distanceTo(entity)));
       
       float damage = (float)MathHelper.clamp(proj.getVelocity().length()*5,1,20);
-      if(alignmentLvl == 5) damage += 5 + damage*0.25;
+      if(alignmentLvl == 5) damage += 4 + damage*0.2;
       float bonusDmg = 0;
       
       int killCount = 0;
       for(Entity hit : hits){
-         hit.damage(DamageSource.magic(proj,entity), damage+bonusDmg);
+         float finalDmg = (float) ((damage+bonusDmg) * Math.min(1,-0.01*(hit.getPos().distanceTo(startPos)-100)+0.25)) * (hit instanceof ServerPlayerEntity ? 0.5f : 1f);
+         hit.damage(DamageSource.magic(proj,entity), finalDmg);
          if(hit instanceof MobEntity mob && mob.isDead()) killCount++;
          bonusDmg += alignmentLvl;
       }

@@ -11,15 +11,21 @@ import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.BannerItem;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -30,9 +36,13 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShieldOfFortitude extends MagicItem implements AttackingItem, UsableItem {
    public ShieldOfFortitude(){
@@ -105,9 +116,15 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem, Usabl
                }
             }
          }
-         shieldTotal = Math.min(absAmt,shieldTotal);
+         shieldTotal = Math.min(Math.min(absAmt,shieldTotal),50);
          if(shieldTotal >= 2){
-            living.damage(DamageSource.player(player), shieldTotal / 3);
+            living.damage(DamageSource.player(player).setUsesMagic(), shieldTotal);
+            if(shieldTotal >= 25){
+               StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA, (120), 0, false, false, true);
+               StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, (40), 4, false, false, true);
+               living.addStatusEffect(nausea);
+               living.addStatusEffect(slow);
+            }
             if(player instanceof ServerPlayerEntity serverPlayer)
                SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.ENTITY_IRON_GOLEM_HURT, .7f, .8f);
          }
@@ -123,7 +140,19 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem, Usabl
    
    @Override
    public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      //TODO Wash in cauldron
+      try{
+         ItemStack item = playerEntity.getStackInHand(hand);
+         NbtCompound itemNbt = item.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+   
+         BlockState blockState = world.getBlockState(result.getBlockPos());
+         if(itemNbt.contains("BlockEntityTag") && blockState.getBlock() == Blocks.WATER_CAULDRON){
+            itemNbt.remove("BlockEntityTag");
+            LeveledCauldronBlock.decrementFluidLevel(blockState,world,result.getBlockPos());
+         }
+      }catch (Exception e){
+         e.printStackTrace();
+      }
       return false;
    }
    
