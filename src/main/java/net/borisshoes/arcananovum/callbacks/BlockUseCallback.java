@@ -75,11 +75,19 @@ public class BlockUseCallback {
       int curFuel = blockData.getInt("fuel");
       if(magicItem instanceof ExoticMatter){ // Try to add fuel
          blockData.putInt("fuel",curFuel+((ExoticMatter) magicItem).getEnergy(item));
+         NbtCompound fuelData = new NbtCompound();
+         item.writeNbt(fuelData);
+         blockData.put("fuelData",fuelData);
          item.decrement(item.getCount());
          item.setNbt(new NbtCompound());
       }else if(playerEntity.getMainHandStack().isEmpty() && playerEntity.getMainHandStack().isEmpty() && curFuel > 0){ // Remove fuel if both hands are empty
          blockData.putInt("fuel",0);
-         ItemStack removedFuelItem = MagicItems.EXOTIC_MATTER.getNewItem();
+         ItemStack removedFuelItem;
+         if(blockData.contains("fuelData")){
+            removedFuelItem = ItemStack.fromNbt(blockData.getCompound("fuelData"));
+         }else{
+            removedFuelItem = MagicItems.EXOTIC_MATTER.getNewItem();
+         }
          ((ExoticMatter)MagicItemUtils.identifyEnergyItem(removedFuelItem)).setFuel(removedFuelItem,curFuel);
          playerEntity.giveItemStack(removedFuelItem);
       }

@@ -222,7 +222,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          boolean cremation = ArcanaAugments.getAugmentOnItem(item,"cremation") >= 1;
          Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
          if(MagicItemUtils.isMagic(stack)) return null;
-         int energyToConsume = (int)Math.ceil(stack.getCount() / 8.0);
+         int energyToConsume = (int)Math.ceil(stack.getCount() / 2.0);
          if(magicNbt.getBoolean("active") && getEnergy(item) >= energyToConsume){
             // Smelting registry and auto smelt
             RecipeManager.MatchGetter<Inventory, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCachedMatchGetter(RecipeType.SMELTING);

@@ -59,6 +59,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARMOR};
       initEnergy = 3600; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
+      itemVersion = 1;
    
       ItemStack item = new ItemStack(Items.LEATHER_CHESTPLATE);
       NbtCompound tag = item.getOrCreateNbt();
@@ -89,7 +90,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.put("AttributeModifiers",attributes);
-      tag.putInt("HideFlags",100);
+      tag.putInt("HideFlags",103);
       tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
@@ -114,12 +115,14 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      NbtCompound stoneData = magicTag.getCompound("stoneData");
       int souls = magicTag.getInt("souls");
       int stall = magicTag.getInt("stall");
       int glowstone = magicTag.getInt("glowstone");
       boolean wasFlying = magicTag.getBoolean("wasFlying");
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
+      newTag.getCompound("arcananovum").put("stoneData",stoneData);
       newTag.getCompound("arcananovum").putInt("souls",souls);
       newTag.getCompound("arcananovum").putInt("stall",stall);
       newTag.getCompound("arcananovum").putInt("glowstone",glowstone);
@@ -177,8 +180,10 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       if(stone == null){
          magicNbt.putInt("souls",-1);
+         magicNbt.put("stoneData",new NbtCompound());
       }else{
          magicNbt.putInt("souls",Soulstone.getSouls(stone));
+         magicNbt.put("stoneData",stone.writeNbt(new NbtCompound()));
       }
    }
    
@@ -300,7 +305,15 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       gui.setSlotRedirect(1, new Slot(inv,0,0,0));
       gui.setSlotRedirect(3, new Slot(inv,1,0,0));
       if(souls > -1){
-         ItemStack stone = Soulstone.setSouls(Soulstone.setType(MagicItems.SOULSTONE.getNewItem(), EntityType.SHULKER),souls);
+         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
+         NbtCompound stoneData = magicTag.getCompound("stoneData");
+         ItemStack stone;
+         if(stoneData == null || stoneData.isEmpty()){
+            stone = Soulstone.setType(MagicItems.SOULSTONE.getNewItem(), EntityType.SHULKER);
+         }else{
+            stone = ItemStack.fromNbt(stoneData);
+         }
+         stone = Soulstone.setSouls(stone,souls);
          inv.setStack(0,stone);
          gui.validStone(stone);
       }else{

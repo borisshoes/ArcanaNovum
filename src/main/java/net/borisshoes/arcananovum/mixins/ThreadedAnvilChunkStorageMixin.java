@@ -9,7 +9,6 @@ import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.thread.ThreadExecutor;
-import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.ChunkStatusChangeListener;
 import net.minecraft.world.gen.chunk.ChunkGenerator;

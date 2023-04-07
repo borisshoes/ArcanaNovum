@@ -16,8 +16,8 @@
     "MobEntityMixin",
     "MobSpawnerBlockEntityMixin",
     "MobSpawnerLogicMixin",
-    "PhantomSwoopGoalMixin",
     "PhantomSpawnerMixin",
+    "PhantomSwoopGoalMixin",
     "PistonMixin",
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
@@ -30,7 +30,8 @@
     "ShapelessRecipeMixin",
     "SpawnDensityCapperMixin",
     "ThreadedAnvilChunkStorageMixin",
-    "WitherEntityMixin"
+    "WitherEntityMixin",
+    "LivingEntityAccessor"
   ],
   "client": [
   ],

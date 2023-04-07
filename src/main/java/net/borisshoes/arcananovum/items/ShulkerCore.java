@@ -111,10 +111,12 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       int speed = magicTag.getInt("speed");
       int speedCD = magicTag.getInt("speedCD");
       boolean stone = magicTag.getBoolean("stone");
+      NbtCompound stoneData = magicTag.getCompound("stoneData");
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putInt("speed",speed);
       newTag.getCompound("arcananovum").putInt("speedCD",speedCD);
       newTag.getCompound("arcananovum").putBoolean("stone",stone);
+      newTag.getCompound("arcananovum").put("stoneData",stoneData);
       stack.setNbt(newTag);
       redoLore(stack);
       return stack;
@@ -275,7 +277,15 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
    
       gui.setSlotRedirect(2, new Slot(inv,0,0,0));
       if(hasStone){
-         ItemStack stone = Soulstone.setSouls(Soulstone.setType(MagicItems.SOULSTONE.getNewItem(),EntityType.SHULKER),getEnergy(item));
+         NbtCompound stoneData = magicNbt.getCompound("stoneData");
+         ItemStack stone;
+         if(stoneData == null || stoneData.isEmpty()){
+            stone = Soulstone.setType(MagicItems.SOULSTONE.getNewItem(), EntityType.SHULKER);
+         }else{
+            stone = ItemStack.fromNbt(stoneData);
+         }
+         stone = Soulstone.setSouls(stone,getEnergy(item));
+         
          inv.setStack(0,stone);
          gui.validStone(stone);
       }else{
@@ -301,7 +311,16 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
          NbtCompound itemNbt = item.getNbt();
          NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
          if(magicNbt.getBoolean("stone")){
-            return Soulstone.setSouls(Soulstone.setType(MagicItems.SOULSTONE.getNewItem(),EntityType.SHULKER),getEnergy(item));
+            NbtCompound stoneData = magicNbt.getCompound("stoneData");
+            ItemStack stone;
+            if(stoneData == null || stoneData.isEmpty()){
+               stone = Soulstone.setType(MagicItems.SOULSTONE.getNewItem(), EntityType.SHULKER);
+            }else{
+               stone = ItemStack.fromNbt(stoneData);
+            }
+            stone = Soulstone.setSouls(stone,getEnergy(item));
+            
+            return stone;
          }
       }
       return null;
@@ -312,9 +331,11 @@ public class ShulkerCore extends EnergyItem implements LeftClickItem, UsableItem
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       if(stone == null){
          magicNbt.putBoolean("stone",false);
+         magicNbt.put("stoneData",new NbtCompound());
          setEnergy(item,0);
       }else{
          magicNbt.putBoolean("stone",true);
+         magicNbt.put("stoneData",stone.writeNbt(new NbtCompound()));
          setEnergy(item,Soulstone.getSouls(stone));
       }
    }

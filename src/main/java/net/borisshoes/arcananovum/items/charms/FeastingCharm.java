@@ -41,7 +41,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class FeastingCharm extends MagicItem implements TickingItem, UsableItem {
    
-   private static final int[] gluttonyBoost = {0,2,4,8};
+   private static final int[] gluttonyFoodBoost = {0,2,4,8};
+   private static final float[] gluttonySatBoost = {0,0.5f,1f,2f};
    
    public FeastingCharm(){
       id = "feasting_charm";
@@ -118,7 +119,7 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
             if(consume){
                player.sendMessage(Text.translatable("Your Feasting Charm consumes a "+selectedFood.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
                hunger.eat(selectedFood.getItem(),selectedFood);
-               player.getHungerManager().add(gluttonyBoost[gluttony],gluttonyBoost[gluttony]);
+               player.getHungerManager().add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
                // Apply Status Effects
                List<Pair<StatusEffectInstance, Float>> list = foodComponent.getStatusEffects();
                for (Pair<StatusEffectInstance, Float> pair : list) {
@@ -148,7 +149,7 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
          }
       }
       if(world.getServer().getTicks() % (time*6) == 0){ // Give player a small hunger boost
-         player.getHungerManager().add(1,5+gluttony*2);
+         player.getHungerManager().add(1,2+gluttony*0.5f);
       }
    }
    

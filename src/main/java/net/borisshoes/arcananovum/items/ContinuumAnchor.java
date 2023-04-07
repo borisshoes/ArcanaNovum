@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.UsableItem;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Block;
@@ -199,10 +200,14 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
       
       int fuel = blockData.getInt("fuel");
       if(fuel > 0){
-         ExoticMatter exoticMatter = (ExoticMatter) MagicItems.EXOTIC_MATTER;
-         ItemStack fuelDrop = MagicItems.EXOTIC_MATTER.getNewItem();
-         exoticMatter.setFuel(fuelDrop,fuel);
-         drops.add(fuelDrop);
+         ItemStack removedFuelItem;
+         if(blockData.contains("fuelData")){
+            removedFuelItem = ItemStack.fromNbt(blockData.getCompound("fuelData"));
+         }else{
+            removedFuelItem = MagicItems.EXOTIC_MATTER.getNewItem();
+         }
+         ((ExoticMatter) MagicItemUtils.identifyEnergyItem(removedFuelItem)).setFuel(removedFuelItem,fuel);
+         drops.add(removedFuelItem);
       }
       return drops;
    }

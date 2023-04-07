@@ -1,17 +1,25 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.items.core.RunicArrow;
+import net.borisshoes.arcananovum.mixins.LivingEntityAccessor;
 import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
@@ -24,6 +32,8 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -36,8 +46,6 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.items.core.MagicItems.RECOMMENDED_LIST;
 
 public class PhotonicArrows extends RunicArrow {
    
@@ -101,17 +109,55 @@ public class PhotonicArrows extends RunicArrow {
       if(alignmentLvl == 5) damage += 4 + damage*0.2;
       float bonusDmg = 0;
       
+      Vec3d endPoint = raycast.getPos();
       int killCount = 0;
       for(Entity hit : hits){
          float finalDmg = (float) ((damage+bonusDmg) * Math.min(1,-0.01*(hit.getPos().distanceTo(startPos)-100)+0.25)) * (hit instanceof ServerPlayerEntity ? 0.5f : 1f);
-         hit.damage(DamageSource.magic(proj,entity), finalDmg);
-         if(hit instanceof MobEntity mob && mob.isDead()) killCount++;
+         boolean ignore = false;
+         if(hit instanceof ServerPlayerEntity hitPlayer && hitPlayer.isBlocking()){
+            double dp = hitPlayer.getRotationVecClient().normalize().dotProduct(view.normalize());
+            ignore = dp < -0.6;
+            if(ignore){
+               ((LivingEntityAccessor) hitPlayer).invokeDamageShield(finalDmg);
+               SoundUtils.playSound(world,hitPlayer.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS,1f,1f);
+               endPoint = startPos.add(view.normalize().multiply(view.normalize().dotProduct(hitPlayer.getPos().subtract(startPos)))).subtract(view.normalize());
+               
+               //Activate Shield of Fortitude
+               ItemStack main = hitPlayer.getEquippedStack(EquipmentSlot.MAINHAND);
+               ItemStack off = hitPlayer.getEquippedStack(EquipmentSlot.OFFHAND);
+               MagicItem magic = null;
+               ItemStack item = null;
+               if(MagicItemUtils.isMagic(main)){
+                  magic = MagicItemUtils.identifyItem(main);
+                  item = main;
+               }else if(MagicItemUtils.isMagic(off) && main.getItem() != Items.SHIELD){
+                  magic = MagicItemUtils.identifyItem(off);
+                  item = off;
+               }
+               if(magic instanceof ShieldOfFortitude shield){
+                  float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shield_of_faith"));
+                  float curAbs = hitPlayer.getAbsorptionAmount();
+                  float addedAbs = (float) Math.min(maxAbs,finalDmg*.5);
+                  int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,"shield_of_resilience"));
+                  Arcananovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,hitPlayer,addedAbs));
+                  SoundUtils.playSongToPlayer(hitPlayer,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
+                  hitPlayer.setAbsorptionAmount((curAbs + addedAbs));
+               }
+            }
+         }
+         if(!ignore){
+            hit.damage(DamageSource.magic(proj,entity), finalDmg);
+         }
+         if(hit instanceof MobEntity mob && mob.isDead()){
+            killCount++;
+         }
          bonusDmg += alignmentLvl;
+         if(ignore) break;
       }
       if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,"x");
       
       if(world instanceof ServerWorld serverWorld){
-         ParticleEffectUtils.photonArrowShot(serverWorld,entity,raycast.getPos(), MathHelper.clamp(damage/15,.4f,1f));
+         ParticleEffectUtils.photonArrowShot(serverWorld,entity,endPoint, MathHelper.clamp(damage/15,.4f,1f));
       }
    }
    

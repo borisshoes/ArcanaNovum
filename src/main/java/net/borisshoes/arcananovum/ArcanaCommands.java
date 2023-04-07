@@ -32,12 +32,10 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.EnchantedBookItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtInt;
@@ -543,10 +541,8 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         //player.getWorld().syncWorldEvent(3007, pos, 0);
-         //player.getWorld().emitGameEvent(GameEvent.SHRIEK, pos, GameEvent.Emitter.of(player));
-         //player.getWorld().spawnParticles(ParticleTypes.SHRIEK,player.getX(),player.getY(),player.getZ(),1,0,0,0,1);
-         //SoundUtils.playSongToPlayer(player, SoundEvents.PARTICLE_SOUL_ESCAPE);
+         
+         
       } catch (Exception e) {
          e.printStackTrace();
       }
