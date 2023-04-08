@@ -160,13 +160,20 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
    
    private void placeAnchor(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
       try{
-         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
+         NbtCompound itemNbt = item.getNbt();
+         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
          MagicBlock anchorBlock = new MagicBlock(pos);
          NbtCompound anchorData = new NbtCompound();
          anchorData.putString("UUID",getUUID(item));
          anchorData.putString("id",this.id);
          anchorData.putString("crafter",getCrafter(item));
          anchorData.putBoolean("synthetic",isSynthetic(item));
+   
+   
+         if(itemNbt.contains("display") && itemNbt.getCompound("display").contains("Name")){
+            anchorData.putString("customName",itemNbt.getCompound("display").getString("Name"));
+         }
+         
          anchorData.putBoolean("active",false);
          anchorData.putInt("fuel",0);
          anchorData.putInt("range",2);
@@ -190,12 +197,17 @@ public class ContinuumAnchor extends MagicItem implements UsableItem, BlockItem 
       String uuid = blockData.getString("UUID");
       NbtCompound augmentsTag = blockData.contains("augments") ? blockData.getCompound("augments").copy() : null;
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
-      NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
+      NbtCompound dropNbt = drop.getNbt();
+      NbtCompound magicTag = dropNbt.getCompound("arcananovum");
       if(augmentsTag != null) {
          magicTag.put("augments",augmentsTag);
          redoAugmentLore(drop);
       }
       magicTag.putString("UUID",uuid);
+      
+      if(blockData.contains("customName")){
+         dropNbt.getCompound("display").putString("Name",blockData.getString("customName"));
+      }
       drops.add(drop);
       
       int fuel = blockData.getInt("fuel");

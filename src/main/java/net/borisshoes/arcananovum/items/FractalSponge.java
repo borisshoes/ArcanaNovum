@@ -157,12 +157,17 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
       String uuid = blockData.getString("UUID");
       NbtCompound augmentsTag = blockData.contains("augments") ? blockData.getCompound("augments").copy() : null;
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
-      NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
+      NbtCompound dropNbt = drop.getNbt();
+      NbtCompound magicTag = dropNbt.getCompound("arcananovum");
       if(augmentsTag != null) {
          magicTag.put("augments",augmentsTag);
          redoAugmentLore(drop);
       }
       magicTag.putString("UUID",uuid);
+      
+      if(blockData.contains("customName")){
+         dropNbt.getCompound("display").putString("Name",blockData.getString("customName"));
+      }
       drops.add(drop);
       return drops;
    }
@@ -194,13 +199,19 @@ public class FractalSponge extends MagicItem implements UsableItem, BlockItem {
    
    private void placeSponge(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
       try{
-         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
+         NbtCompound itemNbt = item.getNbt();
+         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
          MagicBlock spongeBlock = new MagicBlock(pos);
          NbtCompound spongeData = new NbtCompound();
          spongeData.putString("UUID",getUUID(item));
          spongeData.putString("id",this.id);
          spongeData.putString("crafter",getCrafter(item));
          spongeData.putBoolean("synthetic",isSynthetic(item));
+   
+         if(itemNbt.contains("display") && itemNbt.getCompound("display").contains("Name")){
+            spongeData.putString("customName",itemNbt.getCompound("display").getString("Name"));
+         }
+         
          if(magicTag.contains("augments")){
             spongeData.put("augments",magicTag.getCompound("augments"));
          }

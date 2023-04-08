@@ -115,13 +115,18 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
    
    private void placeInfuser(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos){
       try{
-         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
+         NbtCompound itemNbt = item.getNbt();
+         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
          MagicBlock infuserBlock = new MagicBlock(pos);
          NbtCompound infuserData = new NbtCompound();
          infuserData.putString("UUID",getUUID(item));
          infuserData.putString("id",this.id);
          infuserData.putString("crafter",getCrafter(item));
          infuserData.putBoolean("synthetic",isSynthetic(item));
+         
+         if(itemNbt.contains("display") && itemNbt.getCompound("display").contains("Name")){
+            infuserData.putString("customName",itemNbt.getCompound("display").getString("Name"));
+         }
          
          infuserData.putBoolean("active",false);
          infuserData.put("soulstone",new NbtCompound());
@@ -159,12 +164,17 @@ public class SpawnerInfuser extends MagicItem implements UsableItem,BlockItem {
       String uuid = blockData.getString("UUID");
       NbtCompound augmentsTag = blockData.contains("augments") ? blockData.getCompound("augments").copy() : null;
       ItemStack drop = addCrafter(getPrefItem(),blockData.getString("crafter"),blockData.getBoolean("synthetic"),world.getServer());
-      NbtCompound magicTag = drop.getNbt().getCompound("arcananovum");
+      NbtCompound dropNbt = drop.getNbt();
+      NbtCompound magicTag = dropNbt.getCompound("arcananovum");
       if(augmentsTag != null) {
          magicTag.put("augments",augmentsTag);
          redoAugmentLore(drop);
       }
       magicTag.putString("UUID",uuid);
+      
+      if(blockData.contains("customName")){
+         dropNbt.getCompound("display").putString("Name",blockData.getString("customName"));
+      }
       drops.add(drop);
    
       int ratio = (int) Math.pow(2,Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"augmented_apparatus")));
