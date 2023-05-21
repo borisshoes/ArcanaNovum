@@ -10,10 +10,13 @@ import net.minecraft.entity.boss.dragon.phase.ChargingPlayerPhase;
 import net.minecraft.entity.boss.dragon.phase.PhaseManager;
 import net.minecraft.entity.boss.dragon.phase.PhaseType;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.EndermanEntity;
+import net.minecraft.entity.mob.WitchEntity;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
@@ -137,7 +140,7 @@ public class DragonAbilities {
                   List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getPos()) <= 5*5);
                   for(ServerPlayerEntity player : nearbyPlayers){
                      if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-                     player.damage(DamageSource.MAGIC,2f);
+                     player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),2f);
                   }
                }
             }
@@ -177,12 +180,11 @@ public class DragonAbilities {
       
       if(corruptArcanaTicks < 200 && corruptArcanaTicks % 20 == 0){
          List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
-   
          for(ServerPlayerEntity player : nearbyPlayers300){
             float damage = MagicItemUtils.getUsedConcentration(player)/8f;
             if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
             
-            player.damage(DamageSource.magic(this.dragon,this.dragon),damage);
+            player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),damage);
             player.sendMessage(Text.literal("Your Magic Items surge with corrupted Arcana!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
          }
@@ -286,7 +288,7 @@ public class DragonAbilities {
          List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(pos) <= 10*10);
          for(ServerPlayerEntity player : nearbyPlayers){
             if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-            BlockPos target = new BlockPos(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5);
+            BlockPos target = BlockPos.ofFloored(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5);
             BlockPos playerPos = player.getBlockPos();
             Vec3d vec = new Vec3d(target.getX()-playerPos.getX(),0,target.getZ()-playerPos.getZ());
             vec = vec.normalize().multiply(3);
@@ -308,7 +310,7 @@ public class DragonAbilities {
             player.setVelocity(vec.x,-3,vec.z);
             player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
             int dist = player.getBlockY()-SpawnPile.getSurfaceY(endWorld,player.getBlockY(),player.getBlockX(),player.getBlockZ());
-            player.damage(DamageSource.FALL,(dist*0.25f));
+            player.damage(endWorld.getDamageSources().fall(),(dist*0.25f));
          }
          
          ampTicks = 0;

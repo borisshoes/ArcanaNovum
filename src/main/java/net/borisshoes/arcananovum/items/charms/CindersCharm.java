@@ -14,7 +14,6 @@ import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.CreeperEntity;
@@ -228,12 +227,14 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
             RecipeManager.MatchGetter<Inventory, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
             SimpleInventory sInv = new SimpleInventory(stack);
             AbstractCookingRecipe recipe = (matchGetter.getFirstMatch(sInv,player.getEntityWorld()).orElse(null));
-            if(recipe == null || recipe.getOutput().isEmpty()) return null;
+            if(recipe == null) return null;
+            ItemStack recipeOutput = recipe.getOutput(player.getWorld().getRegistryManager());
+            if(recipeOutput.isEmpty()) return null;
             PlayerInventory inv = player.getInventory();
-            ItemStack result = recipe.getOutput().copy();
+            ItemStack result = recipeOutput.copy();
             
-            if(recipe.getOutput().getCount()*stack.getCount() <= recipe.getOutput().getItem().getMaxCount()){
-               result.setCount(recipe.getOutput().getCount()*stack.getCount());
+            if(recipeOutput.getCount()*stack.getCount() <= recipeOutput.getItem().getMaxCount()){
+               result.setCount(recipeOutput.getCount()*stack.getCount());
                if(inv.getOccupiedSlotWithRoomForStack(result) == -1 && inv.getEmptySlot() == -1) return null;
                
                player.addExperience(MathHelper.floor(recipe.getExperience()*stack.getCount()));
@@ -252,7 +253,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
    
                if(player instanceof ServerPlayerEntity serverPlayer){
                   PLAYER_DATA.get(serverPlayer).addXP(energyToConsume*4); // Add xp
-                  if(recipe.getOutput().isOf(Items.GLASS)) ArcanaAchievements.progress(serverPlayer,"glassblower",stack.getCount());
+                  if(recipeOutput.isOf(Items.GLASS)) ArcanaAchievements.progress(serverPlayer,"glassblower",stack.getCount());
                }
                return stack;
             }
@@ -325,7 +326,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          if(inCone(playerEntity,e.getEyePos())){
             if(!entity.isFireImmune()){
                entity.setOnFireFor((2*energy+60)/20);
-               entity.damage(new EntityDamageSource("player",playerEntity).setFire().setBypassesArmor(),cremation ? 5f : 2.5f);
+               entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 5f : 2.5f);
                if(entity instanceof MobEntity) ignited++;
             
                if(playerEntity instanceof ServerPlayerEntity serverPlayer){
@@ -424,7 +425,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          if(!entity.isFireImmune()){
             float dmg = (float) (Math.max(0,(1.2 - (entity.getPos().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(new EntityDamageSource("player",playerEntity).setFire().setBypassesArmor(),cremation ? 2*dmg : dmg);
+            entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
    
             PLAYER_DATA.get(player).addXP(5); // Add xp
          }
@@ -472,7 +473,7 @@ public class CindersCharm extends EnergyItem implements TickingItem, UsableItem,
          if(!entity.isFireImmune()){
             float dmg = (float) ((consumedEnergy/15.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(new EntityDamageSource("player",playerEntity).setFire().setBypassesArmor(),cremation ? 2*dmg : dmg);
+            entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
             
             PLAYER_DATA.get(player).addXP(5); // Add xp
             hits.add(entity);

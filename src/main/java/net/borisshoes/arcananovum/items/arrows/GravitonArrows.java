@@ -125,7 +125,7 @@ public class GravitonArrows extends RunicArrow {
       
       ParticleEffectUtils.gravitonArrowEmit(world,pos,entities);
       if(calls % 10 == 1){
-         SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS,.5f,1.6f);
+         SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS,.5f,1.6f);
       }
       
       if(calls < duration){

@@ -131,7 +131,7 @@ public class ConcussionArrows extends RunicArrow {
       }
       if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,"shock_awe");
       if(world instanceof ServerWorld serverWorld){
-         SoundUtils.playSound(world, new BlockPos(pos), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1, .8f);
+         SoundUtils.playSound(world, BlockPos.ofFloored(pos), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1, .8f);
          ParticleEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);
       }
    }

@@ -13,10 +13,11 @@ import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.block.TntBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
@@ -94,7 +95,7 @@ public class ArcaneFlakArrows extends RunicArrow {
             float damage = (float) MathHelper.clamp(arrow.getVelocity().length()*4,1,10);
             damage *= e.isOnGround() ? 0.5 : 3.5;
             damage *= e.distanceTo(arrow) > damageRange*.75 ? 0.5 : 1;
-            DamageSource source = arrow.getOwner() == null ? (new DamageSource("explosion.player")).setExplosive() : (new EntityDamageSource("explosion.player", arrow.getOwner())).setExplosive();
+            DamageSource source = arrow.getDamageSources().explosion(arrow,arrow.getOwner());
             e.damage(source,damage);
             if(e instanceof PhantomEntity && e.isDead()) deadPhantomCount++;
          }
@@ -106,7 +107,6 @@ public class ArcaneFlakArrows extends RunicArrow {
          SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS,1f,1f);
          SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,1f,1f);
       }
-      
       arrow.discard();
    }
    

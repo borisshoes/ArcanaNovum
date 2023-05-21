@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -10,8 +11,10 @@ import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
+import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -25,6 +28,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
+import net.minecraft.world.explosion.ExplosionBehavior;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,14 +85,16 @@ public class DetonationArrows extends RunicArrow {
    
    private void explode(PersistentProjectileEntity arrow, Vec3d pos, int blastLvl, int personLvl){
       double power = MathHelper.clamp(2*arrow.getVelocity().length(),1.5,8);
-      DamageSource source1 = DamageSource.GENERIC;
-      DamageSource source2 = DamageSource.GENERIC;
-      if(arrow.getOwner() instanceof ServerPlayerEntity player){
-         source1 = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows.Terrain"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
-         source2 = (new EntityDamageSource("explosion.player.ArcanaNovum.DetonationArrows.Damage"+blastLvl+"-"+personLvl, player)).setScaledWithDifficulty().setExplosive();
+      DamageSource source1 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_TERRAIN,arrow,arrow.getOwner());
+      DamageSource source2 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_DAMAGE,arrow,arrow.getOwner());
+      if(personLvl != 3){ // Terrain explosion except when personnel lvl 3
+         arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),false, World.ExplosionSourceType.TNT);
       }
-      if(personLvl < 3) arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),power > 7.5, World.ExplosionSourceType.TNT);
-      arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power/2.0),power > 7.5, World.ExplosionSourceType.NONE);
+      if(blastLvl != 3){ // Damage explosion except when blast lvl 3
+         arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power*0.75*(1+.33*personLvl)),false, World.ExplosionSourceType.NONE);
+      }
+      
+      
       
       arrow.discard();
    }

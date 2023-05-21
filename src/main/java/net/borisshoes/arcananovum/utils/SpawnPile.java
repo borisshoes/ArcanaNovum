@@ -96,7 +96,7 @@ public class SpawnPile {
    }
    
    public boolean isSafe(BlockView world, int maxY) {
-      BlockPos blockPos = new BlockPos(this.x, (double)(this.getY(world, maxY) - 1), this.z);
+      BlockPos blockPos = BlockPos.ofFloored(this.x, (double)(this.getY(world, maxY) - 1), this.z);
       BlockState blockState = world.getBlockState(blockPos);
       Material material = blockState.getMaterial();
       return blockPos.getY() < maxY && !material.isLiquid() && material != Material.FIRE;
@@ -122,7 +122,7 @@ public class SpawnPile {
             pile = new SpawnPile(x, z);
             tries++;
          }while(!pile.isSafe(world,128) && tries < 10000);
-         positions.add(new BlockPos(pile.x,pile.getY(world,128),pile.z));
+         positions.add(BlockPos.ofFloored(pile.x,pile.getY(world,128),pile.z));
       }
       return positions;
    }

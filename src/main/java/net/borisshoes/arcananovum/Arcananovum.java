@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -48,6 +49,7 @@ public class Arcananovum implements ModInitializer {
       ServerEntityEvents.ENTITY_LOAD.register(EntityLoadCallbacks::loadEntity);
       ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
       ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathCallback::afterRespawn);
+      ServerLifecycleEvents.SERVER_STARTING.register(ServerStartingCallback::serverStarting);
    
       logger.info("Arcana Surges Through The Server!");
    

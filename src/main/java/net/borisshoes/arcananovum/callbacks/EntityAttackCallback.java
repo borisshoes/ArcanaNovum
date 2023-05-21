@@ -53,7 +53,7 @@ public class EntityAttackCallback {
                   StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, (int)(dmg*20), (int)dmg, false, false, true);
                   living.addStatusEffect(slow);
                   playerEntity.addStatusEffect(slow);
-                  living.damage(DamageSource.player(playerEntity),dmg);
+                  living.damage(playerEntity.getDamageSources().playerAttack(playerEntity),dmg);
                   sojournerBoots.setEnergy(boots,0);
                   if(playerEntity instanceof ServerPlayerEntity player)
                      SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_IRON_GOLEM_HURT, .5f, .8f);

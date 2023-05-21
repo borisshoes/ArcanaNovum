@@ -128,7 +128,7 @@ public class SmokeArrows extends RunicArrow {
       
       if(arrow.getOwner() instanceof ServerPlayerEntity player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,"smoke_screen");
    
-      SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.PLAYERS,.5f,1);
+      SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.PLAYERS,.5f,1);
    
       if(calls < 20){
          Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {

@@ -17,6 +17,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
@@ -42,7 +43,7 @@ public class ItemEntityMixin {
       ItemEntity itemEntity = (ItemEntity) (Object) this;
       ItemStack stack = itemEntity.getStack();
       try{
-         if(source.isFire()){
+         if(source.isIn(DamageTypeTags.IS_FIRE)){
             if(MagicItemUtils.identifyItem(stack) instanceof FractalSponge sponge){
                String uuid = sponge.getCrafter(stack);
                ServerPlayerEntity player = itemEntity.getServer().getPlayerManager().getPlayer(UUID.fromString(uuid));

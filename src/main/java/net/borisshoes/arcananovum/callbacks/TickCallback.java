@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.items.core.MagicItems;
@@ -167,9 +168,7 @@ public class TickCallback {
          if((boolean) Arcananovum.config.getValue("doConcentrationDamage")){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
-            DamageSource concSource = new DamageSource("outOfWorld.ArcanaNovum.Concentration");
-            concSource.setBypassesArmor().setOutOfWorld();
-            player.damage(concSource, 8);
+            player.damage(ArcanaDamageTypes.of(player.getWorld(),ArcanaDamageTypes.CONCENTRATION), 8);
          }
          if(!player.isDead()){
             if(player.getHealth() <= 1.5f){

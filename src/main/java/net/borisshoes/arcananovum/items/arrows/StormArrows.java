@@ -22,10 +22,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.EnchantedBookItem;
@@ -124,7 +120,7 @@ public class StormArrows extends RunicArrow {
    
          if(shockLvl > 0 && world instanceof ServerWorld serverWorld){
             aftershockPulse(arrow,serverWorld,pos,shockLvl,0);
-            SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.2f,1f);
+            SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.2f,1f);
          }
       }
    }
@@ -149,14 +145,13 @@ public class StormArrows extends RunicArrow {
                   if(world instanceof ServerWorld serverWorld)
                      ParticleEffectUtils.line(serverWorld,null,lastHit.getPos().add(0,lastHit.getHeight()/2,0),e.getPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
                }
-               
-               DamageSource source = new EntityDamageSource("lightningBolt",arrow.getOwner());
+               DamageSource source = new DamageSource(entity.getDamageSources().lightningBolt().getTypeRegistryEntry(), arrow.getOwner(),arrow.getOwner());
                e.damage(source,6);
                hits.add(e);
             }
          }
       }
-      SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
+      SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
    }
    
    private void aftershockPulse(PersistentProjectileEntity arrow, ServerWorld world, Vec3d pos, int level, int calls){
@@ -168,7 +163,7 @@ public class StormArrows extends RunicArrow {
       List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.25*range*range && !(e instanceof PersistentProjectileEntity));
       for(Entity entity : entities){
          if(entity instanceof LivingEntity e){
-            DamageSource source = new EntityDamageSource("lightningBolt",arrow.getOwner());
+            DamageSource source = new DamageSource(entity.getDamageSources().lightningBolt().getTypeRegistryEntry(), arrow.getOwner(),arrow.getOwner());
             e.damage(source,dmg);
          }
       }
@@ -176,7 +171,7 @@ public class StormArrows extends RunicArrow {
       world.spawnParticles(ParticleTypes.WAX_OFF,pos.x,pos.y,pos.z,30,range,1,range,.1);
       
       if(calls % 2 == 0){
-         SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.PLAYERS,.07f,2f);
+         SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.PLAYERS,.07f,2f);
       }
       
       if(calls < duration/3){

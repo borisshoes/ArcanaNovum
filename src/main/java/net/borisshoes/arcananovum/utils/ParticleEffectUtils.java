@@ -264,7 +264,7 @@ public class ParticleEffectUtils {
    }
    
    public static void dowsingRodEmitter(ServerWorld world, Vec3d pos, int calls, int duration){
-      if(world.getBlockState(new BlockPos(pos)).getBlock() != Blocks.ANCIENT_DEBRIS) return;
+      if(world.getBlockState(BlockPos.ofFloored(pos)).getBlock() != Blocks.ANCIENT_DEBRIS) return;
       
       spawnLongParticle(world,ParticleTypes.FLAME,pos.x+0.5,pos.y+0.5,pos.z+0.5,.4,.4,.4,.05,3);
       
