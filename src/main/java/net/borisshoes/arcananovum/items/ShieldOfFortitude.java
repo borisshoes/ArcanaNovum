@@ -21,6 +21,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -118,7 +119,7 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem, Usabl
          }
          shieldTotal = Math.min(Math.min(absAmt,shieldTotal),50);
          if(shieldTotal >= 2){
-            living.damage(DamageSource.player(player).setUsesMagic(), shieldTotal);
+            living.damage(new DamageSource(living.getDamageSources().magic().getTypeRegistryEntry(),player,player), shieldTotal);
             if(shieldTotal >= 25){
                StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA, (120), 0, false, false, true);
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, (40), 4, false, false, true);

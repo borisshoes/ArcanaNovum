@@ -50,12 +50,14 @@ public class DragonLairActions {
    private ArrayList<Spike> spikes;
    private HashMap<Integer,ArrayList<BlockPos>> spikeBlocks;
    
+   private final EnderDragonEntity dragon;
    private final MinecraftServer server;
    private final ServerWorld endWorld;
    
-   public DragonLairActions(MinecraftServer server, ServerWorld endWorld){
+   public DragonLairActions(MinecraftServer server, ServerWorld endWorld, EnderDragonEntity dragon){
       this.server = server;
       this.endWorld = endWorld;
+      this.dragon = dragon;
    
       terrainTicks = 0;
       dimensionTicks = 0;
@@ -169,14 +171,14 @@ public class DragonLairActions {
                if(player.isBlocking() && (player.getMainHandStack().isOf(Items.SHIELD) || player.getOffHandStack().isOf(Items.SHIELD)) && player.getPitch() < -60){
                   player.disableShield(true);
                }else{
-                  player.damage(DamageSource.MAGIC,10);
+                  player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),10);
                }
                starHits.put(player.getUuidAsString(),10);
             }
             
          }
          stars.removeIf(star -> star.getY() < 0);
-         stars.removeIf(star -> endWorld.getBlockState(new BlockPos((int)(star.getX()+0.5),(int)(star.getY()),(int)(star.getZ()+0.5))).isOpaque());
+         stars.removeIf(star -> endWorld.getBlockState(BlockPos.ofFloored((int)(star.getX()+0.5),(int)(star.getY()),(int)(star.getZ()+0.5))).isOpaque());
    
          for(Map.Entry<String, Integer> hitPlayer : starHits.entrySet()){
             hitPlayer.setValue(hitPlayer.getValue()-1);

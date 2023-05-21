@@ -219,7 +219,6 @@ public class MagicItemUtils {
       return null;
    }
    
-   //TODO: Quiver Support + Better Scalable Nesting for future item holding items
    public static List<MagicInvItem> getMagicInventory(ServerPlayerEntity player){
       List<MagicInvItem> magicInv = new ArrayList<>();
       PlayerInventory inv = player.getInventory();

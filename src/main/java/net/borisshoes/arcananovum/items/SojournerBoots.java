@@ -18,6 +18,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.scoreboard.ScoreboardObjective;
@@ -34,9 +35,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.block.StairsBlock.HALF;
@@ -141,16 +140,16 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
                   Vec3d playerRot = player.getRotationVector();
                   Vec3d playerPos = player.getPos();
                   Vec3d vec3d3 = new Vec3d(playerRot.getX(),0,playerRot.getZ());
-                  BlockPos pos = new BlockPos(playerPos.add(vec3d3.normalize().multiply(0.45)));
+                  BlockPos pos = BlockPos.ofFloored(playerPos.add(vec3d3.normalize().multiply(0.45)));
                   double height = checkHeight(world,pos,playerPos.y);
-                  BlockPos aboveHeadPos = new BlockPos(playerPos.add(0,2.5,0));
+                  BlockPos aboveHeadPos = BlockPos.ofFloored(playerPos.add(0,2.5,0));
                   int hikingBonus = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"hiking_boots"));
                   
                   if(height > 0.5 && height < 1.3+hikingBonus && world.getBlockState(aboveHeadPos).isAir()){
-                     EnumSet<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
-                     set.add(PlayerPositionLookS2CPacket.Flag.X);
-                     set.add(PlayerPositionLookS2CPacket.Flag.Y);
-                     set.add(PlayerPositionLookS2CPacket.Flag.Z);
+                     Set<PositionFlag> set = new HashSet<>();
+                     set.add(PositionFlag.X);
+                     set.add(PositionFlag.Y);
+                     set.add(PositionFlag.Z);
                      
                      player.networkHandler.requestTeleport(playerPos.getX(), playerPos.getY()+height+0.1, playerPos.getZ(), player.getYaw(), player.getPitch(), set);
                      PLAYER_DATA.get(player).addXP(2); // Add xp

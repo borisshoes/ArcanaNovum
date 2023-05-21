@@ -42,7 +42,7 @@ public class PlayerEntityMixin {
       }
    }
    
-   @Inject(method = "getArrowType", at = @At(value="INVOKE",target="Lnet/minecraft/item/RangedWeaponItem;getProjectiles()Ljava/util/function/Predicate;", shift = At.Shift.BEFORE), cancellable = true)
+   @Inject(method = "getProjectileType", at = @At(value="INVOKE",target="Lnet/minecraft/item/RangedWeaponItem;getProjectiles()Ljava/util/function/Predicate;", shift = At.Shift.BEFORE), cancellable = true)
    private void arcananovum_quiverCheck(ItemStack stack, CallbackInfoReturnable<ItemStack> cir){
       PlayerEntity player = (PlayerEntity) (Object) this;
       // stack = bow

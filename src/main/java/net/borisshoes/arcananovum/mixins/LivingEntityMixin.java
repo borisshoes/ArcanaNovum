@@ -22,6 +22,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
@@ -33,6 +34,7 @@ import net.minecraft.item.Items;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -65,8 +67,6 @@ import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentIn
 public abstract class LivingEntityMixin {
    
    @Shadow protected abstract void playBlockFallSound();
-   
-   @Shadow protected abstract void playEquipSound(ItemStack stack);
    
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
@@ -174,14 +174,14 @@ public abstract class LivingEntityMixin {
    
       ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
       if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr wings){
-         boolean canReduce = source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL) || ArcanaAugments.getAugmentOnItem(chestItem,"scales_of_enderia") >= 1;
+         boolean canReduce = source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall") || ArcanaAugments.getAugmentOnItem(chestItem,"scales_of_enderia") >= 1;
          if(canReduce){
             int energy = wings.getEnergy(chestItem);
             double maxDmgReduction = reduced * .5;
             double dmgReduction = Math.min(energy / 100.0, maxDmgReduction);
             if(entity instanceof ServerPlayerEntity player){
                if(dmgReduction == maxDmgReduction || dmgReduction > 12){
-                  if(source.equals(DamageSource.FALL) || source.equals(DamageSource.FLY_INTO_WALL)){
+                  if(source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall")){
                      player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY, Formatting.ITALIC), true);
                   }
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, 1.3f);
@@ -193,7 +193,7 @@ public abstract class LivingEntityMixin {
                   }));
                }
                PLAYER_DATA.get(player).addXP((int) dmgReduction * 25); // Add xp
-               if(source.equals(DamageSource.FLY_INTO_WALL) && reduced > player.getHealth() && (reduced - dmgReduction) < player.getHealth())
+               if(source.getName().equals("flyIntoWall") && reduced > player.getHealth() && (reduced - dmgReduction) < player.getHealth())
                   ArcanaAchievements.grant(player, "see_glass");
             }
             wings.addEnergy(chestItem, (int) -dmgReduction * 100);
@@ -233,7 +233,7 @@ public abstract class LivingEntityMixin {
                continue; // Item not magic, skip
             MagicItem magicItem = MagicItemUtils.identifyItem(item);
          
-            if(magicItem instanceof FelidaeCharm && source.equals(DamageSource.FALL)){ // Felidae Charm
+            if(magicItem instanceof FelidaeCharm && source.isIn(DamageTypeTags.IS_FALL)){ // Felidae Charm
                int graceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"feline_grace"));
                float dmgMod = (float) (0.5 - 0.125*graceLvl);
                SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
@@ -257,7 +257,7 @@ public abstract class LivingEntityMixin {
                      newReturn = 0;
                   }
                }
-            }else if(magicItem instanceof CindersCharm cinders && source.isFire()){ // Cinders Charm Cremation
+            }else if(magicItem instanceof CindersCharm cinders && source.isIn(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
                boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"cremation")) >= 1;
                if(cremation){
                   float oldReturn = newReturn;
@@ -293,7 +293,7 @@ public abstract class LivingEntityMixin {
                if(activeAbilitiesTag.contains("reflective_armor")){
                   Entity attacker = source.getAttacker();
                   if(attacker != null){
-                     attacker.damage(DamageSource.thorns(entity), amount * 0.5f);
+                     attacker.damage(entity.getDamageSources().thorns(entity), amount * 0.5f);
                      NulConstructFight.conversionHeal(entity,amount*0.5f);
                   }
                }
@@ -303,14 +303,14 @@ public abstract class LivingEntityMixin {
                float scale = 2f/numPlayers;
                if(entity instanceof EnderDragonEntity){
                   newReturn *= scale; //Effective Health Scale to bypass 1024 hp cap
-                  if(source.isMagic() || source.isExplosive()) newReturn *= 0.25; // Reduce damage from magic and explosive sources
+                  if(source.isIn(DamageTypeTags.BYPASSES_ARMOR) || source.isIn(DamageTypeTags.IS_EXPLOSION)) newReturn *= 0.25; // Reduce damage from magic and explosive sources
                }else if(magicId.equals("boss_dragon_phantom")){
                   if(source.getAttacker() instanceof EnderDragonEntity) newReturn = 0;
-                  if(source.isMagic()) newReturn *= 0.25; // Reduce damage from magic sources and immune to the dragon
+                  if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)) newReturn *= 0.25; // Reduce damage from magic sources and immune to the dragon
                   newReturn *= scale;
                }else if(magicId.equals("boss_dragon_wizard")){
                   if(source.getAttacker() instanceof EnderDragonEntity) newReturn = 0;
-                  if(source.isMagic()) newReturn *= 0.25; // Reduce damage from magic sources and immune to the dragon
+                  if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)) newReturn *= 0.25; // Reduce damage from magic sources and immune to the dragon
                   newReturn *= scale;
                }
             }

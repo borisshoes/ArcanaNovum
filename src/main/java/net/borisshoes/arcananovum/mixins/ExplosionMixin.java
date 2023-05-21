@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.explosion.Explosion;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,21 +17,16 @@ public class ExplosionMixin {
    private boolean arcananovum_redirectDamage(Entity entity, DamageSource source, float amount){
       try{
          Explosion explosion = (Explosion) (Object) this;
-         String explosionName = explosion.getDamageSource().name;
-         if(explosionName.contains("explosion.player.ArcanaNovum.DetonationArrows.Terrain")){
-            return true; // Cancel all damage from terrain explosion
-         }else if(explosionName.contains("explosion.player.ArcanaNovum.DetonationArrows")){
-            int blastLvl = Integer.parseInt(""+explosionName.charAt(52)); // Char 52
-            int personLvl = Integer.parseInt(""+explosionName.charAt(54)); // Char 54
-            float dmgMod = (float) (1 + personLvl*.5 - blastLvl*.3);
-            float newDmg = amount * dmgMod;
-            
+         String explosionName = explosion.getDamageSource().getName();
+         if(explosionName.contains("arcananovum.detonationarrow_terrain")){
+            return true;
+         }else if(explosionName.contains("arcananovum.detonationarrow_damage")){
             if(entity instanceof ServerPlayerEntity hitPlayer){
-               newDmg /= 3;
+               float newDmg = amount / 3;
                Entity attacker = explosion.getDamageSource().getAttacker();
-               entity.damage((new EntityDamageSource("explosion.player", explosion.getDamageSource().getAttacker())).setScaledWithDifficulty().setExplosive(),newDmg);
+               entity.damage(source,newDmg);
                
-               if(attacker != null && hitPlayer.getUuid().equals(attacker.getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f) ArcanaAchievements.grant(hitPlayer,"safety_third");
+               if(attacker != null && hitPlayer.getUuid().equals(source.getSource().getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f) ArcanaAchievements.grant(hitPlayer,"safety_third");
                return true;
             }
          }

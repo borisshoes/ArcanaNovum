@@ -34,7 +34,7 @@ public class ServerPlayNetworkHandlerMixin {
    @Shadow
    public ServerPlayerEntity player;
    
-   @Inject(method = "onHandSwing", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V"))
+   @Inject(method = "onHandSwing", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V"))
    private void arcananovum_handSwing(HandSwingC2SPacket packet, CallbackInfo ci) {
       ItemStack bow = player.getStackInHand(Hand.MAIN_HAND);
       if(!bow.isOf(Items.BOW)) return;

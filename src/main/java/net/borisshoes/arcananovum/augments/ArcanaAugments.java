@@ -52,7 +52,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment BLAST_MINE = ArcanaAugments.register("blast_mine",
          new ArcanaAugment("Blast Mine", "blast_mine", new ItemStack(Items.COBBLESTONE), MagicItems.DETONATION_ARROWS,
-         new String[]{"Increases terrain and lowers mob damage","Higher levels amplify these effects","Mutually Exclusive with Anti-Personnel"},
+         new String[]{"Increases terrain and lowers mob damage","Final level grants no creature damage","Mutually Exclusive with Anti-Personnel"},
          new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED}
    ));
    

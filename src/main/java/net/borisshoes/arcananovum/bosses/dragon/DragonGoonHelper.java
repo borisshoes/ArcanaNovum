@@ -166,7 +166,7 @@ public class DragonGoonHelper {
                if(player != null){
                   double dist = player.getPos().distanceTo(this.getPos());
                   if(dist <= 15 && summonTick == summonCD){
-                     List<SkeletonEntity> skeles = world.getEntitiesByType(EntityType.SKELETON, new Box(new BlockPos(getX()-15,40,getZ()-15), new BlockPos(getX()+15,160,getZ()+15)), e -> true);
+                     List<SkeletonEntity> skeles = world.getEntitiesByType(EntityType.SKELETON, new Box(BlockPos.ofFloored(getX()-15,40,getZ()-15), BlockPos.ofFloored(getX()+15,160,getZ()+15)), e -> true);
                      if(skeles.size() < 8)
                         summonTick = 0;
                   }else if(dist <= 7 && pulseTick == pulseCD){
@@ -191,7 +191,7 @@ public class DragonGoonHelper {
             if(player != null){
                double dist = player.getPos().distanceTo(this.getPos());
                if(laserTick % 10 == 0){ // Damage every half second
-                  player.damage(DamageSource.MAGIC,1.25f);
+                  player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this,this),1.25f);
                }
                if(laserTick % 2 == 0){ // Particles every other tick
                   ParticleEffectUtils.line(endWorld,null,this.getPos(),player.getPos(),ParticleTypes.WITCH,(int)(dist*1.75),1,0.2,0);
@@ -230,7 +230,7 @@ public class DragonGoonHelper {
             if(pulseTick == 10){ // Actual pulse halfway thru animation
                List<ServerPlayerEntity> inRangePlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(getX()+.5,getY()-2,getZ()+.5)) <= 5.5*5.5);
                for(ServerPlayerEntity player : inRangePlayers){
-                  BlockPos target = new BlockPos(getX()+.5,getY()-2,getZ()+.5);
+                  BlockPos target = BlockPos.ofFloored(getX()+.5,getY()-2,getZ()+.5);
                   BlockPos playerPos = player.getBlockPos();
                   Vec3d vec = new Vec3d(target.getX()-playerPos.getX(),0,target.getZ()-playerPos.getZ());
                   vec = vec.normalize().multiply(3);

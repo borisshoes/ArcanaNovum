@@ -28,6 +28,7 @@ import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -121,7 +122,7 @@ public class NulConstructFight {
    
          boolean canCastNewAbility = construct.getInvulnerableTimer() <= 0 && castCD <= 0;
          if(canCastNewAbility){
-            if(recentDamage != null && recentDamage.name.equals("inWall") && availableAbilities.containsKey("necrotic_shroud")){
+            if(recentDamage != null && recentDamage.getName().equals("inWall") && availableAbilities.containsKey("necrotic_shroud")){
                castAbility(construct,magicEntity,"necrotic_shroud");
             }else if(availableAbilities.size() > 0){
                castAbility(construct,magicEntity,getWeightedResult(availableAbilities));
@@ -151,7 +152,8 @@ public class NulConstructFight {
             for(Entity entity1 : entities){
                if(!(entity1 instanceof LivingEntity living)) continue;;
                float dmg = living.getMaxHealth() / 10.0f;
-               living.damage(DamageSource.mob(construct).setBypassesArmor().setOutOfWorld(),dmg);
+               living.damage(new DamageSource(construct.getDamageSources().outOfWorld().getTypeRegistryEntry(), construct,construct),dmg);
+               
                if(conversionActive) conversionHeal(construct,dmg*0.5f)
                      ;
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS,10,1,false,true,true);
@@ -177,7 +179,7 @@ public class NulConstructFight {
    
             for(Entity hit : hits){
                if(hit instanceof LivingEntity living){
-                  living.damage(DamageSource.mob(construct).setBypassesArmor().setOutOfWorld(), damage);
+                  living.damage(new DamageSource(construct.getDamageSources().outOfWorld().getTypeRegistryEntry(), construct,construct), damage);
                   StatusEffectInstance wither = new StatusEffectInstance(StatusEffects.WITHER, 40, 1, false, true, true);
                   living.addStatusEffect(wither);
                   if(conversionActive) conversionHeal(construct, damage);
@@ -218,7 +220,7 @@ public class NulConstructFight {
             double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,3);
             Vec3d motion = diff.multiply(1,0,1).add(0,1,0).normalize().multiply(multiplier);
             entity1.setVelocity(motion.x,motion.y,motion.z);
-            entity1.damage(DamageSource.mob(construct),10f);
+            entity1.damage(construct.getDamageSources().mobAttack(construct),10f);
             if(conversionActive) conversionHeal(construct,10f);
             if(entity1 instanceof ServerPlayerEntity player) player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          }

@@ -17,7 +17,7 @@ public class DamageTrackerMixin {
 
    @Inject(method="getDeathMessage",at=@At(value="INVOKE",target="Lnet/minecraft/entity/damage/DamageRecord;getAttackerName()Lnet/minecraft/text/Text;"),cancellable = true,locals = LocalCapture.CAPTURE_FAILHARD)
    private void arcananovum_deathMessage(CallbackInfoReturnable<Text> cir, DamageRecord damageRecord, DamageRecord damageRecord2){
-      if(damageRecord2.getDamageSource().name.contains("ArcanaNovum.Concentration")){
+      if(damageRecord2.getDamageSource().getName().contains("arcananovum.concentration")){
          DamageTracker tracker = (DamageTracker)(Object)this;
          AbstractTeam abstractTeam = tracker.getEntity().getScoreboardTeam();
          Formatting playerColor = abstractTeam != null && abstractTeam.getColor() != null ? abstractTeam.getColor() : Formatting.LIGHT_PURPLE;
@@ -31,6 +31,14 @@ public class DamageTrackerMixin {
          final Text deathMsg = Text.literal("")
                .append(Text.literal(tracker.getEntity().getEntityName()).formatted(playerColor).formatted())
                .append(Text.literal(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.LIGHT_PURPLE));
+         cir.setReturnValue(deathMsg);
+      }else if(damageRecord2.getDamageSource().getName().contains("arcananovum.detonationarrow")){
+         DamageTracker tracker = (DamageTracker)(Object)this;
+         AbstractTeam abstractTeam = tracker.getEntity().getScoreboardTeam();
+         Formatting playerColor = abstractTeam != null && abstractTeam.getColor() != null ? abstractTeam.getColor() : Formatting.LIGHT_PURPLE;
+         final Text deathMsg = Text.literal("")
+               .append(Text.literal(tracker.getEntity().getEntityName()).formatted(playerColor).formatted())
+               .append(Text.literal(" was obliterated by a Detonation Arrow").formatted(Formatting.WHITE));
          cir.setReturnValue(deathMsg);
       }
    }

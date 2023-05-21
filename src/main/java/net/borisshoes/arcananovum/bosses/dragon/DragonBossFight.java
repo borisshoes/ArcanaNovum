@@ -246,7 +246,7 @@ public class DragonBossFight {
                   }
                }));
                dragonAbilities = new DragonAbilities(server,endWorld,dragon,crystals);
-               lairActions = new DragonLairActions(server,endWorld);
+               lairActions = new DragonLairActions(server,endWorld,dragon);
                phase1Notif = true;
             }
          }else if(state == States.PHASE_ONE){ // Tick guardian check, dragon invincibility
@@ -686,7 +686,7 @@ public class DragonBossFight {
          //Actual Knockback
          List<ServerPlayerEntity> inRangePlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5)) <= 5.5*5.5);
          for(ServerPlayerEntity player : inRangePlayers){
-            BlockPos target = new BlockPos(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5);
+            BlockPos target = BlockPos.ofFloored(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5);
             BlockPos playerPos = player.getBlockPos();
             Vec3d vec = new Vec3d(target.getX()-playerPos.getX(),0,target.getZ()-playerPos.getZ());
             vec = vec.normalize().multiply(3);
@@ -797,12 +797,12 @@ public class DragonBossFight {
    private static void resetTowers(ServerWorld endWorld){
       List<EndSpikeFeature.Spike> list = EndSpikeFeature.getSpikes(endWorld);
       for(EndSpikeFeature.Spike spike : list){
-         List<EndCrystalEntity> nearCrystals = endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(new BlockPos(spike.getCenterX()-10,0,spike.getCenterZ()-10), new BlockPos(spike.getCenterX()+10,255,spike.getCenterZ()+10)), EndCrystalEntity::shouldShowBottom);
+         List<EndCrystalEntity> nearCrystals = endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(BlockPos.ofFloored(spike.getCenterX()-10,0,spike.getCenterZ()-10), BlockPos.ofFloored(spike.getCenterX()+10,255,spike.getCenterZ()+10)), EndCrystalEntity::shouldShowBottom);
          for(EndCrystalEntity nearCrystal : nearCrystals){
             nearCrystal.kill();
          }
          
-         Iterator<BlockPos> var16 = BlockPos.iterate(new BlockPos(spike.getCenterX() - 10, spike.getHeight() - 10, spike.getCenterZ() - 10), new BlockPos(spike.getCenterX() + 10, spike.getHeight() + 10, spike.getCenterZ() + 10)).iterator();
+         Iterator<BlockPos> var16 = BlockPos.iterate(BlockPos.ofFloored(spike.getCenterX() - 10, spike.getHeight() - 10, spike.getCenterZ() - 10), BlockPos.ofFloored(spike.getCenterX() + 10, spike.getHeight() + 10, spike.getCenterZ() + 10)).iterator();
    
          while(var16.hasNext()) {
             BlockPos blockPos = var16.next();
@@ -812,7 +812,7 @@ public class DragonBossFight {
 
          endWorld.createExplosion((Entity)null, (double)((float)spike.getCenterX() + 0.5F), (double)spike.getHeight(), (double)((float)spike.getCenterZ() + 0.5F), 5.0F, World.ExplosionSourceType.NONE);
          EndSpikeFeatureConfig endSpikeFeatureConfig = new EndSpikeFeatureConfig(false, ImmutableList.of(spike), (BlockPos)null);
-         Feature.END_SPIKE.generateIfValid(endSpikeFeatureConfig, endWorld, endWorld.getChunkManager().getChunkGenerator(), Random.create(), new BlockPos(spike.getCenterX(), 45, spike.getCenterZ()));
+         Feature.END_SPIKE.generateIfValid(endSpikeFeatureConfig, endWorld, endWorld.getChunkManager().getChunkGenerator(), Random.create(), BlockPos.ofFloored(spike.getCenterX(), 45, spike.getCenterZ()));
       }
    }
    
@@ -1221,7 +1221,7 @@ public class DragonBossFight {
          
          List<ServerPlayerEntity> inRangePlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5)) <= 8.5*8.5);
          for(ServerPlayerEntity player : inRangePlayers){
-            BlockPos target = new BlockPos(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5);
+            BlockPos target = BlockPos.ofFloored(pos.getX()+.5,pos.getY()-1,pos.getZ()+.5);
             BlockPos playerPos = player.getBlockPos();
             Vec3d vec = new Vec3d(target.getX()-playerPos.getX(),0,target.getZ()-playerPos.getZ());
             vec = vec.normalize().multiply(5);
@@ -1234,7 +1234,7 @@ public class DragonBossFight {
          // Explosion Particles / Sounds
          endWorld.spawnParticles(ParticleTypes.EXPLOSION_EMITTER, pos.getX()+.5, pos.getY()-1, pos.getZ()+.5, 20, 2, 2, 2,0.5);
          // Tiered removal of obsidian
-         for(BlockPos block : BlockPos.iterateOutwards(new BlockPos(pos), 12, 12, 12)){
+         for(BlockPos block : BlockPos.iterateOutwards(BlockPos.ofFloored(pos), 12, 12, 12)){
             boolean destroy = true;
             double dist = Math.sqrt(block.getSquaredDistance(pos));
             if(!block.isWithinDistance(pos, 5)){
@@ -1271,14 +1271,14 @@ public class DragonBossFight {
             if(entity instanceof LivingEntity living){
                if(scoreboardPlayerScore != null)
                   scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + 50);
-               living.damage(DamageSource.player(player),5f);
+               living.damage(endWorld.getDamageSources().playerAttack(player),5f);
             }
          }
          if(distToLine(dragon.getPos(),player.getPos(),hit) < 10){
             float damage = 10f+dragon.getMaxHealth()/100;
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));
-            dragon.damage(DamageSource.player(player),damage);
+            dragon.damage(endWorld.getDamageSources().playerAttack(player),damage);
          }
       }
    

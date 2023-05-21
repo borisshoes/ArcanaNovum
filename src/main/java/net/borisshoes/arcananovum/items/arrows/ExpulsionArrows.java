@@ -114,10 +114,10 @@ public class ExpulsionArrows extends RunicArrow {
       
       if(calls % 5 == 0){
          ParticleEffectUtils.expulsionArrowEmit(world,pos,range,0);
-         SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.PLAYERS,.5f,.5f);
+         SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.PLAYERS,.5f,.5f);
       }
       if(calls % 10 == 1){
-         SoundUtils.playSound(world,new BlockPos(pos), SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM, SoundCategory.PLAYERS,.5f,.9f);
+         SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM, SoundCategory.PLAYERS,.5f,.9f);
       }
       
       if(calls < duration){
