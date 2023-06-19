@@ -48,7 +48,7 @@ public class EnderPearlEntityMixin {
                   player.addStatusEffect(regen);
                   player.addStatusEffect(resist);
    
-                  player.getWorld().spawnParticles(ParticleTypes.HAPPY_VILLAGER,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),10*reconstructLvl, .5,.5,.5,1);
+                  player.getWorld().spawnParticles(ParticleTypes.HAPPY_VILLAGER,pearlEntity.getX(),pearlEntity.getY()+player.getHeight()/2,pearlEntity.getZ(),10*reconstructLvl, .5,.5,.5,1);
                }
                break;
             }

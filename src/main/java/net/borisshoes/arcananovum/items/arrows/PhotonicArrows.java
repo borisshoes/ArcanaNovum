@@ -123,16 +123,15 @@ public class PhotonicArrows extends RunicArrow {
                endPoint = startPos.add(view.normalize().multiply(view.normalize().dotProduct(hitPlayer.getPos().subtract(startPos)))).subtract(view.normalize());
                
                //Activate Shield of Fortitude
-               ItemStack main = hitPlayer.getEquippedStack(EquipmentSlot.MAINHAND);
-               ItemStack off = hitPlayer.getEquippedStack(EquipmentSlot.OFFHAND);
-               MagicItem magic = null;
+               ItemStack activeItem = hitPlayer.getActiveItem();
+               MagicItem magic;
                ItemStack item = null;
-               if(MagicItemUtils.isMagic(main)){
-                  magic = MagicItemUtils.identifyItem(main);
-                  item = main;
-               }else if(MagicItemUtils.isMagic(off) && main.getItem() != Items.SHIELD){
-                  magic = MagicItemUtils.identifyItem(off);
-                  item = off;
+               
+               if(MagicItemUtils.isMagic(activeItem)){
+                  magic = MagicItemUtils.identifyItem(activeItem);
+                  item = activeItem;
+               }else{
+                  return;
                }
                if(magic instanceof ShieldOfFortitude shield){
                   float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shield_of_faith"));
@@ -151,7 +150,7 @@ public class PhotonicArrows extends RunicArrow {
          if(hit instanceof MobEntity mob && mob.isDead()){
             killCount++;
          }
-         bonusDmg += alignmentLvl;
+         bonusDmg = Math.min(25,bonusDmg + alignmentLvl);
          if(ignore) break;
       }
       if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,"x");

@@ -91,7 +91,7 @@ public class DetonationArrows extends RunicArrow {
          arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),false, World.ExplosionSourceType.TNT);
       }
       if(blastLvl != 3){ // Damage explosion except when blast lvl 3
-         arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power*0.75*(1+.33*personLvl)),false, World.ExplosionSourceType.NONE);
+         arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power*0.75*(1+.25*personLvl)),false, World.ExplosionSourceType.NONE);
       }
       
       

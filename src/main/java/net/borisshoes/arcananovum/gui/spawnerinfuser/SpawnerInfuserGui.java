@@ -76,7 +76,7 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       int[] clickable = {10,11,12,14,15,16,28,29,30,32,33,34};
       if(!Arrays.stream(clickable).boxed().toList().contains(index)) return true;
       if(getSlot(index).getItemStack().isOf(Items.STRUCTURE_VOID)){
-         SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
          return true;
       }
    

@@ -216,7 +216,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
             }
          }else{
             player.sendMessage(Text.literal("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
-            SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
+            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
          }
       }else if(player.isSneaking()){
          if(energy >= 20){
@@ -243,7 +243,7 @@ public class ShadowStalkersGlaive extends EnergyItem implements TickingItem, Usa
             return false;
          }else{
             player.sendMessage(Text.literal("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
-            SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1, 0.8f);
+            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
          }
       }
       

@@ -135,6 +135,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
       setRecipe(makeRecipe());
       tag = this.addMagicNbt(tag);
       tag.getCompound("arcananovum").putBoolean("active",false);
+      tag.getCompound("arcananovum").putInt("cooldown",0);
       prefNBT = tag;
       
       item.setNbt(prefNBT);
@@ -145,6 +146,8 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
    @Override
    public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack charm){
       int passiveRange = 5 + Math.max(0, ArcanaAugments.getAugmentOnItem(charm,"ferrite_core"));
+      NbtCompound magicTag = charm.getNbt().getCompound("arcananovum");
+      int cooldown = magicTag.getInt("cooldown");
       
       //log("Tick Check"+charm.getNbt().getCompound("arcananovum").getBoolean("active"));
       if(!player.isSneaking()){
@@ -165,6 +168,10 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
                item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
             }
          }
+      }
+      
+      if(world.getServer().getTicks() % 20 == 0){
+         if(cooldown > 0) magicTag.putInt("cooldown", cooldown - 1);
       }
    }
    
@@ -191,6 +198,13 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
    public void activeUse(ServerPlayerEntity player, World world, ItemStack charm){
       int activeLength = 15 + 3*Math.max(0, ArcanaAugments.getAugmentOnItem(charm,"electromagnet"));;
       int activeRange = 3;
+      NbtCompound magicTag = charm.getNbt().getCompound("arcananovum");
+      int cooldown = magicTag.getInt("cooldown");
+      if(cooldown != 0){
+         return;
+      }else{
+         magicTag.putInt("cooldown",1);
+      }
       
       Vec3d playerPos = player.getEyePos();
       Vec3d view = player.getRotationVecClient();
@@ -216,9 +230,11 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
          for(Entity entity : entities){
             LivingEntity e = (LivingEntity) entity;
             if(e instanceof ServerPlayerEntity hitPlayer){
-               hitPlayer.getItemCooldownManager().set(Items.SHIELD, 100);
-               hitPlayer.clearActiveItem();
-               hitPlayer.world.sendEntityStatus(hitPlayer, (byte)30);
+               if(hitPlayer.isBlocking()){
+                  hitPlayer.getItemCooldownManager().set(Items.SHIELD, 100);
+                  hitPlayer.clearActiveItem();
+                  hitPlayer.world.sendEntityStatus(hitPlayer, (byte)30);
+               }
             }else{
                HashMap<EquipmentSlot,ItemStack> equipment = new HashMap<>();
                ItemStack head = e.getEquippedStack(EquipmentSlot.HEAD);

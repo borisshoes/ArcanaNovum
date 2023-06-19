@@ -80,7 +80,7 @@ public class BlinkArrows extends RunicArrow {
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
          int phaseLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"phase_in"));
-         StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.RESISTANCE,phaseDur[phaseLvl], 4, false, false, true);
+         StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
          player.addStatusEffect(invuln);
       }
    }
@@ -96,7 +96,7 @@ public class BlinkArrows extends RunicArrow {
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
    
          int phaseLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"phase_in"));
-         StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.RESISTANCE,phaseDur[phaseLvl], 4, false, false, true);
+         StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
          player.addStatusEffect(invuln);
       }
    }

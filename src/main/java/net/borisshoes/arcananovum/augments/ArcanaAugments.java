@@ -33,7 +33,7 @@ public class ArcanaAugments {
    // Blink Arrows
    public static final ArcanaAugment PHASE_IN = ArcanaAugments.register("phase_in",
          new ArcanaAugment("Phase In", "phase_in", new ItemStack(Items.ENDER_PEARL), MagicItems.BLINK_ARROWS,
-         new String[]{"Grants brief invulnerability on teleport","Duration per level: 1/3/5 seconds"},
+         new String[]{"Grants brief resistance on teleport","Duration per level: 1/3/5 seconds"},
          new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED}
    ));
    

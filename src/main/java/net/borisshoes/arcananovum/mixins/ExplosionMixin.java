@@ -22,7 +22,7 @@ public class ExplosionMixin {
             return true;
          }else if(explosionName.contains("arcananovum.detonationarrow_damage")){
             if(entity instanceof ServerPlayerEntity hitPlayer){
-               float newDmg = amount / 3;
+               float newDmg = amount / 5;
                Entity attacker = explosion.getDamageSource().getAttacker();
                entity.damage(source,newDmg);
                

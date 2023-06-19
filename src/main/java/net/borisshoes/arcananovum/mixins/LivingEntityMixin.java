@@ -72,16 +72,13 @@ public abstract class LivingEntityMixin {
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
    private void arcananovum_shieldAbsorb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
       LivingEntity entity = (LivingEntity) (Object) this;
-      ItemStack main = entity.getEquippedStack(EquipmentSlot.MAINHAND);
-      ItemStack off = entity.getEquippedStack(EquipmentSlot.OFFHAND);
+      ItemStack activeItem = entity.getActiveItem();
       MagicItem magic;
       ItemStack item = null;
-      if(MagicItemUtils.isMagic(main)){
-         magic = MagicItemUtils.identifyItem(main);
-         item = main;
-      }else if(MagicItemUtils.isMagic(off) && main.getItem() != Items.SHIELD){
-         magic = MagicItemUtils.identifyItem(off);
-         item = off;
+      
+      if(MagicItemUtils.isMagic(activeItem)){
+         magic = MagicItemUtils.identifyItem(activeItem);
+         item = activeItem;
       }else{
          return;
       }
