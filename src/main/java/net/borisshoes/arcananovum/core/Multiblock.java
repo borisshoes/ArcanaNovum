@@ -27,7 +27,8 @@ import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
@@ -186,8 +187,8 @@ public class Multiblock {
             return null;
          }
          Path path = pathOptional.get().get();
-         File file = path.toFile();
-         NbtCompound compound = NbtIo.readCompressed(file);
+         InputStream in = Files.newInputStream(path);
+         NbtCompound compound = NbtIo.readCompressed(in);
          if(compound == null) return null;
          
          NbtList size = compound.getList("size", NbtElement.INT_TYPE);
