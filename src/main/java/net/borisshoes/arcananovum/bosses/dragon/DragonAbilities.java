@@ -10,13 +10,10 @@ import net.minecraft.entity.boss.dragon.phase.ChargingPlayerPhase;
 import net.minecraft.entity.boss.dragon.phase.PhaseManager;
 import net.minecraft.entity.boss.dragon.phase.PhaseType;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.WitchEntity;
-import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
@@ -33,7 +30,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.explosion.Explosion;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -169,12 +165,12 @@ public class DragonAbilities {
             double p = randomPlayer.getBodyY(0.5) - m;
             double q = randomPlayer.getZ() - n;
             if (!this.dragon.isSilent()) {
-               this.dragon.world.syncWorldEvent((PlayerEntity)null, 1017, this.dragon.getBlockPos(), 0);
+               this.dragon.getWorld().syncWorldEvent((PlayerEntity)null, 1017, this.dragon.getBlockPos(), 0);
             }
    
-            DragonFireballEntity dragonFireballEntity = new DragonFireballEntity(this.dragon.world, this.dragon, o, p, q);
+            DragonFireballEntity dragonFireballEntity = new DragonFireballEntity(this.dragon.getWorld(), this.dragon, o, p, q);
             dragonFireballEntity.refreshPositionAndAngles(l, m, n, 0.0F, 0.0F);
-            this.dragon.world.spawnEntity(dragonFireballEntity);
+            this.dragon.getWorld().spawnEntity(dragonFireballEntity);
          }
       }
       

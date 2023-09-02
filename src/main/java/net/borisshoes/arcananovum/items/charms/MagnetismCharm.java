@@ -2,17 +2,16 @@ package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.TickingItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.*;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,18 +19,18 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 
-public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem {
+public class MagnetismCharm extends MagicItem {
    
    private static final ArrayList<Item> NEODYMIUM_TARGETS = new ArrayList<>(Arrays.asList(
          Items.IRON_INGOT,
@@ -113,9 +112,11 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 2;
+      vanillaItem = Items.IRON_INGOT;
+      item = new MagnetismCharmItem(new FabricItemSettings().maxCount(1).fireproof());
    
-      ItemStack item = new ItemStack(Items.IRON_INGOT);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -134,75 +135,39 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = this.addMagicNbt(tag);
-      tag.getCompound("arcananovum").putBoolean("active",false);
+      tag.getCompound("arcananovum").putInt("mode",0); // 0 off, 1 attract, 2 repel
       tag.getCompound("arcananovum").putInt("cooldown",0);
+      tag.getCompound("arcananovum").put("filter",new NbtCompound());
       prefNBT = tag;
       
-      item.setNbt(prefNBT);
-      prefItem = item;
-   
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack charm){
-      int passiveRange = 5 + Math.max(0, ArcanaAugments.getAugmentOnItem(charm,"ferrite_core"));
-      NbtCompound magicTag = charm.getNbt().getCompound("arcananovum");
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       int cooldown = magicTag.getInt("cooldown");
-      
-      //log("Tick Check"+charm.getNbt().getCompound("arcananovum").getBoolean("active"));
-      if(!player.isSneaking()){
-         boolean active = charm.getNbt().getCompound("arcananovum").getBoolean("active");
-   
-         if(active && world.getServer().getTicks() % 6 == 0){
-            Vec3d playerPos = player.getEyePos();
-      
-            Box box = new Box(playerPos,playerPos).expand(passiveRange);
-            List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity) -> entity.getType() == EntityType.ITEM);
-      
-            for(ItemEntity item : items){
-               double x = playerPos.getX() - item.getX();
-               double y = playerPos.getY() - item.getY();
-               double z = playerPos.getZ() - item.getZ();
-               double speed = .06;
-               double heightMod = .04;
-               item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
-            }
-         }
-      }
-      
-      if(world.getServer().getTicks() % 20 == 0){
-         if(cooldown > 0) magicTag.putInt("cooldown", cooldown - 1);
-      }
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      if(playerEntity.isSneaking()){
-         toggleActive((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-      }else{
-         activeUse((ServerPlayerEntity) playerEntity, world, playerEntity.getStackInHand(hand));
-      }
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return !(entity instanceof IronGolemEntity);
+      int mode = magicTag.getInt("mode");
+      NbtCompound filter = magicTag.getCompound("filter");
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
+      newTag.getCompound("arcananovum").putInt("cooldown",cooldown);
+      newTag.getCompound("arcananovum").putInt("mode",mode);
+      newTag.getCompound("arcananovum").put("filter",filter);
+      stack.setNbt(newTag);
+      return stack;
    }
    
    public void activeUse(ServerPlayerEntity player, World world, ItemStack charm){
-      int activeLength = 15 + 3*Math.max(0, ArcanaAugments.getAugmentOnItem(charm,"electromagnet"));;
+      int activeLength = 15 + 3*Math.max(0, ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.ELECTROMAGNET.id));;
       int activeRange = 3;
       NbtCompound magicTag = charm.getNbt().getCompound("arcananovum");
       int cooldown = magicTag.getInt("cooldown");
       if(cooldown != 0){
          return;
       }else{
+         player.getItemCooldownManager().set(this.item,20);
          magicTag.putInt("cooldown",1);
       }
       
@@ -211,7 +176,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
       Vec3d rayEnd = playerPos.add(view.multiply(activeLength));
       
       Box box = new Box(playerPos,playerPos).expand(activeLength+activeRange);
-      List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange));
+      List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange) && canAffectItem(charm,entity.getStack().getItem()));
       SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_FOX_TELEPORT, 1,.9f);
    
       for(ItemEntity item : items){
@@ -223,9 +188,9 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
          item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
       }
       PLAYER_DATA.get(player).addXP(Math.min(10,2*items.size())); // Add xp
-      if(items.size() >= 25) ArcanaAchievements.grant(player,"magnets");
+      if(items.size() >= 25) ArcanaAchievements.grant(player,ArcanaAchievements.MAGNETS.id);
       
-      if(ArcanaAugments.getAugmentOnItem(charm,"neodymium") >= 1){
+      if(ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.NEODYMIUM.id) >= 1){
          List<Entity> entities = world.getOtherEntities(player, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange) && entity instanceof LivingEntity);
          for(Entity entity : entities){
             LivingEntity e = (LivingEntity) entity;
@@ -233,7 +198,7 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
                if(hitPlayer.isBlocking()){
                   hitPlayer.getItemCooldownManager().set(Items.SHIELD, 100);
                   hitPlayer.clearActiveItem();
-                  hitPlayer.world.sendEntityStatus(hitPlayer, (byte)30);
+                  hitPlayer.getWorld().sendEntityStatus(hitPlayer, (byte)30);
                }
             }else{
                HashMap<EquipmentSlot,ItemStack> equipment = new HashMap<>();
@@ -255,7 +220,15 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
                for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
                   ItemStack item = entry.getValue();
                   if(NEODYMIUM_TARGETS.contains(item.getItem())){
-                     e.dropStack(item);
+                     ItemEntity droppedItem = e.dropStack(item);
+                     if(droppedItem != null){
+                        double x = playerPos.getX() - droppedItem.getX();
+                        double y = playerPos.getY() - droppedItem.getY();
+                        double z = playerPos.getZ() - droppedItem.getZ();
+                        double speed = .1;
+                        double heightMod = .08;
+                        droppedItem.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+                     }
                      e.equipStack(entry.getKey(),ItemStack.EMPTY);
                   }
                }
@@ -269,19 +242,66 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
       return dist <= activeRange;
    }
    
-   public void toggleActive(ServerPlayerEntity player, ItemStack item){
+   public void toggleMode(ServerPlayerEntity player, ItemStack item){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      boolean active = !magicNbt.getBoolean("active");
-      magicNbt.putBoolean("active",active);
+      boolean canRepel = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.POLARITY_REVERSAL.id) >= 1;
+      int mode = (magicNbt.getInt("mode")+1) % (canRepel ? 3 : 2);
+      magicNbt.putInt("mode",mode);
       itemNbt.put("arcananovum",magicNbt);
-      item.setNbt(itemNbt);
-      if(active){
+      if(mode == 1){
          player.sendMessage(Text.translatable("The Charm's Pull Strengthens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,2f);
+      }else if(mode == 2){
+         player.sendMessage(Text.translatable("The Charm's Pull Reverses").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,1f);
       }else{
          player.sendMessage(Text.translatable("The Charm's Pull Weakens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, .3f,.5f);
+      }
+   }
+   
+   public boolean canAffectItem(ItemStack magnet, Item filterItem){
+      NbtCompound itemNbt = magnet.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtCompound filter = magicNbt.getCompound("filter");
+      String itemId = Registries.ITEM.getId(filterItem).toString();
+      
+      boolean hasWhitelist = filter.getKeys().stream().anyMatch(s -> filter.getInt(s) == 1);
+      int status = filter.getInt(itemId);
+      return (hasWhitelist && status == 1) || (!hasWhitelist && status != 2); // Allow if item is in whitelist, or item isn't blacklisted if no whitelist exist
+   }
+   
+   public void toggleFilterItem(ServerPlayerEntity player, ItemStack magnet, Item filterItem){
+      NbtCompound itemNbt = magnet.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtCompound filter = magicNbt.getCompound("filter");
+      String itemId = Registries.ITEM.getId(filterItem).toString();
+      
+      int itemStatus = 0; // 0 = nothing, 1 = whitelist, 2 = blacklist
+      if(filter.contains(itemId)){
+         itemStatus = filter.getInt(itemId);
+      }
+      itemStatus = (itemStatus+1) % 3;
+      
+      if(itemStatus == 0){
+         filter.remove(itemId);
+         player.sendMessage(Text.literal("")
+               .append(Text.literal("Removed ").formatted(Formatting.GRAY,Formatting.ITALIC))
+               .append(Text.translatable(filterItem.getTranslationKey()).formatted(Formatting.DARK_GRAY,Formatting.ITALIC))
+               .append(Text.literal(" from the filter").formatted(Formatting.GRAY,Formatting.ITALIC)),true);
+      }else if(itemStatus == 1){
+         filter.putInt(itemId, itemStatus);
+         player.sendMessage(Text.literal("")
+               .append(Text.literal("Whitelisted ").formatted(Formatting.GRAY,Formatting.ITALIC))
+               .append(Text.translatable(filterItem.getTranslationKey()).formatted(Formatting.DARK_GRAY,Formatting.ITALIC))
+               .append(Text.literal(" in the filter").formatted(Formatting.GRAY,Formatting.ITALIC)),true);
+      }else if(itemStatus == 2){
+         filter.putInt(itemId, itemStatus);
+         player.sendMessage(Text.literal("")
+               .append(Text.literal("Blacklisted ").formatted(Formatting.GRAY,Formatting.ITALIC))
+               .append(Text.translatable(filterItem.getTranslationKey()).formatted(Formatting.DARK_GRAY,Formatting.ITALIC))
+               .append(Text.literal(" from the filter").formatted(Formatting.GRAY,Formatting.ITALIC)),true);
       }
    }
    
@@ -307,5 +327,76 @@ public class MagnetismCharm extends MagicItem implements TickingItem, UsableItem
       list.add("{\"text\":\"  Charm of Magnetism\\n\\nRarity: Empowered\\n\\nMagnets, how do they work? Well, they pull stuff sometimes... \\nI think I can make one by condensing all the iron I can find and striking it with lightning to charge it, which will leave me with a permanent magnet.\"}");
       list.add("{\"text\":\"  Charm of Magnetism\\n\\nThe Charm can be toggled to passively pull in items around you.\\n\\nRight Clicking the charm pulls items from the direction you are looking towards you.\"}");
       return list;
+   }
+   
+   public class MagnetismCharmItem extends MagicPolymerItem {
+      public MagnetismCharmItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         int passiveRange = 5 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERRITE_CORE.id));
+         NbtCompound magicTag = stack.getNbt().getCompound("arcananovum");
+         int cooldown = magicTag.getInt("cooldown");
+         
+         if(!player.isSneaking()){
+            int mode = stack.getNbt().getCompound("arcananovum").getInt("mode");
+            
+            if(mode > 0 && world.getServer().getTicks() % 6 == 0){
+               Vec3d playerPos = player.getEyePos();
+               
+               Box box = new Box(playerPos,playerPos).expand(passiveRange);
+               List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (e) -> canAffectItem(stack,e.getStack().getItem()));
+               
+               for(ItemEntity item : items){
+                  double x = playerPos.getX() - item.getX();
+                  double y = playerPos.getY() - item.getY();
+                  double z = playerPos.getZ() - item.getZ();
+                  double speed = .06;
+                  double heightMod = .04;
+                  if(mode == 2){ // Repel items
+                     x = -x;
+                     z = -z;
+                  }
+                  item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+               }
+            }
+         }
+         
+         if(world.getServer().getTicks() % 20 == 0){
+            if(cooldown > 0) magicTag.putInt("cooldown", cooldown - 1);
+         }
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+         ItemStack stack = playerEntity.getStackInHand(hand);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         boolean canFilter = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FARADAY_CAGE.id) >= 1;
+         ItemStack offHand = playerEntity.getStackInHand(Hand.OFF_HAND);
+         
+         if(canFilter && hand == Hand.OFF_HAND){
+            NbtCompound itemNbt = stack.getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            magicNbt.put("filter",new NbtCompound());
+            player.sendMessage(Text.translatable("Filter Cleared").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 0.5f,1f);
+         }else if(canFilter && hand == Hand.MAIN_HAND && !offHand.isEmpty()){
+            toggleFilterItem(player,stack,offHand.getItem());
+         }else if(playerEntity.isSneaking()){
+            toggleMode((ServerPlayerEntity) playerEntity,stack);
+         }else{
+            activeUse((ServerPlayerEntity) playerEntity, world, stack);
+         }
+         return TypedActionResult.success(stack);
+      }
    }
 }

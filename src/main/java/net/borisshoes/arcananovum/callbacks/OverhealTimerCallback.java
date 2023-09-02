@@ -2,11 +2,8 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class OverhealTimerCallback  extends TickTimerCallback{
    private final float hearts;

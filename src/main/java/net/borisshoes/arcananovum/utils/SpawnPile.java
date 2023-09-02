@@ -1,7 +1,10 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -98,8 +101,9 @@ public class SpawnPile {
    public boolean isSafe(BlockView world, int maxY) {
       BlockPos blockPos = BlockPos.ofFloored(this.x, (double)(this.getY(world, maxY) - 1), this.z);
       BlockState blockState = world.getBlockState(blockPos);
-      Material material = blockState.getMaterial();
-      return blockPos.getY() < maxY && !material.isLiquid() && material != Material.FIRE;
+      FluidState fluidState = world.getFluidState(blockPos);
+      boolean invalid = blockState.isOf(Blocks.WITHER_ROSE) || blockState.isOf(Blocks.SWEET_BERRY_BUSH) || blockState.isOf(Blocks.CACTUS) || blockState.isOf(Blocks.POWDER_SNOW) || blockState.isIn(BlockTags.PREVENT_MOB_SPAWNING_INSIDE) || LandPathNodeMaker.inflictsFireDamage(blockState);
+      return blockPos.getY() < maxY && fluidState.isEmpty() && !invalid;
    }
    
    public void setPileLocation(Random random, double minX, double minZ, double maxX, double maxZ) {
@@ -110,8 +114,12 @@ public class SpawnPile {
    public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerWorld world){
       return makeSpawnLocations(num,range,world,new BlockPos(0,0,0));
    }
-   
+
    public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerWorld world, BlockPos center){
+      return makeSpawnLocations(num,range,128,world,center);
+   }
+   
+   public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, int maxY, ServerWorld world, BlockPos center){
       ArrayList<BlockPos> positions = new ArrayList<>();
       for(int i = 0; i < num; i++){
          SpawnPile pile;
@@ -121,8 +129,8 @@ public class SpawnPile {
             int z = center.getZ() + (int) (Math.random() * range * 2 - range);
             pile = new SpawnPile(x, z);
             tries++;
-         }while(!pile.isSafe(world,128) && tries < 10000);
-         positions.add(BlockPos.ofFloored(pile.x,pile.getY(world,128),pile.z));
+         }while(!pile.isSafe(world,maxY) && tries < 10000);
+         positions.add(BlockPos.ofFloored(pile.x,pile.getY(world,maxY),pile.z));
       }
       return positions;
    }

@@ -1,14 +1,9 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.ai.goals.FleeFelidaeCharmGoal;
-import net.minecraft.command.EntitySelector;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.FleeEntityGoal;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.CatEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;

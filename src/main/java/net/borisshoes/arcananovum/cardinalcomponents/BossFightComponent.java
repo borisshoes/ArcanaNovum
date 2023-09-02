@@ -1,13 +1,8 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
 import net.borisshoes.arcananovum.bosses.BossFights;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Pair;
-
-import static net.borisshoes.arcananovum.Arcananovum.log;
 
 public class BossFightComponent implements IBossFightComponent{
    public Pair<BossFights,NbtCompound> bossFight;

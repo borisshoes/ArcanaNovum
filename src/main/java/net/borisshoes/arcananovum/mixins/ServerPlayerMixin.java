@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.packet.s2c.play.PlayerAbilitiesS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;

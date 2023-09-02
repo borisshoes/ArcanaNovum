@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.items.core.LeftClickItem;
+import net.borisshoes.arcananovum.core.LeftClickItem;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;

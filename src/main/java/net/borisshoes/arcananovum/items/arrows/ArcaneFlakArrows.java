@@ -2,21 +2,21 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.block.TntBlock;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -32,6 +32,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,9 +46,11 @@ public class ArcaneFlakArrows extends RunicArrow {
       name = "Arcane Flak Arrows";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new ArcaneFlakArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -63,26 +66,26 @@ public class ArcaneFlakArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",7802273);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
-      double radius = 4 + 1.25*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"airburst"));
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
+      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST.id);
       detonate(arrow,radius);
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
-      double radius = 4 + 1.25*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"airburst"));
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
+      double radius = 4 + 1.25*arrow.getAugment(ArcanaAugments.AIRBURST.id);
       detonate(arrow,radius);
    }
    
@@ -93,14 +96,14 @@ public class ArcaneFlakArrows extends RunicArrow {
       for(Entity entity : triggerTargets){
          if(entity instanceof LivingEntity e){
             float damage = (float) MathHelper.clamp(arrow.getVelocity().length()*4,1,10);
-            damage *= e.isOnGround() ? 0.5 : 3.5;
-            damage *= e.distanceTo(arrow) > damageRange*.75 ? 0.5 : 1;
+            damage *= (e.isOnGround() ? 0.5f : 3.5f);
+            damage *= e.distanceTo(arrow) > damageRange*.75 ? 0.5f : 1;
             DamageSource source = arrow.getDamageSources().explosion(arrow,arrow.getOwner());
             e.damage(source,damage);
             if(e instanceof PhantomEntity && e.isDead()) deadPhantomCount++;
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,"aa_artillery");
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,ArcanaAchievements.AA_ARTILLERY.id);
    
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          ParticleEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getPos(),damageRange,0);
@@ -116,7 +119,7 @@ public class ArcaneFlakArrows extends RunicArrow {
       MagicItemIngredient g = new MagicItemIngredient(Items.TNT,64,null);
       MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
       MagicItemIngredient k = new MagicItemIngredient(Items.GLOWSTONE_DUST,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -124,12 +127,28 @@ public class ArcaneFlakArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\" Arcane Flak Arrows\\n\\nRarity: Exotic\\n\\nPhantoms... Scourges of the night sky. I shall create a weapon that strikes fear into their undead hearts.\\nThese arrows detonate when near flying creatures doing massive bonus damage in a brilliant display.\"}");
       return list;
+   }
+   
+   public class ArcaneFlakArrowsItem extends MagicPolymerArrowItem {
+      public ArcaneFlakArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      @Override
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player){
+         return super.getPolymerItemStack(itemStack, context, player);
+      }
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

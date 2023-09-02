@@ -3,18 +3,19 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -50,9 +51,11 @@ public class GravitonArrows extends RunicArrow {
       name = "Graviton Arrows";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new GravitonArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -68,31 +71,31 @@ public class GravitonArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",869887);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20);// Measured in quarter seconds
-         double range = 3 + Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"gravity_well"));;
+         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
          gravitonPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         double range = 3 + Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"gravity_well"));;
+         double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
          gravitonPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);
       }
    }
@@ -121,7 +124,7 @@ public class GravitonArrows extends RunicArrow {
             e.addStatusEffect(slowness);
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,"bring_together");
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.BRING_TOGETHER.id);
       
       ParticleEffectUtils.gravitonArrowEmit(world,pos,entities);
       if(calls % 10 == 1){
@@ -144,7 +147,7 @@ public class GravitonArrows extends RunicArrow {
       MagicItemIngredient g = new MagicItemIngredient(Items.COBWEB,64,null);
       MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
       MagicItemIngredient k = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -152,12 +155,25 @@ public class GravitonArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Graviton Arrows\\n\\nRarity: Exotic\\n\\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.\"}");
       return list;
+   }
+   
+   public class GravitonArrowsItem extends MagicPolymerArrowItem {
+      public GravitonArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

@@ -3,26 +3,27 @@ package net.borisshoes.arcananovum.items;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.EnergyItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventory;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
-import net.borisshoes.arcananovum.items.core.EnergyItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.TickingItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
-import net.borisshoes.arcananovum.recipes.ShulkerCoreIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ShulkerCoreIngredient;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.util.NbtType;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -39,30 +40,30 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class LevitationHarness extends EnergyItem implements UsableItem, TickingItem {
+public class LevitationHarness extends EnergyItem {
    
-   private static final double[] efficiencyChance = {0,.05,.1,.15,.25,.5};
+   private static final double[] efficiencyChance = {0,.1,.25,.5};
    
    public LevitationHarness(){
       id = "levitation_harness";
       name = "Levitation Harness";
       rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARMOR};
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
       initEnergy = 3600; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
       itemVersion = 1;
+      vanillaItem = Items.LEATHER_CHESTPLATE;
+      item = new LevitationHarnessItem(new FabricItemSettings().maxCount(1).fireproof());
    
-      ItemStack item = new ItemStack(Items.LEATHER_CHESTPLATE);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -90,7 +91,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.put("AttributeModifiers",attributes);
-      tag.putInt("HideFlags",103);
+      tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
@@ -102,8 +103,8 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       magicTag.putInt("stall",-1);
       magicTag.putBoolean("wasFlying",false);
       prefNBT = tag;
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
@@ -135,7 +136,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
    
    public void redoLore(ItemStack stack){
       NbtCompound itemNbt = stack.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
       String duration = getDuration(stack);
       loreList.set(6,NbtString.of("[{\"text\":\"Flight Duration \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"- \",\"color\":\"white\"},{\"text\":\""+duration+"\",\"color\":\"yellow\"}]"));
    }
@@ -206,65 +207,6 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
       magicTag.putInt("stall",seconds);
    }
    
-   @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      boolean chestItem = ItemStack.areNbtEqual(player.getEquippedStack(EquipmentSlot.CHEST),item);
-      boolean survival = !(player.isCreative() || player.isSpectator());
-      boolean flying = player.getAbilities().flying;
-      boolean wasFlying = magicTag.getBoolean("wasFlying");
-   
-      int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"harness_recycler"));
-      
-      if(world.getServer().getTicks() % 20 == 0){
-         if(chestItem && flying && survival){
-            if(Math.random() >= efficiencyChance[efficiency]) addEnergy(item,-1);
-            
-            ArcanaAchievements.progress(player,"frequent_flier",1);
-            if(player.getY() >= 1000) ArcanaAchievements.grant(player,"to_the_moon");
-            
-            if(getEnergy(item) % 60 == 0){
-               int souls = magicTag.getInt("souls");
-               int glowstone = magicTag.getInt("glowstone");
-               magicTag.putInt("souls",souls-1);
-               magicTag.putInt("glowstone",glowstone-16);
-            }
-            ParticleEffectUtils.harnessFly(world,player,10);
-            PLAYER_DATA.get(player).addXP(25);
-            redoLore(item);
-   
-            if(world.getServer().getTicks() % 120 == 0){
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_AMBIENT,1f,0.8f);
-            }
-         }
-         int stall = magicTag.getInt("stall");
-         if(stall > 0){
-            if(stall == 1){
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_POWER_SELECT,0.5f,1.6f);
-               player.sendMessage(Text.translatable("Your Harness Reboots").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-               magicTag.putInt("stall",-1);
-            }else{
-               magicTag.putInt("stall",stall-1);
-            }
-         }
-      }
-      
-      if(!chestItem && wasFlying){
-         magicTag.putBoolean("wasFlying",false);
-      }else if(chestItem && survival){
-         if(wasFlying && !flying){
-            // Deactivate sound
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE,0.5f,0.9f);
-            magicTag.putBoolean("wasFlying",false);
-         }else if(!wasFlying && flying){
-            // Activate Sound
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE,0.5f,1.7f);
-            magicTag.putBoolean("wasFlying",true);
-         }
-      }
-   }
-   
    public void buildGui(ItemStack item, LevitationHarnessGui gui){
       int souls = getSouls(item);
       int glow = getGlow(item);
@@ -309,7 +251,7 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
          NbtCompound stoneData = magicTag.getCompound("stoneData");
          ItemStack stone;
          if(stoneData == null || stoneData.isEmpty()){
-            stone = Soulstone.setType(MagicItems.SOULSTONE.getNewItem(), EntityType.SHULKER);
+            stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
          }else{
             stone = ItemStack.fromNbt(stoneData);
          }
@@ -326,27 +268,6 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
    }
    
    @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      if(playerEntity.isSneaking()){
-         ItemStack item = playerEntity.getStackInHand(hand);
-         openGui(playerEntity,item);
-         return false;
-      }else{
-         return true;
-      }
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      return true;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
-   }
-   
-   @Override
    public ItemStack forgeItem(Inventory inv){
       // Souls n stuff
       ItemStack coreStack = inv.getStack(12); // Should be the Core
@@ -355,7 +276,13 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
          newMagicItem = getNewItem();
          setStone(newMagicItem,core.getStone(coreStack));
          redoLore(newMagicItem);
+         
+         int o = ArcanaAugments.getAugmentOnItem(coreStack, ArcanaAugments.SHULKER_RECYCLER.id);
+         if(o > 0){
+            ArcanaAugments.applyAugment(newMagicItem, ArcanaAugments.HARNESS_RECYCLER.id, o);
+         }
       }
+      
       return newMagicItem;
    }
    
@@ -373,14 +300,97 @@ public class LevitationHarness extends EnergyItem implements UsableItem, Ticking
             {s,i,c,i,s},
             {e,n,i,n,e},
             {o,e,s,e,o}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil().withEnchanter().withCore().withSingularity());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"  Levitation Harness\\n\\nRarity: Legendary\\n\\nThe sheer amount of effort and research that has gone into this is incomparable. A crowning achievement to be sure. The ability to fly freely through the sky is at my command, albeit fueled by innocent souls. \"}");
-      list.add("{\"text\":\"  Levitation Harness\\n\\nGlowstone was an\\nadequate moderator for the Shulker Core but now it is an absolute neccessity that is consumed in large quantities to stabilize the flight reaction. Even with more Glowstone, the reaction is incredibly sensitive to damage.\"}");
-      list.add("{\"text\":\"  Levitation Harness\\n\\nWearing the Harness like a chestpiece grants creative flight. Although the Harness provides no armor value and taking even the slightest bump while in flight will destabilize the flight process. The harness then needs a couple seconds to reactivate.\"}");
+      list.add("{\"text\":\"  Levitation Harness\\n\\nGlowstone was an\\nadequate moderator for the Shulker Core but now it is an absolute necessity that is consumed in large quantities to stabilize the flight reaction. Even with more Glowstone, the reaction is incredibly sensitive to damage.\"}");
+      list.add("{\"text\":\"  Levitation Harness\\n\\nWearing the Harness like a chestplate grants creative flight. Although the Harness provides no armor value and taking even the slightest bump while in flight will destabilize the flight process. The harness then needs a couple seconds to reactivate.\"}");
       return list;
+   }
+   
+   public class LevitationHarnessItem extends MagicPolymerArmorItem implements DyeableItem {
+      public LevitationHarnessItem(Settings settings){
+         super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL,Type.CHESTPLATE,settings);
+      }
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
+         NbtCompound itemNbt = stack.getNbt();
+         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+         boolean chestItem = ItemStack.canCombine(player.getEquippedStack(EquipmentSlot.CHEST),stack);
+         boolean survival = !(player.isCreative() || player.isSpectator());
+         boolean flying = player.getAbilities().flying;
+         boolean wasFlying = magicTag.getBoolean("wasFlying");
+         
+         int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,"harness_recycler"));
+         
+         if(world.getServer().getTicks() % 20 == 0){
+            if(chestItem && flying && survival){
+               if(Math.random() >= efficiencyChance[efficiency]) addEnergy(stack,-1);
+               
+               ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER.id,1);
+               if(player.getY() >= 1000) ArcanaAchievements.grant(player,ArcanaAchievements.TO_THE_MOON.id);
+               
+               if(getEnergy(stack) % 60 == 0){
+                  int souls = magicTag.getInt("souls");
+                  int glowstone = magicTag.getInt("glowstone");
+                  magicTag.putInt("souls",souls-1);
+                  magicTag.putInt("glowstone",glowstone-16);
+               }
+               ParticleEffectUtils.harnessFly(serverWorld,player,10);
+               PLAYER_DATA.get(player).addXP(25);
+               redoLore(stack);
+               
+               if(world.getServer().getTicks() % 120 == 0){
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_AMBIENT,1f,0.8f);
+               }
+            }
+            int stall = magicTag.getInt("stall");
+            if(stall > 0){
+               if(stall == 1){
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_POWER_SELECT,0.5f,1.6f);
+                  player.sendMessage(Text.translatable("Your Harness Reboots").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+                  magicTag.putInt("stall",-1);
+               }else{
+                  magicTag.putInt("stall",stall-1);
+               }
+            }
+         }
+         
+         if(!chestItem && wasFlying){
+            magicTag.putBoolean("wasFlying",false);
+         }else if(chestItem && survival){
+            if(wasFlying && !flying){
+               // Deactivate sound
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE,0.5f,0.9f);
+               magicTag.putBoolean("wasFlying",false);
+            }else if(!wasFlying && flying){
+               // Activate Sound
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE,0.5f,1.7f);
+               magicTag.putBoolean("wasFlying",true);
+            }
+         }
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+         if(playerEntity.isSneaking()){
+            ItemStack item = playerEntity.getStackInHand(hand);
+            openGui(playerEntity,item);
+            return TypedActionResult.success(item);
+         }else{
+            return super.use(world, playerEntity, hand);
+         }
+      }
    }
 }

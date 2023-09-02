@@ -10,16 +10,23 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.player.*;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
@@ -29,17 +36,19 @@ public class Arcananovum implements ModInitializer {
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
    public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
+   public static final ArrayList<Pair<ServerWorld,BlockPos>> ACTIVE_ANCHORS = new ArrayList<>();
    public static final boolean devMode = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
+   public static final String MOD_ID = "arcananovum";
    public static ConfigUtils config;
    
    @Override
    public void onInitialize(){
       ServerTickEvents.END_WORLD_TICK.register(WorldTickCallback::onWorldTick);
       ServerTickEvents.END_SERVER_TICK.register(TickCallback::onTick);
-      UseItemCallback.EVENT.register(ItemUseCallback::useItem);
+      //UseItemCallback.EVENT.register(ItemUseCallback::useItem);
       UseEntityCallback.EVENT.register(EntityUseCallback::useEntity);
-      UseBlockCallback.EVENT.register(BlockUseCallback::useBlock);
+      //UseBlockCallback.EVENT.register(BlockUseCallback::useBlock);
       AttackBlockCallback.EVENT.register(BlockAttackCallback::attackBlock);
       PlayerBlockBreakEvents.BEFORE.register(BlockBreakCallback::breakBlock);
       ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(EntityKilledCallback::killedEntity);
@@ -50,9 +59,11 @@ public class Arcananovum implements ModInitializer {
       ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
       ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathCallback::afterRespawn);
       ServerLifecycleEvents.SERVER_STARTING.register(ServerStartingCallback::serverStarting);
-   
+      
+      ArcanaRegistry.initialize();
+
       logger.info("Arcana Surges Through The Server!");
-   
+      
       config = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, Arrays.asList(new ConfigUtils.IConfigValue[] {
             new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true,
                   new ConfigUtils.Command("Do Concentration Damage is %s", "Do Concentration Damage is now %s")),
@@ -71,6 +82,25 @@ public class Arcananovum implements ModInitializer {
    
    public static boolean addLoginCallback(LoginCallback callback){
       return LOGIN_CALLBACK_LIST.get(callback.getWorld()).addCallback(callback);
+   }
+   
+   public static boolean addActiveAnchor(ServerWorld world, BlockPos pos){
+      return ACTIVE_ANCHORS.add(new Pair<>(world,pos));
+   }
+   
+   public static boolean removeActiveAnchor(ServerWorld targetWorld, BlockPos pos){
+      Iterator<Pair<ServerWorld,BlockPos>> iter = Arcananovum.ACTIVE_ANCHORS.iterator();
+      boolean found = false;
+      while(iter.hasNext()){
+         Pair<ServerWorld,BlockPos> pair = iter.next();
+         BlockPos anchorPos = pair.getRight();
+         ServerWorld world = pair.getLeft();
+         if(anchorPos.getX() == pos.getX() && anchorPos.getX() == pos.getX() && anchorPos.getX() == pos.getX() && targetWorld.getRegistryKey().getValue().equals(world.getRegistryKey().getValue())){
+            iter.remove();
+            found = true;
+         }
+      }
+      return found;
    }
    
    public static void devPrint(String msg){

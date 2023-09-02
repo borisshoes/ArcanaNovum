@@ -1,29 +1,323 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.Arcananovum;
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SculkShriekerBlock;
-import net.minecraft.client.particle.FireworksSparkParticle;
-import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
-import net.minecraft.particle.*;
+import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.particle.ShriekParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.*;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimerTask;
 
 public class ParticleEffectUtils {
+   
+   public static void craftForge(ServerWorld world, BlockPos pos, int tick){
+      Vec3d center = pos.toCenterPos();
+      if(tick == 100){
+         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y,center.z,3,0.4,0.4,0.4,0);
+         world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,center.x,center.y,center.z,25,0.6,0.8,0.6,0);
+         SoundUtils.playSound(world,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.BLOCKS, 2, 0.8f);
+      }else{
+         world.spawnParticles(ParticleTypes.END_ROD,center.x,center.y,center.z,1,0.6,0.8,0.6,0);
+         world.spawnParticles(ParticleTypes.WITCH,center.x,center.y,center.z,1,0.6,0.8,0.6,0);
+      }
+   }
+   
+   public static void stormcallerAltarAnim(ServerWorld world, Vec3d center, int tick){
+      double or = 5*(1-tick/100.0);
+      double inter = 0.15;
+      int num = 5;
+      double theta = (0.001885*tick*tick); // Magic quadratic value (sets theta to 6pi at tick 100)
+      double dt = Math.PI*2 * 0.05;
+      int times = 3;
+      for(int i = 0; i < num; i++){
+         double r = or - (i*inter);
+         if(r <= 0) break;
+         
+         double dA = Math.PI * 2 / times;
+         for(int j = 0; j < times; j++){
+            double angle = dA * j + (theta + dt*i);
+            double x = r * Math.cos(angle) + center.x;
+            double z = r * Math.sin(angle) + center.z;
+            double y = center.y + 0.6;
+            
+            world.spawnParticles(ParticleTypes.FISHING,x,y,z,3,0,0,0,0.01);
+            world.spawnParticles(ParticleTypes.FALLING_WATER,x,y,z,1,0,0,0,0.01);
+         }
+      }
+      
+      for(int i = 0; i < 2; i++){
+         double angle = Math.random()*Math.PI*2;
+         double r = Math.random()*1+3;
+         double x = r * Math.cos(angle) + center.x;
+         double z = r * Math.sin(angle) + center.z;
+         double y = center.y + 4.5;
+         
+         world.spawnParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,x,y,z,2,0.2,0.2,0.2,0.002);
+         world.spawnParticles(ParticleTypes.FALLING_WATER,x,y,z,5,0.3,0.3,0.3,1);
+      }
+      for(int i = 0; i < 5; i++){
+         double angle = Math.random()*Math.PI*2;
+         double r = Math.random()*1+3;
+         double x = r * Math.cos(angle) + center.x;
+         double z = r * Math.sin(angle) + center.z;
+         double y = center.y + 4.5;
+         
+         world.spawnParticles(ParticleTypes.CLOUD,x,y,z,4,0.2,0.2,0.2,0.002);
+         world.spawnParticles(ParticleTypes.FALLING_WATER,x,y,z,3,0.3,0.3,0.3,1);
+      }
+      
+      if(tick < 100){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               stormcallerAltarAnim(world,center,tick+1);
+            }
+         }));
+      }else{
+         LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, world);
+         lightning.setPosition(center);
+         world.spawnEntity(lightning);
+      }
+   }
+   
+   public static void celestialAltarAnim(ServerWorld world, Vec3d center, int tick, Direction direction){
+      if(tick == 0){
+         SoundUtils.playSound(world,BlockPos.ofFloored(center), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.BLOCKS, 2, 0.5f);
+      }
+      
+      double phi = Math.PI * (3 - Math.sqrt(5));
+      double theta = 2*Math.PI / 100 * tick;
+      int points = 100;
+      ParticleEffect black = new DustParticleEffect(Vec3d.unpackRgb(0x000000).toVector3f(),2.0f);
+      double blackDelta = tick < 100 || tick > 400 ? 0.05 : 0.4;
+      int blackCount = tick < 100 || tick > 400 ? 1 : 4;
+      
+      for(int i = 0; i < points; i++){
+         // Fibonacci Sphere Equations
+         double y = (i / (double)(points-1));
+         double r = Math.sqrt(1-y*y);
+         double t = phi*i + theta;
+         double x = Math.cos(t) * r;
+         double z = Math.sin(t) * r;
+         if(y > tick/100.0 || (tick > 400 && y > 1-(tick-400)/100.0)){
+            continue;
+         }
+         
+         // Center Offset and Radius Scale
+         Vec3d point = new Vec3d(x,y,z);
+         point = point.multiply(5).add(center.x, center.y, center.z);
+         
+         world.spawnParticles(black,point.x,point.y,point.z,blackCount,blackDelta,blackDelta,blackDelta,0);
+      }
+      
+      ParticleEffect sun = new DustParticleEffect(Vec3d.unpackRgb(0xd1a400).toVector3f(),2.0f);
+      ParticleEffect moon = new DustParticleEffect(Vec3d.unpackRgb(0x1670f0).toVector3f(),2.0f);
+      
+      if(tick > 100){
+         if(tick % 3 == 0){
+            world.spawnParticles(ParticleTypes.END_ROD,center.x,center.y+2.5,center.z,8,3,1.5,3,0);
+         }
+         
+         Vec3d rotVec = switch(direction){
+            case SOUTH -> new Vec3d(-1,1,-1);
+            case EAST -> new Vec3d(1,1,-1);
+            case WEST -> new Vec3d(-1,1,1);
+            default -> new Vec3d(1,1,1);
+         };
+         
+         if(tick < 400 && tick % 2 == 0){
+            Vec3d celestPos;
+            
+            if(tick < 175){
+               double y = (tick-100) / 25.0;
+               celestPos = new Vec3d(2.5,y,-2.5).multiply(rotVec);
+            }else if(tick < 325){
+               double t = Math.PI*2 * (tick-175)/150 - (Math.PI/4);
+               double x = Math.cos(t) * 2.5;
+               double z = Math.sin(t) * 2.5;
+               celestPos = new Vec3d(x,3,z).multiply(rotVec);
+            }else{
+               double y = 3-((tick-325) / 25.0);
+               celestPos = new Vec3d(2.5,y,-2.5).multiply(rotVec);
+            }
+            
+            sphere(world,null,center.add(celestPos),sun,0.5,10,3,0.15,0,theta);
+            sphere(world,null,center.add(celestPos.multiply(-1,1,-1)),moon,0.5,10,3,0.15,0,theta);
+         }
+      }
+      
+      
+      if(tick < 500){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               celestialAltarAnim(world,center,tick+1, direction);
+            }
+         }));
+      }
+   }
+   
+   public static void starpathAltarAnim(ServerWorld world, Vec3d center){
+      SoundUtils.playSound(world,BlockPos.ofFloored(center), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.BLOCKS, 2, 0.5f);
+      starpathAltarAnim(world,center,0,new ArrayList<>(),new ArrayList<>());
+   }
+   
+   private static void starpathAltarAnim(ServerWorld world, Vec3d center, int tick, List<Pair<Vec3d,Integer>> groundStars, List<Vec3d> skyStars){
+      double phi = Math.PI * (3 - Math.sqrt(5));
+      double theta = 2*Math.PI / 100 * tick;
+      int points = 100;
+      ParticleEffect black = new DustParticleEffect(Vec3d.unpackRgb(0x000000).toVector3f(),2.0f);
+      double blackDelta = tick < 100 ? 0.05 : 0.4;
+      int blackCount = tick < 100 ? 1 : 4;
+      
+      for(int i = 0; i < points; i++){
+         // Fibonacci Sphere Equations
+         double y = (i / (double)(points-1));
+         double r = Math.sqrt(1-y*y);
+         double t = phi*i + theta;
+         double x = Math.cos(t) * r;
+         double z = Math.sin(t) * r;
+         if(y > tick/100.0){
+            continue;
+         }
+         
+         // Center Offset and Radius Scale
+         Vec3d point = new Vec3d(x,y,z);
+         point = point.multiply(5).add(center.x, center.y, center.z);
+         
+         world.spawnParticles(black,point.x,point.y,point.z,blackCount,blackDelta,blackDelta,blackDelta,0);
+      }
+      
+      if(tick >= 100){
+         if(tick % 2 == 0){
+            for(int i = 0; i < groundStars.size(); i++){
+               Pair<Vec3d,Integer> groundStar = groundStars.get(i);
+               Vec3d starPos = groundStar.getLeft();
+               world.spawnParticles(ParticleTypes.END_ROD,starPos.x,starPos.y,starPos.z,1,0,0,0,0);
+               groundStars.set(i,new Pair<>(starPos.add(0,0.125,0),groundStar.getRight()-1));
+            }
+            groundStars.removeIf((p)->p.getRight()<=0);
+            if(groundStars.size() < 8){ // Re-add stars
+               for(int i = 0; i < 2; i++){
+                  double t = Math.random()*Math.PI*2;
+                  double r = (Math.random()*3+1);
+                  double x = Math.cos(t) * r;
+                  double z = Math.sin(t) * r;
+                  int lifeTime = (int)(Math.random()*8+4);
+                  groundStars.add(new Pair<>(new Vec3d(x,0,z).add(center.x, center.y+0.5, center.z),lifeTime));
+               }
+            }
+            
+         }
+         if(tick % 3 == 0){
+            for(Vec3d skyStar : skyStars){
+               world.spawnParticles(ParticleTypes.END_ROD,skyStar.x,skyStar.y,skyStar.z,1,0.05,0.05,0.05,0);
+            }
+         }
+         
+         if(skyStars.size() < 30){
+            double starRadius = 4.5;
+            for(int i = 0; i < 30; i++){
+               double t = Math.random()*Math.PI*2;
+               double r = (Math.random()*starRadius + 0.75);
+               double x = Math.cos(t) * r;
+               double z = Math.sin(t) * r;
+               double y = Math.sqrt(starRadius*starRadius - r*r);
+               skyStars.add(new Vec3d(center.x+x,center.y+y,center.z+z));
+            }
+         }
+         
+         if(tick >= 140){
+            ParticleEffect white = new DustParticleEffect(Vec3d.unpackRgb(0x944ec7).toVector3f(),0.5f);
+            int connections = Math.min(8,(tick-140) / 30);
+            for(int i = 0; i < connections+1; i++){
+               line(world,null,skyStars.get(i),skyStars.get(i+1),white,20,1,0.05,0);
+            }
+            if(tick <= 380 && (tick-140) % 30 == 0){
+               SoundUtils.playSound(world,BlockPos.ofFloored(center), SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS, 2, 0.5f + (connections*0.2f));
+            }
+         }
+      }
+      
+      if(tick == 440){
+         SoundUtils.playSound(world,BlockPos.ofFloored(center), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.BLOCKS, 2, 1.5f);
+      }
+      
+      if(tick < 500){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               starpathAltarAnim(world,center,tick+1,groundStars,skyStars);
+            }
+         }));
+      }
+   }
+   
+   public static void stellarCoreAnim(ServerWorld world, Vec3d center, int tick, Direction direction){
+      if(tick % 2 == 0) return;
+      sphere(world,null,center,ParticleTypes.FLAME,1.2,30,2,0.2,0.03,Math.PI*2*tick/300);
+      sphere(world,null,center,ParticleTypes.LAVA,1.2,10,2,0.2,0.02,Math.PI*2*tick/300);
+      sphere(world,null,center,ParticleTypes.WAX_ON,.5,10,2,0.05,0.02,Math.PI*2*tick/300);
+      world.spawnParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,center.getX(),center.getY(),center.getZ(),1,0.5,0.5,0.5,0.02);
+      
+      Vec3d pos = center.subtract(Vec3d.of(direction.getVector())).add(0,3.5,0);
+      world.spawnParticles(ParticleTypes.LAVA,pos.getX(),pos.getY(),pos.getZ(),1,0.25,0.05,0.25,0.02);
+   }
+   
+   public static void arcaneSingularityAnim(ServerWorld world, Vec3d center, int tick, Direction direction){
+      if(tick % 2 == 0) return;
+      double L = 300.0;
+      double animPercent = tick/L;
+      double piPercent = Math.PI*2*animPercent;
+      ParticleEffect black = new DustParticleEffect(Vec3d.unpackRgb(0x000000).toVector3f(),2.0f);
+      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x00ECFF).toVector3f(),0.75f);
+      sphere(world,null,center,black,0.7,50,2,0.1,0,piPercent);
+      sphere(world,null,center,ParticleTypes.WITCH,1.25,80,1,0.05,0,3*piPercent);
+      sphere(world,null,center,blue,1,80,1,0.01,0,-3*piPercent);
+      sphere(world,null,center,ParticleTypes.NAUTILUS,1,1,1,0.1,1,piPercent);
+      world.spawnParticles(ParticleTypes.WITCH,center.getX(),center.getY()-1.2,center.getZ(),4,0.3,0.4,0.3,0);
+      
+      List<Vec3d> rods = new ArrayList<>(Arrays.asList(
+            new Vec3d(0,-1,2), new Vec3d(-2,-1,0), new Vec3d(0,-1,-2), new Vec3d(2,-1,0),
+            new Vec3d(-1,-2,-1), new Vec3d(1,-2,-1), new Vec3d(-1,-2,1), new Vec3d(1,-2,1)
+      ));
+      rods.remove(direction.getHorizontal());
+      
+      int N = 3;
+      double[] R = new double[N];
+      for(int i = 0; i < R.length; i++){
+         R[i] = 0.2*(1-((animPercent+((double) i /N)) % 1))+.1;
+      }
+      double W = 4.3;
+      for(int i = 0; i < rods.size(); i++){
+         Vec3d pos = center.add(rods.get(i));
+         for(int j = 0; j < R.length; j++){
+            world.spawnParticles(blue,pos.getX()+R[j]*Math.cos(W*(piPercent+((double) j /N))),pos.getY()+1.25*((animPercent+((double) j /N)) % 1),pos.getZ()+R[j]*Math.sin(W*(piPercent+((double) j /N))),3,0.01,0.01,0.01,1);
+         }
+      }
+   }
    
    public static void nulConstructNecroticShroud(ServerWorld world, Vec3d pos){
       world.spawnParticles(ParticleTypes.LARGE_SMOKE,pos.getX(),pos.getY()+1.5,pos.getZ(),150,1.5,1.5,1.5,0.07);
@@ -346,8 +640,8 @@ public class ParticleEffectUtils {
    }
    
    public static void stasisPearl(ServerWorld world, Vec3d pos){
-      world.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.x,pos.y,pos.z,5,.15,.15,.15,0.01);
-      world.spawnParticles(ParticleTypes.GLOW,pos.x,pos.y,pos.z,5,.1,.1,.1,0);
+      world.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.x,pos.y,pos.z,1,.2,.2,.2,0.01);
+      world.spawnParticles(ParticleTypes.GLOW,pos.x,pos.y,pos.z,1,.15,.15,.15,0);
    }
    
    public static void dragonBossTowerCircleInvuln(ServerWorld world, Vec3d center, int period, int calls){

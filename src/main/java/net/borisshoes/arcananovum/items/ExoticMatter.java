@@ -1,31 +1,25 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.items.core.EnergyItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.core.EnergyItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExoticMatter extends EnergyItem implements UsableItem {
+public class ExoticMatter extends EnergyItem {
    
    private static final double[] lvlMultiplier = {1,1.5,2,2.5,3,5};
    
@@ -35,9 +29,11 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
       rarity = MagicRarity.MUNDANE;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
       initEnergy = 600000;
+      vanillaItem = Items.STRUCTURE_BLOCK;
+      item = new ExoticMatterItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.STRUCTURE_BLOCK);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -57,8 +53,8 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
@@ -72,28 +68,13 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
    @Override
    public int getMaxEnergy(ItemStack item){
       // Maximum seconds of chunk loading per exotic matter fuel (1 week baseline)
-      int level = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"time_in_a_bottle"));
+      int level = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TIME_IN_A_BOTTLE.id));
       return (int) (600000 * lvlMultiplier[level]);
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
    }
    
    public int useFuel(ItemStack item, int fuel){
       NbtCompound itemNbt = item.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
       
       int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
@@ -103,7 +84,7 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
    
    public void setFuel(ItemStack item, int fuel){
       NbtCompound itemNbt = item.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
    
       int newFuel = MathHelper.clamp(fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
@@ -145,5 +126,18 @@ public class ExoticMatter extends EnergyItem implements UsableItem {
             {d,d,c,d,c},
             {p,c,o,d,p}};
       return new MagicItemRecipe(ingredients);
+   }
+   
+   public class ExoticMatterItem extends MagicPolymerItem {
+      public ExoticMatterItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

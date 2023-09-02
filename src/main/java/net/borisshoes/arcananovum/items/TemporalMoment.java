@@ -1,9 +1,11 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -19,9 +21,11 @@ public class TemporalMoment extends MagicItem {
       name = "Temporal Moment";
       rarity = MagicRarity.MUNDANE;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
+      vanillaItem = Items.CLOCK;
+      item = new TemporalMomentItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.CLOCK);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -40,8 +44,8 @@ public class TemporalMoment extends MagicItem {
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    private MagicItemRecipe makeRecipe(){
@@ -65,5 +69,18 @@ public class TemporalMoment extends MagicItem {
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Temporal Moment\\n\\nRarity: Mundane\\n\\nTime always moves forwards, but its rate can be changed from fluxuations in spacetime. With enough energy perhaps it could be slowed to a halt, freezing a moment in time to use later.\"}");
       return list;
+   }
+   
+   public class TemporalMomentItem extends MagicPolymerItem {
+      public TemporalMomentItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

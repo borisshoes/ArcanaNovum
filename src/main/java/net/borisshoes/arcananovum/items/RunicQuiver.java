@@ -1,12 +1,17 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.MagicItemContainer;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
-import net.borisshoes.arcananovum.items.core.*;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -24,15 +29,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, MagicItemContainer{
+public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicItemContainerHaver {
    
    public static final int size = 9;
    private static final int[] refillReduction = {0,100,200,400,600,900};
@@ -44,9 +47,11 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, 
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS};
       color = Formatting.LIGHT_PURPLE;
+      vanillaItem = Items.LEATHER;
+      item = new RunicQuiverItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.LEATHER);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -71,8 +76,8 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, 
       magicTag.put("arrows",storedArrows);
       prefNBT = tag;
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
@@ -85,33 +90,6 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, 
    protected double getEfficiencyMod(ItemStack item){ // Ticks between arrow refill, once per two and a half minutes
       int effLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"runic_bottomless"));
       return efficiencyChance[effLvl];
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      // Open GUI
-      if(playerEntity instanceof ServerPlayerEntity player){
-         ItemStack stack = playerEntity.getStackInHand(hand);
-         QuiverGui gui = new QuiverGui(player,this,stack,true);
-         gui.build();
-         gui.open();
-      }
-      return false;
-   }
-   
-   @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      if(world.getServer().getTicks() % getRefillMod(item) == 0) refillArrow(player, item);
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
    }
    
    @Override
@@ -135,6 +113,10 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, 
       return newMagicItem;
    }
    
+   private RunicQuiver getOuter(){
+      return this;
+   }
+   
    private MagicItemRecipe makeRecipe(){
       MagicItemIngredient a = new MagicItemIngredient(Items.NETHER_STAR,4,null);
       ItemStack enchantedBook1 = new ItemStack(Items.ENCHANTED_BOOK);
@@ -142,8 +124,8 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, 
       MagicItemIngredient b = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,enchantedBook1.getNbt());
       MagicItemIngredient c = new MagicItemIngredient(Items.LEATHER,64,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
-      GenericMagicIngredient h = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.OVERFLOWING_QUIVER,1);
+      GenericMagicIngredient h = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.OVERFLOWING_QUIVER,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,b,c,b,a},
@@ -151,7 +133,7 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, 
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery().withEnchanter());
    }
    
    private List<String> makeLore(){
@@ -162,43 +144,51 @@ public class RunicQuiver extends QuiverItem implements UsableItem, TickingItem, 
    }
    
    @Override
-   public Inventory getItems(ItemStack item){
+   public MagicItemContainer getMagicItemContainer(ItemStack item){
+      int size = 9;
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
-      SimpleInventory inv = new SimpleInventory(getSize());
-   
+      SimpleInventory inv = new SimpleInventory(size);
+      
       for(int i = 0; i < arrows.size(); i++){
          NbtCompound stack = arrows.getCompound(i);
          ItemStack itemStack = ItemStack.fromNbt(stack);
          inv.setStack(i,itemStack);
       }
       
-      return inv;
+      return new MagicItemContainer(inv, size,3, "RQ", "Runic Quiver", 0);
    }
    
-   @Override
-   public double getConcMod(){
-      return 0;
-   }
-   
-   @Override
-   public String getConcModStr(){
-      return "RQ";
-   }
-   
-   @Override
-   public String getContainerName(){
-      return "Runic Quiver";
-   }
-   
-   @Override
-   public int getSize(){
-      return 9;
-   }
-   
-   @Override
-   public int getSortMod(){
-      return 1;
+   public class RunicQuiverItem extends MagicPolymerItem {
+      public RunicQuiverItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(world.getServer().getTicks() % getRefillMod(stack) == 0) refillArrow(player, stack);
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+         // Open GUI
+         if(playerEntity instanceof ServerPlayerEntity player){
+            ItemStack stack = playerEntity.getStackInHand(hand);
+            QuiverGui gui = new QuiverGui(player, getOuter(), stack,true);
+            gui.build();
+            gui.open();
+         }
+         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+      }
    }
 }

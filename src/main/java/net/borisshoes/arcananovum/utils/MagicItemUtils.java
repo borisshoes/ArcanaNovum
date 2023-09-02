@@ -1,9 +1,11 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.items.core.*;
+import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.inventory.Inventories;
@@ -15,6 +17,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
@@ -31,7 +34,6 @@ public class MagicItemUtils {
          NbtCompound itemNbt = item.getNbt();
          if(itemNbt == null)
             return false;
-      
          NbtCompound magicTag = itemNbt.getCompound("arcananovum");
          if(magicTag != null){
             // We know that the item is magic, get its class from its id
@@ -39,10 +41,10 @@ public class MagicItemUtils {
             if(id==null)
                return false;
             //System.out.println("Found magic id: "+id);
-            MagicItem magicItem = MagicItems.registry.get(id);
+            MagicItem magicItem = ArcanaRegistry.registry.get(id);
             if(magicItem == null)
                return false;
-            //System.out.println("Magic Item Name: "+magicItem.getName());
+            //System.out.println("Magic Item Name: "+magicItem.getNameString());
             return true;
          }
       
@@ -56,6 +58,13 @@ public class MagicItemUtils {
    public static boolean isEnergyItem(ItemStack item){
       if(isMagic(item)){
          return identifyItem(item) instanceof EnergyItem;
+      }
+      return false;
+   }
+   
+   public static boolean isRunicArrow(ItemStack item){
+      if(isMagic(item)){
+         return identifyItem(item) instanceof RunicArrow;
       }
       return false;
    }
@@ -79,72 +88,6 @@ public class MagicItemUtils {
       }
    }
    
-   public static boolean needsMagicTick(ItemStack item){
-      try{
-         if(isMagic(item)){
-            NbtCompound itemNbt = item.getNbt();
-            NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-            // We know that the item is magic, get its class from its id
-            String id = magicTag.getString("id");
-            if(id==null)
-               return false;
-            //System.out.println("Found magic id: "+id);
-            MagicItem magicItem = MagicItems.registry.get(id);
-            //System.out.println("Magic Item Name: "+magicItem.getName());
-            return (magicItem instanceof TickingItem);
-         }
-         
-         return false;
-      }catch(Exception e){
-         e.printStackTrace();
-         return false;
-      }
-   }
-   
-   public static boolean isUsableItem(ItemStack item){
-      try{
-         if(isMagic(item)){
-            NbtCompound itemNbt = item.getNbt();
-            NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-            // We know that the item is magic, get its class from its id
-            String id = magicTag.getString("id");
-            if(id==null)
-               return false;
-            //System.out.println("Found magic id: "+id);
-            MagicItem magicItem = MagicItems.registry.get(id);
-            //System.out.println("Magic Item Name: "+magicItem.getName());
-            return (magicItem instanceof UsableItem);
-         }
-      
-         return false;
-      }catch(Exception e){
-         e.printStackTrace();
-         return false;
-      }
-   }
-   
-   public static boolean isAttackingItem(ItemStack item){
-      try{
-         if(isMagic(item)){
-            NbtCompound itemNbt = item.getNbt();
-            NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-            // We know that the item is magic, get its class from its id
-            String id = magicTag.getString("id");
-            if(id==null)
-               return false;
-            //System.out.println("Found magic id: "+id);
-            MagicItem magicItem = MagicItems.registry.get(id);
-            //System.out.println("Magic Item Name: "+magicItem.getName());
-            return (magicItem instanceof AttackingItem);
-         }
-         
-         return false;
-      }catch(Exception e){
-         e.printStackTrace();
-         return false;
-      }
-   }
-   
    public static boolean isLeftClickItem(ItemStack item){
       try{
          if(isMagic(item)){
@@ -155,7 +98,7 @@ public class MagicItemUtils {
             if(id==null)
                return false;
             //System.out.println("Found magic id: "+id);
-            MagicItem magicItem = MagicItems.registry.get(id);
+            MagicItem magicItem = ArcanaRegistry.registry.get(id);
             //System.out.println("Magic Item Name: "+magicItem.getName());
             return (magicItem instanceof LeftClickItem);
          }
@@ -167,38 +110,11 @@ public class MagicItemUtils {
       }
    }
    
-   public static TickingItem identifyTickingItem(ItemStack item){
-      if(needsMagicTick(item)){
-         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-         String id = magicTag.getString("id");
-         return (TickingItem) MagicItems.registry.get(id);
-      }
-      return null;
-   }
-   
-   public static UsableItem identifyUsableItem(ItemStack item){
-      if(isUsableItem(item)){
-         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-         String id = magicTag.getString("id");
-         return (UsableItem) MagicItems.registry.get(id);
-      }
-      return null;
-   }
-   
-   public static AttackingItem identifyAttackingItem(ItemStack item){
-      if(isAttackingItem(item)){
-         NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-         String id = magicTag.getString("id");
-         return (AttackingItem) MagicItems.registry.get(id);
-      }
-      return null;
-   }
-   
    public static LeftClickItem identifyLeftClickItem(ItemStack item){
       if(isLeftClickItem(item)){
          NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          String id = magicTag.getString("id");
-         return (LeftClickItem) MagicItems.registry.get(id);
+         return (LeftClickItem) ArcanaRegistry.registry.get(id);
       }
       return null;
    }
@@ -207,7 +123,14 @@ public class MagicItemUtils {
       if(isMagic(item)){
          NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          String id = magicTag.getString("id");
-         return MagicItems.registry.get(id);
+         return ArcanaRegistry.registry.get(id);
+      }
+      return null;
+   }
+   
+   public static RunicArrow identifyRunicArrow(ItemStack item){
+      if(isRunicArrow(item)){
+         return (RunicArrow) identifyItem(item);
       }
       return null;
    }
@@ -219,12 +142,31 @@ public class MagicItemUtils {
       return null;
    }
    
+   public static ServerPlayerEntity findHolder(MinecraftServer server, String uuid){
+      for(ServerPlayerEntity player : server.getPlayerManager().getPlayerList()){
+         PlayerInventory inv = player.getInventory();
+         for(int i=0; i<inv.size();i++){
+            ItemStack item = inv.getStack(i);
+            if(item.isEmpty()){
+               continue;
+            }
+            
+            MagicItem magicItem = identifyItem(item);
+            if(magicItem != null){
+               String itemUuid = magicItem.getUUID(item);
+               if(uuid.equals(itemUuid)) return player;
+            }
+         }
+      }
+      return null;
+   }
+   
    public static List<MagicInvItem> getMagicInventory(ServerPlayerEntity player){
       List<MagicInvItem> magicInv = new ArrayList<>();
       PlayerInventory inv = player.getInventory();
       EnderChestInventory eChest = player.getEnderChestInventory();
       ArrayList<MagicItemContainer> eChestContainerList = new ArrayList<>();
-      eChestContainerList.add(new EnderChestMagicContainer(player));
+      eChestContainerList.add(new MagicItemContainer(player.getEnderChestInventory(),player.getEnderChestInventory().size(),100,"EC","Ender Chest",0.5));
       magicInvHelper(inv,magicInv,new ArrayList<>());
       magicInvHelper(eChest,magicInv,eChestContainerList);
       return magicInv;
@@ -250,17 +192,18 @@ public class MagicItemUtils {
                shulkerInv.setStack(j,shulkerItems.get(j));
             }
             ArrayList<MagicItemContainer> containersCopy = new ArrayList<>(containers);
-            containersCopy.add(new ShulkerBoxMagicContainer(item));
+            containersCopy.add(new MagicItemContainer(shulkerInv,shulkerInv.size(),10,"SB","Shulker Box",0.5));
             magicInvHelper(shulkerInv,magicInv,containersCopy);
          }
          if(!isMagic){
             continue;
          }
          MagicItem magicItem = identifyItem(item);
-         if(magicItem instanceof MagicItemContainer magicContainer){
+         if(magicItem instanceof MagicItemContainer.MagicItemContainerHaver containerHaver){
             ArrayList<MagicItemContainer> containersCopy = new ArrayList<>(containers);
+            MagicItemContainer magicContainer = containerHaver.getMagicItemContainer(item);
             containersCopy.add(magicContainer);
-            magicInvHelper(magicContainer.getItems(item),magicInv,containersCopy);
+            magicInvHelper(magicContainer.getInventory(),magicInv,containersCopy);
          }
          
          MagicInvItem invItem = new MagicInvItem(magicItem,item.getCount(),ArcanaAugments.getAugmentsOnItem(item),containers);
@@ -282,7 +225,7 @@ public class MagicItemUtils {
          MagicItem magicItem = magicInvItem.item;
          int prefCount = magicItem.getPrefItem().getCount();
          double containerMod = magicInvItem.getFocusedConcMod(player);
-         concSum += Math.ceil(magicInvItem.count/(double)prefCount) * Math.ceil(containerMod*(MagicRarity.getConcentration(magicItem.getRarity())+magicInvItem.getAugmentConc(player)));
+         concSum += (int) (Math.ceil(magicInvItem.count/(double)prefCount) * Math.ceil(containerMod*(MagicRarity.getConcentration(magicItem.getRarity())+magicInvItem.getAugmentConc(player))));
       }
       
       return concSum;
@@ -295,9 +238,9 @@ public class MagicItemUtils {
       List<MagicInvItem> magicInv = getMagicInventory(player);
       Comparator<MagicInvItem> comparator = (MagicInvItem i1, MagicInvItem i2) -> {
          int r1 = i1.count*MagicRarity.getConcentration(i1.item.getRarity());
-         r1 += 10000*i1.getSortMod();
+         r1 += (int) (10000*i1.getSortMod());
          int r2 = i2.count*MagicRarity.getConcentration(i2.item.getRarity());
-         r2 += 10000*i2.getSortMod();
+         r2 += (int) (10000*i2.getSortMod());
          return r1 - r2;
       };
       magicInv.sort(comparator);
@@ -312,7 +255,7 @@ public class MagicItemUtils {
          
          String multStr = multiplier > 1 ? " x"+multiplier : "";
          String contStr = magicInvItem.getContainerString();
-         String line = "[{\"text\":\"- "+magicItem.getName()+"\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+multStr+"\",\"color\":\"blue\"},{\"text\":\" ("+itemConc+")\",\"color\":\"dark_green\"},{\"text\":\" "+contStr+"\",\"color\":\"dark_purple\"}]";
+         String line = "[{\"text\":\"- "+magicItem.getNameString()+"\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+multStr+"\",\"color\":\"blue\"},{\"text\":\" ("+itemConc+")\",\"color\":\"dark_green\"},{\"text\":\" "+contStr+"\",\"color\":\"dark_purple\"}]";
          list.add(line);
       }
       
@@ -338,14 +281,14 @@ public class MagicItemUtils {
    public static int countRarityInList(List<String> ids, MagicRarity rarity, boolean exclude){
       int count = 0;
       for(String id : ids){
-         if(!MagicItems.registry.containsKey("id")) continue;
+         if(!ArcanaRegistry.registry.containsKey("id")) continue;
          if(getItemFromId(id).getRarity() == rarity ^ exclude) count++;
       }
       return count;
    }
    
    public static MagicItem getItemFromId(String id){
-      return MagicItems.registry.get(id);
+      return ArcanaRegistry.registry.get(id);
    }
    
    public static class MagicInvItem {
@@ -411,7 +354,7 @@ public class MagicItemUtils {
       }
       
       public void addItem(ItemStack stack){
-         stacks.add(new Pair<>(item.getUUID(stack),stack));
+         stacks.add(new Pair<>(MagicItem.getUUID(stack),stack));
       }
       
       public ArrayList<Pair<String,ItemStack>> getStacks(){
@@ -432,7 +375,7 @@ public class MagicItemUtils {
       
       public int getAugmentConc(ServerPlayerEntity player){
          IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-         int adaptability = profile.getAugmentLevel("adaptability");
+         int adaptability = profile.getAugmentLevel(ArcanaAugments.ADAPTABILITY.id);
          int augmentConc = 0;
          
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
@@ -446,30 +389,30 @@ public class MagicItemUtils {
       
       public double getFocusedConcMod(ServerPlayerEntity player){
          IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-         int focus = profile.getAugmentLevel("focus");
+         int focus = profile.getAugmentLevel(ArcanaAugments.FOCUS.id);
          if(focus == 1){
             boolean isEChest = false;
             boolean isShulker = false;
    
             for(MagicItemContainer container : containers){
-               if(container instanceof EnderChestMagicContainer){
+               if(container.getContainerName().equals("Ender Chest")){
                   isEChest = true;
-               }else if(container instanceof ShulkerBoxMagicContainer){
+               }else if(container.getContainerName().equals("Shulker Box")){
                   isShulker = true;
                }
             }
             return isShulker && isEChest ? 0 : getConcMod();
          }else if(focus == 2){
             for(MagicItemContainer container : containers){
-               if(container instanceof EnderChestMagicContainer){
+               if(container.getContainerName().equals("Ender Chest")){
                   return 0;
                }
             }
          }else if(focus == 3){
             for(MagicItemContainer container : containers){
-               if(container instanceof EnderChestMagicContainer){
+               if(container.getContainerName().equals("Ender Chest")){
                   return 0;
-               }else if(container instanceof ShulkerBoxMagicContainer){
+               }else if(container.getContainerName().equals("Shulker Box")){
                   return 0;
                }
             }
@@ -478,7 +421,7 @@ public class MagicItemUtils {
       }
    
       public String getShortContainerString(){
-         if(containers.size() == 0) return "Inv";
+         if(containers.isEmpty()) return "Inv";
          StringBuilder str = new StringBuilder();
          for(MagicItemContainer container : containers){
             str.append(container.getConcModStr()).append("+");
@@ -487,7 +430,7 @@ public class MagicItemUtils {
       }
       
       public String getContainerString(){
-         if(containers.size() == 0) return "";
+         if(containers.isEmpty()) return "";
          StringBuilder str = new StringBuilder("[");
          for(MagicItemContainer container : containers){
             str.append(container.getContainerName()).append(" + ");
@@ -501,91 +444,6 @@ public class MagicItemUtils {
       
       public TreeMap<ArcanaAugment,Integer> getAugments(){
          return augments;
-      }
-   }
-   
-   static class EnderChestMagicContainer implements MagicItemContainer{
-      
-      private final EnderChestInventory inv;
-      
-      public EnderChestMagicContainer(ServerPlayerEntity player){
-         this.inv = player.getEnderChestInventory();
-      }
-      
-      @Override
-      public Inventory getItems(ItemStack item){
-         return inv;
-      }
-      
-      @Override
-      public double getConcMod(){
-         return 0.5;
-      }
-      
-      @Override
-      public String getConcModStr(){
-         return "EC";
-      }
-      
-      @Override
-      public String getContainerName(){
-         return "Ender Chest";
-      }
-      
-      @Override
-      public int getSize(){
-         return inv.size();
-      }
-      
-      @Override
-      public int getSortMod(){
-         return 100;
-      }
-   }
-   
-   static class ShulkerBoxMagicContainer implements MagicItemContainer{
-   
-      private final SimpleInventory inv;
-   
-      public ShulkerBoxMagicContainer(ItemStack item){
-         NbtCompound tag = item.getNbt();
-         NbtCompound bet = tag.getCompound("BlockEntityTag");
-         DefaultedList<ItemStack> shulkerItems = DefaultedList.ofSize(27, ItemStack.EMPTY);
-         Inventories.readNbt(bet, shulkerItems);
-         this.inv = new SimpleInventory(27);
-         for(int j = 0; j < shulkerItems.size(); j++){
-            inv.setStack(j,shulkerItems.get(j));
-         }
-      }
-   
-      @Override
-      public Inventory getItems(ItemStack item){
-         return inv;
-      }
-   
-      @Override
-      public double getConcMod(){
-         return 0.5;
-      }
-   
-      @Override
-      public String getConcModStr(){
-         return "SB";
-      }
-   
-      @Override
-      public String getContainerName(){
-         return "Shulker Box";
-      }
-   
-      @Override
-      public int getSize(){
-         return inv.size();
-      }
-   
-      @Override
-      public int getSortMod(){
-         return 10;
       }
    }
 }

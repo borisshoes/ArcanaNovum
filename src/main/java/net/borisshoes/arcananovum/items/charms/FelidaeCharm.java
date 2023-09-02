@@ -1,19 +1,19 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.TickingItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -22,19 +22,14 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FelidaeCharm extends MagicItem implements UsableItem, TickingItem {
+public class FelidaeCharm extends MagicItem {
    
    public FelidaeCharm(){
       id = "felidae_charm";
@@ -42,9 +37,11 @@ public class FelidaeCharm extends MagicItem implements UsableItem, TickingItem {
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 1;
+      vanillaItem = Items.STRING;
+      item = new FelidaeCharmItem(new FabricItemSettings().maxCount(1).fireproof());
    
-      ItemStack item = new ItemStack(Items.STRING);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -64,34 +61,8 @@ public class FelidaeCharm extends MagicItem implements UsableItem, TickingItem {
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
-      item.setNbt(prefNBT);
-      prefItem = item;
-   
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
-   }
-   
-   @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      if(world.getServer().getTicks() % 20 == 0 && !player.isCreative()){
-         Vec3d pos = player.getPos();
-         Box rangeBox = new Box(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);
-         List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e instanceof CreeperEntity);
-         if(entities.size() >= 4) ArcanaAchievements.grant(player,"infiltration");
-      }
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    private MagicItemRecipe makeRecipe(){
@@ -111,7 +82,7 @@ public class FelidaeCharm extends MagicItem implements UsableItem, TickingItem {
             {g,l,h,p,g},
             {s,b,f,b,s},
             {m,s,g,s,m}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withEnchanter());
    }
    
    private List<String> makeLore(){
@@ -119,5 +90,30 @@ public class FelidaeCharm extends MagicItem implements UsableItem, TickingItem {
       list.add("{\"text\":\"   Charm of Felidae\\n\\nRarity: Empowered\\n\\nCats are quite powerful creatures, managing to frighten phantoms and scare creepers. They can even fall from any height without care.\\nThis Charm seeks to mimic a fraction of that power.\"}");
       list.add("{\"text\":\"   Charm of Felidae\\n\\nThe Charm halves all fall damage, stops phantoms from swooping the holder, and gives creepers a good scare every now and then.\"}");
       return list;
+   }
+   
+   public class FelidaeCharmItem extends MagicPolymerItem {
+      public FelidaeCharmItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(world.getServer().getTicks() % 20 == 0 && !player.isSpectator()){
+            Vec3d pos = player.getPos();
+            Box rangeBox = new Box(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);
+            List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e instanceof CreeperEntity);
+            if(entities.size() >= 4) ArcanaAchievements.grant(player,ArcanaAchievements.INFILTRATION.id);
+         }
+      }
    }
 }

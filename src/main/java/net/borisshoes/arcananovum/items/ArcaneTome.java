@@ -2,24 +2,25 @@ package net.borisshoes.arcananovum.items;
 
 import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.gui.arcanetome.*;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.ExplainRecipe;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -27,26 +28,23 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-import static net.borisshoes.arcananovum.items.core.MagicItems.RECOMMENDED_LIST;
+import static net.borisshoes.arcananovum.ArcanaRegistry.RECOMMENDED_LIST;
 
-public class ArcaneTome extends MagicItem implements UsableItem {
-   private final int[] craftingSlots = {1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
+public class ArcaneTome extends MagicItem {
+   public static final int[] CRAFTING_SLOTS = {1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
    
    public ArcaneTome(){
       id = "arcane_tome";
@@ -54,9 +52,11 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       rarity = MagicRarity.MUNDANE;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 1;
+      vanillaItem = Items.KNOWLEDGE_BOOK;
+      item = new ArcaneTomeItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.KNOWLEDGE_BOOK);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -74,27 +74,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
-      item.setNbt(prefNBT);
-      prefItem = item;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      int skillLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(playerEntity.getStackInHand(hand),ArcanaAugments.SKILL.id));
-      int resourceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(playerEntity.getStackInHand(hand),ArcanaAugments.RESOURCEFUL.id));
-      openGui(playerEntity,TomeMode.PROFILE,new TomeGui.CompendiumSettings(skillLvl,resourceLvl));
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      //openGui(playerEntity,TomeMode.PROFILE);
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    public void openGui(PlayerEntity playerEntity, TomeMode mode, TomeGui.CompendiumSettings settings){
@@ -112,18 +93,12 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       }else if(mode == TomeMode.COMPENDIUM){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildCompendiumGui(gui,player,settings);
-      }else if(mode == TomeMode.CRAFTING){
-         gui = new TomeGui(ScreenHandlerType.GENERIC_9X5,player,mode,this,settings);
-         buildCraftingGui(gui,player,data);
       }else if(mode == TomeMode.ITEM){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildItemGui(gui,player,data);
       }else if(mode == TomeMode.RECIPE){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X5,player,mode,this,settings);
-         buildRecipeGui(gui,player,data);
-      }else if(mode == TomeMode.TINKER){
-         gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
-         buildTinkerGui(gui,player,null);
+         buildRecipeGui(gui,data);
       }else if(mode == TomeMode.ACHIEVEMENTS){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildAchievementsGui(gui,player,settings);
@@ -134,7 +109,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    
    public void openRecipeGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings, String id){
       TomeGui gui = new TomeGui(ScreenHandlerType.GENERIC_9X5,player,TomeMode.RECIPE,this,settings);
-      buildRecipeGui(gui,player,id);
+      buildRecipeGui(gui,id);
       gui.setMode(TomeMode.RECIPE);
       gui.open();
    }
@@ -143,13 +118,6 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       TomeGui gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,TomeMode.ITEM,this,settings);
       buildItemGui(gui,player,id);
       gui.setMode(TomeMode.ITEM);
-      gui.open();
-   }
-   
-   public void openTinkerGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings, ItemStack item){
-      TomeGui gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,TomeMode.TINKER,this,settings);
-      buildTinkerGui(gui,player,item);
-      gui.setMode(TomeMode.TINKER);
       gui.open();
    }
    
@@ -251,7 +219,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       tag = crystal.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();
-      int resolve = profile.getAugmentLevel("resolve");
+      int resolve = profile.getAugmentLevel(ArcanaAugments.RESOLVE.id);
       int maxConc = LevelUtils.concFromLevel(profile.getLevel(),resolve);
       display.putString("Name","[{\"text\":\"Arcane Concentration\",\"italic\":false,\"color\":\"blue\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Concentration: "+MagicItemUtils.getUsedConcentration(player)+"/"+maxConc+"\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
@@ -295,13 +263,13 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       List<MagicItem> items;
       if(filterType != null){
          items = new ArrayList<>();
-         for(MagicItem magicItem : MagicItems.registry.values().stream().toList()){
+         for(MagicItem magicItem : ArcanaRegistry.registry.values().stream().toList()){
             if(TomeFilter.matchesFilter(filterType,magicItem)){
                items.add(magicItem);
             }
          }
       }else{
-         items = new ArrayList<>(MagicItems.registry.values().stream().toList());
+         items = new ArrayList<>(ArcanaRegistry.registry.values().stream().toList());
       }
       
       switch(sortType){
@@ -309,14 +277,14 @@ public class ArcaneTome extends MagicItem implements UsableItem {
             items.sort(Comparator.comparingInt(RECOMMENDED_LIST::indexOf));
          }
          case NAME -> {
-            Comparator<MagicItem> nameComparator = Comparator.comparing(MagicItem::getName);
+            Comparator<MagicItem> nameComparator = Comparator.comparing(MagicItem::getNameString);
             items.sort(nameComparator);
          }
          case RARITY_DESC -> {
             Comparator<MagicItem> rarityDescComparator = (MagicItem i1, MagicItem i2) -> {
                int rarityCompare = (i2.getRarity().rarity - i1.getRarity().rarity);
                if(rarityCompare == 0){
-                  return i1.getName().compareTo(i2.getName());
+                  return i1.getNameString().compareTo(i2.getNameString());
                }else{
                   return rarityCompare;
                }
@@ -387,8 +355,8 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       }
    }
    
-   public void buildCompendiumGui(TomeGui gui, ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
-      gui.setMode(TomeMode.COMPENDIUM);
+   public static void buildCompendiumGui(SimpleGui gui, ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
+      if(gui instanceof TomeGui tomeGui) tomeGui.setMode(TomeMode.COMPENDIUM);
       List<MagicItem> items = sortedFilteredItemList(settings);
       List<MagicItem> pageItems = listToPage(items, settings.getPage());
       int numPages = (int) Math.ceil((float)items.size()/28.0);
@@ -401,25 +369,19 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       GameProfile gameProfile = new GameProfile(player.getUuid(),null);
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
       head.setName((Text.literal("").append(Text.literal("Magic Items").formatted(Formatting.DARK_PURPLE))));
-      head.addLoreLine((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE))));
-      head.addLoreLine((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.GREEN)).append(Text.literal(" to view its page").formatted(Formatting.LIGHT_PURPLE))));
-      head.addLoreLine((Text.literal("").append(Text.literal("Right Click an item").formatted(Formatting.YELLOW)).append(Text.literal(" to see its recipe").formatted(Formatting.LIGHT_PURPLE))));
+      if(gui instanceof TomeGui){
+         head.addLoreLine((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE))));
+         head.addLoreLine((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.GREEN)).append(Text.literal(" to view its page").formatted(Formatting.LIGHT_PURPLE))));
+         head.addLoreLine((Text.literal("").append(Text.literal("Right Click an item").formatted(Formatting.YELLOW)).append(Text.literal(" to see its recipe").formatted(Formatting.LIGHT_PURPLE))));
+         
+      }else{
+         head.addLoreLine((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.AQUA)).append(Text.literal(" to see its recipe").formatted(Formatting.LIGHT_PURPLE))));
+      }
       gui.setSlot(4,head);
    
-      ItemStack anvil = new ItemStack(Items.ANVIL);
-      NbtCompound tag = anvil.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Tinker With A Magic Item!\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click\",\"italic\":false,\"color\":\"green\"},{\"text\":\" to go to the Tinkering Menu\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      gui.setSlot(49,GuiElementBuilder.from(anvil));
-   
       ItemStack filterItem = new ItemStack(Items.HOPPER);
-      tag = filterItem.getOrCreateNbt();
-      display = new NbtCompound();
+      NbtCompound tag = filterItem.getOrCreateNbt();
+      NbtCompound display = new NbtCompound();
       display.putString("Name","[{\"text\":\"Filter Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -448,7 +410,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       ItemStack nextPage = new ItemStack(Items.SPECTRAL_ARROW);
       tag = nextPage.getOrCreateNbt();
       display = new NbtCompound();
-      loreList = new NbtList();
+      NbtList loreList = new NbtList();
       display.putString("Name","[{\"text\":\"Next Page ("+settings.getPage()+"/"+numPages+")\",\"italic\":false,\"color\":\"dark_purple\"}]");
       loreList.add(NbtString.of("[{\"text\":\"Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to go to the Next Page\",\"color\":\"light_purple\"}]"));
       display.put("Lore",loreList);
@@ -564,7 +526,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
                NbtCompound nbt = displayItem.getOrCreateNbt();
                nbt.putString("magicItemId",achievement.getMagicItem().getId());
                GuiElementBuilder achievementItem = GuiElementBuilder.from(displayItem);
-               achievementItem.hideFlags().setName(Text.literal(achievement.name+" - "+achievement.getMagicItem().getName()).formatted(Formatting.LIGHT_PURPLE))
+               achievementItem.hideFlags().setName(Text.literal(achievement.name+" - "+achievement.getMagicItem().getNameString()).formatted(Formatting.LIGHT_PURPLE))
                      .addLoreLine(Text.literal("")
                            .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
                            .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
@@ -596,94 +558,12 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       gui.setTitle(Text.literal("All Arcana Achievements"));
    }
    
-   private final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
+   private static final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
    
-   public void buildTinkerGui(TomeGui gui, ServerPlayerEntity player, @Nullable ItemStack item){
-      gui.setMode(TomeMode.TINKER);
-   
-      for(int i = 0; i < gui.getSize(); i++){
-         gui.clearSlot(i);
-         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
-      }
-   
-      ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-      NbtCompound tag = book.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"green\"},{\"text\":\"to return to the Compendium.\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      gui.setSlot(10,GuiElementBuilder.from(book));
-   
-      ItemStack itemPage = new ItemStack(Items.ANVIL);
-      tag = itemPage.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Item Page\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"green\"},{\"text\":\"to go to the Item Page and unlock Augments!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      gui.setSlot(16,GuiElementBuilder.from(itemPage));
-   
-      ItemStack nameItem = new ItemStack(Items.NAME_TAG);
-      tag = nameItem.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Name Your Magic Item\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"to give your Magic Item a name!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      gui.setSlot(22,GuiElementBuilder.from(nameItem));
-   
-      ItemStack augmentPane = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
-      tag = augmentPane.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Augments:\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Unlocked augments can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-   
-      for(int i = 0; i < 7; i++){
-         gui.setSlot(28+i,GuiElementBuilder.from(augmentPane));
-         gui.setSlot(37+i,GuiElementBuilder.from(augmentPane));
-      }
-   
-      ItemStack itemWindow = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
-      tag = itemWindow.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Insert a Magic Item to Tinker with it\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Apply augments or rename your item!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      gui.setSlot(3,GuiElementBuilder.from(itemWindow));
-      gui.setSlot(5,GuiElementBuilder.from(itemWindow));
-      gui.setSlot(12,GuiElementBuilder.from(itemWindow));
-      gui.setSlot(13,GuiElementBuilder.from(itemWindow));
-      gui.setSlot(14,GuiElementBuilder.from(itemWindow));
-   
-      TinkerInventory inv = new TinkerInventory();
-      TinkerInventoryListener listener = new TinkerInventoryListener(this,gui);
-      inv.addListener(listener);
-      gui.setSlotRedirect(4, new Slot(inv,0,0,0));
-      
-      if(item != null){
-         inv.setStack(0,item);
-      }
-   
-      gui.setTitle(Text.literal("Tinker Items"));
-   }
-   
-   public void buildItemGui(TomeGui gui, ServerPlayerEntity player, String id){
+   public static void buildItemGui(SimpleGui gui, ServerPlayerEntity player, String id){
+      if(gui instanceof TomeGui tomeGui) tomeGui.setMode(TomeMode.ITEM);
+      boolean isTwilightAnvil = gui instanceof TwilightAnvilGui;
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      gui.setMode(TomeMode.ITEM);
       MagicItem magicItem = MagicItemUtils.getItemFromId(id);
       if(magicItem == null){
          gui.close();
@@ -707,7 +587,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
-      gui.setSlot(6,GuiElementBuilder.from(book));
+      if(!isTwilightAnvil){
+         gui.setSlot(6,GuiElementBuilder.from(book));
+      }
    
       ItemStack table = new ItemStack(Items.CRAFTING_TABLE);
       tag = table.getOrCreateNbt();
@@ -718,7 +600,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
-      gui.setSlot(2,GuiElementBuilder.from(table));
+      if(!isTwilightAnvil){
+         gui.setSlot(2, GuiElementBuilder.from(table));
+      }
    
       gui.setSlot(4,GuiElementBuilder.from(magicItem.getPrefItem()).glow());
       
@@ -837,11 +721,13 @@ public class ArcaneTome extends MagicItem implements UsableItem {
          gui.setSlot(46+achieveSlots[i], achievementItem);
       }
    
-      gui.setTitle(Text.literal(magicItem.getName()));
+      gui.setTitle(Text.literal(magicItem.getNameString()));
    }
    
-   public void buildRecipeGui(TomeGui gui, ServerPlayerEntity player, String id){
-      gui.setMode(TomeMode.RECIPE);
+   public void buildRecipeGui(SimpleGui gui, String id){
+      if(gui instanceof TomeGui tomeGui){
+         tomeGui.setMode(TomeMode.RECIPE);
+      }
       MagicItem magicItem = MagicItemUtils.getItemFromId(id);
       if(magicItem == null){
          gui.close();
@@ -863,30 +749,25 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       tag.put("display",display);
       tag.putInt("HideFlags",103);
       gui.setSlot(7,GuiElementBuilder.from(book));
-   
-      MagicItemRecipe recipe = magicItem.getRecipe();
       
-      ItemStack table = new ItemStack(Items.CRAFTING_TABLE);
-      tag = table.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Forge Item\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"green\"},{\"text\":\" to forge this item!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      if(!(recipe instanceof ExplainRecipe)){
-         gui.setSlot(43,GuiElementBuilder.from(table));
-      }
-   
       gui.setSlot(25,GuiElementBuilder.from(magicItem.getPrefItem()).glow());
       
+      GuiElementBuilder returnBook = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
+      returnBook.setName((Text.literal("")
+            .append(Text.literal("Magic Items").formatted(Formatting.DARK_PURPLE))));
+      returnBook.addLoreLine((Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.GREEN))
+            .append(Text.literal("to return to the Magic Items Page").formatted(Formatting.LIGHT_PURPLE))));
+      gui.setSlot(26,returnBook);
+      
+      
+      MagicItemRecipe recipe = magicItem.getRecipe();
       MagicItemIngredient[][] ingredients = recipe.getIngredients();
       for(int i = 0; i < 25; i++){
          ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
          GuiElementBuilder craftingElement = GuiElementBuilder.from(ingredient);
          if(MagicItemUtils.isMagic(ingredient)) craftingElement.glow();
-         gui.setSlot(craftingSlots[i], craftingElement);
+         gui.setSlot(CRAFTING_SLOTS[i], craftingElement);
       }
    
       ItemStack recipeList = new ItemStack(Items.PAPER);
@@ -897,114 +778,53 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       display.putString("Name","[{\"text\":\"Total Ingredients\",\"italic\":false,\"color\":\"dark_purple\"}]");
       loreList.add(NbtString.of("[{\"text\":\"-----------------------\",\"italic\":false,\"color\":\"light_purple\"}]"));
       for(Map.Entry<String, Pair<Integer,ItemStack>> ingred : ingredList.entrySet()){
-         ItemStack ingredStack = ingred.getValue().getRight();
-         int maxCount = ingredStack.getMaxCount();
-         int num = ingred.getValue().getLeft();
-         int stacks = num / maxCount;
-         int rem = num % maxCount;
-         String stackStr = "";
-         if(num > maxCount){
-            if(rem > 0){
-               stackStr = "("+stacks+" Stacks + "+rem+")";
-            }else{
-               stackStr = "("+stacks+" Stacks)";
-            }
-            stackStr = ",{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+stackStr+"\",\"color\":\"yellow\"}";
-         }
-         String ingredStr = "[{\"text\":\""+ingred.getKey()+"\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+num+"\",\"color\":\"green\"}"+stackStr+"]";
-         
-         loreList.add(NbtString.of(ingredStr));
+         loreList.add(NbtString.of(getIngredStr(ingred)));
       }
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Does not include NBT Values\",\"italic\":true,\"color\":\"dark_purple\"}]"));
+      int slotCount = 0;
+      for(MagicItem item : recipe.getForgeRequirementList()){
+         loreList.add(NbtString.of("[{\"text\":\"Requires\",\"color\":\"green\"},{\"text\":\" a \",\"color\":\"dark_purple\"},{\"text\":\""+item.getNameString()+"\",\"italic\":false,\"color\":\"aqua\"}]"));
+         GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideFlags().glow();
+         reqItem.setName((Text.literal("")
+               .append(Text.literal("Requires ").formatted(Formatting.GREEN))
+               .append(Text.literal("a ").formatted(Formatting.DARK_PURPLE))
+               .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA))));
+         gui.setSlot(slotCount,reqItem);
+         slotCount += 9;
+      }
+      if(!recipe.getForgeRequirementList().isEmpty()) loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Does not include item data\",\"italic\":true,\"color\":\"dark_purple\"}]"));
    
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
-      gui.setSlot(26,GuiElementBuilder.from(recipeList));
+      gui.setSlot(43,GuiElementBuilder.from(recipeList));
    
-      gui.setTitle(Text.literal("Recipe for "+magicItem.getName()));
+      gui.setTitle(Text.literal("Recipe for "+magicItem.getNameString()));
    }
    
-   public void buildCraftingGui(TomeGui gui, ServerPlayerEntity player, String itemId){
-      gui.setMode(TomeMode.CRAFTING);
-      for(int i = 0; i < gui.getSize(); i++){
-         gui.clearSlot(i);
-         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
-      }
-   
-      GameProfile gameProfile = new GameProfile(player.getUuid(),null);
-      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
-      head.setName((Text.literal("").append(Text.literal(player.getEntityName()+"'s ").formatted(Formatting.AQUA)).append(Text.literal("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
-      head.addLoreLine((Text.literal("").append(Text.literal("Click").formatted(Formatting.YELLOW)).append(Text.literal(" to go to your Profile").formatted(Formatting.LIGHT_PURPLE))));
-      gui.setSlot(43,head);
-   
-      ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-      NbtCompound tag = book.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"to view a Magic Item Recipe\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      gui.setSlot(7,GuiElementBuilder.from(book));
-   
-      ItemStack table = new ItemStack(Items.CRAFTING_TABLE);
-      tag = table.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Forge Item\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"green\"},{\"text\":\" to forge a Magic Item once a recipe is loaded!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"This slot will show a Magic Item once a valid recipe is loaded.\",\"italic\":true,\"color\":\"aqua\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      gui.setSlot(25,GuiElementBuilder.from(table));
-   
-      for(int i = 0; i < 25; i++){
-         gui.setSlot(craftingSlots[i], new GuiElementBuilder(Items.AIR));
-      }
-      
-      CraftingInventory inv = new CraftingInventory();
-      CraftingInventoryListener listener = new CraftingInventoryListener(this,gui);
-      inv.addListener(listener);
-      for(int i = 0; i<25;i++){
-         gui.setSlotRedirect(craftingSlots[i], new Slot(inv,i,0,0));
-      }
-      
-      if(itemId != null && !itemId.isEmpty()){
-         MagicItemRecipe recipe = MagicItemUtils.getItemFromId(itemId).getRecipe();
-         MagicItemIngredient[][] ingredients = recipe.getIngredients();
-         Inventory playerInventory = player.getInventory();
-         
-         for(int i = 0; i < 25; i++){
-            MagicItemIngredient ingredient = ingredients[i/5][i%5];
-            
-            for(int j = 0; j < playerInventory.size(); j++){
-               ItemStack invSlot = playerInventory.getStack(j);
-               
-               if(ingredient.validStack(invSlot)){
-                  ItemStack toMove = invSlot.split(ingredient.getCount());
-                  if(invSlot.getCount() == 0){
-                     invSlot = ItemStack.EMPTY;
-                  }
-                  inv.setStack(i,toMove);
-                  playerInventory.setStack(j,invSlot);
-                  break;
-               }
-            }
+   private String getIngredStr(Map.Entry<String, Pair<Integer, ItemStack>> ingred){
+      ItemStack ingredStack = ingred.getValue().getRight();
+      int maxCount = ingredStack.getMaxCount();
+      int num = ingred.getValue().getLeft();
+      int stacks = num / maxCount;
+      int rem = num % maxCount;
+      String stackStr = "";
+      if(num > maxCount){
+         if(rem > 0){
+            stackStr = "("+stacks+" Stacks + "+rem+")";
+         }else{
+            stackStr = "("+stacks+" Stacks)";
          }
+         stackStr = ",{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+stackStr+"\",\"color\":\"yellow\"}";
       }
-   
-      gui.setTitle(Text.literal("Forge Items"));
+      return "[{\"text\":\""+ ingred.getKey()+"\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+num+"\",\"color\":\"green\"}"+stackStr+"]";
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"Tome of Arcana Novum\\n\\nRarity: Empowered\\n\\nStrangely enough, this Tome is incredibly easy to craft compared to most other Magic Items, like it wants to share its knowledge.\\n\\nThe way the Eye of Ender is so naturally \"}");
-      list.add("{\"text\":\"Tome of Arcana Novum\\n\\nAttracted to the enchantment table is definitely curious.\\n\\nHowever, as a result of its ease of construction, it offers no Crafting XP like other Magic Items do.\\n\\nIt acts as a guide and forge for those who\"}");
+      list.add("{\"text\":\"Tome of Arcana Novum\\n\\nAttracted to the enchantment table is definitely curious.\\n\\nHowever, as a result of its ease of construction, it offers no Crafting XP like other Magic Items do.\\n\\nIt acts as a guide and aid for those who\"}");
       list.add("{\"text\":\"Tome of Arcana Novum\\n\\nseek the secrets of Arcana Novum.\"}");
       return list;
    }
@@ -1026,11 +846,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
    public enum TomeMode{
       PROFILE,
       COMPENDIUM,
-      CRAFTING,
       ITEM,
       RECIPE,
       NONE,
-      TINKER,
       ACHIEVEMENTS
    }
    
@@ -1043,8 +861,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       MYTHICAL("Mythical"),
       ITEMS("Items"),
       BLOCKS("Blocks"),
+      FORGE("Forge"),
       ARROWS("Arrows"),
-      ARMOR("Armor"),
+      ALTARS("Altars"),
       EQUIPMENT("Equipment"),
       CHARMS("Charms"),
       CATALYSTS("Catalysts");
@@ -1058,7 +877,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
       public static Text getColoredLabel(TomeFilter filter){
          MutableText text = Text.literal(filter.label);
       
-         return switch(filter){
+         return switch(filter){ // Only Black and Dark Blue left for future usage (before repeats)
             case NONE -> text.formatted(Formatting.WHITE);
             case MUNDANE -> text.formatted(Formatting.GRAY);
             case EMPOWERED -> text.formatted(Formatting.GREEN);
@@ -1067,8 +886,9 @@ public class ArcaneTome extends MagicItem implements UsableItem {
             case MYTHICAL -> text.formatted(Formatting.LIGHT_PURPLE);
             case ITEMS -> text.formatted(Formatting.DARK_AQUA);
             case BLOCKS -> text.formatted(Formatting.DARK_PURPLE);
+            case FORGE -> text.formatted(Formatting.DARK_GREEN);
             case ARROWS -> text.formatted(Formatting.RED);
-            case ARMOR -> text.formatted(Formatting.BLUE);
+            case ALTARS -> text.formatted(Formatting.BLUE);
             case EQUIPMENT -> text.formatted(Formatting.DARK_RED);
             case CHARMS -> text.formatted(Formatting.YELLOW);
             case CATALYSTS -> text.formatted(Formatting.DARK_GRAY);
@@ -1093,7 +913,7 @@ public class ArcaneTome extends MagicItem implements UsableItem {
          if(filter == TomeFilter.NONE) return true;
          TomeFilter[] cats = item.getCategories();
          if(cats == null){
-            log(2,"No categories found for: "+item.getName());
+            log(2,"No categories found for: "+item.getNameString());
             return false;
          }
          for(TomeFilter category : cats){
@@ -1222,6 +1042,34 @@ public class ArcaneTome extends MagicItem implements UsableItem {
          if(filter == AchievementFilter.ACQUIRED) return acquired;
          if(filter == AchievementFilter.NOT_ACQUIRED) return !acquired;
          return false;
+      }
+   }
+   
+   public class ArcaneTomeItem extends MagicPolymerItem {
+      public ArcaneTomeItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+         openGui(playerEntity,TomeMode.PROFILE,new TomeGui.CompendiumSettings(0,0));
+         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         
+         NbtCompound itemNbt = stack.getNbt();
+         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+         if(magicTag.contains("forgeCraftTick")){
+            magicTag.remove("forgeCraftTick");
+         }
       }
    }
 }

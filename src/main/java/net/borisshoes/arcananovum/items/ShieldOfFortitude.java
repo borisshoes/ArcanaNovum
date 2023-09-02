@@ -1,68 +1,45 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
-import net.borisshoes.arcananovum.items.core.AttackingItem;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerShieldItem;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.MobSpawnerBlockEntity;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageSources;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.BannerItem;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
-public class ShieldOfFortitude extends MagicItem implements AttackingItem, UsableItem {
+public class ShieldOfFortitude extends MagicItem {
    public ShieldOfFortitude(){
       id = "shield_of_fortitude";
       name = "Shield of Fortitude";
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
+      vanillaItem = Items.SHIELD;
+      item = new ShieldOfFortitudeItem(new FabricItemSettings().maxCount(1).fireproof().maxDamage(336));
       
-      ItemStack item = new ItemStack(Items.SHIELD);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -76,14 +53,14 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem, Usabl
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags",103);
+      tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
@@ -96,70 +73,6 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem, Usabl
       if(banner != null) newTag.put("BlockEntityTag", banner);
       stack.setNbt(newTag);
       return stack;
-   }
-   
-   @Override
-   public boolean attackEntity(PlayerEntity player, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult){
-      ItemStack item = player.getStackInHand(hand);
-      
-      boolean bash = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shield_bash")) >= 1;
-      if(bash && entity instanceof LivingEntity living){
-         ArrayList<TickTimerCallback> toRemove = new ArrayList<>();
-         float shieldTotal = 0;
-         float absAmt = player.getAbsorptionAmount();
-         for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
-            TickTimerCallback t = SERVER_TIMER_CALLBACKS.get(i);
-            if(t instanceof ShieldTimerCallback st){
-               if(st.getPlayer().getUuidAsString().equals(player.getUuidAsString())){
-                  shieldTotal += st.getHearts();
-                  st.onTimer();
-                  toRemove.add(st);
-               }
-            }
-         }
-         shieldTotal = Math.min(Math.min(absAmt,shieldTotal),50);
-         if(shieldTotal >= 2){
-            living.damage(new DamageSource(living.getDamageSources().magic().getTypeRegistryEntry(),player,player), shieldTotal);
-            if(shieldTotal >= 25){
-               StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA, (120), 0, false, false, true);
-               StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, (40), 4, false, false, true);
-               living.addStatusEffect(nausea);
-               living.addStatusEffect(slow);
-            }
-            if(player instanceof ServerPlayerEntity serverPlayer)
-               SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.ENTITY_IRON_GOLEM_HURT, .7f, .8f);
-         }
-         SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
-      }
-      return true;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      return true;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      try{
-         ItemStack item = playerEntity.getStackInHand(hand);
-         NbtCompound itemNbt = item.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-   
-         BlockState blockState = world.getBlockState(result.getBlockPos());
-         if(itemNbt.contains("BlockEntityTag") && blockState.getBlock() == Blocks.WATER_CAULDRON){
-            itemNbt.remove("BlockEntityTag");
-            LeveledCauldronBlock.decrementFluidLevel(blockState,world,result.getBlockPos());
-         }
-      }catch (Exception e){
-         e.printStackTrace();
-      }
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
    }
    
    @Override
@@ -181,7 +94,7 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem, Usabl
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Shield of Fortitude\\n\\nRarity: Legendary\\n\\nTaking after the Wings of Zephyr I have successfully recreated their incredible durability. \\n\\nWhile keeping with the protective nature of the Wings I have been able to infuse extra\\n\"}");
+      list.add("{\"text\":\"  Shield of Fortitude\\n\\nRarity: Legendary\\n\\nTaking after the Wings of Enderia I have successfully recreated their incredible durability. \\n\\nWhile keeping with the protective nature of the Wings I have been able to infuse extra\\n\"}");
       list.add("{\"text\":\"  Shield of Fortitude\\n\\nArcana into the four basic protection enchantments, fusing them with the ability of golden apples that grants the consumer a protective barrier.\\n\\nAs a result half of all damage blocked becomes a barrier lasting 10 seconds.\"}");
       return list;
    }
@@ -203,6 +116,40 @@ public class ShieldOfFortitude extends MagicItem implements AttackingItem, Usabl
             {g,f,s,j,g},
             {o,i,p,i,o},
             {n,o,g,o,n}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withEnchanter().withCore());
+   }
+   
+   public class ShieldOfFortitudeItem extends MagicPolymerShieldItem {
+      public ShieldOfFortitudeItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public ActionResult useOnBlock(ItemUsageContext context){
+         ItemStack stack = context.getStack();
+         BlockPos blockPos = context.getBlockPos();
+         World world = context.getWorld();
+         try{
+            NbtCompound itemNbt = stack.getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            
+            BlockState blockState = world.getBlockState(blockPos);
+            if(itemNbt.contains("BlockEntityTag") && blockState.getBlock() == Blocks.WATER_CAULDRON){
+               itemNbt.remove("BlockEntityTag");
+               LeveledCauldronBlock.decrementFluidLevel(blockState,world,blockPos);
+               return ActionResult.SUCCESS;
+            }
+         }catch (Exception e){
+            e.printStackTrace();
+         }
+         return ActionResult.PASS;
+      }
    }
 }

@@ -2,16 +2,15 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.items.core.AttackingItem;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
-import net.borisshoes.arcananovum.recipes.SoulstoneIngredient;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.util.NbtType;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -19,6 +18,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
@@ -26,9 +26,10 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
-import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
@@ -36,31 +37,32 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
+public class EssenceEgg extends MagicItem {
    public EssenceEgg(){
       id = "essence_egg";
       name = "Essence Egg";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
+      vanillaItem = Items.GHAST_SPAWN_EGG;
+      item = new EssenceEggItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.GHAST_SPAWN_EGG);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -85,8 +87,8 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
       magicTag.putString("type","unattuned");
       magicTag.putInt("uses",0);
       prefNBT = tag;
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
@@ -104,96 +106,10 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
       return stack;
    }
    
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      if(playerEntity.isCreative()){
-         ItemStack item = playerEntity.getStackInHand(hand);
-         if(!getType(item).equals("unattuned"))
-            addUses(item,1);
-      }
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      try{
-         ItemStack item = playerEntity.getStackInHand(hand);
-         NbtCompound itemNbt = item.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      
-         if(!getType(item).equals("unattuned")){
-            // Check for use on spawner
-            BlockPos blockPos = result.getBlockPos();
-            BlockEntity blockEntity;
-            BlockState blockState = world.getBlockState(blockPos);
-            if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof MobSpawnerBlockEntity){
-               int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"willing_captive"));
-               if(getUses(item) >= 5-captiveLevel){
-                  MobSpawnerBlockEntity mobSpawnerBlockEntity = (MobSpawnerBlockEntity)blockEntity;
-                  MobSpawnerLogic mobSpawnerLogic = mobSpawnerBlockEntity.getLogic();
-                  EntityType<?> entityType = EntityType.get(getType(item)).get();
-                  mobSpawnerBlockEntity.setEntityType(entityType, world.getRandom());
-                  blockEntity.markDirty();
-                  world.updateListeners(blockPos, blockState, blockState, Block.NOTIFY_ALL);
-                  
-                  if(playerEntity instanceof ServerPlayerEntity player){
-                     player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(item)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
-                     SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
-                     PLAYER_DATA.get(playerEntity).addXP(Math.min(0,2500-500*captiveLevel)); // Add xp
-                     ArcanaAchievements.grant(player,"soul_conversion");
-                  }
-                  addUses(item, -5+captiveLevel);
-               }
-            }else{
-               int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"soul_split"));
-               int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"determined_spirit"));
-               if(getUses(item) > 0){
-                  ServerWorld serverWorld = playerEntity.getServer().getWorld(world.getRegistryKey());
-                  Vec3d summonPos = result.getPos().add(0,0.5,0);
-      
-                  NbtCompound nbtCompound = new NbtCompound();
-                  nbtCompound.putString("id", getType(item));
-                  int spawns = Math.random() >= 0.1*splitLevel ? 1 : 2;
-                  
-                  for(int i = 0; i < spawns; i++){
-                     Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, entity -> {
-                        entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
-                        return entity;
-                     });
-                     if(newEntity instanceof MobEntity){
-                        ((MobEntity) newEntity).initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_EGG, null, null);
-                     }
-                     serverWorld.spawnNewEntityAndPassengers(newEntity);
-                  }
-   
-                  if(Math.random() >= 0.1*efficiencyLevel){
-                     addUses(item,-1);
-                  }
-                  if(playerEntity instanceof ServerPlayerEntity player){
-                     SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
-                     PLAYER_DATA.get(playerEntity).addXP(500); // Add xp
-                     ArcanaAchievements.progress(player,"soul_for_soul",1);
-                  }
-               }
-            }
-         }
-      
-         return false;
-      }catch(Exception e){
-         e.printStackTrace();
-         return false;
-      }
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
-   }
-   
    public static void setType(ItemStack item, String entityId){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
       String entityTypeName = EntityType.get(entityId).get().getName().getString();
       if(entityId.equals("unattuned")){
          loreList.set(4,NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"}]"));
@@ -224,7 +140,7 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
       }else{
          magicNbt.putInt("uses", uses);
       
-         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
          loreList.set(5,NbtString.of("[{\"text\":\"Uses "+uses+" Left\",\"italic\":false,\"color\":\"gray\"}]"));
       }
    }
@@ -240,29 +156,9 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
       }else{
          magicNbt.putInt("uses", newUses);
    
-         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
          loreList.set(5,NbtString.of("[{\"text\":\"Uses "+newUses+" Left\",\"italic\":false,\"color\":\"gray\"}]"));
       }
-   }
-   
-   @Override
-   public boolean attackEntity(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult){
-      if(playerEntity.isCreative()){
-         ItemStack item = playerEntity.getStackInHand(hand);
-         NbtCompound itemNbt = item.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         String type = magicNbt.getString("type");
-   
-         if(type.equals("unattuned") && entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity)){
-            String entityTypeId = EntityType.getId(attackedEntity.getType()).toString();
-            String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
-      
-            setType(item,entityTypeId);
-            player.sendMessage(Text.translatable("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
-         }
-      }
-      return true;
    }
    
    @Override
@@ -303,5 +199,124 @@ public class EssenceEgg extends MagicItem implements UsableItem, AttackingItem {
             {p,b,s,b,p},
             {o,p,b,p,o}};
       return new MagicItemRecipe(ingredients);
+   }
+   
+   public class EssenceEggItem extends MagicPolymerItem {
+      public EssenceEggItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public ActionResult useOnBlock(ItemUsageContext context){
+         ItemStack stack = context.getStack();
+         try{
+            World world = context.getWorld();
+            PlayerEntity playerEntity = context.getPlayer();
+            NbtCompound itemNbt = stack.getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            
+            if(!getType(stack).equals("unattuned")){
+               // Check for use on spawner
+               BlockPos blockPos = context.getBlockPos();
+               BlockEntity blockEntity;
+               BlockState blockState = world.getBlockState(blockPos);
+               if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof MobSpawnerBlockEntity){
+                  int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WILLING_CAPTIVE.id));
+                  if(getUses(stack) >= 5-captiveLevel){
+                     MobSpawnerBlockEntity mobSpawnerBlockEntity = (MobSpawnerBlockEntity)blockEntity;
+                     MobSpawnerLogic mobSpawnerLogic = mobSpawnerBlockEntity.getLogic();
+                     EntityType<?> entityType = EntityType.get(getType(stack)).get();
+                     mobSpawnerBlockEntity.setEntityType(entityType, world.getRandom());
+                     blockEntity.markDirty();
+                     world.updateListeners(blockPos, blockState, blockState, Block.NOTIFY_ALL);
+                     
+                     if(playerEntity instanceof ServerPlayerEntity player){
+                        player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(stack)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
+                        SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
+                        PLAYER_DATA.get(playerEntity).addXP(Math.min(0,2500-500*captiveLevel)); // Add xp
+                        ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION.id);
+                     }
+                     addUses(stack, -5+captiveLevel);
+                  }
+               }else{
+                  int splitLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_SPLIT.id));
+                  int efficiencyLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.DETERMINED_SPIRIT.id));
+                  if(getUses(stack) > 0){
+                     ServerWorld serverWorld = playerEntity.getServer().getWorld(world.getRegistryKey());
+                     Vec3d summonPos = context.getHitPos().add(0,0.5,0);
+                     
+                     NbtCompound nbtCompound = new NbtCompound();
+                     nbtCompound.putString("id", getType(stack));
+                     int spawns = Math.random() >= 0.1*splitLevel ? 1 : 2;
+                     
+                     for(int i = 0; i < spawns; i++){
+                        Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, entity -> {
+                           entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
+                           return entity;
+                        });
+                        if(newEntity instanceof MobEntity mobEntity){
+                           mobEntity.initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_EGG, null, null);
+                        }
+                        serverWorld.spawnNewEntityAndPassengers(newEntity);
+                     }
+                     
+                     if(Math.random() >= 0.1*efficiencyLevel){
+                        addUses(stack,-1);
+                     }
+                     if(playerEntity instanceof ServerPlayerEntity player){
+                        SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
+                        PLAYER_DATA.get(playerEntity).addXP(500); // Add xp
+                        ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL.id,1);
+                     }
+                  }
+               }
+            }
+            
+            return ActionResult.SUCCESS;
+         }catch(Exception e){
+            e.printStackTrace();
+            return ActionResult.PASS;
+         }
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+         ItemStack item = playerEntity.getStackInHand(hand);
+         if(playerEntity.isCreative()){
+            if(!getType(item).equals("unattuned"))
+               addUses(item,1);
+            return TypedActionResult.success(item);
+         }
+         return TypedActionResult.pass(item);
+      }
+      
+      @Override
+      public boolean postHit(ItemStack stack, LivingEntity entity, LivingEntity attacker){
+         if(!(attacker instanceof PlayerEntity playerEntity)) return false;
+         
+         if(playerEntity.isCreative()){
+            NbtCompound itemNbt = stack.getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            String type = magicNbt.getString("type");
+            
+            if(type.equals("unattuned") && entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity)){
+               String entityTypeId = EntityType.getId(attackedEntity.getType()).toString();
+               String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+               
+               setType(stack,entityTypeId);
+               player.sendMessage(Text.translatable("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+            }
+         }
+         
+         return false;
+      }
    }
 }

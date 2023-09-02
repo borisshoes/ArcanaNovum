@@ -3,18 +3,19 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -30,7 +31,6 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -40,7 +40,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -57,9 +56,11 @@ public class StormArrows extends RunicArrow {
       name = "Storm Arrows";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new StormArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -75,30 +76,30 @@ public class StormArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",12040354);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
-      int stableLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"storm_stabilization"));
-      int chainLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"chain_lightning"));
-      int shockLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"aftershock"));
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
+      int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION.id);
+      int chainLvl = arrow.getAugment(ArcanaAugments.CHAIN_LIGHTNING.id);
+      int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK.id);
       strike(arrow,entityHitResult.getPos(),stableLvl,shockLvl);
       if(chainLvl > 0) chainLightning(arrow,entityHitResult.getEntity(),chainLvl);
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
-      int stableLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"storm_stabilization"));
-      int shockLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"aftershock"));
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
+      int stableLvl = arrow.getAugment(ArcanaAugments.STORM_STABILIZATION.id);
+      int shockLvl = arrow.getAugment(ArcanaAugments.AFTERSHOCK.id);
       strike(arrow,blockHitResult.getPos(),stableLvl,shockLvl);
    }
    
@@ -110,10 +111,10 @@ public class StormArrows extends RunicArrow {
          world.spawnEntity(lightning);
    
          if(arrow.getOwner() instanceof ServerPlayerEntity player){
-            Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2, new TimerTask() {
+            Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2, new TimerTask() {
                @Override
                public void run(){
-                  if(lightning.getStruckEntities().anyMatch(e -> e instanceof MooshroomEntity)) ArcanaAchievements.grant(player,"shock_therapy");
+                  if(lightning.getStruckEntities().anyMatch(e -> e instanceof MooshroomEntity)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY.id);
                }
             }));
          }
@@ -191,7 +192,7 @@ public class StormArrows extends RunicArrow {
       EnchantedBookItem.addEnchantment(enchantedBook6,new EnchantmentLevelEntry(Enchantments.CHANNELING,1));
       MagicItemIngredient g = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,enchantedBook6.getNbt());
       MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -199,12 +200,25 @@ public class StormArrows extends RunicArrow {
             {c,h,m,h,c},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"     Storm Arrows\\n\\nRarity: Exotic\\n\\nThe channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to force a storm, abeit briefly. The Matrix doesn't always seem to succeed in activating though.\"}");
       return list;
+   }
+   
+   public class StormArrowsItem extends MagicPolymerArrowItem {
+      public StormArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

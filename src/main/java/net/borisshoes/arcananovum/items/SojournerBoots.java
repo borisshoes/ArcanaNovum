@@ -1,36 +1,46 @@
 package net.borisshoes.arcananovum.items;
 
+import com.google.common.collect.Multimap;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.items.core.EnergyItem;
-import net.borisshoes.arcananovum.items.core.TickingItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.core.EnergyItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.StairsBlock;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ArmorMaterials;
+import net.minecraft.item.DyeableItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
-import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
@@ -38,77 +48,51 @@ import net.minecraft.world.World;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-import static net.minecraft.block.StairsBlock.HALF;
 
-public class SojournerBoots extends EnergyItem implements TickingItem {
+public class SojournerBoots extends EnergyItem {
    public SojournerBoots(){
       id = "sojourner_boots";
       name = "Sojourner's Boots";
       rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARMOR};
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
+      vanillaItem = Items.LEATHER_BOOTS;
+      item = new SojournerBootsItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.LEATHER_BOOTS);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
-      NbtList attributes = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Sojourner\\'s Boots\",\"italic\":false,\"color\":\"dark_green\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"These boots shall take you to see the \",\"italic\":false,\"color\":\"green\"},{\"text\":\"world\",\"color\":\"dark_green\"},{\"text\":\"...\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Merely wearing them makes you want to go on an \",\"italic\":false,\"color\":\"green\"},{\"text\":\"adventure\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Gives \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ramping move speed\",\"color\":\"gray\"},{\"text\":\" and \"},{\"text\":\"uphill step assist\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These boots are \",\"italic\":false,\"color\":\"green\"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\" and equal to \"},{\"text\":\"unenchanted\",\"color\":\"gray\"},{\"text\":\" \",\"color\":\"blue\"},{\"text\":\"netherite\",\"color\":\"dark_red\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"shall take you to see the \"},{\"text\":\"world\",\"color\":\"dark_aqua\"},{\"text\":\"...\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Merely \",\"italic\":false,\"color\":\"green\"},{\"text\":\"wearing \",\"color\":\"blue\"},{\"text\":\"them makes you want to go on an \"},{\"text\":\"adventure\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"are \"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"and equal to \"},{\"text\":\"unenchanted netherite\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Wearing them gives \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ramping move speed\",\"color\":\"dark_aqua\"},{\"text\":\" and \"},{\"text\":\"uphill step assist\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" the \",\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"to \",\"color\":\"green\"},{\"text\":\"toggle \"},{\"text\":\"their \",\"color\":\"green\"},{\"text\":\"step assist\",\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Legendary\",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
       display.putInt("color",3385600);
-      NbtCompound kbRes = new NbtCompound();
-      kbRes.putDouble("Amount",0.1);
-      kbRes.putString("AttributeName","generic.knockback_resistance");
-      kbRes.putString("Name","generic.knockback_resistance");
-      kbRes.putString("Slot","feet");
-      kbRes.putIntArray("UUID", new int[]{-122122, 141691, 182346, -283382});
-      attributes.add(kbRes);
-      NbtCompound toughness = new NbtCompound();
-      toughness.putInt("Amount",3);
-      toughness.putString("AttributeName","generic.armor_toughness");
-      toughness.putString("Name","generic.armor_toughness");
-      toughness.putString("Slot","feet");
-      toughness.putIntArray("UUID", new int[]{-122122, 141691, 182346, -283382});
-      attributes.add(toughness);
-      NbtCompound armor = new NbtCompound();
-      armor.putInt("Amount",3);
-      armor.putString("AttributeName","generic.armor");
-      armor.putString("Name","generic.armor");
-      armor.putString("Slot","feet");
-      armor.putIntArray("UUID", new int[]{-122122, 141691, 182346, -283382});
-      attributes.add(armor);
-      NbtCompound speed = new NbtCompound();
-      speed.putDouble("Amount",0.0);
-      speed.putString("AttributeName","generic.movement_speed");
-      speed.putString("Name","generic.movement_speed");
-      speed.putInt("Operation",1);
-      speed.putString("Slot","feet");
-      speed.putIntArray("UUID", new int[]{-122122, 141691, 182346, -283382});
-      attributes.add(speed);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      tag.put("AttributeModifiers",attributes);
-      tag.putInt("HideFlags",103);
+      tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      item.setNbt(prefNBT);
-      prefItem = item;
+      tag = this.addMagicNbt(tag);
+      tag.getCompound("arcananovum").putBoolean("active",true);
+      prefNBT = tag;
+      
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public int getMaxEnergy(ItemStack item){ // +500% speed base
-      int boostLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"marathon_runner"));
-      return 500 + 50*boostLvl;
+   public int getMaxEnergy(ItemStack item){ // +250% speed base
+      int boostLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MARATHON_RUNNER.id));
+      return 250 + 50*boostLvl;
    }
    
    @Override
@@ -121,97 +105,66 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
       return stack;
    }
    
-   @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      try{
-         if(item == player.getEquippedStack(EquipmentSlot.FEET)){
-            // Step assist
+   // Holy fuck, the fact that doing this server-side is so unbelievably difficult is absurd.
+   // This can be done in a SINGLE line of code client-side...
+   public void attemptStepAssist(ItemStack stack, ServerPlayerEntity player, Vec3d playerVel){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      boolean active = magicNbt.getBoolean("active");
+      if(!player.isSneaking() && active){
+         ServerWorld world = player.getServerWorld();
+         Vec3d playerPos = player.getPos();
+         double maxHeight = 1.3 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS.id));
+         double height = findHeight(player,playerVel, maxHeight);
+         
+         if(height > 0.55){
+            Set<PositionFlag> set = new HashSet<>();
+            set.add(PositionFlag.X);
+            set.add(PositionFlag.Y);
+            set.add(PositionFlag.Z);
             
-            // Holy fuck, the fact that doing this server-side is so unbelievably difficult is absurd.
-            // This can be done in a SINGLE line of code client-side...
-            if(!player.isSneaking()){
-               // If player is moving, check block in front of them, and 2 spaces above, teleport 1.2 blocks up
-               ServerScoreboard scoreboard = world.getServer().getScoreboard();
-               ScoreboardObjective walk = scoreboard.getNullableObjective("arcananovum_sojourn_walk");
-               ScoreboardObjective sprint = scoreboard.getNullableObjective("arcananovum_sojourn_sprint");
-               ScoreboardPlayerScore walkScore = scoreboard.getPlayerScore(player.getEntityName(),walk);
-               ScoreboardPlayerScore sprintScore = scoreboard.getPlayerScore(player.getEntityName(),sprint);
-               if(walkScore.getScore() + sprintScore.getScore() > 1){
-                  Vec3d playerRot = player.getRotationVector();
-                  Vec3d playerPos = player.getPos();
-                  Vec3d vec3d3 = new Vec3d(playerRot.getX(),0,playerRot.getZ());
-                  BlockPos pos = BlockPos.ofFloored(playerPos.add(vec3d3.normalize().multiply(0.45)));
-                  double height = checkHeight(world,pos,playerPos.y);
-                  BlockPos aboveHeadPos = BlockPos.ofFloored(playerPos.add(0,2.5,0));
-                  int hikingBonus = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"hiking_boots"));
-                  
-                  if(height > 0.5 && height < 1.3+hikingBonus && world.getBlockState(aboveHeadPos).isAir()){
-                     Set<PositionFlag> set = new HashSet<>();
-                     set.add(PositionFlag.X);
-                     set.add(PositionFlag.Y);
-                     set.add(PositionFlag.Z);
-                     
-                     player.networkHandler.requestTeleport(playerPos.getX(), playerPos.getY()+height+0.1, playerPos.getZ(), player.getYaw(), player.getPitch(), set);
-                     PLAYER_DATA.get(player).addXP(2); // Add xp
-                  }
-                  walkScore.setScore(0);
-                  sprintScore.setScore(0);
-               }
-            }
-            
-            if(player.isSprinting()){
-               int curEnergy = getEnergy(item);
-               int sprintLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"sprinter"));
-               
-               addEnergy(item,2*(1+sprintLvl));
-               int newEnergy = getEnergy(item);
-               if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
-                  player.sendMessage(Text.translatable("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
-               PLAYER_DATA.get(player).addXP(1); // Add xp
-               
-               if(newEnergy == getMaxEnergy(item)){
-                  ArcanaAchievements.progress(player,"running",1);
-               }
-            }else{
-               addEnergy(item,-10);
-            }
-            NbtCompound nbt = item.getNbt();
-            NbtList attributes = nbt.getList("AttributeModifiers", NbtElement.COMPOUND_TYPE);
-            NbtCompound speed = new NbtCompound();
-            speed.putDouble("Amount",getEnergy(item)/100.0);
-            speed.putString("AttributeName","generic.movement_speed");
-            speed.putString("Name","generic.movement_speed");
-            speed.putInt("Operation",1);
-            speed.putString("Slot","feet");
-            speed.putIntArray("UUID", new int[]{-122122, 141691, 182346, -283382});
-            attributes.set(3,speed);
-            nbt.put("AttributeModifiers",attributes);
-         }else{
-            if(getEnergy(item) != 0){
-               setEnergy(item, 0);
-            }
+            player.networkHandler.requestTeleport(playerPos.getX(), playerPos.getY()+height+0.1, playerPos.getZ(), player.getYaw(), player.getPitch(), set);
+            PLAYER_DATA.get(player).addXP(2); // Add xp
          }
-      }catch(Exception e){
-         e.printStackTrace();
       }
    }
    
-   private double checkHeight(World world, BlockPos pos, double curY){
-      BlockPos[] poses = {pos,new BlockPos(pos.getX(),pos.getY()+1,pos.getZ()),new BlockPos(pos.getX(),pos.getY()+2,pos.getZ())};
-      BlockState[] blocks = {world.getBlockState(poses[0]),world.getBlockState(poses[1]),world.getBlockState(poses[2])};
-      VoxelShape[] shapes = {blocks[0].getCollisionShape(world,poses[0]),blocks[1].getCollisionShape(world,poses[1]),blocks[2].getCollisionShape(world,poses[2])};
-      double heightDiff = 0;
-      for(int i = 0; i <= 2; i++){
-         double height;
-         if(blocks[i].getBlock() instanceof StairsBlock && blocks[i].get(HALF).name().equals("BOTTOM")){
-            height = 0.5;
-         }else{
-            height = shapes[i].getMax(Direction.Axis.Y);
+   private double findHeight(ServerPlayerEntity player, Vec3d velocity, double maxHeight){
+      ServerWorld world = player.getServerWorld();
+      Vec3d predictXZ = player.getRotationVector().multiply(1,0,1).normalize().multiply(0.2);
+      if(velocity.multiply(1,0,1).normalize().dotProduct(player.getRotationVector().multiply(1,0,1).normalize()) < -0.5) return -1;
+      
+      for(double y = 0; y < maxHeight; y += 0.05){
+         boolean noCollisions = true;
+         Box predictBox = player.getBoundingBox().offset(predictXZ.x,y,predictXZ.z);
+         for (VoxelShape voxelShape : world.getBlockCollisions(player, predictBox)) {
+            if (!voxelShape.isEmpty()){
+               noCollisions = false;
+               break;
+            }
          }
-         heightDiff = height > 0 ? i+height : heightDiff;
+         if(!noCollisions) continue;
+         Box jumpBox = player.getBoundingBox().offset(0,y,0);
+         for (VoxelShape voxelShape : world.getBlockCollisions(player, jumpBox)) {
+            if (!voxelShape.isEmpty()){
+               noCollisions = false;
+               break;
+            }
+         }
+         if(!noCollisions) continue;
+         Box midpointBox = player.getBoundingBox().offset(predictXZ.x/2.0,y,predictXZ.z/2.0);
+         for (VoxelShape voxelShape : world.getBlockCollisions(player, midpointBox)) {
+            if (!voxelShape.isEmpty()){
+               noCollisions = false;
+               break;
+            }
+         }
+         
+         if(noCollisions){
+            return y;
+         }
       }
-      heightDiff -= (curY-poses[0].getY());
-      return heightDiff;
+      return -1;
    }
    
    @Override
@@ -219,16 +172,24 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
       ItemStack toolStack = inv.getStack(12); // Should be the Boots
       ItemStack newMagicItem = getNewItem();
       NbtCompound nbt = toolStack.getNbt();
-      if(nbt != null && nbt.contains("Enchantments")){
+      if(nbt == null) return newMagicItem;
+      NbtCompound newNbt = newMagicItem.getOrCreateNbt();
+      if(nbt.contains("Enchantments")){
          NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-         newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
+         newNbt.put("Enchantments",enchants);
+      }
+      if(nbt.contains("Trim")) newNbt.put("Trim",nbt.getCompound("Trim"));
+      if(nbt.contains("ArcanaStats")){
+         double percentile = nbt.getDouble("ArcanaStats");
+         newNbt.putDouble("ArcanaStats",percentile);
+         EnhancedStatUtils.enhanceItem(newMagicItem,percentile);
       }
       return newMagicItem;
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Sojourner's Boots\\n\\nRarity: Legendary\\n\\nInstead on focusing of the combative properties of the Wings of Zephyr, I tried to see how I could take inspiration from its storage of energy to enhance the wearer while also keeping the desirable\\n\"}");
+      list.add("{\"text\":\"  Sojourner's Boots\\n\\nRarity: Legendary\\n\\nInstead on focusing of the combative properties of the Wings of Enderia, I tried to see how I could take inspiration from its storage of energy to enhance the wearer while also keeping the desirable\\n\"}");
       list.add("{\"text\":\"  Sojourner's Boots\\n\\nbasic protection of the netherite boots I am trying to infuse.\\n\\nThe result are a pair of boots equal to unenchanted netherite, although I believe I can add enchantments through books with an anvil.\\n\"}");
       list.add("{\"text\":\"  Sojourner's Boots\\n\\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 500%. On top of that, the momentum carries me up short hills without effort.\"}");
       return list;
@@ -255,6 +216,87 @@ public class SojournerBoots extends EnergyItem implements TickingItem {
             {m,l,b,l,t},
             {o,n,x,n,o},
             {s,o,g,o,s}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil().withEnchanter().withCore());
+   }
+   
+   public class SojournerBootsItem extends MagicPolymerArmorItem implements DyeableItem {
+      public SojournerBootsItem(Settings settings){
+         super(getThis(),ArmorMaterials.NETHERITE,Type.BOOTS,settings);
+      }
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+         if(user.isSneaking()){
+            ItemStack stack = user.getStackInHand(hand);
+            NbtCompound itemNbt = stack.getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            boolean active = !magicNbt.getBoolean("active");
+            magicNbt.putBoolean("active",active);
+            
+            if(active){
+               user.sendMessage(Text.translatable("The Boots become energized with Arcana").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity)user, SoundEvents.BLOCK_BEACON_POWER_SELECT, 0.8f,2f);
+            }else{
+               user.sendMessage(Text.translatable("The Boots' energy fades").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity)user, SoundEvents.BLOCK_BEACON_DEACTIVATE, 2,.8f);
+            }
+            
+            return TypedActionResult.success(stack);
+         }else{
+            return super.use(world,user,hand);
+         }
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         try{
+            if(stack == player.getEquippedStack(EquipmentSlot.FEET)){
+               if(player.isSprinting()){
+                  if(player.isOnGround()){
+                     int curEnergy = getEnergy(stack);
+                     int sprintLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SPRINTER.id));
+                     addEnergy(stack,2*(1+sprintLvl));
+                     int newEnergy = getEnergy(stack);
+                     if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
+                        player.sendMessage(Text.translatable("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
+                     PLAYER_DATA.get(player).addXP(1); // Add xp
+                  }
+                  if(getEnergy(stack) == getMaxEnergy(stack)){
+                     ArcanaAchievements.progress(player,ArcanaAchievements.RUNNING.id, 1);
+                  }
+               }else{
+                  addEnergy(stack,-10);
+               }
+               NbtCompound nbt = stack.getNbt();
+               ArrayList<Pair<EntityAttribute, EntityAttributeModifier>> newAttrs = new ArrayList<>();
+               Multimap<EntityAttribute, EntityAttributeModifier> attributes = (nbt != null && nbt.contains("AttributeModifiers", NbtElement.LIST_TYPE)) ? stack.getAttributeModifiers(EquipmentSlot.FEET) : getAttributeModifiers(stack,EquipmentSlot.FEET);
+               for(Map.Entry<EntityAttribute, EntityAttributeModifier> entry : attributes.entries()){
+                  if(entry.getValue().getName().equals("Sojourner Speed")) continue;
+                  newAttrs.add(new Pair<>(entry.getKey(),entry.getValue()));
+                  //System.out.println(entry.getValue().getName()+" "+entry.getValue().getValue());
+               }
+               
+               nbt.remove("AttributeModifiers");
+               for(Pair<EntityAttribute, EntityAttributeModifier> newAttr : newAttrs){
+                  stack.addAttributeModifier(newAttr.getLeft(),newAttr.getRight(),EquipmentSlot.FEET);
+               }
+               
+               stack.addAttributeModifier(EntityAttributes.GENERIC_MOVEMENT_SPEED, new EntityAttributeModifier(UUID.randomUUID(), "Sojourner Speed", getEnergy(stack)/100.0, EntityAttributeModifier.Operation.MULTIPLY_BASE),EquipmentSlot.FEET);
+            }else{
+               if(getEnergy(stack) != 0){
+                  setEnergy(stack, 0);
+               }
+            }
+         }catch(Exception e){
+            e.printStackTrace();
+         }
+      }
    }
 }

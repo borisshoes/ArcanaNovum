@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.items.WingsOfZephyr;
-import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
+import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -60,17 +60,17 @@ public class EntityKilledCallback {
                   player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
                }
    
-               if(livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity && ArcanaAchievements.isTimerActive(player,"omae_wa")){
-                  ArcanaAchievements.progress(player,"omae_wa",1);
+               if(livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
+                  ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,1);
                }
-               if(livingEntity instanceof MobEntity && ArcanaAchievements.isTimerActive(player,"shadow_fury")){ //TODO Fix this achieve
-                  ArcanaAchievements.progress(player,"shadow_fury",1);
+               if(livingEntity instanceof MobEntity && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id)){
+                  ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
                }
             }
    
             ItemStack chestItem = player.getEquippedStack(EquipmentSlot.CHEST);
-            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfZephyr wings && player.isFallFlying() && livingEntity instanceof MobEntity){
-               ArcanaAchievements.grant(player,"angel_of_death");
+            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isFallFlying() && livingEntity instanceof MobEntity){
+               ArcanaAchievements.grant(player,ArcanaAchievements.ANGEL_OF_DEATH.id);
             }
          }
       }catch(Exception e){

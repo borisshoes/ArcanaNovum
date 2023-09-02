@@ -2,20 +2,20 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -40,9 +40,11 @@ public class BlinkArrows extends RunicArrow {
       name = "Blink Arrows";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new BlinkArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
    
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -58,44 +60,43 @@ public class BlinkArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",1404502);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
    
-      item.setNbt(prefNBT);
-      prefItem = item;
-   
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d tpPos = entityHitResult.getPos();
-         if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,"now_you_see_me");
-         player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
-         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
+         if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
+         player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+         ParticleEffectUtils.blinkArrowTp(player.getServerWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
-         int phaseLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"phase_in"));
+         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);
          StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
          player.addStatusEffect(invuln);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
          Vec3d tpPos = blockHitResult.getPos().add(offset);
-         if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,"now_you_see_me");
-         player.teleport(player.getWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
-         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
+         if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
+         player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+         ParticleEffectUtils.blinkArrowTp(player.getServerWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
    
-         int phaseLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"phase_in"));
+         int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);
          StatusEffectInstance invuln = new StatusEffectInstance(StatusEffects.RESISTANCE,phaseDur[phaseLvl], 3, false, false, true);
          player.addStatusEffect(invuln);
       }
@@ -105,7 +106,7 @@ public class BlinkArrows extends RunicArrow {
       MagicItemIngredient s = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
       MagicItemIngredient p = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
       MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,p,a,a},
@@ -113,12 +114,25 @@ public class BlinkArrows extends RunicArrow {
             {p,s,m,s,p},
             {a,p,s,p,a},
             {a,a,p,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"      Blink Arrows\\n\\nRarity: Exotic\\n\\nThe Runic Matrix has been configured for invoking teleportation spells, and now the arrows act like a thrown Ender Pearl when activated by a Runic Bow.\"}");
       return list;
+   }
+   
+   public class BlinkArrowsItem extends MagicPolymerArrowItem {
+      public BlinkArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

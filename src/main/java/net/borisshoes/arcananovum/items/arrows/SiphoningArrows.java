@@ -4,22 +4,19 @@ import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.OverhealTimerCallback;
-import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -47,9 +44,11 @@ public class SiphoningArrows extends RunicArrow {
       name = "Siphoning Arrows";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new SiphoningArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -65,33 +64,33 @@ public class SiphoningArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",15866018);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          double damage = MathHelper.ceil(MathHelper.clamp(arrow.getVelocity().length() * arrow.getDamage(), 0.0, 2.147483647E9)) / 5.5;
          damage += arrow.isCritical() ? damage/4 : 0;
    
          if(player.getHealth() < 1.5f){
-            Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2, new TimerTask() {
+            Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2, new TimerTask() {
                @Override
                public void run(){
-                  if(entityHitResult.getEntity() instanceof MobEntity mob && mob.isDead()) ArcanaAchievements.grant(player,"circle_of_life");
+                  if(entityHitResult.getEntity() instanceof MobEntity mob && mob.isDead()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE.id);
                }
             }));
          }
          
-         int overhealLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"overheal"));
+         int overhealLvl = arrow.getAugment(ArcanaAugments.OVERHEAL.id);
          float overheal = (float) MathHelper.clamp((damage+player.getHealth()) - player.getMaxHealth(),0,overhealCap[overhealLvl]);
          if(overheal > 0){
             float curAbs = player.getAbsorptionAmount();
@@ -101,12 +100,12 @@ public class SiphoningArrows extends RunicArrow {
          }
 
          player.heal((float)damage);
-         player.getWorld().spawnParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
+         player.getServerWorld().spawnParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){}
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){}
    
    private MagicItemRecipe makeRecipe(){
       MagicItemIngredient a = MagicItemIngredient.EMPTY;
@@ -117,7 +116,7 @@ public class SiphoningArrows extends RunicArrow {
       ItemStack potion8 = new ItemStack(Items.POTION);
       MagicItemIngredient i = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion8, Potions.STRONG_HARMING).getNbt());
       MagicItemIngredient k = new MagicItemIngredient(Items.FERMENTED_SPIDER_EYE,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -125,12 +124,25 @@ public class SiphoningArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,i,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Siphoning Arrows\\n\\nRarity: Exotic\\n\\nLife force is something I have rarely explored. I've invoked some simple life runes to draw upon the health lost from my arrows and channel it back to me.\"}");
       return list;
+   }
+   
+   public class SiphoningArrowsItem extends MagicPolymerArrowItem {
+      public SiphoningArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

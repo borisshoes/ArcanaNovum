@@ -2,14 +2,15 @@ package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.TickingItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -17,6 +18,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -30,34 +32,33 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.LocalRandom;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.math.random.RandomSeed;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class LightCharm extends MagicItem implements TickingItem, UsableItem {
+public class LightCharm extends MagicItem {
    public LightCharm(){
       id = "light_charm";
       name = "Charm of Light";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       itemVersion = 1;
+      vanillaItem = Items.SUNFLOWER;
+      item = new LightCharmItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.SUNFLOWER);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -83,81 +84,8 @@ public class LightCharm extends MagicItem implements TickingItem, UsableItem {
       prefNBT.getCompound("arcananovum").putInt("threshold",5);
       prefNBT.getCompound("arcananovum").putInt("novaCD",0);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
-   }
-   
-   @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-      boolean vision = magicTag.getBoolean("vision");
-      boolean active = magicTag.getBoolean("active");
-      int threshold = magicTag.getInt("threshold");
-      int brightness = magicTag.getInt("brightness");
-      int novaCD = magicTag.getInt("novaCD");
-      
-      if(world.getServer().getTicks() % 60 == 0){
-         BlockPos pos = player.getBlockPos();
-         if(active){
-            if(world.getLightLevel(pos) < threshold && world.getBlockState(pos).isAir()){
-               world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(IntProperty.of("level", 0, 15),brightness), Block.NOTIFY_ALL);
-               world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
-               PLAYER_DATA.get(player).addXP((int) (10*brightness/2.0)); // Add xp
-               ArcanaAchievements.progress(player,"enlightened",1);
-            }
-         }
-         
-      }
-   
-      if(world.getServer().getTicks() % 20 == 0){
-         if(novaCD > 0) magicTag.putInt("novaCD",novaCD-1);
-         BlockPos pos = player.getBlockPos();
-         if(vision){
-            // Search 10x10x10 area around player for light blocks
-            for(BlockPos block : BlockPos.iterateOutwards(pos, 10, 10, 10)){
-               //System.out.println("looking at block "+block.toShortString());
-               BlockState state = world.getBlockState(block);
-               if(state.getBlock().equals(Blocks.LIGHT)){
-                  world.spawnParticles(player, new BlockStateParticleEffect(ParticleTypes.BLOCK_MARKER, state), true, block.getX()+.5,block.getY()+.5,block.getZ()+.5, 1,0,0,0,0);
-               }
-            }
-         }
-      }
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      if(playerEntity.isSneaking()){
-         selectMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-      }else{
-         changeSetting((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-      }
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      ItemStack item = playerEntity.getStackInHand(hand);
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      int mode = magicTag.getInt("mode"); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
-      int brightness = magicTag.getInt("brightness");
-      Direction side = result.getSide();
-      BlockPos pos = result.getBlockPos().add(side.getVector());
-      boolean placeable = world.getBlockState(pos).canReplace(new ItemPlacementContext(playerEntity, hand, new ItemStack(Items.LIGHT), result));
-      if(mode == 5 && playerEntity instanceof ServerPlayerEntity player && placeable){
-         world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(IntProperty.of("level", 0, 15),brightness), Block.NOTIFY_ALL);
-         world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
-         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
-         PLAYER_DATA.get(player).addXP(15); // Add xp
-      }
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    public void changeSetting(ServerPlayerEntity player, ItemStack item){
@@ -220,7 +148,7 @@ public class LightCharm extends MagicItem implements TickingItem, UsableItem {
    private void nova(ServerPlayerEntity player, ItemStack item){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      ServerWorld world = player.getWorld();
+      ServerWorld world = player.getServerWorld();
       BlockPos center = player.getBlockPos();
       int range = 25;
       BlockPos max = center.add(range,5,range);
@@ -237,7 +165,7 @@ public class LightCharm extends MagicItem implements TickingItem, UsableItem {
                   world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
       
                   PLAYER_DATA.get(player).addXP(5); // Add xp
-                  ArcanaAchievements.progress(player,"enlightened",1);
+                  ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
                }
                
             }
@@ -256,10 +184,10 @@ public class LightCharm extends MagicItem implements TickingItem, UsableItem {
       int threshold = magicTag.getInt("threshold");
       int brightness = magicTag.getInt("brightness");
       
-      boolean hasThresh = ArcanaAugments.getAugmentOnItem(item,"mood_lighting") >= 1;
-      boolean hasBright = ArcanaAugments.getAugmentOnItem(item,"dimmer_switch") >= 1;
-      boolean hasNova = ArcanaAugments.getAugmentOnItem(item,"radiance") >= 1;
-      boolean hasManual = ArcanaAugments.getAugmentOnItem(item,"selective_placement") >= 1;
+      boolean hasThresh = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MOOD_LIGHTING.id) >= 1;
+      boolean hasBright = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.DIMMER_SWITCH.id) >= 1;
+      boolean hasNova = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RADIANCE.id) >= 1;
+      boolean hasManual = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SELECTIVE_PLACEMENT.id) >= 1;
       
       ArrayList<Integer> possibleModes = new ArrayList<>();
       possibleModes.add(0);
@@ -322,5 +250,95 @@ public class LightCharm extends MagicItem implements TickingItem, UsableItem {
             {p,l,g,l,p},
             {n,p,v,p,n}};
       return new MagicItemRecipe(ingredients);
+   }
+   
+   public class LightCharmItem extends MagicPolymerItem {
+      public LightCharmItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
+         NbtCompound magicTag = stack.getNbt().getCompound("arcananovum");
+         boolean vision = magicTag.getBoolean("vision");
+         boolean active = magicTag.getBoolean("active");
+         int threshold = magicTag.getInt("threshold");
+         int brightness = magicTag.getInt("brightness");
+         int novaCD = magicTag.getInt("novaCD");
+         
+         if(world.getServer().getTicks() % 60 == 0){
+            BlockPos pos = player.getBlockPos();
+            if(active){
+               if(world.getLightLevel(pos) < threshold && world.getBlockState(pos).isAir()){
+                  world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(IntProperty.of("level", 0, 15),brightness), Block.NOTIFY_ALL);
+                  world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
+                  PLAYER_DATA.get(player).addXP((int) (10*brightness/2.0)); // Add xp
+                  ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
+               }
+            }
+            
+         }
+         
+         if(world.getServer().getTicks() % 20 == 0){
+            if(novaCD > 0) magicTag.putInt("novaCD",novaCD-1);
+            BlockPos pos = player.getBlockPos();
+            if(vision){
+               // Search 10x10x10 area around player for light blocks
+               for(BlockPos block : BlockPos.iterateOutwards(pos, 10, 10, 10)){
+                  //System.out.println("looking at block "+block.toShortString());
+                  BlockState state = world.getBlockState(block);
+                  if(state.getBlock().equals(Blocks.LIGHT)){
+                     serverWorld.spawnParticles(player, new BlockStateParticleEffect(ParticleTypes.BLOCK_MARKER, state), true, block.getX()+.5,block.getY()+.5,block.getZ()+.5, 1,0,0,0,0);
+                  }
+               }
+            }
+         }
+      }
+      
+      @Override
+      public ActionResult useOnBlock(ItemUsageContext context){
+         PlayerEntity playerEntity = context.getPlayer();
+         World world = context.getWorld();
+         Hand hand = context.getHand();
+         ItemStack stack = context.getStack();
+         if(playerEntity == null) return ActionResult.PASS;
+         
+         NbtCompound itemNbt = stack.getNbt();
+         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+         int mode = magicTag.getInt("mode"); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
+         int brightness = magicTag.getInt("brightness");
+         Direction side = context.getSide();
+         BlockPos pos = context.getBlockPos().add(side.getVector());
+         boolean placeable = world.getBlockState(pos).canReplace(new ItemPlacementContext(playerEntity, hand, new ItemStack(Items.LIGHT), new BlockHitResult(context.getHitPos(),context.getSide(),context.getBlockPos(),context.hitsInsideBlock())));
+         if(mode == 5 && playerEntity instanceof ServerPlayerEntity player && placeable){
+            world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(IntProperty.of("level", 0, 15),brightness), Block.NOTIFY_ALL);
+            world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
+            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
+            PLAYER_DATA.get(player).addXP(15); // Add xp
+            return ActionResult.SUCCESS;
+         }
+         return ActionResult.PASS;
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+         if(playerEntity.isSneaking()){
+            selectMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+         }else{
+            changeSetting((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+         }
+         
+         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+      }
    }
 }

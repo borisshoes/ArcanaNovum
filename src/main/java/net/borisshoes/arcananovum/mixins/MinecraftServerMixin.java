@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.items.ContinuumAnchor;
+import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldGenerationProgressListener;
 import org.spongepowered.asm.mixin.Mixin;

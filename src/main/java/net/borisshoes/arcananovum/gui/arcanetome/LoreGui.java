@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.minecraft.item.WrittenBookItem;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 

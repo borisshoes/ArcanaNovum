@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -141,7 +141,7 @@ public abstract class ArcanaAchievement {
          for(ArcanaAchievement achievement : ArcanaAchievements.allMythical){
             ArcanaAchievements.grant(player,achievement.id);
          }
-         ArcanaAchievements.grant(player,"all_achievements");
+         ArcanaAchievements.grant(player,ArcanaAchievements.ALL_ACHIEVEMENTS.id);
       }
    }
 }

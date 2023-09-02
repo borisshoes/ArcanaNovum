@@ -1,7 +1,8 @@
 package net.borisshoes.arcananovum.gui.shulkercore;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.borisshoes.arcananovum.items.*;
+import net.borisshoes.arcananovum.items.ShulkerCore;
+import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.inventory.Inventory;
@@ -9,7 +10,6 @@ import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 

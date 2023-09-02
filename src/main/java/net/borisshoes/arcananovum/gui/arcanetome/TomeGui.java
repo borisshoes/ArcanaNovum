@@ -2,25 +2,16 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.items.*;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.recipes.ExplainRecipe;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -33,6 +24,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -73,324 +65,184 @@ public class TomeGui extends SimpleGui {
             // Achievements View
             tome.openGui(player, ArcaneTome.TomeMode.ACHIEVEMENTS,settings);
          }
-      }else if(mode == ArcaneTome.TomeMode.COMPENDIUM){
-         if(index == 4){
-            tome.buildProfileGui(this,player);
-         }else if(index == 49){
-            tome.openGui(player,ArcaneTome.TomeMode.TINKER,settings);
-         }else if(index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8){
-            ItemStack item = this.getSlot(index).getItemStack();
-            if(!item.isEmpty()){
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               if(type == ClickType.MOUSE_RIGHT){
-                  if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-                     if(magicItem.getRecipe() != null){
-                        tome.openRecipeGui(player,settings, magicItem.getId());
+      }else{
+         boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
+         if(mode == ArcaneTome.TomeMode.COMPENDIUM){
+            if(index == 4){
+               tome.buildProfileGui(this,player);
+            }else if(indexInCenter){
+               ItemStack item = this.getSlot(index).getItemStack();
+               if(!item.isEmpty()){
+                  MagicItem magicItem = MagicItemUtils.identifyItem(item);
+                  if(type == ClickType.MOUSE_RIGHT){
+                     if(magicItem.getRarity() == MagicRarity.MYTHICAL){
+                        if(magicItem.getRecipe() != null){
+                           tome.openRecipeGui(player,settings, magicItem.getId());
+                        }else{
+                           player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
+                        }
                      }else{
-                        player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
+                        if(magicItem.getRecipe() != null){
+                           tome.openRecipeGui(player,settings, magicItem.getId());
+                        }else{
+                           player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
+                        }
                      }
                   }else{
-                     if(magicItem.getRecipe() != null){
-                        tome.openRecipeGui(player,settings, magicItem.getId());
-                     }else{
-                        player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
-                     }
+                     tome.openItemGui(player,settings, magicItem.getId());
                   }
+               }
+            }else if(index == 0){
+               boolean backwards = type == ClickType.MOUSE_RIGHT;
+               boolean middle = type == ClickType.MOUSE_MIDDLE;
+               if(middle){
+                  settings.setSortType(ArcaneTome.TomeSort.RECOMMENDED);
                }else{
-                  tome.openItemGui(player,settings, magicItem.getId());
+                  settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType(),backwards));
+               }
+               
+               tome.buildCompendiumGui(this,player,settings);
+            }else if(index == 8){
+               boolean backwards = type == ClickType.MOUSE_RIGHT;
+               boolean middle = type == ClickType.MOUSE_MIDDLE;
+               if(middle){
+                  settings.setFilterType(ArcaneTome.TomeFilter.NONE);
+               }else{
+                  settings.setFilterType(ArcaneTome.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
+               }
+               
+               List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
+               int numPages = (int) Math.ceil((float)items.size()/28.0);
+               if(settings.getPage() > numPages){
+                  settings.setPage(numPages);
+               }
+               tome.buildCompendiumGui(this,player,settings);
+            }else if(index == 45){
+               if(settings.getPage() > 1){
+                  settings.setPage(settings.getPage()-1);
+                  tome.buildCompendiumGui(this,player,settings);
+               }
+            }else if(index == 53){
+               List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
+               int numPages = (int) Math.ceil((float)items.size()/28.0);
+               if(settings.getPage() < numPages){
+                  settings.setPage(settings.getPage()+1);
+                  tome.buildCompendiumGui(this,player,settings);
                }
             }
-         }else if(index == 0){
-            boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean middle = type == ClickType.MOUSE_MIDDLE;
-            if(middle){
-               settings.setSortType(ArcaneTome.TomeSort.RECOMMENDED);
-            }else{
-               settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType(),backwards));
+         }else if(mode == ArcaneTome.TomeMode.ACHIEVEMENTS){
+            if(index == 4){
+               if(type == ClickType.MOUSE_RIGHT){
+                  tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+               }else{
+                  tome.buildProfileGui(this,player);
+               }
+            }else if(indexInCenter){
+               ItemStack item = this.getSlot(index).getItemStack();
+               if(!item.isEmpty()){
+                  tome.openItemGui(player,settings, item.getNbt().getString("magicItemId"));
+               }
+            }else if(index == 0){
+               boolean backwards = type == ClickType.MOUSE_RIGHT;
+               boolean middle = type == ClickType.MOUSE_MIDDLE;
+               if(middle){
+                  settings.setSortType(ArcaneTome.AchievementSort.RECOMMENDED);
+               }else{
+                  settings.setSortType(ArcaneTome.AchievementSort.cycleSort(settings.getAchSortType(),backwards));
+               }
+         
+               tome.buildAchievementsGui(this,player,settings);
+            }else if(index == 8){
+               boolean backwards = type == ClickType.MOUSE_RIGHT;
+               boolean middle = type == ClickType.MOUSE_MIDDLE;
+               if(middle){
+                  settings.setFilterType(ArcaneTome.AchievementFilter.NONE);
+               }else{
+                  settings.setFilterType(ArcaneTome.AchievementFilter.cycleFilter(settings.getAchFilterType(),backwards));
+               }
+         
+               List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
+               int numPages = (int) Math.ceil((float)achs.size()/28.0);
+               if(settings.getAchPage() > numPages){
+                  settings.setAchPage(numPages);
+               }
+               tome.buildAchievementsGui(this,player,settings);
+            }else if(index == 45){
+               if(settings.getAchPage() > 1){
+                  settings.setAchPage(settings.getAchPage()-1);
+                  tome.buildAchievementsGui(this,player,settings);
+               }
+            }else if(index == 53){
+               List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
+               int numPages = (int) Math.ceil((float)achs.size()/28.0);
+               if(settings.getAchPage() < numPages){
+                  settings.setAchPage(settings.getAchPage()+1);
+                  tome.buildAchievementsGui(this,player,settings);
+               }
             }
-            
-            tome.buildCompendiumGui(this,player,settings);
-         }else if(index == 8){
-            boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean middle = type == ClickType.MOUSE_MIDDLE;
-            if(middle){
-               settings.setFilterType(ArcaneTome.TomeFilter.NONE);
-            }else{
-               settings.setFilterType(ArcaneTome.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
-            }
-            
-            List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
-            int numPages = (int) Math.ceil((float)items.size()/28.0);
-            if(settings.getPage() > numPages){
-               settings.setPage(numPages);
-            }
-            tome.buildCompendiumGui(this,player,settings);
-         }else if(index == 45){
-            if(settings.getPage() > 1){
-               settings.setPage(settings.getPage()-1);
-               tome.buildCompendiumGui(this,player,settings);
-            }
-         }else if(index == 53){
-            List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
-            int numPages = (int) Math.ceil((float)items.size()/28.0);
-            if(settings.getPage() < numPages){
-               settings.setPage(settings.getPage()+1);
-               tome.buildCompendiumGui(this,player,settings);
-            }
-         }
-      }else if(mode == ArcaneTome.TomeMode.ACHIEVEMENTS){
-         if(index == 4){
-            if(type == ClickType.MOUSE_RIGHT){
+         }else if(mode == ArcaneTome.TomeMode.RECIPE){
+            ItemStack item = this.getSlot(25).getItemStack();
+            MagicItem magicItem = MagicItemUtils.identifyItem(item);
+            if(index == 7){
+               NbtCompound loreData = magicItem.getBookLore();
+               if(loreData != null){
+                  ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
+                  writablebook.setNbt(loreData);
+                  BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
+                  LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.RECIPE,settings, magicItem.getId());
+                  loreGui.open();
+               }else{
+                  player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
+               }
+            }else if(index == 25 || index == 26){
                tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-            }else{
-               tome.buildProfileGui(this,player);
-            }
-         }else if(index == 49){
-            tome.openGui(player,ArcaneTome.TomeMode.TINKER,settings);
-         }else if(index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8){
-            ItemStack item = this.getSlot(index).getItemStack();
-            if(!item.isEmpty()){
-               tome.openItemGui(player,settings, item.getNbt().getString("magicItemId"));
-            }
-         }else if(index == 0){
-            boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean middle = type == ClickType.MOUSE_MIDDLE;
-            if(middle){
-               settings.setSortType(ArcaneTome.AchievementSort.RECOMMENDED);
-            }else{
-               settings.setSortType(ArcaneTome.AchievementSort.cycleSort(settings.getAchSortType(),backwards));
-            }
-      
-            tome.buildAchievementsGui(this,player,settings);
-         }else if(index == 8){
-            boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean middle = type == ClickType.MOUSE_MIDDLE;
-            if(middle){
-               settings.setFilterType(ArcaneTome.AchievementFilter.NONE);
-            }else{
-               settings.setFilterType(ArcaneTome.AchievementFilter.cycleFilter(settings.getAchFilterType(),backwards));
-            }
-      
-            List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
-            int numPages = (int) Math.ceil((float)achs.size()/28.0);
-            if(settings.getAchPage() > numPages){
-               settings.setAchPage(numPages);
-            }
-            tome.buildAchievementsGui(this,player,settings);
-         }else if(index == 45){
-            if(settings.getAchPage() > 1){
-               settings.setAchPage(settings.getAchPage()-1);
-               tome.buildAchievementsGui(this,player,settings);
-            }
-         }else if(index == 53){
-            List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
-            int numPages = (int) Math.ceil((float)achs.size()/28.0);
-            if(settings.getAchPage() < numPages){
-               settings.setAchPage(settings.getAchPage()+1);
-               tome.buildAchievementsGui(this,player,settings);
-            }
-         }
-      }else if(mode == ArcaneTome.TomeMode.CRAFTING){
-         if(index == 7){
-            //Give Items back
-            Inventory inv = getSlotRedirect(1).inventory;
-            returnItems(inv);
-            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-         }else if(index == 25){
-            ItemStack item = this.getSlot(index).getItemStack();
-            if(MagicItemUtils.isMagic(item)){
-               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               MagicItemRecipe recipe = magicItem.getRecipe();
-               Inventory inv = getSlotRedirect(1).inventory;
-   
-               ItemStack newMagicItem = magicItem.addCrafter(magicItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
-               if(newMagicItem == null){
-                  return false;
-               }
-               
-               if(!(magicItem instanceof ArcaneTome)){
-                  double skillChance = new double[]{0, .25, .5, .75, 1, 2}[settings.skillLvl];
-                  List<ArcanaAugment> allAugs = ArcanaAugments.getAugmentsForItem(magicItem);
-                  allAugs.removeIf(aug -> profile.getAugmentLevel(aug.id) <= 0);
-                  if(Math.random() < skillChance && allAugs.size() > 0){
-                     int ind = (int) (Math.random() * allAugs.size());
-                     ArcanaAugment aug = allAugs.get(ind);
-                     ArcanaAugments.applyAugment(newMagicItem, aug.id, Math.min(settings.skillLvl,(int)(Math.random()*profile.getAugmentLevel(aug.id)+1)));
-                     if(settings.skillLvl == 5 && allAugs.size() > 1){
-                        int newInd = (int) (Math.random() * allAugs.size());
-                        while(newInd == ind){
-                           newInd = (int) (Math.random() * allAugs.size());
-                        }
-                        ArcanaAugment aug2 = allAugs.get(newInd);
-                        ArcanaAugments.applyAugment(newMagicItem, aug2.id, Math.min(settings.skillLvl,(int)(Math.random()*profile.getAugmentLevel(aug2.id)+1)));
-                     }
-                  }
-                  magicItem.redoAugmentLore(newMagicItem);
-               }
-               
-               
-               if(!PLAYER_DATA.get(player).addCrafted(newMagicItem) && !(magicItem instanceof ArcaneTome)){
-                  PLAYER_DATA.get(player).addXP(MagicRarity.getCraftXp(magicItem.getRarity()));
-               }
-   
-               if(magicItem.getRarity() != MagicRarity.MUNDANE){
-                  ArcanaAchievements.grant(player,"intro_arcana");
-                  ArcanaAchievements.progress(player,"intermediate_artifice",1);
-               }
-               if(magicItem.getRarity() == MagicRarity.LEGENDARY) ArcanaAchievements.grant(player,"artificial_divinity");
-               
-               ItemStack[][] ingredients = new ItemStack[5][5];
-               for(int i = 0; i < inv.size(); i++){
-                  ingredients[i/5][i%5] = inv.getStack(i);
-               }
-               ItemStack[][] remainders = recipe.getRemainders(ingredients, settings.resourceLvl);
-               for(int i = 0; i < inv.size(); i++){
-                  inv.setStack(i,remainders[i/5][i%5]);
-               }
-
-               while(true){
-                  ItemEntity itemEntity;
-                  boolean bl = player.getInventory().insertStack(newMagicItem);
-                  if (!bl || !newMagicItem.isEmpty()) {
-                     itemEntity = player.dropItem(newMagicItem, false);
-                     if (itemEntity == null) break;
-                     itemEntity.resetPickupDelay();
-                     itemEntity.setOwner(player.getUuid());
-                     break;
-                  }
-                  newMagicItem.setCount(1);
-                  itemEntity = player.dropItem(newMagicItem, false);
-                  if (itemEntity != null) {
-                     itemEntity.setDespawnImmediately();
-                  }
-                  break;
+            }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
+               ItemStack ingredStack = this.getSlot(index).getItemStack();
+               MagicItem magicItem1 = MagicItemUtils.identifyItem(ingredStack);
+               if(magicItem1 != null){
+                  tome.openRecipeGui(player,settings, magicItem1.getId());
                }
             }
-         }else if(index == 43){
-            //Give Items back
-            Inventory inv = getSlotRedirect(1).inventory;
-            returnItems(inv);
-            tome.openGui(player, ArcaneTome.TomeMode.PROFILE,settings);
-         }
-      }else if(mode == ArcaneTome.TomeMode.RECIPE){
-         ItemStack item = this.getSlot(25).getItemStack();
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         if(index == 7){
-            NbtCompound loreData = magicItem.getBookLore();
-            if(loreData != null){
-               ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-               writablebook.setNbt(loreData);
-               BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-               LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.RECIPE,settings, magicItem.getId());
-               loreGui.open();
-            }else{
-               player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
-            }
-         }else if(index == 25){
-            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-         }else if(index == 43){
-            if(!(magicItem.getRecipe() instanceof ExplainRecipe)) tome.openGui(player, ArcaneTome.TomeMode.CRAFTING,settings,magicItem.getId());
-         }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
-            ItemStack ingredStack = this.getSlot(index).getItemStack();
-            MagicItem magicItem1 = MagicItemUtils.identifyItem(ingredStack);
-            if(magicItem1 != null){
-               tome.openRecipeGui(player,settings, magicItem1.getId());
-            }
-         }
-      }else if(mode == ArcaneTome.TomeMode.ITEM){
-         ItemStack item = this.getSlot(4).getItemStack();
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         
-         if(index == 2){
-            if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-               if(magicItem.getRecipe() != null){
-                  tome.openRecipeGui(player,settings, magicItem.getId());
-               }else{
-                  player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
-               }
-            }else{
-               if(magicItem.getRecipe() != null){
-                  tome.openRecipeGui(player,settings, magicItem.getId());
-               }else{
-                  player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
-               }
-            }
-         }
-         if(index == 4){
-            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-         }
-         if(index == 6){
-            NbtCompound loreData = magicItem.getBookLore();
-            if(loreData != null){
-               ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-               writablebook.setNbt(loreData);
-               BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-               LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
-               loreGui.open();
-            }else{
-               player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
-            }
-         }
-         if(index >= 28 && index <= 35){ // Unlock augment
-            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
-            int[] augmentSlots = dynamicSlots[augments.size()];
-            ArcanaAugment augment = null;
-            for(int i = 0; i < augmentSlots.length; i++){
-               if(index == 28+augmentSlots[i]){
-                  augment = augments.get(i);
-                  break;
-               }
-            }
+         }else if(mode == ArcaneTome.TomeMode.ITEM){
+            ItemStack item = this.getSlot(4).getItemStack();
+            MagicItem magicItem = MagicItemUtils.identifyItem(item);
             
-            if(augment != null){
-               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-               int augmentLvl = profile.getAugmentLevel(augment.id);
-               MagicRarity[] tiers = augment.getTiers();
-               if(augmentLvl >= tiers.length) return true;
-               int cost = tiers[augmentLvl].rarity+1;
-               int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
-               if(cost <= unallocated){
-                  profile.setAugmentLevel(augment.id,augmentLvl+1);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(augmentLvl+1)/(tiers.length-1))));
-                  tome.openItemGui(player,settings, magicItem.getId());
+            if(index == 2){
+               if(magicItem.getRarity() == MagicRarity.MYTHICAL){
+                  if(magicItem.getRecipe() != null){
+                     tome.openRecipeGui(player,settings, magicItem.getId());
+                  }else{
+                     player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
+                  }
                }else{
-                  player.sendMessage(Text.literal("Not Enough Skill Points").formatted(Formatting.RED),false);
+                  if(magicItem.getRecipe() != null){
+                     tome.openRecipeGui(player,settings, magicItem.getId());
+                  }else{
+                     player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
+                  }
                }
             }
-         }
-      }else if(mode == ArcaneTome.TomeMode.TINKER){
-         Inventory inv = getSlotRedirect(4).inventory;
-         ItemStack item = inv.getStack(0);
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         
-         if(index == 10){
-            returnItems(inv);
-            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-         }else if(index == 16){
-            if(magicItem != null){
-               returnItems(inv);
-               tome.openGui(player, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
-            }else{
-               player.sendMessage(Text.literal("Insert an Item to Tinker").formatted(Formatting.RED),false);
+            if(index == 4){
+               tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
             }
-         }else if(index ==  22){
-            if(magicItem != null){
-               RenameGui renameGui = new RenameGui(player,tome,settings,item);
-               renameGui.setTitle(Text.literal("Rename Magic Item"));
-               renameGui.setSlot(0, GuiElementBuilder.from(item));
-               renameGui.setSlot(2, GuiElementBuilder.from(item));
-               renameGui.open();
-            }else{
-               player.sendMessage(Text.literal("Insert an Item to Tinker").formatted(Formatting.RED),false);
+            if(index == 6){
+               NbtCompound loreData = magicItem.getBookLore();
+               if(loreData != null){
+                  ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
+                  writablebook.setNbt(loreData);
+                  BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
+                  LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
+                  loreGui.open();
+               }else{
+                  player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
+               }
             }
-         }else if(index >= 37 && index <= 44){
-            if(magicItem != null){
+            if(index >= 28 && index <= 35){ // Unlock augment
                List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
                int[] augmentSlots = dynamicSlots[augments.size()];
                ArcanaAugment augment = null;
                for(int i = 0; i < augmentSlots.length; i++){
-                  if(index == 37 + augmentSlots[i]){
+                  if(index == 28+augmentSlots[i]){
                      augment = augments.get(i);
                      break;
                   }
@@ -400,29 +252,15 @@ public class TomeGui extends SimpleGui {
                   IArcanaProfileComponent profile = PLAYER_DATA.get(player);
                   int augmentLvl = profile.getAugmentLevel(augment.id);
                   MagicRarity[] tiers = augment.getTiers();
-                  int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment.id);
-                  if(curItemLevel == -2){
-                     Arcananovum.log(3, "Magic item errored in Tinker's Screen: " + magicItem.getId());
-                  }else if(curItemLevel == -1) curItemLevel = 0;
-   
-                  boolean generic = magicItem.getId().equals(MagicItems.ARCANE_TOME.getId()) && !augment.id.equals(ArcanaAugments.SKILL.id) && !augment.id.equals(ArcanaAugments.RESOURCEFUL.id);
-                  
-                  if(generic){
-                     player.sendMessage(Text.literal("These augments are active by default").formatted(Formatting.AQUA), false);
-                  }else if(curItemLevel >= tiers.length){ // Item Level = max: End Crystal
-                     player.sendMessage(Text.literal("You have already maxed this augment").formatted(Formatting.AQUA), false);
-                  }else if(augmentLvl == 0 && curItemLevel == 0){ // Item & player lvl = 0: Obsidian
-                     player.sendMessage(Text.literal("You must unlock this augment first").formatted(Formatting.RED), false);
-                  }else if(curItemLevel >= augmentLvl){ // Item level != max & >= player level: Obsidian
-                     player.sendMessage(Text.literal("You must unlock higher levels to augment further").formatted(Formatting.RED), false);
-                  }else if(ArcanaAugments.isIncompatible(item, augment.id)){ // Incompatible augment: Structure Void
-                     player.sendMessage(Text.literal("This augment is incompatible with existing augments").formatted(Formatting.RED), false);
-                  }else{ // Item level = 0 | (Item level != max & < player level): Augment Catalyst
-                     if(attemptAugment(item, augment, curItemLevel + 1)){
-                        //tome.openGui(player, ArcaneTome.TomeMode.TINKER, settings);
-                        SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(curItemLevel+1)/(tiers.length-1))));
-                        inv.setStack(0,item);
-                     }
+                  if(augmentLvl >= tiers.length) return true;
+                  int cost = tiers[augmentLvl].rarity+1;
+                  int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
+                  if(cost <= unallocated){
+                     profile.setAugmentLevel(augment.id,augmentLvl+1);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(augmentLvl+1)/(tiers.length-1))));
+                     tome.openItemGui(player,settings, magicItem.getId());
+                  }else{
+                     player.sendMessage(Text.literal("Not Enough Skill Points").formatted(Formatting.RED),false);
                   }
                }
             }
@@ -438,72 +276,9 @@ public class TomeGui extends SimpleGui {
          MagicItem magicItem = MagicItemUtils.identifyItem(item);
          tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
          //tome.openGui(player,ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
-      }else if(mode == ArcaneTome.TomeMode.CRAFTING){ // Crafting gui give items back
-         //Give Items back
-         Inventory inv = getSlotRedirect(1).inventory;
-         returnItems(inv);
-         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
       }else if(mode == ArcaneTome.TomeMode.ITEM){ // Item gui to compendium
          tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-      }else if(mode == ArcaneTome.TomeMode.TINKER){ // Give tinker items back
-         //Give Items back
-         Inventory inv = getSlotRedirect(4).inventory;
-         returnItems(inv);
-         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
       }
-   }
-   
-   private void returnItems(Inventory inv){
-      for(int i=0; i<inv.size();i++){
-         ItemStack stack = inv.getStack(i);
-         if(!stack.isEmpty()){
-         
-            ItemEntity itemEntity;
-            boolean bl = player.getInventory().insertStack(stack);
-            if (!bl || !stack.isEmpty()) {
-               itemEntity = player.dropItem(stack, false);
-               if (itemEntity == null) continue;
-               itemEntity.resetPickupDelay();
-               itemEntity.setOwner(player.getUuid());
-               continue;
-            }
-            stack.setCount(1);
-            itemEntity = player.dropItem(stack, false);
-            if (itemEntity != null) {
-               itemEntity.setDespawnImmediately();
-            }
-         }
-      }
-   }
-   
-   private boolean attemptAugment(ItemStack item, ArcanaAugment augment, int level){
-      PlayerInventory playerInv = player.getInventory();
-      MagicRarity tier = augment.getTiers()[level-1];
-      
-      int catalystSlot = -1;
-      boolean creative = player.isCreative();
-      for(int i=0; i<playerInv.size(); i++){
-         ItemStack cata = playerInv.getStack(i);
-         MagicItem magicItem = MagicItemUtils.identifyItem(cata);
-         if(magicItem != null && magicItem.getId().equals(MagicRarity.getAugmentCatalyst(tier).getId())){
-            //Found catalyst
-            catalystSlot = i;
-            break;
-         }
-      }
-      if(catalystSlot == -1 && !creative){
-         player.sendMessage(Text.literal("No Augment Catalyst Found").formatted(Formatting.RED),false);
-      }else{
-         if(ArcanaAugments.applyAugment(item,augment.id,level)){
-            if(!creative) playerInv.removeStack(catalystSlot);
-            return true;
-         }else{
-            Arcananovum.log(3,"Error applying augment "+augment.id+" to "+MagicItemUtils.identifyItem(item).getId());
-         }
-      }
-      
-      
-      return false;
    }
    
    public ArcaneTome.TomeMode getMode(){
@@ -517,22 +292,35 @@ public class TomeGui extends SimpleGui {
    public static NbtCompound getGuideBook(){
       NbtCompound bookLore = new NbtCompound();
       NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("{\"text\":\"       Welcome To             Arcana Novum!\\n\\nArcana Novum is a server mod that adds Magic Items that try to stay within the 'feel' of Vanilla Minecraft.\\n\\nYou are probably accessing this guide through your Tome of Arcana Novum.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"This Tome is your guide book for the entirety of the mod and will help you discover all of the cool Magic Items you can craft.\\n\\nThe first thing you see when you open the Tome is your profile. Your profile has 2 main components.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"     Arcane Level\\n \\nYour level decides how many Magic Items you can carry through Concentration\\n\\nYou gain XP by using and crafting Magic Items. Crafting an item for the first time gives extra XP\\n\\n\"}"));
-      loreList.add(NbtString.of("{\"text\":\"     Concentration\\n\\nMagic Items contain powerful Arcana that takes focus to use.\\nEach tier of item takes a certain amount of concentration to hold in your inventory. If you go over your concentration limit your mind starts to collapse and you will die.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"      Item Rarities\\n\\nThere are 5 main rarities:\\n\\nMundane, Empowered, Exotic, Legendary and Mythical.\\n\\nEach tier gives a more powerful ability than the last.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"     Mundane Items\\n\\nCrafting XP: 5000 / 1000 (First / Normal)\\nConcentration: 0\\n\\nMundane Items only faintly eminate Arcana and are mostly used in conjunction with other Magic Items\"}"));
-      loreList.add(NbtString.of("{\"text\":\"   Empowered Items\\n\\nCrafting XP: 10000 / 5000\\nConcentration: 1\\n\\nEmpowered Items usually give passive effects that would be considered 'nice to have', nothing crazy strong, and don't take a heavy toll on your mind.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"      Exotic Items\\n\\nCrafting XP: 50000 / 10000\\nConcentration: 5\\n\\nExotic Items are where things get interesting. Their abilities are more powerful and are more expensive to craft and use.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"   Legendary Items\\n\\nCrafting XP: 100000 / 50000\\nConcentration: 20\\n\\nLegendary Items are Arcanists' best attempts at recreating the power of Mythical Artifacts. However unlike Mythical Items, they lack the elegant design that harmlessly\"}"));
-      loreList.add(NbtString.of("{\"text\":\"   Legendary Items\\n\\nchannels Arcana through the user, and as a result take an extraordinary amount of focus to use.\\nWhere the Arcanists succeeded was in replicating the incredible abilities of Mythical Items in a craftable form.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"     Mythical Items\\n\\nCrafting XP: - / -\\nConcentration: 0\\n\\nMythical Items are items designed by the Gods to tap into the raw Arcana of the world itself and allow it to be wielded with no effort as if they are  an extension of the user's body. \\n\"}"));
-      loreList.add(NbtString.of("{\"text\":\"     Mythical Items\\n\\nMythical Items are unable to be crafted and are in short supply.\\n\\nOnly a few Mythical Items have been discovered and their power compared to all but Legendary Items is on a whole other level.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"    Item Compendium\\n\\nNow that you are caught up on the types of Magic Items, you can use your Tome to look through all of the available items and how to use and craft them.\\nThe Compendium is accessed by clicking the book in the Profile section of the Tome.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"     Forging Items\\n\\nYou are able to view the recipes of Magic Items in the Compendium menu.\\n \\nYou can forge them by clicking the crafting table in the Compendium menu to access the Forging menu.\\n\"}"));
-      loreList.add(NbtString.of("{\"text\":\"     Forging Items\\n\\nSome crafting ingredients require more than just the item. For example an item might require enchantments or a Soulstone with a certain amount of souls inside. Make sure you check all requirements in the Recipe Display.\"}"));
-      loreList.add(NbtString.of("{\"text\":\"       Conclusion\\n\\nThats about it for the basics of the Arcana Novum mod!\\n \\nIf you have any questions you can always ask them on the server discord!\\n\\nEnjoy discovering and unleashing your Arcana Novum!\"}"));
+      List<String> list = new ArrayList<>();
+      list.add("{\"text\":\"       Welcome To             Arcana Novum!\\n\\nArcana Novum is a server mod that adds Magic Items that try to stay within the 'feel' of Vanilla Minecraft.\\n\\nYou are probably accessing this guide through your Tome of Arcana Novum.\"}");
+      list.add("{\"text\":\"This Tome is your guide book for the entirety of the mod and will help you discover all of the cool Magic Items you can craft.\\n\\nThe first thing you see when you open the Tome is your profile. Your profile has 3 main sections.\"}");
+      list.add("{\"text\":\"     Arcane Level\\n \\nYour level decides how many Magic Items you can carry through Concentration\\nYou gain XP by using and crafting Magic Items. Crafting an item for the first time gives extra XP.\\nAchievements also grant expereience.\\n\\n\"}");
+      list.add("{\"text\":\"     Concentration\\n\\nMagic Items contain powerful Arcana that takes focus to use.\\nEach tier of item takes a certain amount of concentration to hold in your inventory. If you go over your concentration limit your mind starts to collapse and you will die.\"}");
+      list.add("{\"text\":\"       Skill Points\\n\\nYou get 3 skill points per Arcana level.\\nThese points can be used to unlock Augments for items.\\n\\nYou also get skill points by completing achievements with different items.\"}");
+      list.add("{\"text\":\"      Item Rarities\\n\\nThere are 5 rarities:\\nMundane, Empowered, Exotic, Legendary and Mythical.\\n\\nAll Magic Items are immensely powerful, but some are more demanding to wield and craft which is reflected by their rarity.\"}");
+      list.add("{\"text\":\"     Mundane Items\\n\\nCrafting XP: 1st/2nd+ \\n      5000 / 1000 \\nConcentration: 0\\n\\nMundane Items only faintly eminate Arcana and are mostly used in conjunction with other Magic Items as fuel or ingredients.\"}");
+      list.add("{\"text\":\"   Empowered Items\\n\\nCrafting XP: 1st/2nd+ \\n     10000 / 5000\\nConcentration: 1\\n\\nEmpowered Items usually are utility items that offer convienience in common situations. They take a minimal mental toll.\"}");
+      list.add("{\"text\":\"      Exotic Items\\n\\nCrafting XP: 1st/2nd+ \\n     50000 / 10000\\nConcentration: 5\\n\\nExotic Items are where things get interesting. Their abilities are more powerful and are more expensive to craft and use.\"}");
+      list.add("{\"text\":\"   Legendary Items\\n\\nCrafting XP: 1st/2nd+ \\n    100000 / 50000\\nConcentration: 20\\n\\nLegendary Items are Arcanists' best attempts at recreating the power of Mythical Artifacts. However unlike Mythical Items, they lack the divine construction that\"}");
+      list.add("{\"text\":\"   Legendary Items\\n\\nharmlessly channels Arcana through the user, and as a result take an extraordinary amount of focus to wield.\\nWhere the Arcanists succeeded was in replicating the incredible abilities of Mythical Items in a craftable form.\"}");
+      list.add("{\"text\":\"     Mythical Items\\n\\nCrafting XP: - / -\\nConcentration: 0\\n\\nMythical Items are items that have divine origins and tap into the raw Arcana of the world itself and allow a user to wield it with no effort. Mythical Items become an extension of the user.\"}");
+      list.add("{\"text\":\"     Mythical Items\\n\\nMythical Items are unable to be crafted by normal means.\\n\\nThey can only be obtained by interacting with divine entities, which is a very dangerous door to go knocking on, but the reward could be worth it...\"}");
+      list.add("{\"text\":\"    Item Compendium\\n\\nNow that you are caught up on the types of Magic Items, you can use your Tome to look through all of the available items and how to use and craft them.\\nThe Compendium is accessed by clicking the book in the Profile section of the Tome.\"}");
+      list.add("{\"text\":\"     Forging Items\\n\\nIn order to craft Magic Items you need a Starlight Forge. \\nA Starlight Forge is made by placing an Enchanted Golden Apple along with your Tome of Arcana Novum upon a Smithing Table during the height of a New Moon.\"}");
+      list.add("{\"text\":\"     Forging Items\\n\\nThe Starlight Forge will require a structure beneath it, which is shown by right clicking the forge.\\nOnce completed, the Forge will allow you to craft better gear, and Magic Items by following the recipes in your Tome.\"}");
+      list.add("{\"text\":\"     Forging Items\\n\\nSome recipes will require your Forge to be upgraded by making Magic Items that add to the Forge.\\n\\nPlacing them near your Forge will allow you to make new Magic Items, along with providing their own unique abilities.\"}");
+      list.add("{\"text\":\"     Forging Items\\n\\nSome crafting ingredients require more than just the item. For example an item might require enchantments or a Soulstone with a certain amount of souls inside. Make sure you check all requirements in the Recipe Display.\"}");
+      list.add("{\"text\":\"      Augmentation\\n\\nAugments give your items enhanced capabilities or provide a unique twist on their original purpose.\\n\\nEvery Item has Augments you can unlock with Skill Points.\\nHowever, there are not enough Points to unlock every Augment.\\n\"}");
+      list.add("{\"text\":\"      Augmentation\\n\\nAugments follow the same rarity structure as items.\\nRarity defines how many skill points they take to unlock, and the type of catalyst they need to apply.\\nIndividual augments can have multiple tiers of varying rarity.\"}");
+      list.add("{\"text\":\"      Augmentation\\n\\nUnlocking an Augment does NOT immediately provide their benefits.\\n\\nAugments must be applied to individual items using an Augmentation Catalyst in the Twilight Anvil Forge Addition.\"}");
+      list.add("{\"text\":\"      Augmentation\\n\\nItems that hold Augments that you do not possess pose an additional danger to the user.\\n\\nAugments require additional concentration if you do not have the augment unlocked.\"}");
+      list.add("{\"text\":\"       Conclusion\\n\\nThats about it for the basics of the Arcana Novum mod!\\n \\nIf you have any questions you can always ask them on the server discord!\\n\\nEnjoy discovering and unleashing your Arcana Novum!\"}");
+      
+      for(String s : list){
+         loreList.add(NbtString.of(s));
+      }
+      
       bookLore.put("pages",loreList);
       bookLore.putString("author","Arcana Novum");
       bookLore.putString("filtered_title","arcana_guide");

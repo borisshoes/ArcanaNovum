@@ -3,18 +3,19 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -51,9 +52,11 @@ public class ConcussionArrows extends RunicArrow {
       name = "Concussion Arrows";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new ConcussionArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -68,26 +71,26 @@ public class ConcussionArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",14391821);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
-      int lvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"shellshock"));
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
+      int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
       concuss(arrow, arrow.getEntityWorld(),entityHitResult.getPos(), lvl);
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
-      int lvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"shellshock"));
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
+      int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
       concuss(arrow, arrow.getEntityWorld(),blockHitResult.getPos(), lvl);
    }
    
@@ -129,7 +132,7 @@ public class ConcussionArrows extends RunicArrow {
             }
          }
       }
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,"shock_awe");
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_AWE.id);
       if(world instanceof ServerWorld serverWorld){
          SoundUtils.playSound(world, BlockPos.ofFloored(pos), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1, .8f);
          ParticleEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);
@@ -145,7 +148,7 @@ public class ConcussionArrows extends RunicArrow {
       MagicItemIngredient i = new MagicItemIngredient(Items.INK_SAC,64,null);
       ItemStack potion10 = new ItemStack(Items.LINGERING_POTION);
       MagicItemIngredient k = new MagicItemIngredient(Items.LINGERING_POTION,1, PotionUtil.setPotion(potion10, Potions.LONG_WEAKNESS).getNbt());
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -153,12 +156,25 @@ public class ConcussionArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,i,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"  Concussion Arrows\\n\\nRarity: Empowered\\n\\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact.\\nAnyone caught in its range will have a hard time doing anything for a couple seconds after being hit.\\n\"}");
       return list;
+   }
+   
+   public class ConcussionArrowsItem extends MagicPolymerArrowItem {
+      public ConcussionArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

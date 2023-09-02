@@ -1,7 +1,5 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.items.*;
-
 import java.util.HashMap;
 
 public class LoginCallbacks {
@@ -11,6 +9,7 @@ public class LoginCallbacks {
    public static final LoginCallback CONTINUUM_ANCHOR = LoginCallbacks.register("continuum_anchor",new AnchorTimeLoginCallback());
    public static final LoginCallback IGNEOUS_COLLIDER = LoginCallbacks.register("igneous_collider",new ColliderLoginCallback());
    public static final LoginCallback XP_LOGIN_CALLBACK = LoginCallbacks.register("xp_login_callback",new XPLoginCallback());
+   public static final LoginCallback ACHIEVEMENT_LOGIN_CALLBACK = LoginCallbacks.register("achievement_login_callback",new AchievementLoginCallback());
    
    private static LoginCallback register(String id, LoginCallback callback){
       registry.put(id,callback);

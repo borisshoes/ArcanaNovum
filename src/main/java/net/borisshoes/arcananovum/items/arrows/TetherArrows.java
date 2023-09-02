@@ -2,20 +2,20 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -42,9 +42,11 @@ public class TetherArrows extends RunicArrow {
       name = "Tether Arrows";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new TetherArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -60,24 +62,24 @@ public class TetherArrows extends RunicArrow {
       tag.put("display", display);
       tag.put("Enchantments", enchants);
       tag.putInt("CustomPotionColor", 10724259);
-      tag.putInt("HideFlags", 127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
-      if(magicEntity.getData().getBoolean("severed")) return;
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
+      if(arrow.getData().getBoolean("severed")) return;
       if(arrow.getOwner() instanceof ServerPlayerEntity player && entityHitResult.getEntity() instanceof LivingEntity entity){
          Vec3d hitPos = entityHitResult.getPos();
    
-         Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(1, new TimerTask() {
+         Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(1, new TimerTask() {
             @Override
             public void run(){
                Vec3d motion = player.getPos().subtract(hitPos);
@@ -87,7 +89,7 @@ public class TetherArrows extends RunicArrow {
                Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,verticalMotion,velFromLength(motion.z)*2.0/9.0);
                entity.setVelocity(velocity);
    
-               ParticleEffectUtils.tetherArrowEntity(player.getWorld(),entity,player);
+               ParticleEffectUtils.tetherArrowEntity(player.getServerWorld(),entity,player);
                SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
             }
          }));
@@ -95,8 +97,8 @@ public class TetherArrows extends RunicArrow {
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
-      if(magicEntity.getData().getBoolean("severed")) return;
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
+      if(arrow.getData().getBoolean("severed")) return;
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d hitPos = blockHitResult.getPos();
          Vec3d motion = hitPos.subtract(player.getPos());
@@ -105,10 +107,10 @@ public class TetherArrows extends RunicArrow {
          Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
          player.setVelocity(velocity);
          player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-         ParticleEffectUtils.tetherArrowGrapple(player.getWorld(),player,blockHitResult.getPos());
+         ParticleEffectUtils.tetherArrowGrapple(player.getServerWorld(),player,blockHitResult.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_2, SoundCategory.PLAYERS,.8f,.6f);
          
-         if(motion.y >= 12) ArcanaAchievements.progress(player,"spiderman",1);
+         if(motion.y >= 12) ArcanaAchievements.progress(player,ArcanaAchievements.SPIDERMAN.id,1);
       }
       
    }
@@ -152,7 +154,7 @@ public class TetherArrows extends RunicArrow {
       ItemStack potion6 = new ItemStack(Items.POTION);
       MagicItemIngredient g = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion6, Potions.STRONG_LEAPING).getNbt());
       MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -160,12 +162,25 @@ public class TetherArrows extends RunicArrow {
             {c,h,m,h,c},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"    Tether Arrows\\n\\nRarity: Empowered\\n\\nThrough precise math equations inscribed within the Matrix, these Arrows should create the perfect magical tether to pull me to the location I shot. It can also pull creatures to me. It sucks to miss though.\\n\"}");
       return list;
+   }
+   
+   public class TetherArrowsItem extends MagicPolymerArrowItem {
+      public TetherArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

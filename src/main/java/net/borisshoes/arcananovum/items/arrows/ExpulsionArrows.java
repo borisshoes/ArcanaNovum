@@ -3,18 +3,19 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -47,9 +48,11 @@ public class ExpulsionArrows extends RunicArrow {
       name = "Expulsion Arrows";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new ExpulsionArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -65,31 +68,31 @@ public class ExpulsionArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",889599);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         double range = 4 + 1.5*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"repulsion"));;
+         double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
          expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         double range = 4 + 1.5*Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"repulsion"));;
+         double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
          expulsionPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);
       }
    }
@@ -108,7 +111,7 @@ public class ExpulsionArrows extends RunicArrow {
          if(entity1 instanceof ServerPlayerEntity player){
             player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
             
-            if(arrow.getOwner() != null && arrow.getOwner().getUuid().equals(player.getUuid()) && motion.y > 2) ArcanaAchievements.grant(player,"jump_pad");
+            if(arrow.getOwner() != null && arrow.getOwner().getUuid().equals(player.getUuid()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
          }
       }
       
@@ -136,7 +139,7 @@ public class ExpulsionArrows extends RunicArrow {
       MagicItemIngredient g = new MagicItemIngredient(Items.SLIME_BLOCK,64,null);
       MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
       MagicItemIngredient k = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -144,12 +147,25 @@ public class ExpulsionArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Expulsion Arrows\\n\\nRarity: Exotic\\n\\nThis Runic Matrix is configured to repulse anything nearby like bouncing on a slime block. Great for jump pads, zoning off monsters, or sending foes off a steep cliff.\"}");
       return list;
+   }
+   
+   public class ExpulsionArrowsItem extends MagicPolymerArrowItem {
+      public ExpulsionArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

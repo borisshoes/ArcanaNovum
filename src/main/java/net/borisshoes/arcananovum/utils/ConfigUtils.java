@@ -68,19 +68,19 @@ public class ConfigUtils {
             literal("arcana").then(literal("gamerule").requires(source -> source.hasPermissionLevel(4))
                   .executes(ctx -> {
                      values.stream().filter(v -> v.command != null).forEach(value ->
-                           ctx.getSource().sendFeedback(MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {value.value})), false));
+                           ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {value.value})), false));
                      return 1;
                   }));
       values.stream().filter(v -> v.command != null).forEach(value ->
             out.then(literal("gamerule").then(literal(value.name)
                   .executes(ctx -> {
-                     ctx.getSource().sendFeedback(MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {value.value})), false);
+                     ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {value.value})), false);
                      return 1;
                   })
                   .then(argument(value.name, value.getArgumentType()).suggests(value.suggestions)
                         .executes(ctx -> {
                            value.value = value.parseArgumentValue(ctx);
-                           ((CommandContext<ServerCommandSource>) ctx).getSource().sendFeedback(MutableText.of(new TranslatableTextContent(value.command.setterText, null, new Object[] {value.value})), true);
+                           ((CommandContext<ServerCommandSource>) ctx).getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.setterText, null, new Object[] {value.value})), true);
                            this.save();
                            return 1;
                         })))));

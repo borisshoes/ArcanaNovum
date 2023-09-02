@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.augments;
 
-import net.borisshoes.arcananovum.items.core.MagicItem;
+import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;

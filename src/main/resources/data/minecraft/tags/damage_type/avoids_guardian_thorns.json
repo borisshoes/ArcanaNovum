@@ -1,6 +1,7 @@
 {
   "values": [
     "arcananovum:detonation_arrows_terrain",
-	"arcananovum:detonation_arrows_damage"
+	"arcananovum:detonation_arrows_damage",
+    "arcananovum:photonic"
   ]
 }

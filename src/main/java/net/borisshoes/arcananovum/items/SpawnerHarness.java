@@ -2,13 +2,14 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.util.NbtType;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -21,6 +22,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -30,30 +32,29 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class SpawnerHarness extends MagicItem implements UsableItem {
+public class SpawnerHarness extends MagicItem {
    public SpawnerHarness(){
       id = "spawner_harness";
       name = "Spawner Harness";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.BLOCKS};
       itemVersion = 1;
+      vanillaItem = Items.SPAWNER;
+      item = new SpawnerHarnessItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.SPAWNER);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -69,7 +70,7 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags",127);
+      tag.putInt("HideFlags", 255);
    
    
       setBookLore(makeLore());
@@ -78,8 +79,8 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
       NbtCompound magicTag = tag.getCompound("arcananovum");
       magicTag.put("spawner",new NbtCompound());
       prefNBT = tag;
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
@@ -93,83 +94,6 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
       newTag.getCompound("display").getList("Lore", NbtElement.STRING_TYPE).set(4,NbtString.of(loreData));
       stack.setNbt(newTag);
       return stack;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity player, World world, Hand hand, BlockHitResult result){
-      try{
-         ItemStack item = player.getStackInHand(hand);
-         NbtCompound itemNbt = item.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         NbtCompound spawnerData = magicNbt.getCompound("spawner");
-   
-         if(spawnerData.contains("SpawnData")){ // Has spawner, try to place
-            Direction side = result.getSide();
-            BlockPos placePos = result.getBlockPos().add(side.getVector());
-            if(world.getBlockState(placePos).isAir()){
-               BlockEntity blockEntity;
-               world.setBlockState(placePos,Blocks.SPAWNER.getDefaultState(), Block.NOTIFY_ALL);
-               if ((blockEntity = world.getBlockEntity(placePos)) != null) {
-                  blockEntity.readNbt(spawnerData);
-               }
-   
-               int reinforceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"reinforced_chassis"));
-               double breakChance = new double[]{.15,.13,.11,.09,.07,0}[reinforceLvl];
-               if(Math.random() > breakChance){ // Chance of the harness breaking after use
-                  NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
-                  loreList.set(4,NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
-                  player.sendMessage(Text.literal("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
-                  magicNbt.put("spawner",new NbtCompound());
-               }else{
-                  boolean scrap = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"salvageable_frame")) > 0;
-                  player.sendMessage(Text.literal("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.ITEM_SHIELD_BREAK, 1,.5f);
-                  item.decrement(item.getCount());
-                  item.setNbt(new NbtCompound());
-                  if(scrap) giveScrap(player);
-               }
-               PLAYER_DATA.get(player).addXP((int) Math.max(0,20000*breakChance)); // Add xp
-            }else{
-               player.sendMessage(Text.literal("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
-            }
-         }else if(world.getBlockState(result.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(result.getBlockPos()) instanceof MobSpawnerBlockEntity){
-            MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(result.getBlockPos());
-            NbtCompound spawnerNbt = spawner.createNbt();
-            Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,world.getRandom(),result.getBlockPos());
-            if(renderedEntity == null){
-               player.sendMessage(Text.literal("This spawner is empty, and cannot be transported").formatted(Formatting.RED,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
-               return false;
-            }
-            String entityTypeId = EntityType.getId(renderedEntity.getType()).toString();
-            String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
-            
-            magicNbt.put("spawner",spawnerNbt);
-            world.breakBlock(result.getBlockPos(),false);
-            
-            NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
-            loreList.set(4,NbtString.of("[{\"text\":\"Type - "+entityTypeName+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
-            player.sendMessage(Text.literal("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
-            
-            if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,"finally_useful");
-         }
-      }catch (Exception e){
-         e.printStackTrace();
-      }
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
    }
    
    private void giveScrap(PlayerEntity player){
@@ -217,6 +141,90 @@ public class SpawnerHarness extends MagicItem implements UsableItem {
             {s,b,n,b,s},
             {p,c,b,c,p},
             {e,p,s,p,e}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients,new ForgeRequirement().withEnchanter());
+   }
+   
+   public class SpawnerHarnessItem extends MagicPolymerItem {
+      public SpawnerHarnessItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public ActionResult useOnBlock(ItemUsageContext context){
+         World world = context.getWorld();
+         PlayerEntity player = context.getPlayer();
+         try{
+            ItemStack stack = context.getStack();
+            NbtCompound itemNbt = stack.getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            NbtCompound spawnerData = magicNbt.getCompound("spawner");
+            
+            if(spawnerData.contains("SpawnData")){ // Has spawner, try to place
+               Direction side = context.getSide();
+               BlockPos placePos = context.getBlockPos().add(side.getVector());
+               if(world.getBlockState(placePos).isAir()){
+                  BlockEntity blockEntity;
+                  world.setBlockState(placePos,Blocks.SPAWNER.getDefaultState(), Block.NOTIFY_ALL);
+                  if ((blockEntity = world.getBlockEntity(placePos)) != null) {
+                     blockEntity.readNbt(spawnerData);
+                  }
+                  
+                  int reinforceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS.id));
+                  double breakChance = new double[]{.15,.13,.11,.09,.07,0}[reinforceLvl];
+                  if(Math.random() > breakChance){ // Chance of the harness breaking after use
+                     NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+                     loreList.set(4,NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+                     player.sendMessage(Text.literal("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                     SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
+                     magicNbt.put("spawner",new NbtCompound());
+                  }else{
+                     boolean scrap = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SALVAGEABLE_FRAME.id)) > 0;
+                     player.sendMessage(Text.literal("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                     SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.ITEM_SHIELD_BREAK, 1,.5f);
+                     stack.decrement(stack.getCount());
+                     stack.setNbt(new NbtCompound());
+                     if(scrap) giveScrap(player);
+                  }
+                  PLAYER_DATA.get(player).addXP((int) Math.max(0,20000*breakChance)); // Add xp
+                  return ActionResult.SUCCESS;
+               }else{
+                  player.sendMessage(Text.literal("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+               }
+            }else if(world.getBlockState(context.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(context.getBlockPos()) instanceof MobSpawnerBlockEntity){
+               MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(context.getBlockPos());
+               NbtCompound spawnerNbt = spawner.createNbt();
+               Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,world.getRandom(),context.getBlockPos());
+               if(renderedEntity == null){
+                  player.sendMessage(Text.literal("This spawner is empty, and cannot be transported").formatted(Formatting.RED,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+                  return ActionResult.PASS;
+               }
+               String entityTypeId = EntityType.getId(renderedEntity.getType()).toString();
+               String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+               
+               magicNbt.put("spawner",spawnerNbt);
+               world.breakBlock(context.getBlockPos(),false);
+               
+               NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+               loreList.set(4,NbtString.of("[{\"text\":\"Type - "+entityTypeName+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+               player.sendMessage(Text.literal("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
+               
+               if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,ArcanaAchievements.FINALLY_USEFUL.id);
+               return ActionResult.SUCCESS;
+            }
+         }catch (Exception e){
+            e.printStackTrace();
+         }
+         return ActionResult.PASS;
+      }
    }
 }

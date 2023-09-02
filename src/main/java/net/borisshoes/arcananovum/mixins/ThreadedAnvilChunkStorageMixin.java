@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.mixins;
 
 import com.mojang.datafixers.DataFixer;
 import net.borisshoes.arcananovum.accessors.ThreadedAnvilChunkStorageAccessor;
-import net.borisshoes.arcananovum.items.ContinuumAnchor;
+import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;

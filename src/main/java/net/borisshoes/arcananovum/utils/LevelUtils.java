@@ -1,7 +1,5 @@
 package net.borisshoes.arcananovum.utils;
 
-import java.text.DecimalFormat;
-
 public class LevelUtils {
    
    public static int levelFromXp(int xp){

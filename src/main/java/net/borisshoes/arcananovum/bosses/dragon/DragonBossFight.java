@@ -12,9 +12,10 @@ import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
+import net.borisshoes.arcananovum.entities.DragonWizardEntity;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.entity.Entity;
@@ -25,7 +26,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.CommandBossBar;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.boss.dragon.EnderDragonFight;
 import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -34,10 +35,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ShulkerBulletEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.*;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.scoreboard.*;
@@ -57,7 +55,6 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.gen.feature.EndSpikeFeature;
 import net.minecraft.world.gen.feature.EndSpikeFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
@@ -66,9 +63,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.devPrint;
-import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_ENTITY_LIST;
 import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
 
 public class DragonBossFight {
@@ -84,8 +79,8 @@ public class DragonBossFight {
    private static ServerPlayerEntity gameMaster = null;
    private static boolean keepInventoryBefore = false;
    private static List<EndCrystalEntity> crystals = null;
-   private static PhantomEntity[] guardianPhantoms = null;
-   private static DragonGoonHelper.WizardEntity[] wizards = null;
+   private static DragonPhantomEntity[] guardianPhantoms = null;
+   private static DragonWizardEntity[] wizards = null;
    private static CommandBossBar[] phantomBossBars = null;
    private static List<ServerPlayerEntity> hasDied = null;
    private static DragonAbilities dragonAbilities = null;
@@ -204,7 +199,7 @@ public class DragonBossFight {
                         }
                      }
    
-                     guardianPhantoms = new PhantomEntity[4];
+                     guardianPhantoms = new DragonPhantomEntity[4];
                      phantomBossBars = new CommandBossBar[4];
                      NbtList phantomData = new NbtList();
                      for(int i=0;i<guardianPhantoms.length;i++){
@@ -213,29 +208,19 @@ public class DragonBossFight {
                         phantomBossBars[i].setColor(BossBar.Color.PURPLE);
                         endWorld.spawnEntityAndPassengers(guardianPhantoms[i]);
                         phantomData.add(NbtString.of(guardianPhantoms[i].getUuidAsString()));
-                        NbtCompound data = new NbtCompound();
-                        data.putString("id","boss_dragon_phantom");
-                        data.putBoolean("dead",false);
-                        MagicEntity phantomEntity = new MagicEntity(guardianPhantoms[i].getUuidAsString(),data);
-                        MAGIC_ENTITY_LIST.get(endWorld).addEntity(phantomEntity);
                      }
    
                      // Spawn wizards
-                     wizards = new DragonGoonHelper.WizardEntity[crystals.size()];
+                     wizards = new DragonWizardEntity[crystals.size()];
                      NbtList wizardData = new NbtList();
                      for(int i = 0; i < wizards.length; i++){
                         EndCrystalEntity crystal = crystals.get(i);
                         wizards[i] = DragonGoonHelper.makeWizard(endWorld,numPlayers);
                         wizards[i].setPosition(crystal.getPos().add(0,2,0));
                         wizards[i].setInvulnerable(true);
+                        wizards[i].setCrystalId(crystal.getUuid());
                         endWorld.spawnEntityAndPassengers(wizards[i]);
                         wizardData.add(NbtString.of(wizards[i].getUuidAsString()));
-                        NbtCompound data = new NbtCompound();
-                        data.putString("id","boss_dragon_wizard");
-                        data.putBoolean("dead",false);
-                        data.putString("crystal",crystal.getUuidAsString());
-                        MagicEntity wizardEntity = new MagicEntity(wizards[i].getUuidAsString(),data);
-                        MAGIC_ENTITY_LIST.get(endWorld).addEntity(wizardEntity);
                      }
    
                      fightData.put("phantoms",phantomData);
@@ -250,7 +235,6 @@ public class DragonBossFight {
                phase1Notif = true;
             }
          }else if(state == States.PHASE_ONE){ // Tick guardian check, dragon invincibility
-            List<MagicEntity> magicEntities = MAGIC_ENTITY_LIST.get(endWorld).getEntities();
             List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
             List<EndermanEntity> endermen = endWorld.getEntitiesByType(EntityType.ENDERMAN, new Box(new BlockPos(-100,25,-100), new BlockPos(100,115,100)),e -> true);
    
@@ -265,24 +249,19 @@ public class DragonBossFight {
             if(guardianPhantoms != null){
                for(int i = 0; i < guardianPhantoms.length; i++){
                   if(guardianPhantoms[i] != null){
-                     for(MagicEntity magicEntity : magicEntities){
-                        if(guardianPhantoms[i] != null && magicEntity.getUuid().equals(guardianPhantoms[i].getUuidAsString())){
-                           NbtCompound data = magicEntity.getData();
-                           if(!data.getBoolean("dead")){
-                              aliveCount++;
-                              float percent = guardianPhantoms[i].getHealth() / guardianPhantoms[i].getMaxHealth();
-                              phantomBossBars[i].setPercent(percent);
-                              for(ServerPlayerEntity player : nearbyPlayers300){
-                                 phantomBossBars[i].addPlayer(player);
-                              }
-                           }else{
-                              phantomBossBars[i].clearPlayers();
-                              server.getBossBarManager().remove(phantomBossBars[i]);
-                              guardianPhantoms[i].kill();
-                              guardianPhantoms[i] = null;
-                              DragonDialog.announce(DragonDialog.Announcements.PHANTOM_DEATH,server,null);
-                           }
+                     if(guardianPhantoms[i].isAlive()){
+                        aliveCount++;
+                        float percent = guardianPhantoms[i].getHealth() / guardianPhantoms[i].getMaxHealth();
+                        phantomBossBars[i].setPercent(percent);
+                        for(ServerPlayerEntity player : nearbyPlayers300){
+                           phantomBossBars[i].addPlayer(player);
                         }
+                     }else{
+                        phantomBossBars[i].clearPlayers();
+                        server.getBossBarManager().remove(phantomBossBars[i]);
+                        guardianPhantoms[i].discard();
+                        guardianPhantoms[i] = null;
+                        DragonDialog.announce(DragonDialog.Announcements.PHANTOM_DEATH,server,null);
                      }
                   }
                }
@@ -296,7 +275,7 @@ public class DragonBossFight {
          }else if(state == States.WAITING_TWO){ // Set wizards to be mortal
             numPlayers = Math.max(1,calcPlayers(server,false));
             fightData.putInt("numPlayers",numPlayers);
-            for(DragonGoonHelper.WizardEntity wizard : wizards){
+            for(DragonWizardEntity wizard : wizards){
                wizard.setInvulnerable(false);
             }
             
@@ -304,38 +283,36 @@ public class DragonBossFight {
             States.updateState(States.PHASE_TWO,server);
             phase = 2;
          }else if(state == States.PHASE_TWO){ // Tick wizards
-            List<MagicEntity> magicEntities = MAGIC_ENTITY_LIST.get(endWorld).getEntities();
             List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
             
             if(wizards != null){
                for(int i = 0; i < wizards.length; i++){
                   if(wizards[i] != null){
-                     for(MagicEntity magicEntity : magicEntities){
-                        if(wizards[i] != null && magicEntity.getUuid().equals(wizards[i].getUuidAsString())){
-                           NbtCompound data = magicEntity.getData();
-                           if(data.getBoolean("dead")){
-                              Entity entity = endWorld.getEntity(UUID.fromString(data.getString("crystal")));
+                     if(wizards[i].isAlive()){
+                        if(age % 130 == 0){
+                           if(wizards[i].getCrystalId() != null){
+                              Entity entity = endWorld.getEntity(wizards[i].getCrystalId());
                               if(entity instanceof EndCrystalEntity crystal){
-                                 crystal.setInvulnerable(false);
-                              }
-                              int finalI = i;
-                              List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(wizards[finalI].getPos()) <= 20*20);
-                              for(ServerPlayerEntity player : nearbyPlayers){
-                                 player.sendMessage(Text.literal("The Crystal's Shield Fades!").formatted(Formatting.AQUA,Formatting.ITALIC),true);
-                              }
-                              
-                              wizards[i].kill();
-                              wizards[i] = null;
-                           }else{
-                              if(age % 130 == 0){
-                                 Entity entity = endWorld.getEntity(UUID.fromString(data.getString("crystal")));
-                                 if(entity instanceof EndCrystalEntity crystal){
-                                    Vec3d crystalPos = crystal.getPos().add(0,-1,0);
-                                    ParticleEffectUtils.dragonBossTowerCircleInvuln(endWorld,crystalPos,6000,0);
-                                 }
+                                 Vec3d crystalPos = crystal.getPos().add(0,-1,0);
+                                 ParticleEffectUtils.dragonBossTowerCircleInvuln(endWorld,crystalPos,6000,0);
                               }
                            }
                         }
+                     }else{
+                        if(wizards[i].getCrystalId() != null){
+                           Entity entity = endWorld.getEntity(wizards[i].getCrystalId());
+                           if(entity instanceof EndCrystalEntity crystal){
+                              crystal.setInvulnerable(false);
+                           }
+                        }
+                        final int finalI = i;
+                        List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(wizards[finalI].getPos()) <= 20*20);
+                        for(ServerPlayerEntity player : nearbyPlayers){
+                           player.sendMessage(Text.literal("The Crystal's Shield Fades!").formatted(Formatting.AQUA,Formatting.ITALIC),true);
+                        }
+                        
+                        wizards[i].discard();
+                        wizards[i] = null;
                      }
                   }
                }
@@ -574,7 +551,7 @@ public class DragonBossFight {
    private static void endFight(MinecraftServer server, ServerWorld endWorld){
       try{
          DragonDialog.announce(DragonDialog.Announcements.EVENT_END,server,null);
-         MagicItem magicWings = MagicItems.WINGS_OF_ZEPHYR;
+         MagicItem magicWings = ArcanaRegistry.WINGS_OF_ENDERIA;
          
          // Give reward
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
@@ -821,8 +798,8 @@ public class DragonBossFight {
          player.sendMessage(Text.translatable("The Dragon boss must take place in The End"), false);
          return -1;
       }
-      ServerWorld endWorld = player.getWorld();
-      NbtCompound dragonData = endWorld.getEnderDragonFight().toNbt();
+      ServerWorld endWorld = player.getServerWorld();
+      NbtCompound dragonData = (NbtCompound) Util.getResult(EnderDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, endWorld.getEnderDragonFight().toData()), IllegalStateException::new); //wtf
       NbtCompound fightData = new NbtCompound();
       if(dragonData.getBoolean("DragonKilled")){
          player.sendMessage(Text.translatable("Dragon is Dead, Commencing Respawn"), false);
@@ -891,7 +868,7 @@ public class DragonBossFight {
       }
    
       if(wizards != null && (phase == 1 || phase == 2)){
-         for(DragonGoonHelper.WizardEntity wizard : wizards){
+         for(DragonWizardEntity wizard : wizards){
             if(wizard != null && wizard.isAlive())
                wizard.kill();
          }
@@ -1017,7 +994,7 @@ public class DragonBossFight {
       }else if(state == States.PHASE_TWO){
          int wizardCount = 0;
          int crystalCount = 0;
-         for(DragonGoonHelper.WizardEntity wizard : wizards){
+         for(DragonWizardEntity wizard : wizards){
             if(wizard != null && wizard.isAlive())
                wizardCount++;
          }
@@ -1044,7 +1021,7 @@ public class DragonBossFight {
       }
    
       for(MutableText msg : msgs){
-         source.sendFeedback(msg,false);
+         source.sendFeedback(()->msg,false);
       }
       return 0;
    }

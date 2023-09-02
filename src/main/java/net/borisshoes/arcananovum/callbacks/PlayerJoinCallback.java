@@ -42,6 +42,7 @@ public class PlayerJoinCallback {
       profile.setLevel(LevelUtils.levelFromXp(profile.getXP())); // update level from xp just in case leveling changed
    
    
+      // Linked Augments
       int o1 = profile.getAugmentLevel(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
       int r1 = profile.getAugmentLevel(ArcanaAugments.RUNIC_BOTTOMLESS.id);
       if(o1 > r1){
@@ -57,6 +58,14 @@ public class PlayerJoinCallback {
       }else if(r2 > o2){
          profile.setAugmentLevel(ArcanaAugments.ABUNDANT_AMMO.id,r2);
       }
+      
+      int o3 = profile.getAugmentLevel(ArcanaAugments.HARNESS_RECYCLER.id);
+      int r3 = profile.getAugmentLevel(ArcanaAugments.SHULKER_RECYCLER.id);
+      if(o3 > r3){
+         profile.setAugmentLevel(ArcanaAugments.SHULKER_RECYCLER.id,o3);
+      }else if(r3 > o3){
+         profile.setAugmentLevel(ArcanaAugments.HARNESS_RECYCLER.id,r3);
+      }
    
       for(Map.Entry<ArcanaAugment, Integer> entry : profile.getAugments().entrySet()){
          ArcanaAugment baseAug = ArcanaAugments.registry.get(entry.getKey().id);
@@ -66,8 +75,10 @@ public class PlayerJoinCallback {
             }
          }
       }
-   
-   
+      
+      if(profile.getMiscData("quiverCD") == null){
+         profile.addMiscData("quiverCD", NbtInt.of(0));
+      }
       if(profile.getMiscData("runicInvId") == null){
          profile.addMiscData("runicInvId", NbtString.of(""));
       }

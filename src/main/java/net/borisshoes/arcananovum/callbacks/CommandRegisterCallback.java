@@ -1,14 +1,12 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import com.mojang.brigadier.CommandDispatcher;
-
 import net.borisshoes.arcananovum.ArcanaCommands;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.MessageArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -18,7 +16,6 @@ import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static net.borisshoes.arcananovum.Arcananovum.devMode;
 import static net.minecraft.command.argument.EntityArgumentType.*;
-import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 

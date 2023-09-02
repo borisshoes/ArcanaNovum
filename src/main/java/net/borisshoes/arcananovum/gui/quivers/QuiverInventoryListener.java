@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.gui.quivers;
 
-import net.borisshoes.arcananovum.items.core.QuiverItem;
+import net.borisshoes.arcananovum.items.QuiverItem;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.ItemStack;

@@ -4,24 +4,25 @@ import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
 import net.borisshoes.arcananovum.mixins.LivingEntityAccessor;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -54,9 +55,11 @@ public class PhotonicArrows extends RunicArrow {
       name = "Photonic Arrows";
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new PhotonicArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -72,15 +75,15 @@ public class PhotonicArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",11271167);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    public void shoot(World world, LivingEntity entity, PersistentProjectileEntity proj, int alignmentLvl){
@@ -134,10 +137,10 @@ public class PhotonicArrows extends RunicArrow {
                   return;
                }
                if(magic instanceof ShieldOfFortitude shield){
-                  float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,"shield_of_faith"));
+                  float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH.id));
                   float curAbs = hitPlayer.getAbsorptionAmount();
                   float addedAbs = (float) Math.min(maxAbs,finalDmg*.5);
-                  int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,"shield_of_resilience"));
+                  int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
                   Arcananovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,hitPlayer,addedAbs));
                   SoundUtils.playSongToPlayer(hitPlayer,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
                   hitPlayer.setAbsorptionAmount((curAbs + addedAbs));
@@ -145,7 +148,7 @@ public class PhotonicArrows extends RunicArrow {
             }
          }
          if(!ignore){
-            hit.damage(new DamageSource(entity.getDamageSources().magic().getTypeRegistryEntry(), proj,entity), finalDmg);
+            hit.damage(ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
          }
          if(hit instanceof MobEntity mob && mob.isDead()){
             killCount++;
@@ -153,7 +156,7 @@ public class PhotonicArrows extends RunicArrow {
          bonusDmg = Math.min(25,bonusDmg + alignmentLvl);
          if(ignore) break;
       }
-      if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,"x");
+      if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X.id);
       
       if(world instanceof ServerWorld serverWorld){
          ParticleEffectUtils.photonArrowShot(serverWorld,entity,endPoint, MathHelper.clamp(damage/15,.4f,1f));
@@ -180,10 +183,10 @@ public class PhotonicArrows extends RunicArrow {
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){}
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){}
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){}
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){}
    
    private MagicItemRecipe makeRecipe(){
       MagicItemIngredient a = MagicItemIngredient.EMPTY;
@@ -191,7 +194,7 @@ public class PhotonicArrows extends RunicArrow {
       MagicItemIngredient g = new MagicItemIngredient(Items.BEACON,4,null);
       MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
       MagicItemIngredient k = new MagicItemIngredient(Items.GLOW_INK_SAC,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -199,12 +202,25 @@ public class PhotonicArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Photonic Arrows\\n\\nRarity: Legendary\\n\\n'Straight as an arrow'. What a joke of a saying, I'll show them what straight looks like. Some solar runes coupled with a focusing prism makes a hell of a combo. This brings a new meaning to 'Shooting Lazers'.\"}");
       return list;
+   }
+   
+   public class PhotonicArrowsItem extends MagicPolymerArrowItem {
+      public PhotonicArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

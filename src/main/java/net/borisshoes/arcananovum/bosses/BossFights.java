@@ -1,7 +1,5 @@
 package net.borisshoes.arcananovum.bosses;
 
-import net.borisshoes.arcananovum.utils.MagicRarity;
-
 public enum BossFights {
    DRAGON("dragon"),
    WARDEN("warden");

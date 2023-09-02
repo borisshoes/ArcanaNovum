@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.gui.brainjar;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.BrainJar;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;

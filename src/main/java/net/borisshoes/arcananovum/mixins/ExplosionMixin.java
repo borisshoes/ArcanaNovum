@@ -26,7 +26,7 @@ public class ExplosionMixin {
                Entity attacker = explosion.getDamageSource().getAttacker();
                entity.damage(source,newDmg);
                
-               if(attacker != null && hitPlayer.getUuid().equals(source.getSource().getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f) ArcanaAchievements.grant(hitPlayer,"safety_third");
+               if(attacker != null && hitPlayer.getUuid().equals(source.getSource().getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f) ArcanaAchievements.grant(hitPlayer,ArcanaAchievements.SAFETY_THIRD.id);
                return true;
             }
          }

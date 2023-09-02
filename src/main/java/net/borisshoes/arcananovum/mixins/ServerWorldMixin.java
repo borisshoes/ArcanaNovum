@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.items.ContinuumAnchor;
+import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

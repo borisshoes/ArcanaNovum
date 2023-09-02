@@ -25,7 +25,7 @@
     ]
   },
   "custom": {
-    "cardinal-components": ["arcananovum:profile","arcananovum:magicblocks","arcananovum:magicentities","arcananovum:login_callbacks","arcananovum:bossfight"]
+    "cardinal-components": ["arcananovum:profile","arcananovum:login_callbacks","arcananovum:bossfight"]
   },
   "mixins": [
     "arcananovum.mixins.json"
@@ -34,6 +34,6 @@
   "depends": {
     "fabricloader": ">=0.14.13",
     "fabric": "*",
-    "minecraft": ">=1.19.4"
+    "minecraft": ">=1.20.1"
   }
 }

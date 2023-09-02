@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.items.ContinuumAnchor;
+import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -10,8 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
-import static net.borisshoes.arcananovum.Arcananovum.log;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
 @Mixin(MobEntity.class)

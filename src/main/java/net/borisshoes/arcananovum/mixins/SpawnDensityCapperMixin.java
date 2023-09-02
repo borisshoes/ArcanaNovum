@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.accessors.ThreadedAnvilChunkStorageAccessor;
-import net.borisshoes.arcananovum.items.ContinuumAnchor;
+import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.utils.DensityCap;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;

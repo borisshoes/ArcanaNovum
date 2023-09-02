@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.gui.levitationharness;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.items.LevitationHarness;
-import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;

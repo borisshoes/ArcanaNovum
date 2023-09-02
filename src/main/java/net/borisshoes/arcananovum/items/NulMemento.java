@@ -2,33 +2,28 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.entity.Entity;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,16 +31,18 @@ import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class NulMemento extends MagicItem implements UsableItem {
+public class NulMemento extends MagicItem {
    
    public NulMemento(){
       id = "nul_memento";
       name = "Nul Memento";
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS};
+      vanillaItem = Items.WITHER_SKELETON_SKULL;
+      item = new NulMementoItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.WITHER_SKELETON_SKULL);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -73,8 +70,8 @@ public class NulMemento extends MagicItem implements UsableItem {
       tag.getCompound("arcananovum").putBoolean("active",false);
       prefNBT = tag;
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    public boolean isActive(ItemStack item){
@@ -95,7 +92,7 @@ public class NulMemento extends MagicItem implements UsableItem {
       player.addStatusEffect(weakness);
       
       final boolean[] cont = {true};
-      int resolve = PLAYER_DATA.get(player).getAugmentLevel("resolve");
+      int resolve = PLAYER_DATA.get(player).getAugmentLevel(ArcanaAugments.RESOLVE.id);
       final int maxConc = LevelUtils.concFromXp(PLAYER_DATA.get(player).getXP(),resolve);
    
       player.sendMessage(Text.literal(""),false);
@@ -249,16 +246,16 @@ public class NulMemento extends MagicItem implements UsableItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      GenericMagicIngredient a = new GenericMagicIngredient(MagicItems.CATALYST_EMPOWERED,1);
-      GenericMagicIngredient b = new GenericMagicIngredient(MagicItems.CATALYST_EXOTIC,1);
-      GenericMagicIngredient r = new GenericMagicIngredient(MagicItems.ARCANE_TOME,1);
-      GenericMagicIngredient c = new GenericMagicIngredient(MagicItems.CATALYST_LEGENDARY,1);
-      GenericMagicIngredient d = new GenericMagicIngredient(MagicItems.CATALYST_MUNDANE,1);
-      GenericMagicIngredient g = new GenericMagicIngredient(MagicItems.CATALYST_MYTHICAL,1);
-      GenericMagicIngredient h = new GenericMagicIngredient(MagicItems.EXOTIC_MATTER,1);
-      GenericMagicIngredient l = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient a = new GenericMagicIngredient(ArcanaRegistry.EMPOWERED_CATALYST,1);
+      GenericMagicIngredient b = new GenericMagicIngredient(ArcanaRegistry.EXOTIC_CATALYST,1);
+      GenericMagicIngredient r = new GenericMagicIngredient(ArcanaRegistry.ARCANE_TOME,1);
+      GenericMagicIngredient c = new GenericMagicIngredient(ArcanaRegistry.LEGENDARY_CATALYST,1);
+      GenericMagicIngredient d = new GenericMagicIngredient(ArcanaRegistry.MUNDANE_CATALYST,1);
+      GenericMagicIngredient g = new GenericMagicIngredient(ArcanaRegistry.MYTHICAL_CATALYST,1);
+      GenericMagicIngredient h = new GenericMagicIngredient(ArcanaRegistry.EXOTIC_MATTER,1);
+      GenericMagicIngredient l = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
       MagicItemIngredient m = new MagicItemIngredient(Items.WITHER_SKELETON_SKULL,64,null,true);
-      GenericMagicIngredient n = new GenericMagicIngredient(MagicItems.TEMPORAL_MOMENT,1);
+      GenericMagicIngredient n = new GenericMagicIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,b,c,d,a},
@@ -266,7 +263,7 @@ public class NulMemento extends MagicItem implements UsableItem {
             {c,l,m,n,c},
             {b,g,r,g,d},
             {a,d,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withSingularity());
    }
    
    private List<String> makeLore(){
@@ -278,18 +275,16 @@ public class NulMemento extends MagicItem implements UsableItem {
       return list;
    }
    
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
+   public class NulMementoItem extends MagicPolymerArmorItem {
+      public NulMementoItem(Settings settings){
+         super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL,Type.HELMET,settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }

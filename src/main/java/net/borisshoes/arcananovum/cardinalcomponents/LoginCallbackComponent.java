@@ -2,8 +2,9 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 
 import net.borisshoes.arcananovum.callbacks.LoginCallback;
 import net.borisshoes.arcananovum.callbacks.LoginCallbacks;
-import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    public void readFromNbt(NbtCompound tag){
       try{
          callbacks.clear();
-         NbtList callbacksTag = tag.getList("Callbacks", NbtType.COMPOUND);
+         NbtList callbacksTag = tag.getList("Callbacks", NbtElement.COMPOUND_TYPE);
          for (NbtElement e : callbacksTag) {
             NbtCompound callbackTag = (NbtCompound) e;
             String playerUUID = callbackTag.getString("uuid");

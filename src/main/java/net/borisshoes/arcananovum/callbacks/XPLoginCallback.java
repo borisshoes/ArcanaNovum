@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;

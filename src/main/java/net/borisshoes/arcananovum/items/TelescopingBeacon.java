@@ -3,32 +3,30 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.callbacks.BeaconMiningLaserCallback;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.util.NbtType;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -36,33 +34,29 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.MAGIC_BLOCK_LIST;
 
-public class TelescopingBeacon extends MagicItem implements UsableItem {
+public class TelescopingBeacon extends MagicItem {
    
    public TelescopingBeacon(){
       id = "telescoping_beacon";
       name = "Telescoping Beacon";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.BLOCKS};
+      vanillaItem = Items.BEACON;
+      item = new TelescopingBeaconItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.BEACON);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -92,139 +86,35 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
       magicTag.putBoolean("beacon",true);
       prefNBT = tag;
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtCompound blocksNbt = magicTag.getCompound("blocks").copy();
+      NbtList blocksNbt = magicTag.getList("blocks",NbtElement.COMPOUND_TYPE).copy();
+      boolean hasData = magicTag.contains("data");
+      NbtCompound dataTag = new NbtCompound();
+      if(hasData){
+         dataTag = magicTag.getCompound("data").copy();
+      }
       boolean ready = magicTag.getBoolean("beacon");
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
+      if(hasData){
+         newTag.getCompound("arcananovum").put("data",dataTag);
+      }
       newTag.getCompound("arcananovum").put("blocks",blocksNbt);
       newTag.getCompound("arcananovum").putBoolean("beacon",ready);
       stack.setNbt(newTag);
-      NbtList loreList = newTag.getCompound("display").getList("Lore", NbtType.STRING);
+      NbtList loreList = newTag.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
       if(ready){
          loreList.set(4,NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ready\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       }else{
          loreList.set(4,NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Empty\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       }
       return stack;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      ItemStack item = playerEntity.getStackInHand(hand);
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList blocks = magicNbt.getList("blocks", NbtElement.COMPOUND_TYPE);
-      boolean hasBeacon = magicNbt.getBoolean("beacon");
-      
-      Direction side = result.getSide();
-      BlockPos placePos = hasBeacon ? result.getBlockPos().add(side.getVector()) : result.getBlockPos();
-      
-      if(hasBeacon){ // Place beacon
-         int blockCount = 0;
-         for(int i = 0; i < blocks.size(); i++){
-            NbtCompound blockType = blocks.getCompound(i);
-            int count = blockType.getInt("count");
-            blockCount+=count;
-         }
-         int tier = blocksToTier(blockCount);
-         placePos = placePos.add(0,tier,0);
-         
-         if(hasSpace(world, placePos, tier) && world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, item, result)) && playerEntity instanceof ServerPlayerEntity player){
-            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"careful_reconstruction")) >= 1;
-            if(careful && magicNbt.contains("data",NbtElement.COMPOUND_TYPE)){
-               placeBeacon(player, world, placePos, tier, blocks,magicNbt.getCompound("data"));
-            }else{
-               placeBeacon(player, world, placePos, tier, blocks,null);
-            }
-   
-            magicNbt.put("blocks",new NbtList());
-            magicNbt.putBoolean("beacon",false);
-            
-            NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
-            loreList.set(4,NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Empty\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         }else{
-            playerEntity.sendMessage(Text.translatable("The Beacon cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
-         }
-      }else{ // Capture beacon
-         BlockState placeState = world.getBlockState(placePos);
-         BlockEntity blockEntity = world.getBlockEntity(placePos);
-         if(!placeState.isOf(Blocks.BEACON) || !(blockEntity instanceof BeaconBlockEntity beaconBlock)){
-            playerEntity.sendMessage(Text.translatable("No Beacon Present").formatted(Formatting.RED,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
-            return false;
-         }
-         
-         // Scan for support blocks
-         List<Pair<BlockPos,BlockState>> baseBlocks = getBaseBlocks(world,placePos);
-         int tier = blocksToTier(baseBlocks.size());
-         // Remove support blocks and add them to NBT
-         blocks = new NbtList();
-         if(tier != 0){
-            HashMap<Block,Integer> blockTypes = new HashMap<>();
-            for(int i = 0; i < tiers[tier-1]; i++){
-               BlockState blockState = baseBlocks.get(i).getRight();
-               Block blockType = blockState.getBlock();
-               if(blockTypes.containsKey(blockType)){
-                  blockTypes.put(blockType,blockTypes.get(blockType)+1);
-               }else{
-                  blockTypes.put(blockType,1);
-               }
-               world.setBlockState(baseBlocks.get(i).getLeft(), Blocks.AIR.getDefaultState(), 3);
-            }
-            for(Map.Entry<Block, Integer> entry : blockTypes.entrySet()){
-               NbtCompound blockType = new NbtCompound();
-               blockType.putString("id",Registries.BLOCK.getId(entry.getKey()).toString());
-               blockType.putInt("count",entry.getValue());
-               blocks.add(blockType);
-            }
-         }
-         magicNbt.put("blocks",blocks);
-         magicNbt.putBoolean("beacon",true);
-         
-         boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"careful_reconstruction")) >= 1;
-         if(careful){
-            magicNbt.put("data",beaconBlock.createNbt());
-         }
-   
-         world.setBlockState(placePos, Blocks.AIR.getDefaultState(), 3);
-   
-   
-         if(world instanceof ServerWorld serverWorld){
-            for(int i = 0; i <= tier; i++){
-               int j = i;
-               BlockPos finalPlacePos = placePos;
-               Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(2*(i+1), new TimerTask() {
-                  @Override
-                  public void run(){
-                     SoundUtils.playSound(world, finalPlacePos,SoundEvents.ENTITY_IRON_GOLEM_DAMAGE, SoundCategory.PLAYERS,1,2f-(.3f*j));
-                  }
-               }));
-            }
-         }
-         
-         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
-         loreList.set(4,NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ready - Tier "+tier+"\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      }
-      
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
    }
    
    private static List<Pair<BlockPos,BlockState>> getBaseBlocks(World world, BlockPos pos) {
@@ -273,7 +163,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
                BlockPos blockPos = new BlockPos(curX, curY, curZ);
                BlockState blockState = world.getBlockState(blockPos);
                
-               if(!(blockState.getMaterial().isReplaceable())){
+               if(!blockState.isIn(BlockTags.REPLACEABLE)){
                   //log("Block not replaceable at: "+blockPos);
                   return false;
                }
@@ -284,7 +174,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
       return true;
    }
    
-   private void placeBeacon(ServerPlayerEntity player, World world, BlockPos pos, int tier, NbtList blockTypes, NbtCompound data){
+   private void placeBeacon(ServerPlayerEntity player, World world, BlockPos pos, int tier, NbtList blockTypes, NbtCompound data, boolean mining){
       try{
          ArrayList<BlockState> blocks = new ArrayList<>();
          
@@ -329,14 +219,18 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
                beaconBlock.readNbt(data);
             }
          }
+         if(mining){
+            Arcananovum.addTickTimerCallback(player.getServerWorld(),new BeaconMiningLaserCallback(player.getServerWorld(),pos,pos.up()));
+         }
          
+
          player.teleport(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
          PLAYER_DATA.get(player).addXP(index); // Add xp
    
          
          for(int i = 0; i <= tier; i++){
             int j = i;
-            Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2*(i+1), new TimerTask() {
+            Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2*(i+1), new TimerTask() {
                @Override
                public void run(){
                   SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j));
@@ -348,13 +242,13 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
          if(blockTypes.size() == 1 && blockTypes.getCompound(0).getInt("count") >= 164){
             BlockState blockType = blocks.get(0);
             if(blockType.isOf(Blocks.DIAMOND_BLOCK)){
-               ArcanaAchievements.grant(player,"bejeweled");
+               ArcanaAchievements.grant(player,ArcanaAchievements.BEJEWELED.id);
             }else if(blockType.isOf(Blocks.EMERALD_BLOCK)){
-               ArcanaAchievements.grant(player,"art_of_the_deal");
+               ArcanaAchievements.grant(player,ArcanaAchievements.ART_OF_THE_DEAL.id);
             }else if(blockType.isOf(Blocks.GOLD_BLOCK)){
-               ArcanaAchievements.grant(player,"acquisition_rules");
+               ArcanaAchievements.grant(player,ArcanaAchievements.ACQUISITION_RULES.id);
             }else if(blockType.isOf(Blocks.NETHERITE_BLOCK)){
-               ArcanaAchievements.grant(player,"clinically_insane");
+               ArcanaAchievements.grant(player,ArcanaAchievements.CLINICALLY_INSANE.id);
             }
          }
       }catch(Exception e){
@@ -365,9 +259,7 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
    public static int[] tiers = {9,34,83,164};
    public static int blocksToTier(int blocks){
       for(int i=0; i<tiers.length; i++){
-         if(blocks >= tiers[i]){
-            continue;
-         }else if(blocks < tiers[i]){
+         if(blocks < tiers[i]){
             return i;
          }
       }
@@ -397,5 +289,123 @@ public class TelescopingBeacon extends MagicItem implements UsableItem {
       list.add("{\"text\":\" Telescoping Beacon\\n\\ncan expand and contract with the press of a button.\\n\\nCollecting it will store enough metallic blocks to redeploy at the highest possible tier without collecting extra.\\n\\nThere must be enough\"}");
       list.add("{\"text\":\" Telescoping Beacon\\n\\nroom for the beacon and its base to deploy in order to activate.\\n\\nThe beacon expands upwards from the location of placement.\"}");
       return list;
+   }
+   
+   public class TelescopingBeaconItem extends MagicPolymerItem {
+      public TelescopingBeaconItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public ActionResult useOnBlock(ItemUsageContext context){
+         PlayerEntity playerEntity = context.getPlayer();
+         Hand hand = context.getHand();
+         World world = context.getWorld();
+         ItemStack stack = context.getStack();
+         NbtCompound itemNbt = stack.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         NbtList blocks = magicNbt.getList("blocks", NbtElement.COMPOUND_TYPE);
+         boolean hasBeacon = magicNbt.getBoolean("beacon");
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.SUCCESS;
+         
+         Direction side = context.getSide();
+         BlockPos placePos = hasBeacon ? context.getBlockPos().add(side.getVector()) : context.getBlockPos();
+         
+         if(hasBeacon){ // Place beacon
+            int blockCount = 0;
+            for(int i = 0; i < blocks.size(); i++){
+               NbtCompound blockType = blocks.getCompound(i);
+               int count = blockType.getInt("count");
+               blockCount+=count;
+            }
+            int tier = blocksToTier(blockCount);
+            placePos = placePos.add(0,tier,0);
+            
+            if(hasSpace(world, placePos, tier) && world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, stack, new BlockHitResult(context.getHitPos(),context.getSide(),context.getBlockPos(),context.hitsInsideBlock())))){
+               boolean careful = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION.id) >= 1;
+               boolean mining = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MINING_LASER.id) >= 1;
+               if(careful && magicNbt.contains("data",NbtElement.COMPOUND_TYPE)){
+                  placeBeacon(player, world, placePos, tier, blocks,magicNbt.getCompound("data"),mining);
+               }else{
+                  placeBeacon(player, world, placePos, tier, blocks,null,mining);
+               }
+               
+               magicNbt.put("blocks",new NbtList());
+               magicNbt.putBoolean("beacon",false);
+               
+               NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+               loreList.set(4,NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Empty\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+            }else{
+               playerEntity.sendMessage(Text.translatable("The Beacon cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+            }
+         }else{ // Capture beacon
+            BlockState placeState = world.getBlockState(placePos);
+            BlockEntity blockEntity = world.getBlockEntity(placePos);
+            if(!placeState.isOf(Blocks.BEACON) || !(blockEntity instanceof BeaconBlockEntity beaconBlock)){
+               playerEntity.sendMessage(Text.translatable("No Beacon Present").formatted(Formatting.RED,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+               return ActionResult.SUCCESS;
+            }
+            
+            // Scan for support blocks
+            List<Pair<BlockPos,BlockState>> baseBlocks = getBaseBlocks(world,placePos);
+            int tier = blocksToTier(baseBlocks.size());
+            // Remove support blocks and add them to NBT
+            blocks = new NbtList();
+            if(tier != 0){
+               HashMap<Block,Integer> blockTypes = new HashMap<>();
+               for(int i = 0; i < tiers[tier-1]; i++){
+                  BlockState blockState = baseBlocks.get(i).getRight();
+                  Block blockType = blockState.getBlock();
+                  if(blockTypes.containsKey(blockType)){
+                     blockTypes.put(blockType,blockTypes.get(blockType)+1);
+                  }else{
+                     blockTypes.put(blockType,1);
+                  }
+                  world.setBlockState(baseBlocks.get(i).getLeft(), Blocks.AIR.getDefaultState(), 3);
+               }
+               for(Map.Entry<Block, Integer> entry : blockTypes.entrySet()){
+                  NbtCompound blockType = new NbtCompound();
+                  blockType.putString("id",Registries.BLOCK.getId(entry.getKey()).toString());
+                  blockType.putInt("count",entry.getValue());
+                  blocks.add(blockType);
+               }
+            }
+            magicNbt.put("blocks",blocks);
+            magicNbt.putBoolean("beacon",true);
+            
+            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION.id)) >= 1;
+            if(careful){
+               magicNbt.put("data",beaconBlock.createNbt());
+            }
+            
+            world.setBlockState(placePos, Blocks.AIR.getDefaultState(), 3);
+            
+            
+            if(world instanceof ServerWorld serverWorld){
+               for(int i = 0; i <= tier; i++){
+                  int j = i;
+                  BlockPos finalPlacePos = placePos;
+                  Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(2*(i+1), new TimerTask() {
+                     @Override
+                     public void run(){
+                        SoundUtils.playSound(world, finalPlacePos,SoundEvents.ENTITY_IRON_GOLEM_DAMAGE, SoundCategory.PLAYERS,1,2f-(.3f*j));
+                     }
+                  }));
+               }
+            }
+            
+            NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
+            loreList.set(4,NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ready - Tier "+tier+"\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+         }
+         
+         return ActionResult.SUCCESS;
+      }
    }
 }

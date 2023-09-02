@@ -3,15 +3,15 @@ package net.borisshoes.arcananovum.items.charms;
 import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.TickingItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.HungerManager;
@@ -29,17 +29,15 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class FeastingCharm extends MagicItem implements TickingItem, UsableItem {
+public class FeastingCharm extends MagicItem {
    
    private static final int[] gluttonyFoodBoost = {0,2,4,8};
    private static final float[] gluttonySatBoost = {0,0.5f,1f,2f};
@@ -49,9 +47,11 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
       name = "Charm of Feasting";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
+      vanillaItem = Items.RABBIT_STEW;
+      item = new FeastingCharmItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.RABBIT_STEW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -71,102 +71,8 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
       prefNBT = addMagicNbt(tag);
       prefNBT.getCompound("arcananovum").putInt("mode",0);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
-   }
-   
-   @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      int mode = item.getNbt().getCompound("arcananovum").getInt("mode");
-      int time = 400 - 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,"enzymes"));
-      int gluttony = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"gluttony"));
-      
-      if(world.getServer().getTicks() % time == 0){ // Consume food
-         //Scan for available food items
-         PlayerInventory inv = player.getInventory();
-         HungerManager hunger = player.getHungerManager();
-         ArrayList<Pair<Integer,FoodComponent>> availableFoods = new ArrayList<>();
-         int bestFoodInd = -1;
-         for(int i=0; i<inv.size();i++){
-            ItemStack invItem = inv.getStack(i);
-            if(invItem.isEmpty())
-               continue;
-            if(invItem.isFood() && !MagicItemUtils.isMagic(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
-               FoodComponent foodComponent = invItem.getItem().getFoodComponent();
-               availableFoods.add(new Pair<>(i,foodComponent));
-               if(bestFoodInd == -1 ||inv.getStack(bestFoodInd).getItem().getFoodComponent().getHunger() < foodComponent.getHunger()){
-                  bestFoodInd = i;
-               }
-            }
-         }
-         if(bestFoodInd != -1){
-            ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(item,"picky_eater") >= 1 ? inv.getStack(bestFoodInd) : inv.getStack(availableFoods.get(0).getFirst());
-            FoodComponent foodComponent = selectedFood.getItem().getFoodComponent();
-            int foodValue = foodComponent.getHunger();
-   
-            boolean consume = switch(mode){
-               case 0 -> // Mode 0 is optimal eating - Optimal Eating
-                     20 - hunger.getFoodLevel() >= foodValue;
-               case 1 -> // Mode 1 is eat when below regen range - Eat for Regen
-                     hunger.getFoodLevel() < 18;
-               case 2 -> // Mode 2 is eat if possible when below half HP, otherwise optimal - Optimal + Emergency Eating
-                     20 - hunger.getFoodLevel() >= foodValue || player.getHealth() < 10;
-               case 3 -> // Mode 3 is eat if possible when below half HP, otherwise when below 2 regen range - Regen + Emergency Eating
-                     hunger.getFoodLevel() < 18 || player.getHealth() < 10;
-               default -> false;
-            };
-   
-            if(consume){
-               player.sendMessage(Text.translatable("Your Feasting Charm consumes a "+selectedFood.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
-               hunger.eat(selectedFood.getItem(),selectedFood);
-               player.getHungerManager().add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
-               // Apply Status Effects
-               List<Pair<StatusEffectInstance, Float>> list = foodComponent.getStatusEffects();
-               for (Pair<StatusEffectInstance, Float> pair : list) {
-                  if (world.isClient || pair.getFirst() == null || !(world.random.nextFloat() < pair.getSecond().floatValue())) continue;
-                  player.addStatusEffect(new StatusEffectInstance(pair.getFirst()));
-               }
-               if(selectedFood.isOf(Items.POISONOUS_POTATO)){
-                  ArcanaAchievements.setCondition(player,"tarrare","Poisonous Potato",true);
-               }else if(selectedFood.isOf(Items.SPIDER_EYE)){
-                  ArcanaAchievements.setCondition(player,"tarrare","Spider Eye",true);
-               }else if(selectedFood.isOf(Items.ROTTEN_FLESH)){
-                  ArcanaAchievements.setCondition(player,"tarrare","Rotten Flesh",true);
-               }else if(selectedFood.isOf(Items.SUSPICIOUS_STEW)){
-                  ArcanaAchievements.setCondition(player,"tarrare","Suspicious Stew",true);
-               }else if(selectedFood.isOf(Items.CHICKEN)){
-                  ArcanaAchievements.setCondition(player,"tarrare","Raw Chicken",true);
-               }else if(selectedFood.isOf(Items.PUFFERFISH)){
-                  ArcanaAchievements.setCondition(player,"tarrare","Pufferfish",true);
-               }
-   
-               selectedFood.decrement(1);
-               if(selectedFood.getCount() == 0)
-                  selectedFood.setNbt(new NbtCompound());
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_GENERIC_EAT, 1,.7f);
-               PLAYER_DATA.get(player).addXP(50*foodValue); // Add xp
-            }
-         }
-      }
-      if(world.getServer().getTicks() % (time*6) == 0){ // Give player a small hunger boost
-         player.getHungerManager().add(1,2+gluttony*0.5f);
-      }
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      toggleMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    // Mode 0 is optimal eating - Optimal Eating
@@ -219,5 +125,105 @@ public class FeastingCharm extends MagicItem implements TickingItem, UsableItem 
             {bre,car,app,car,prk},
             {cok,pie,car,mut,stk}};
       return new MagicItemRecipe(ingredients);
+   }
+   
+   public class FeastingCharmItem extends MagicPolymerItem {
+      public FeastingCharmItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         
+         int mode = stack.getNbt().getCompound("arcananovum").getInt("mode");
+         int time = 400 - 100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENZYMES.id));
+         int gluttony = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GLUTTONY.id));
+         
+         if(world.getServer().getTicks() % time == 0){ // Consume food
+            //Scan for available food items
+            PlayerInventory inv = player.getInventory();
+            HungerManager hunger = player.getHungerManager();
+            ArrayList<Pair<Integer,FoodComponent>> availableFoods = new ArrayList<>();
+            int bestFoodInd = -1;
+            for(int i=0; i<inv.size();i++){
+               ItemStack invItem = inv.getStack(i);
+               if(invItem.isEmpty())
+                  continue;
+               if(invItem.isFood() && !MagicItemUtils.isMagic(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
+                  FoodComponent foodComponent = invItem.getItem().getFoodComponent();
+                  availableFoods.add(new Pair<>(i,foodComponent));
+                  if(bestFoodInd == -1 ||inv.getStack(bestFoodInd).getItem().getFoodComponent().getHunger() < foodComponent.getHunger()){
+                     bestFoodInd = i;
+                  }
+               }
+            }
+            if(bestFoodInd != -1){
+               ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PICKY_EATER.id) >= 1 ? inv.getStack(bestFoodInd) : inv.getStack(availableFoods.get(0).getFirst());
+               FoodComponent foodComponent = selectedFood.getItem().getFoodComponent();
+               int foodValue = foodComponent.getHunger();
+               
+               boolean consume = switch(mode){
+                  case 0 -> // Mode 0 is optimal eating - Optimal Eating
+                        20 - hunger.getFoodLevel() >= foodValue;
+                  case 1 -> // Mode 1 is eat when below regen range - Eat for Regen
+                        hunger.getFoodLevel() < 18;
+                  case 2 -> // Mode 2 is eat if possible when below half HP, otherwise optimal - Optimal + Emergency Eating
+                        20 - hunger.getFoodLevel() >= foodValue || player.getHealth() < 10;
+                  case 3 -> // Mode 3 is eat if possible when below half HP, otherwise when below 2 regen range - Regen + Emergency Eating
+                        hunger.getFoodLevel() < 18 || player.getHealth() < 10;
+                  default -> false;
+               };
+               
+               if(consume){
+                  player.sendMessage(Text.translatable("Your Feasting Charm consumes a "+selectedFood.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
+                  hunger.eat(selectedFood.getItem(),selectedFood);
+                  player.getHungerManager().add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
+                  // Apply Status Effects
+                  List<Pair<StatusEffectInstance, Float>> list = foodComponent.getStatusEffects();
+                  for (Pair<StatusEffectInstance, Float> pair : list) {
+                     if (world.isClient || pair.getFirst() == null || !(world.random.nextFloat() < pair.getSecond().floatValue())) continue;
+                     player.addStatusEffect(new StatusEffectInstance(pair.getFirst()));
+                  }
+                  if(selectedFood.isOf(Items.POISONOUS_POTATO)){
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Poisonous Potato",true);
+                  }else if(selectedFood.isOf(Items.SPIDER_EYE)){
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Spider Eye",true);
+                  }else if(selectedFood.isOf(Items.ROTTEN_FLESH)){
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Rotten Flesh",true);
+                  }else if(selectedFood.isOf(Items.SUSPICIOUS_STEW)){
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Suspicious Stew",true);
+                  }else if(selectedFood.isOf(Items.CHICKEN)){
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Raw Chicken",true);
+                  }else if(selectedFood.isOf(Items.PUFFERFISH)){
+                     ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Pufferfish",true);
+                  }
+                  
+                  selectedFood.decrement(1);
+                  if(selectedFood.getCount() == 0)
+                     selectedFood.setNbt(new NbtCompound());
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_GENERIC_EAT, 1,.7f);
+                  PLAYER_DATA.get(player).addXP(50*foodValue); // Add xp
+               }
+            }
+         }
+         if(world.getServer().getTicks() % (time*6) == 0){ // Give player a small hunger boost
+            player.getHungerManager().add(1,2+gluttony*0.5f);
+         }
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+         toggleMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
+         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+      }
    }
 }

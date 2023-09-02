@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.utils;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -55,7 +54,7 @@ public class SoundUtils {
    
    public static void soulSounds(ServerPlayerEntity player, int count, int duration){
       for(int i = 0; i < duration; i++){
-         Arcananovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2*(i+1), new TimerTask() {
+         Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2*(i+1), new TimerTask() {
             @Override
             public void run(){
                for(int j = 0; j < count; j++){

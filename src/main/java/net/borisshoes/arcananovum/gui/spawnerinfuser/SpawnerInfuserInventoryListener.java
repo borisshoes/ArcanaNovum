@@ -1,24 +1,16 @@
 package net.borisshoes.arcananovum.gui.spawnerinfuser;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
-import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
-import net.borisshoes.arcananovum.items.ShulkerCore;
+import net.borisshoes.arcananovum.blocks.SpawnerInfuser;
+import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.items.SpawnerInfuser;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -27,15 +19,15 @@ import java.util.List;
 public class SpawnerInfuserInventoryListener implements InventoryChangedListener {
    //private final SpawnerInfuser infuser;
    private final SpawnerInfuserGui gui;
-   private final MagicBlock block;
+   private final SpawnerInfuserBlockEntity blockEntity;
    private final World world;
    private boolean updating = false;
    private boolean prevStone = false;
    
-   public SpawnerInfuserInventoryListener(SpawnerInfuserGui gui, MagicBlock block, World world){
+   public SpawnerInfuserInventoryListener(SpawnerInfuserGui gui, SpawnerInfuserBlockEntity blockEntity, World world){
       //this.infuser = infuser;
       this.gui = gui;
-      this.block = block;
+      this.blockEntity = blockEntity;
       this.world = world;
    }
    
@@ -43,19 +35,18 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
    public void onInventoryChanged(Inventory inv){
       if(!updating){
          updating = true;
-         NbtCompound blockData = block.getData();
          
          ItemStack soulstoneSlot = inv.getStack(0);
          ItemStack extraPoints = ItemStack.EMPTY;
-         int points = blockData.getInt("points");
-         int bonusCap = new int[]{0,64,128,192,256,352}[Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"soul_reservoir"))];
-         int ratio = (int) Math.pow(2,Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"augmented_apparatus")));
+         int points = blockEntity.getPoints();
+         int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SOUL_RESERVOIR.id)];
+         int ratio = (int) Math.pow(2,ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
          
          if(!soulstoneSlot.isEmpty()){
-            blockData.put("soulstone", soulstoneSlot.writeNbt(new NbtCompound()));
+            blockEntity.setSoulstone(soulstoneSlot);
             if(!prevStone){
                SoundUtils.soulSounds(gui.getPlayer(),1,20);
-               if(Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot)) == Soulstone.tiers.length) ArcanaAchievements.grant(gui.getPlayer(),"innocent_souls");
+               if(Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot)) == Soulstone.tiers.length) ArcanaAchievements.grant(gui.getPlayer(),ArcanaAchievements.INNOCENT_SOULS.id);
             }
    
             ItemStack pointsSlot = inv.getStack(1);
@@ -64,24 +55,25 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
                int toAdd = pointsSlot.getCount() * ratio;
                
                if(maxPoints-points < toAdd){
-                  blockData.putInt("points",maxPoints);
+                  blockEntity.setPoints(maxPoints);
                   extraPoints = pointsSlot.copy();
                   extraPoints.setCount((toAdd-(maxPoints-points))/ratio);
                }else{
-                  blockData.putInt("points",points+toAdd);
+                  blockEntity.setPoints(points+toAdd);
                }
+               int curPoints = blockEntity.getPoints();
                if(toAdd != 0 && points < maxPoints){
-                  SoundUtils.playSongToPlayer(gui.getPlayer(), SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1, (.8f+((float)blockData.getInt("points")/maxPoints)));
-                  if(blockData.getInt("points") == maxPoints){
+                  SoundUtils.playSongToPlayer(gui.getPlayer(), SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1, (.8f+((float)curPoints/maxPoints)));
+                  if(curPoints == maxPoints){
                      SoundUtils.playSongToPlayer(gui.getPlayer(), SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1, 2f);
                   }
-                  if(blockData.getInt("points") >= 512) ArcanaAchievements.grant(gui.getPlayer(),"archlich");
-                  if(blockData.getInt("points") >= 1024) ArcanaAchievements.grant(gui.getPlayer(),"power_overwhelming");
+                  if(curPoints >= 512) ArcanaAchievements.grant(gui.getPlayer(),ArcanaAchievements.ARCHLICH.id);
+                  if(curPoints >= 1024) ArcanaAchievements.grant(gui.getPlayer(),ArcanaAchievements.POWER_OVERWHELMING.id);
                }
             }
             prevStone = true;
          }else{
-            blockData.put("soulstone", new NbtCompound());
+            blockEntity.setSoulstone(ItemStack.EMPTY);
             points += inv.getStack(1).getCount() * ratio;
    
             List<ItemStack> drops = new ArrayList<>();
@@ -121,16 +113,9 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
                SoundUtils.playSongToPlayer(gui.getPlayer(), SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, .8f);
             }
             
-            blockData.putInt("points",0);
-            NbtCompound stats = new NbtCompound();
-            stats.putShort("MinSpawnDelay", (short)200);
-            stats.putShort("MaxSpawnDelay", (short)800);
-            stats.putShort("SpawnCount", (short)4);
-            stats.putShort("MaxNearbyEntities", (short)6);
-            stats.putShort("RequiredPlayerRange", (short)16);
-            stats.putShort("SpawnRange", (short)4);
-            blockData.put("stats",stats);
-            blockData.putInt("SpentPoints",0);
+            blockEntity.setPoints(0);
+            blockEntity.resetStats();
+            blockEntity.setSpentPoints(0);
    
             prevStone = false;
          }

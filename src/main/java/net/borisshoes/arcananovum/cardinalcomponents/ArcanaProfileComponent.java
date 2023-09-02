@@ -2,15 +2,14 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.items.OverflowingQuiver;
-import net.borisshoes.arcananovum.items.core.MagicItem;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.items.OverflowingQuiver;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
@@ -45,8 +44,8 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       achievements.clear();
       augments.clear();
       //recipes.clear();
-      tag.getList("crafted", NbtType.STRING).forEach(item -> crafted.add(item.asString()));
-      //tag.getList("recipes", NbtType.STRING).forEach(item -> recipes.add(item.asString()));
+      tag.getList("crafted", NbtElement.STRING_TYPE).forEach(item -> crafted.add(item.asString()));
+      //tag.getList("recipes", NbtElement.STRING_TYPE).forEach(item -> recipes.add(item.asString()));
       NbtCompound miscDataTag = tag.getCompound("miscData");
       Set<String> keys = miscDataTag.getKeys();
       keys.forEach(key ->{
@@ -226,7 +225,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             }
          }
          SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
-         int resolve = getAugmentLevel("resolve");
+         int resolve = getAugmentLevel(ArcanaAugments.RESOLVE.id);
          player.sendMessage(Text.literal(""),false);
          player.sendMessage(Text.literal("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
          player.sendMessage(Text.literal("Max Concentration increased to "+LevelUtils.concFromLevel(newLevel,resolve)+"!").formatted(Formatting.AQUA,Formatting.ITALIC),false);
@@ -262,7 +261,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             MutableText newCraftMsg = Text.literal("")
                   .append(player.getDisplayName()).formatted(Formatting.ITALIC)
                   .append(Text.literal(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
-                  .append(Text.literal(magicItem.getName()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
+                  .append(Text.literal(magicItem.getNameString()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
                   .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
             server.getPlayerManager().broadcast(newCraftMsg.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)))), false);
          }
@@ -377,7 +376,14 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(baseAugment == null) return false;
       if(level < 0 || baseAugment.getTiers().length < level) return false;
       
-      if(id.equals(ArcanaAugments.QUIVER_DUPLICATION.id) || id.equals(ArcanaAugments.ABUNDANT_AMMO.id) || id.equals(ArcanaAugments.RUNIC_BOTTOMLESS.id) || id.equals(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id)){
+      if(
+            id.equals(ArcanaAugments.HARNESS_RECYCLER.id) ||
+            id.equals(ArcanaAugments.SHULKER_RECYCLER.id) ||
+            id.equals(ArcanaAugments.QUIVER_DUPLICATION.id) ||
+            id.equals(ArcanaAugments.ABUNDANT_AMMO.id) ||
+            id.equals(ArcanaAugments.RUNIC_BOTTOMLESS.id) ||
+            id.equals(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id
+      )){
          return setLinkedAugmentLevel(id,level);
       }
       
@@ -404,6 +410,10 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
       }else if(id.equals(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id)){
          linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.RUNIC_BOTTOMLESS.id);
+      }else if(id.equals(ArcanaAugments.SHULKER_RECYCLER.id)){
+         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.HARNESS_RECYCLER.id);
+      }else if(id.equals(ArcanaAugments.HARNESS_RECYCLER.id)){
+         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.SHULKER_RECYCLER.id);
       }
       
       int otherOldLvl = 0;

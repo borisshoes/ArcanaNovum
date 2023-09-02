@@ -3,15 +3,16 @@ package net.borisshoes.arcananovum.items;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.EnergyItem;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.gui.brainjar.BrainJarGui;
-import net.borisshoes.arcananovum.items.core.EnergyItem;
-import net.borisshoes.arcananovum.items.core.TickingItem;
-import net.borisshoes.arcananovum.items.core.UsableItem;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.util.NbtType;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -21,6 +22,7 @@ import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
@@ -30,18 +32,16 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
+public class BrainJar extends EnergyItem {
    public static final int[] capacities = {1000000,2000000,4000000,6000000,8000000,10000000};
    
    public BrainJar(){
@@ -49,9 +49,11 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       name = "Brain in a Jar";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
+      vanillaItem = Items.ZOMBIE_HEAD;
+      item = new BrainJarItem(new FabricItemSettings().maxCount(1).fireproof());
       
-      ItemStack item = new ItemStack(Items.ZOMBIE_HEAD);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -75,13 +77,13 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       NbtCompound magicTag = tag.getCompound("arcananovum");
       magicTag.putInt("mode",0);
       prefNBT = tag;
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
    public int getMaxEnergy(ItemStack item){
-      int capLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,"unending_wisdom"));
+      int capLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.UNENDING_WISDOM.id));
       return capacities[capLvl];
    }
    
@@ -95,73 +97,6 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       stack.setNbt(newTag);
       editStatusLore(stack);
       return stack;
-   }
-   
-   @Override
-   public void onTick(ServerWorld world, ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int mode = magicNbt.getInt("mode"); // 0 is off, 1 is on
-      if(mode == 1 && getEnergy(item) != 0){
-         // Check each player's inventory for gear that needs repairing
-         PlayerInventory inv = player.getInventory();
-         for(int i = 0; i < inv.size() && getEnergy(item) != 0; i++){
-            ItemStack tool = inv.getStack(i);
-            if(tool.isEmpty())
-               continue;
-            if(!tool.hasEnchantments())
-               continue;
-            NbtList enchants = tool.getEnchantments();
-            boolean hasMending = false;
-            for(int j = 0; j < enchants.size(); j++){
-               NbtCompound enchant = enchants.getCompound(j);
-               if(enchant.contains("id")){
-                  String id = enchant.getString("id");
-                  if(id.equals("minecraft:mending")){
-                     hasMending = true;
-                     break;
-                  }
-               }
-            }
-            if(hasMending){
-               NbtCompound nbt = tool.getNbt();
-               int durability = nbt != null ? nbt.getInt("Damage") : 0;
-               int repairAmount = 2 + Math.max(0, ArcanaAugments.getAugmentOnItem(item,"trade_school"));
-               if(durability <= 0)
-                  continue;
-               int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
-               ArcanaAchievements.progress(player,"certified_repair",durability-newDura);
-               addEnergy(item,-1);
-               PLAYER_DATA.get(player).addXP(5);
-               editStatusLore(item);
-               nbt.putInt("Damage", newDura);
-               tool.setNbt(nbt);
-            }
-         }
-      }
-      
-      if(world.getServer().getTicks() % 1200 == 0 && getEnergy(item) < getMaxEnergy(item)){
-         double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(item,"knowledge_bank"));
-         addEnergy(item, (int) (interestRate*getEnergy(item)));
-         editStatusLore(item);
-      }
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand){
-      openGui(playerEntity, playerEntity.getStackInHand(hand));
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult result){
-      openGui(playerEntity, playerEntity.getStackInHand(hand));
-      return false;
-   }
-   
-   @Override
-   public boolean useItem(PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHitResult){
-      return true;
    }
    
    public void openGui(PlayerEntity playerEntity, ItemStack item){
@@ -321,7 +256,7 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       }
       addEnergy(item,xpToStore);
       player.addExperience(-xpToStore);
-      if(xpToStore > 0 && getEnergy(item) == getMaxEnergy(item)) ArcanaAchievements.grant(player,"break_bank");
+      if(xpToStore > 0 && getEnergy(item) == getMaxEnergy(item)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
    
       ItemStack echest = new ItemStack(Items.ENDER_CHEST);
       NbtCompound tag = echest.getOrCreateNbt();
@@ -357,7 +292,7 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       boolean mending = magicNbt.getInt("mode") == 1;
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtType.STRING);
+      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
       if(mending){
          loreList.set(5,NbtString.of("[{\"text\":\""+xp+" XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ON\",\"italic\":false,\"color\":\"dark_green\"}]"));
       }else{
@@ -387,6 +322,77 @@ public class BrainJar extends EnergyItem implements UsableItem, TickingItem {
             {x,x,h,x,x},
             {e,m,x,m,e},
             {c,e,x,e,c}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withEnchanter());
+   }
+   
+   public class BrainJarItem extends MagicPolymerItem {
+      public BrainJarItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         NbtCompound itemNbt = stack.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         int mode = magicNbt.getInt("mode"); // 0 is off, 1 is on
+         if(mode == 1 && getEnergy(stack) != 0){
+            // Check each player's inventory for gear that needs repairing
+            PlayerInventory inv = player.getInventory();
+            for(int i = 0; i < inv.size() && getEnergy(stack) != 0; i++){
+               ItemStack tool = inv.getStack(i);
+               if(tool.isEmpty())
+                  continue;
+               if(!tool.hasEnchantments())
+                  continue;
+               NbtList enchants = tool.getEnchantments();
+               boolean hasMending = false;
+               for(int j = 0; j < enchants.size(); j++){
+                  NbtCompound enchant = enchants.getCompound(j);
+                  if(enchant.contains("id")){
+                     String id = enchant.getString("id");
+                     if(id.equals("minecraft:mending")){
+                        hasMending = true;
+                        break;
+                     }
+                  }
+               }
+               if(hasMending){
+                  NbtCompound nbt = tool.getNbt();
+                  int durability = nbt != null ? nbt.getInt("Damage") : 0;
+                  int repairAmount = 2 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id));
+                  if(durability <= 0)
+                     continue;
+                  int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
+                  ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
+                  addEnergy(stack,-1);
+                  PLAYER_DATA.get(player).addXP(5);
+                  editStatusLore(stack);
+                  nbt.putInt("Damage", newDura);
+                  tool.setNbt(nbt);
+               }
+            }
+         }
+         
+         if(world.getServer().getTicks() % 1200 == 0 && getEnergy(stack) < getMaxEnergy(stack)){
+            double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.KNOWLEDGE_BANK.id));
+            addEnergy(stack, (int) (interestRate*getEnergy(stack)));
+            editStatusLore(stack);
+         }
+      }
+      
+      @Override
+      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+         openGui(playerEntity, playerEntity.getStackInHand(hand));
+         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+      }
    }
 }

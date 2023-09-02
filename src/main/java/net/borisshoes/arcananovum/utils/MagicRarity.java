@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.utils;
 
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.MagicItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.text.MutableText;
@@ -83,11 +83,11 @@ public enum MagicRarity {
       }
    
       return switch(rarity){
-         case MUNDANE -> MagicItems.CATALYST_MUNDANE;
-         case EMPOWERED -> MagicItems.CATALYST_EMPOWERED;
-         case EXOTIC -> MagicItems.CATALYST_EXOTIC;
-         case LEGENDARY -> MagicItems.CATALYST_LEGENDARY;
-         case MYTHICAL -> MagicItems.CATALYST_MYTHICAL;
+         case MUNDANE -> ArcanaRegistry.MUNDANE_CATALYST;
+         case EMPOWERED -> ArcanaRegistry.EMPOWERED_CATALYST;
+         case EXOTIC -> ArcanaRegistry.EXOTIC_CATALYST;
+         case LEGENDARY -> ArcanaRegistry.LEGENDARY_CATALYST;
+         case MYTHICAL -> ArcanaRegistry.MYTHICAL_CATALYST;
       };
    }
    

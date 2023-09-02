@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
-import net.borisshoes.arcananovum.items.core.MagicItems;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -212,8 +212,8 @@ public class DragonDialog {
                   .append(Text.literal(" Magic Item!").formatted(Formatting.YELLOW)));
             message.add(Text.literal(""));
    
-            ItemStack wings = MagicItems.WINGS_OF_ZEPHYR.getPrefItem();
-            MutableText wingText = Text.literal("[Armored Wings of Zephyr]").styled(s ->
+            ItemStack wings = ArcanaRegistry.WINGS_OF_ENDERIA.getPrefItem();
+            MutableText wingText = Text.literal("["+ArcanaRegistry.WINGS_OF_ENDERIA.getNameString()+"]").styled(s ->
                   s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(wings)))
                         .withColor(Formatting.GRAY).withBold(true).withUnderline(true)
             );

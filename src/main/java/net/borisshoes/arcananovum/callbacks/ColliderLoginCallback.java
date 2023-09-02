@@ -33,7 +33,7 @@ public class ColliderLoginCallback extends LoginCallback{
       // Double check that this is the correct player
       ServerPlayerEntity player = netHandler.player;
       if(player.getUuidAsString().equals(playerUUID)){
-         ArcanaAchievements.progress(player,"endless_extrusion",blocks);
+         ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,blocks);
       }
    }
    

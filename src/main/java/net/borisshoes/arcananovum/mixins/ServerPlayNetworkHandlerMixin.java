@@ -1,32 +1,25 @@
 package net.borisshoes.arcananovum.mixins;
 
-import eu.pb4.sgui.virtual.hotbar.HotbarScreenHandler;
-import net.borisshoes.arcananovum.items.OverflowingQuiver;
-import net.borisshoes.arcananovum.items.RunicBow;
-import net.borisshoes.arcananovum.items.RunicQuiver;
-import net.borisshoes.arcananovum.items.core.QuiverItem;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtInt;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
@@ -37,8 +30,10 @@ public class ServerPlayNetworkHandlerMixin {
    @Inject(method = "onHandSwing", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V"))
    private void arcananovum_handSwing(HandSwingC2SPacket packet, CallbackInfo ci) {
       ItemStack bow = player.getStackInHand(Hand.MAIN_HAND);
-      if(!bow.isOf(Items.BOW)) return;
-      boolean runic = (MagicItemUtils.identifyItem(bow) instanceof RunicBow);
+      boolean arbalest = (MagicItemUtils.identifyItem(bow) instanceof AlchemicalArbalest);
+      boolean crossbow = bow.isOf(Items.CROSSBOW) || arbalest;
+      boolean runic = (MagicItemUtils.identifyItem(bow) instanceof RunicBow) || (arbalest && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST.id) >= 1);
+      if(!bow.isOf(Items.BOW) && !runic && !crossbow) return;
       
       // Check for and rotate arrow types in quivers
       PlayerInventory inv = player.getInventory();
@@ -49,14 +44,18 @@ public class ServerPlayNetworkHandlerMixin {
          if(item.isEmpty()){
             continue;
          }
-      
-         if(MagicItemUtils.identifyItem(item) instanceof RunicQuiver && runic){
+         
+         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         if(magicItem instanceof RunicQuiver || magicItem instanceof OverflowingQuiver){
             // Quiver found allow switching
-            QuiverItem.switchArrowOption(player,runic);
-            return;
-         }else if(MagicItemUtils.identifyItem(item) instanceof OverflowingQuiver){
-            // Quiver found allow switching
-            QuiverItem.switchArrowOption(player,runic);
+            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+            
+            int cooldown = ((NbtInt)profile.getMiscData("quiverCD")).intValue();
+            if(cooldown <= 0){
+               QuiverItem.switchArrowOption(player,runic);
+               profile.addMiscData("quiverCD",NbtInt.of(3));
+            }
+            
             return;
          }
       }

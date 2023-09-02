@@ -5,12 +5,12 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicBlock;
+import net.borisshoes.arcananovum.blocks.SpawnerInfuser;
+import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.gui.SoulstoneSlot;
 import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.items.SpawnerInfuser;
-import net.borisshoes.arcananovum.items.core.MagicItems;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -23,7 +23,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -34,7 +33,7 @@ import java.util.Arrays;
 
 
 public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
-   private final MagicBlock block;
+   private final SpawnerInfuserBlockEntity blockEntity;
    private final World world;
    private SpawnerInfuserInventory inv;
    private SpawnerInfuserInventoryListener listener;
@@ -58,12 +57,12 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
    private final int[] maxEntitiesPoints = {16,8,4,2,1,0,1,2,4,8,16,32,64,96,128,192,256};
    
    
-   public SpawnerInfuserGui(ServerPlayerEntity player, MagicBlock block, World world){
+   public SpawnerInfuserGui(ServerPlayerEntity player, SpawnerInfuserBlockEntity blockEntity, World world){
       super(ScreenHandlerType.GENERIC_9X5, player, false);
-      this.block = block;
+      this.blockEntity = blockEntity;
       this.world = world;
       
-      boolean emulator = ArcanaAugments.getAugmentFromCompound(block.getData(),"spirit_emulator") >= 1;
+      boolean emulator = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SPIRIT_EMULATOR.id) >= 1;
       if(emulator){
          this.playerRangeLvls = new int[]{2, 5, 8, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 60, 75, 90, 9999};
       }else{
@@ -79,11 +78,10 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
          return true;
       }
-   
-      NbtCompound blockData = block.getData();
-      int points = blockData.getInt("points");
-      int spentPoints = blockData.getInt("SpentPoints");
-      NbtCompound stats = blockData.getCompound("stats");
+      
+      int points = blockEntity.getPoints();
+      int spentPoints = blockEntity.getSpentPoints();
+      NbtCompound stats = blockEntity.getSpawnerStats();
       
       int pointDif; // Negative if costs points, positive if refunds points
       String nbtKey;
@@ -165,10 +163,11 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       }
    
       SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_CHIME, 1, (.5f+((float)newInd/(lvlArr.length-1))));
-      blockData.putInt("SpentPoints",spentPoints-pointDif);
+      blockEntity.setSpentPoints(spentPoints-pointDif);
       stats.putShort(nbtKey, (short) newVal);
-      if(spentPoints-pointDif >= 1) ArcanaAchievements.grant(player,"humble_necromancer");
-      if(pointArr[newInd] >= 256) ArcanaAchievements.grant(player,"sculk_hungers");
+      blockEntity.setSpawnerStats(stats);
+      if(spentPoints-pointDif >= 1) ArcanaAchievements.grant(player,ArcanaAchievements.HUMBLE_NECROMANCER.id);
+      if(pointArr[newInd] >= 256) ArcanaAchievements.grant(player,ArcanaAchievements.SCULK_HUNGERS.id);
       
       build();
    
@@ -184,19 +183,18 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
    
    private void init(){
       inv = new SpawnerInfuserInventory();
-      listener = new SpawnerInfuserInventoryListener(this,block,world);
+      listener = new SpawnerInfuserInventoryListener(this,blockEntity,world);
       inv.addListener(listener);
    }
    
    private void refresh(){
       listener.setUpdating();
+      
+      int points = blockEntity.getPoints();
+      NbtCompound stats = blockEntity.getSpawnerStats();
+      int spentPoints = blockEntity.getSpentPoints();
    
-      NbtCompound blockData = block.getData();
-      int points = blockData.getInt("points");
-      NbtCompound stats = blockData.getCompound("stats");
-      int spentPoints = blockData.getInt("SpentPoints");
-   
-      boolean hasStone = !blockData.getCompound("soulstone").isEmpty();
+      boolean hasStone = !blockEntity.getSoulstone().isEmpty();
       boolean spawnerDetected = detectSpawner();
       boolean usable = hasStone && spawnerDetected;
    
@@ -228,7 +226,7 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       clearSlot(40);
       setSlotRedirect(4, new SoulstoneSlot(inv,0,0,0,true,false,null)); // Soulstone slot
    
-      ItemStack stone = ItemStack.fromNbt(blockData.getCompound("soulstone"));
+      ItemStack stone = blockEntity.getSoulstone();
       
       if(hasStone){
          inv.setStack(0,stone);
@@ -237,7 +235,7 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       if(usable){
          setSlotRedirect(40, new SpawnerInfuserPointsSlot(inv,1,0,0)); // Points item slot
    
-         int bonusCap = new int[]{0,64,128,192,256,352}[Math.max(0, ArcanaAugments.getAugmentFromCompound(blockData,"soul_reservoir"))];
+         int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SOUL_RESERVOIR.id)];
          int soulstoneTier = Soulstone.soulsToTier(Soulstone.getSouls(stone));
          int maxPoints = SpawnerInfuser.pointsFromTier[soulstoneTier] + bonusCap;
          int pips = (int)Math.ceil((double)points*3.0/(double)maxPoints);
@@ -385,12 +383,12 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       }
    
    
-      setTitle(Text.literal(MagicItems.SPAWNER_INFUSER.getName()));
+      setTitle(Text.literal(ArcanaRegistry.SPAWNER_INFUSER.getNameString()));
       listener.finishUpdate();
    }
    
    private boolean detectSpawner(){
-      BlockPos pos = block.getPos().add(0,2,0);
+      BlockPos pos = blockEntity.getPos().add(0,2,0);
       BlockEntity blockEntity = world.getBlockEntity(pos);
       BlockState blockState = world.getBlockState(pos);
       return blockState.isOf(Blocks.SPAWNER) && blockEntity instanceof MobSpawnerBlockEntity;
@@ -461,7 +459,6 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
             itemEntity.setDespawnImmediately();
          }
       }
-      block.setGuiOpen(false);
    }
    
    @Override
@@ -470,8 +467,8 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
    }
    
    @Override
-   public MagicBlock getMagicBlock(){
-      return block;
+   public BlockEntity getBlockEntity(){
+      return blockEntity;
    }
    
    @Override

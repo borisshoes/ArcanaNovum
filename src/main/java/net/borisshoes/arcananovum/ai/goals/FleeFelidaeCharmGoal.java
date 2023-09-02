@@ -28,7 +28,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal
    
    @Override
    public boolean canStart(){
-      this.targetEntity = this.mob.world.getClosestEntity(this.mob.world.getEntitiesByClass(this.classToFleeFrom, this.mob.getBoundingBox().expand((double) this.fleeDistance, 3.0, (double) this.fleeDistance), (livingEntity) -> {
+      this.targetEntity = this.mob.getWorld().getClosestEntity(this.mob.getWorld().getEntitiesByClass(this.classToFleeFrom, this.mob.getBoundingBox().expand((double) this.fleeDistance, 3.0, (double) this.fleeDistance), (livingEntity) -> {
          return true;
       }), TargetPredicate.createAttackable().setBaseMaxDistance((double) this.fleeDistance).setPredicate(inclusionSelector.and(extraInclusionSelector)), this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
       if(this.targetEntity == null){

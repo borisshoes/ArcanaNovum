@@ -3,18 +3,19 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.MagicEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.core.MagicItem;
-import net.borisshoes.arcananovum.items.core.MagicItems;
-import net.borisshoes.arcananovum.items.core.RunicArrow;
-import net.borisshoes.arcananovum.recipes.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -52,9 +53,11 @@ public class SmokeArrows extends RunicArrow {
       name = "Smoke Arrows";
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ARROWS};
+      vanillaItem = Items.TIPPED_ARROW;
+      item = new SmokeArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
       
-      ItemStack item = new ItemStack(Items.TIPPED_ARROW);
-      NbtCompound tag = item.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
@@ -70,32 +73,32 @@ public class SmokeArrows extends RunicArrow {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",6908265);
-      tag.putInt("HideFlags",127);
-      item.setCount(64);
+      tag.putInt("HideFlags", 255);
+      stack.setCount(64);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
-      item.setNbt(prefNBT);
-      prefItem = item;
+      stack.setNbt(prefNBT);
+      prefItem = stack;
    }
    
    @Override
-   public void entityHit(PersistentProjectileEntity arrow, EntityHitResult entityHitResult, MagicEntity magicEntity){
+   public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
-         int gasLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"tear_gas"));;
+         int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
          ParticleEffectUtils.smokeArrowEmit(serverWorld,null,entityHitResult.getEntity(),range,0);
          smokeEffects(arrow,serverWorld,null,entityHitResult.getEntity(),range,gasLvl,0);
       }
    }
    
    @Override
-   public void blockHit(PersistentProjectileEntity arrow, BlockHitResult blockHitResult, MagicEntity magicEntity){
+   public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
-         int gasLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicEntity.getData(),"tear_gas"));;
+         int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
          ParticleEffectUtils.smokeArrowEmit(serverWorld,blockHitResult.getPos(),null,range,0);
          smokeEffects(arrow,serverWorld,blockHitResult.getPos(),null,range,gasLvl,0);
       }
@@ -126,7 +129,7 @@ public class SmokeArrows extends RunicArrow {
          }
       }
       
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,"smoke_screen");
+      if(arrow.getOwner() instanceof ServerPlayerEntity player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,ArcanaAchievements.SMOKE_SCREEN.id);
    
       SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.PLAYERS,.5f,1);
    
@@ -148,7 +151,7 @@ public class SmokeArrows extends RunicArrow {
       MagicItemIngredient i = new MagicItemIngredient(Items.INK_SAC,64,null);
       ItemStack potion10 = new ItemStack(Items.LINGERING_POTION);
       MagicItemIngredient k = new MagicItemIngredient(Items.LINGERING_POTION,1, PotionUtil.setPotion(potion10, Potions.LONG_WEAKNESS).getNbt());
-      GenericMagicIngredient m = new GenericMagicIngredient(MagicItems.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -156,12 +159,25 @@ public class SmokeArrows extends RunicArrow {
             {k,h,m,h,k},
             {a,i,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"     Smoke Arrows\\n\\nRarity: Empowered\\n\\nThis Runic Matrix has been configured to summon copious amounts of campfire smoke. Those inside will have trouble seeing, and even breathing, making it harder to land a solid blow.\"}");
       return list;
+   }
+   
+   public class SmokeArrowsItem extends MagicPolymerArrowItem {
+      public SmokeArrowsItem(Settings settings){
+         super(getThis(),settings);
+      }
+      
+      
+      
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
    }
 }
