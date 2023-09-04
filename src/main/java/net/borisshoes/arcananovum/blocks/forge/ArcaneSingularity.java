@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
@@ -130,7 +131,7 @@ public class ArcaneSingularity extends MagicBlock implements MultiblockCore {
             {c,a,m,a,c},
             {b,g,a,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withEnchanter());
    }
    
    private List<String> makeLore(){

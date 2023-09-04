@@ -115,7 +115,7 @@ public class StellarCore extends MagicBlock implements MultiblockCore {
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withCore());
+      return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil());
    }
    
    private List<String> makeLore(){
