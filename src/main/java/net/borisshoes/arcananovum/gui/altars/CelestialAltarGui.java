@@ -28,6 +28,7 @@ import net.minecraft.util.Formatting;
 import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class CelestialAltarGui extends SimpleGui implements WatchedGui {
    private final CelestialAltarBlockEntity blockEntity;
@@ -87,6 +88,7 @@ public class CelestialAltarGui extends SimpleGui implements WatchedGui {
                      @Override
                      public void run(){
                         changeTime();
+                        PLAYER_DATA.get(player).addXP(1000);
                      }
                   }));
                   close();

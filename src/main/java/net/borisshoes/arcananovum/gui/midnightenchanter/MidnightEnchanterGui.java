@@ -35,6 +35,8 @@ import net.minecraft.util.Pair;
 
 import java.util.*;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
    private final MidnightEnchanterBlockEntity blockEntity;
    private MidnightEnchanterInventory inv;
@@ -106,6 +108,7 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
       }else if(index == 7 && enchanted){
          int essence = (int) (MiscUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA.id)));
          SimpleInventory sinv = new SimpleInventory(essence / 64 + 1);
+         PLAYER_DATA.get(player).addXP(100*essence);
          if(essence > 0){
             while(essence > 64){
                sinv.addStack(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack().copyWithCount(64));

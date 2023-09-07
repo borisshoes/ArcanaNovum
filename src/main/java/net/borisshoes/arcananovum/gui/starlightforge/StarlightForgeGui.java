@@ -182,6 +182,7 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
                   ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
                }
                EnhancedStatUtils.enhanceItem(stack, percentile);
+               PLAYER_DATA.get(player).addXP(stardustCount*10);
                
                SimpleInventory returnInv = new SimpleInventory(remainders.size()+1);
                returnInv.addStack(stack);

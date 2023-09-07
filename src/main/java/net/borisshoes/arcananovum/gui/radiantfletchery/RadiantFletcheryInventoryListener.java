@@ -8,6 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.PotionUtil;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class RadiantFletcheryInventoryListener implements InventoryChangedListener {
    private final RadiantFletcheryGui gui;
    private final RadiantFletcheryBlockEntity blockEntity;
@@ -46,6 +48,7 @@ public class RadiantFletcheryInventoryListener implements InventoryChangedListen
                inv.setStack(2,outputStack);
             }
             
+            PLAYER_DATA.get(gui.getPlayer()).addXP(100);
             ArcanaAchievements.grant(gui.getPlayer(),ArcanaAchievements.FINALLY_USEFUL_2.id);
          }
          

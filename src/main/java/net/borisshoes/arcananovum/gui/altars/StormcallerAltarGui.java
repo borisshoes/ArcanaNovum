@@ -27,6 +27,8 @@ import net.minecraft.util.Formatting;
 
 import java.util.TimerTask;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class StormcallerAltarGui  extends SimpleGui implements WatchedGui {
    private final StormcallerAltarBlockEntity blockEntity;
    private int mode = 0; // 0 - clear sky, 1 - raining, 2 - thunder
@@ -75,6 +77,7 @@ public class StormcallerAltarGui  extends SimpleGui implements WatchedGui {
                      @Override
                      public void run(){
                         changeWeather();
+                        PLAYER_DATA.get(player).addXP(1000);
                      }
                   }));
                   close();

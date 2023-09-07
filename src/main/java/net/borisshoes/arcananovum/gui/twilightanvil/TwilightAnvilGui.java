@@ -87,6 +87,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             if(EnhancedStatUtils.isEnhanced(outputSet.output()) && outputSet.output().getNbt().getDouble("ArcanaStats") >= 1){
                ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP.id);
             }
+            PLAYER_DATA.get(player).addXP(Math.min(500,10*outputSet.levelCost()));
             
             listener.setUpdating();
             inv.setStack(0, ItemStack.EMPTY);

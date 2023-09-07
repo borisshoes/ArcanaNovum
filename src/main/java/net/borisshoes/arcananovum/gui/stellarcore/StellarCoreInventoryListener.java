@@ -15,6 +15,8 @@ import net.minecraft.sound.SoundEvents;
 
 import java.util.List;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class StellarCoreInventoryListener implements InventoryChangedListener {
    private final StellarCoreGui gui;
    private final StellarCoreBlockEntity blockEntity;
@@ -42,6 +44,7 @@ public class StellarCoreInventoryListener implements InventoryChangedListener {
             inv.setStack(0,ItemStack.EMPTY);
             SimpleInventory newInv = new SimpleInventory(salvage.toArray(new ItemStack[0]));
             MiscUtils.returnItems(newInv,gui.getPlayer());
+            PLAYER_DATA.get(gui.getPlayer()).addXP(100);
             
             if(blockEntity.getWorld() instanceof ServerWorld serverWorld){
                SoundUtils.playSound(serverWorld,blockEntity.getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);

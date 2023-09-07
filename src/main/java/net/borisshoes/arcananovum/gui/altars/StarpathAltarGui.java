@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimerTask;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
    private final StarpathAltarBlockEntity blockEntity;
    
@@ -87,6 +89,7 @@ public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
                   @Override
                   public void run(){
                      teleport();
+                     PLAYER_DATA.get(player).addXP(1000);
                   }
                }));
                close();
