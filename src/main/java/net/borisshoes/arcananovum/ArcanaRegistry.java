@@ -65,22 +65,22 @@ public class ArcanaRegistry {
    
    // Entities
    public static final EntityType<RunicArrowEntity> RUNIC_ARROW_ENTITY = registerEntity( "runic_arrow",
-         FabricEntityTypeBuilder.<RunicArrowEntity>create(SpawnGroup.MISC, (RunicArrowEntity::new)).dimensions(EntityDimensions.fixed(0.5f,0.5f)).trackRangeBlocks(4).trackedUpdateRate(10).build()
+         FabricEntityTypeBuilder.<RunicArrowEntity>create(SpawnGroup.MISC, (RunicArrowEntity::new)).dimensions(EntityDimensions.fixed(0.5f,0.5f)).trackRangeChunks(4).trackedUpdateRate(20).build()
    );
    public static final EntityType<ArbalestArrowEntity> ARBALEST_ARROW_ENTITY = registerEntity( "arbalest_arrow",
-         FabricEntityTypeBuilder.<ArbalestArrowEntity>create(SpawnGroup.MISC, (ArbalestArrowEntity::new)).dimensions(EntityDimensions.fixed(0.5f,0.5f)).trackRangeBlocks(4).trackedUpdateRate(10).build()
+         FabricEntityTypeBuilder.<ArbalestArrowEntity>create(SpawnGroup.MISC, (ArbalestArrowEntity::new)).dimensions(EntityDimensions.fixed(0.5f,0.5f)).trackRangeChunks(4).trackedUpdateRate(20).build()
    );
    public static final EntityType<StasisPearlEntity> STASIS_PEARL_ENTITY = registerEntity( "stasis_pearl",
-         FabricEntityTypeBuilder.<StasisPearlEntity>create(SpawnGroup.MISC, (StasisPearlEntity::new)).dimensions(EntityDimensions.fixed(0.25f, 0.25f)).trackRangeBlocks(4).trackedUpdateRate(10).build()
+         FabricEntityTypeBuilder.<StasisPearlEntity>create(SpawnGroup.MISC, (StasisPearlEntity::new)).dimensions(EntityDimensions.fixed(0.25f, 0.25f)).trackRangeChunks(4).trackedUpdateRate(10).build()
    );
    public static final EntityType<DragonWizardEntity> DRAGON_WIZARD_ENTITY = registerEntity( "dragon_wizard",
-         FabricEntityTypeBuilder.<DragonWizardEntity>create(SpawnGroup.MISC, (DragonWizardEntity::new)).dimensions(EntityDimensions.fixed(0.6f, 1.95f)).trackRangeBlocks(8).trackedUpdateRate(10).build()
+         FabricEntityTypeBuilder.<DragonWizardEntity>create(SpawnGroup.MISC, (DragonWizardEntity::new)).dimensions(EntityDimensions.fixed(0.6f, 1.95f)).trackRangeChunks(8).build()
    );
    public static final EntityType<DragonPhantomEntity> DRAGON_PHANTOM_ENTITY = registerEntity( "dragon_phantom",
-         FabricEntityTypeBuilder.<DragonPhantomEntity>create(SpawnGroup.MISC, (DragonPhantomEntity::new)).dimensions(EntityDimensions.fixed(0.9f, 0.5f)).trackRangeBlocks(8).trackedUpdateRate(10).build()
+         FabricEntityTypeBuilder.<DragonPhantomEntity>create(SpawnGroup.MISC, (DragonPhantomEntity::new)).dimensions(EntityDimensions.fixed(0.9f, 0.5f)).trackRangeChunks(8).build()
    );
    public static final EntityType<NulConstructEntity> NUL_CONSTRUCT_ENTITY = registerEntity( "nul_construct",
-         FabricEntityTypeBuilder.<NulConstructEntity>create(SpawnGroup.MONSTER, (NulConstructEntity::new)).dimensions(EntityDimensions.fixed(0.9f, 3.5f)).trackRangeBlocks(10).trackedUpdateRate(10).fireImmune().build()
+         FabricEntityTypeBuilder.<NulConstructEntity>create(SpawnGroup.MONSTER, (NulConstructEntity::new)).dimensions(EntityDimensions.fixed(0.9f, 3.5f)).trackRangeChunks(10).fireImmune().build()
    );
    
    // Status Effects

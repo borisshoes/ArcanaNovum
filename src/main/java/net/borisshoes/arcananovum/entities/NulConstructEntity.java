@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.bosses.nulconstruct.NulConstructDialog;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.mixins.WitherEntityAccessor;
@@ -28,6 +28,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -57,6 +58,17 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    public NulConstructEntity(EntityType<? extends NulConstructEntity> entityType, World world){
       super(entityType, world);
+      createSpells();
+
+      getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024f);
+      getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85f);
+      getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85f);
+      getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10f);
+      getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(10f);
+      getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(128f);
+   }
+   
+   private void createSpells(){
       spellCooldown = 220;
       spells = new HashMap<>();
       spells.put("necrotic_shroud",new ConstructSpell("necrotic_shroud"));
@@ -96,6 +108,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       try{
          MinecraftServer server = getServer();
          if(server == null) return;
+         if(spells == null || spells.isEmpty()) createSpells();
          
          if(shouldHaveSummoner && (summoner == null || summoner.isDead())){
             deconstruct();
@@ -117,7 +130,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          for(String key : spells.keySet()){
             ConstructSpell spell = spells.get(key);
             int cd = spell.getCooldown();
-            if(cd > 0) spell.setCooldown(cd--);
+            if(cd > 0) spell.setCooldown(--cd);
             if(cd == 0){
                int weight = spell.getWeight();
                if(key.equals("reflective_armor")){
@@ -159,6 +172,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             }
          }
          
+         super.mobTick();
          prevHP = curHP;
       }catch(Exception e){
          e.printStackTrace();
@@ -175,6 +189,9 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             attacker.damage(getDamageSources().thorns(this), amount * 0.5f);
             heal(amount*0.5f);
          }
+      }
+      if(source.isIn(DamageTypeTags.IS_EXPLOSION)){
+         modified *= 0.25f;
       }
       
       return modified * 0.5f;
@@ -222,6 +239,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          @Override
          public void run(){
             NulConstructDialog.announce(summoner.getServer(),summoner,construct, NulConstructDialog.Announcements.SUMMON_DIALOG, new boolean[]{finalHasMythical,finalHasWings});
+            setHealth(getMaxHealth());
          }
       }));
    }
@@ -376,7 +394,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       boolean dropped = false;
       
       for(int i = 0; i < (int)(Math.random()*33+16); i++){
-         ItemStack stack = Items.NETHER_STAR.getDefaultStack();
+         ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
          dropItem(getWorld(),stack,getPos());
       }
       

@@ -83,7 +83,7 @@ public class MythicalCatalyst extends MagicItem {
       display.put("Lore",loreList);
       tag.put("display",display);
    
-      ItemStack catalyst = ArcanaRegistry.LEGENDARY_CATALYST.getItem().getDefaultStack();
+      ItemStack catalyst = ArcanaRegistry.LEGENDARY_CATALYST.getItem().getDefaultStack().copy();
       tag = catalyst.getOrCreateNbt();
       display = tag.getCompound("display");
       loreList = new NbtList();
