@@ -147,17 +147,17 @@ public class ArcanaAugments {
    public static final ArcanaAugment PICKY_EATER = ArcanaAugments.register(
          new ArcanaAugment("Picky Eater", "picky_eater", new ItemStack(Items.COOKED_PORKCHOP), ArcanaRegistry.FEASTING_CHARM,
          new String[]{"Makes the Charm select the most nutritious food"},
-         new MagicRarity[]{EXOTIC}
+         new MagicRarity[]{EMPOWERED}
    ));
    public static final ArcanaAugment ENZYMES = ArcanaAugments.register(
          new ArcanaAugment("Digestive Enzymes", "enzymes", new ItemStack(Items.FROGSPAWN), ArcanaRegistry.FEASTING_CHARM,
          new String[]{"Reduces cooldown between eating by 5 seconds per level"},
-         new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new MagicRarity[]{EMPOWERED,EXOTIC,LEGENDARY}
    ));
    public static final ArcanaAugment GLUTTONY = ArcanaAugments.register(
          new ArcanaAugment("Charm of Gluttony", "gluttony", new ItemStack(Items.GOLDEN_APPLE), ArcanaRegistry.FEASTING_CHARM,
          new String[]{"Food consumed gives better stats than normal","Higher levels gives a bigger boost"},
-         new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC}
+         new MagicRarity[]{EMPOWERED,EXOTIC,LEGENDARY}
    ));
    
    // Charm of Felidae

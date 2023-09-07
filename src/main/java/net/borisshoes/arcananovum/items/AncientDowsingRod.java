@@ -149,7 +149,7 @@ public class AncientDowsingRod extends EnergyItem {
                   }
                }
                if(world instanceof ServerWorld serverWorld){
-                  if(debris.size() > 0) ArcanaAchievements.progress(player,ArcanaAchievements.ARCHEOLOGIST.id,debris.size());
+                  if(!debris.isEmpty()) ArcanaAchievements.progress(player,ArcanaAchievements.ARCHEOLOGIST.id,debris.size());
                   
                   Arcananovum.addTickTimerCallback(new GenericTimer(30, new TimerTask() {
                      @Override
@@ -216,7 +216,7 @@ public class AncientDowsingRod extends EnergyItem {
                            }
                            
                         }
-                        if(debris.size() > 0){
+                        if(!debris.isEmpty()){
                            BlockPos closest = debris.get(0);
                            Vec3d eyePos = playerEntity.getEyePos();
                            Vec3d blockPos = new Vec3d(closest.getX()+.5,closest.getY()+0.5,closest.getZ()+0.5);
