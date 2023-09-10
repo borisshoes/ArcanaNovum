@@ -1,10 +1,14 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Pair;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
@@ -14,6 +18,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
    
@@ -21,26 +28,57 @@ public abstract class PlayerInventoryMixin {
    @Inject(method = "insertStack(ILnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
    private void arcananovum_onPickup(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       try{
-         PlayerInventory inv = (PlayerInventory) (Object) this;
-         if(inv.player.isSneaking()) return;
-   
-         for(int i = 0; i < inv.size(); i++){
-            ItemStack item = inv.getStack(i);
+         PlayerInventory playerInv = (PlayerInventory) (Object) this;
+         List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
+         if(playerInv.player.isSneaking()) return;
+         
+         List<ItemStack> invItems = new ArrayList<>();
+         for(int i=0; i<playerInv.size();i++){
+            ItemStack item = playerInv.getStack(i);
             if(item.isEmpty()){
                continue;
             }
-      
-            boolean isMagic = MagicItemUtils.isMagic(item);
-            if(!isMagic)
-               continue; // Item not magic, skip
-      
-            // Look for charm
-            if(MagicItemUtils.identifyItem(item) instanceof CindersCharm charm){
-               ItemStack output = charm.smelt(item, inv.player, stack);
-               if(output != null){
-                  cir.setReturnValue(customPickUp(stack,slot,inv,output));
-                  cir.cancel();
+            
+            invItems.add(item);
+            MagicItem magicItem = MagicItemUtils.identifyItem(item);
+            if(magicItem instanceof ArcanistsBelt belt){
+               SimpleInventory beltInv = belt.deserialize(item);
+               ArrayList<ItemStack> beltList = new ArrayList<>();
+               for(int j = 0; j < beltInv.size(); j++){
+                  beltList.add(beltInv.getStack(j));
                }
+               allItems.add(new Pair<>(beltList,item));
+            }
+         }
+         allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
+         
+         
+         for(int i = 0; i < allItems.size(); i++){
+            List<ItemStack> itemList = allItems.get(i).getLeft();
+            ItemStack carrier = allItems.get(i).getRight();
+            SimpleInventory sinv = new SimpleInventory(itemList.size());
+            
+            for(int j = 0; j < itemList.size(); j++){
+               ItemStack item = itemList.get(j);
+               
+               boolean isMagic = MagicItemUtils.isMagic(item);
+               if(!isMagic)
+                  continue; // Item not magic, skip
+               
+               // Look for charm
+               if(MagicItemUtils.identifyItem(item) instanceof CindersCharm charm){
+                  ItemStack output = charm.smelt(item, playerInv.player, stack);
+                  if(output != null){
+                     cir.setReturnValue(customPickUp(stack,slot,playerInv,output));
+                     cir.cancel();
+                  }
+               }
+               
+               sinv.setStack(j,item);
+            }
+            
+            if(MagicItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
+               belt.serialize(carrier, sinv);
             }
          }
          

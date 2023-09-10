@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
@@ -13,37 +14,74 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EntityKilledCallback {
    public static void killedEntity(ServerWorld serverWorld, Entity entity, LivingEntity livingEntity){
       try{
-         if(entity instanceof ServerPlayerEntity){
-            ServerPlayerEntity player = (ServerPlayerEntity) entity;
+         if(entity instanceof ServerPlayerEntity player){
             String entityTypeId = EntityType.getId(livingEntity.getType()).toString();
-            String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
             
             // Check for soulstone then activate
-            PlayerInventory inv = player.getInventory();
-            for(int i=0; i<inv.size();i++){
-               ItemStack item = inv.getStack(i);
-               if(item.isEmpty())
+            List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
+            PlayerInventory playerInv = player.getInventory();
+            boolean procdStone = false;
+            
+            List<ItemStack> invItems = new ArrayList<>();
+            for(int i=0; i<playerInv.size();i++){
+               ItemStack item = playerInv.getStack(i);
+               if(item.isEmpty()){
                   continue;
-               boolean isMagic = MagicItemUtils.isMagic(item);
-               if(!isMagic)
-                  continue; // Item not magic, skip
+               }
+               
+               invItems.add(item);
                MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               if(magicItem instanceof Soulstone){
-                  Soulstone stone = (Soulstone) magicItem;
-                  if(Soulstone.getType(item).equals(entityTypeId)){
-                     stone.killedEntity(serverWorld,player,livingEntity, item);
-                     break; // Only activate one soulstone per kill
+               if(magicItem instanceof ArcanistsBelt belt){
+                  SimpleInventory beltInv = belt.deserialize(item);
+                  ArrayList<ItemStack> beltList = new ArrayList<>();
+                  for(int j = 0; j < beltInv.size(); j++){
+                     beltList.add(beltInv.getStack(j));
                   }
+                  allItems.add(new Pair<>(beltList,item));
+               }
+            }
+            allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
+            
+            for(int i = 0; i < allItems.size(); i++){
+               List<ItemStack> itemList = allItems.get(i).getLeft();
+               ItemStack carrier = allItems.get(i).getRight();
+               SimpleInventory sinv = new SimpleInventory(itemList.size());
+               
+               for(int j = 0; j < itemList.size(); j++){
+                  ItemStack item = itemList.get(j);
+                  
+                  boolean isMagic = MagicItemUtils.isMagic(item);
+                  if(!isMagic)
+                     continue; // Item not magic, skip
+                  MagicItem magicItem = MagicItemUtils.identifyItem(item);
+                  
+                  if(magicItem instanceof Soulstone stone && !procdStone){
+                     if(Soulstone.getType(item).equals(entityTypeId)){
+                        stone.killedEntity(serverWorld,player,livingEntity, item);
+                        procdStone = true; // Only activate one soulstone per kill
+                     }
+                  }
+                  
+                  sinv.setStack(j,item);
+               }
+               
+               if(MagicItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
+                  belt.serialize(carrier, sinv);
                }
             }
    

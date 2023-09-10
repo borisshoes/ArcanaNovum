@@ -172,6 +172,7 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
                      player.sendMessage(Text.literal("The Fletchery must be within the range of an active Starlight Forge"));
                   }else{
                      fletchery.openGui(player);
+                     player.getItemCooldownManager().set(playerEntity.getStackInHand(hand).getItem(),1);
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));

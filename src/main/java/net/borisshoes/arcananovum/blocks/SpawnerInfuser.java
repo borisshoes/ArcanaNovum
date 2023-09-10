@@ -191,6 +191,7 @@ public class SpawnerInfuser extends MagicBlock {
             if(playerEntity instanceof ServerPlayerEntity player){
                SpawnerInfuserGui gui = new SpawnerInfuserGui(player,infuser,world);
                gui.build();
+               player.getItemCooldownManager().set(playerEntity.getStackInHand(hand).getItem(),1);
                if(!gui.tryOpen(player)){
                   player.sendMessage(Text.literal("Someone else is using the Infuser").formatted(Formatting.RED),true);
                }

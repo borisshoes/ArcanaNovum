@@ -1,6 +1,9 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.player.PlayerInventory;
@@ -23,10 +26,13 @@ public class PhantomSpawnerMixin {
             continue;
          }
       
-         if(MagicItemUtils.identifyItem(item) instanceof FelidaeCharm charm){
+         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         if(magicItem instanceof FelidaeCharm charm){
             if(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PANTHERA.id) >= 1){
                return true;
             }
+         }else if(magicItem instanceof ArcanistsBelt belt && !belt.getMatchingItemsWithAugment(ArcanaRegistry.FELIDAE_CHARM.getItem(),item,ArcanaAugments.PANTHERA,1).isEmpty()){
+            return true;
          }
       }
       

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.MagicItemContainer;
@@ -13,6 +14,7 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -80,23 +82,70 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
       return stack;
    }
    
+   public static boolean checkBeltAndHasItem(ItemStack beltStack, Item searchItem){
+      MagicItem magicItem = MagicItemUtils.identifyItem(beltStack);
+      return (magicItem instanceof ArcanistsBelt belt && !belt.getMatchingItems(searchItem,beltStack).isEmpty());
+   }
+   
+   public ArrayList<ItemStack> getMatchingItemsWithAugment(Item item, ItemStack belt, ArcanaAugment augment, int minLevel){
+      ArrayList<ItemStack> items = getMatchingItems(item,belt);
+      ArrayList<ItemStack> filtered = new ArrayList<>();
+      for(ItemStack itemStack : items){
+         if(ArcanaAugments.getAugmentOnItem(itemStack, augment.id) >= minLevel){
+            filtered.add(itemStack);
+         }
+      }
+      return filtered;
+   }
+   
+   public ArrayList<ItemStack> getMatchingItems(Item item, ItemStack belt){
+      ArrayList<ItemStack> items = new ArrayList<>();
+      SimpleInventory inv = deserialize(belt);
+      for(int i = 0; i < inv.size(); i++){
+         ItemStack itemStack = inv.getStack(i);
+         if(itemStack.isOf(item)){
+            items.add(itemStack);
+         }
+      }
+      return items;
+   }
+   
+   public SimpleInventory deserialize(ItemStack stack){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtList items = magicNbt.getList("items", NbtElement.COMPOUND_TYPE);
+      SimpleInventory inv = new SimpleInventory(9);
+      
+      for(int i = 0; i < items.size(); i++){ // De-serialize and Tick
+         NbtCompound item = items.getCompound(i);
+         int beltSlot = item.getByte("Slot");
+         ItemStack itemStack = ItemStack.fromNbt(item);
+         if(itemStack.getCount() > 0 && !itemStack.isEmpty())
+            inv.setStack(beltSlot,itemStack);
+      }
+      return inv;
+   }
+   
+   public void serialize(ItemStack stack, SimpleInventory inv){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtList items = new NbtList();
+      for(int i = 0; i < inv.size(); i++){ // Re-serialize
+         ItemStack itemStack = inv.getStack(i);
+         if(itemStack.isEmpty()) continue;
+         NbtCompound item = itemStack.writeNbt(new NbtCompound());
+         item.putByte("Slot", (byte) i);
+         items.add(item);
+      }
+      magicNbt.put("items",items);
+   }
+   
+   
    @Override
    public MagicItemContainer getMagicItemContainer(ItemStack item){
       int size = 9;
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList items = magicNbt.getList("items", NbtElement.COMPOUND_TYPE);
-      SimpleInventory inv = new SimpleInventory(size);
-      
-      for(int i = 0; i < items.size(); i++){
-         NbtCompound stack = items.getCompound(i);
-         ItemStack itemStack = ItemStack.fromNbt(stack);
-         inv.setStack(i,itemStack);
-      }
-      
       boolean padding = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MENTAL_PADDING.id) >= 1;
-      
-      return new MagicItemContainer(inv, size,1, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
+      return new MagicItemContainer(deserialize(item), size,1, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
    }
    
    private ArcanistsBelt getOuter(){
@@ -144,28 +193,12 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
          if(!MagicItemUtils.isMagic(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         NbtList items = magicNbt.getList("items", NbtElement.COMPOUND_TYPE);
-         SimpleInventory inv = new SimpleInventory(9);
-         
-         for(int i = 0; i < items.size(); i++){ // De-serialize and Tick
-            NbtCompound item = items.getCompound(i);
-            int beltSlot = item.getByte("Slot");
-            ItemStack itemStack = ItemStack.fromNbt(item);
-            if(MagicItemUtils.isMagic(itemStack)) itemStack.getItem().inventoryTick(itemStack,world,entity,-1,false);
-            if(itemStack.getCount() > 0 && !itemStack.isEmpty())
-               inv.setStack(beltSlot,itemStack);
+         SimpleInventory inv = deserialize(stack);
+         for(int i = 0; i < inv.size(); i++){
+            ItemStack invStack = inv.getStack(i);
+            invStack.getItem().inventoryTick(invStack,world,entity,-1,false);
          }
-         items = new NbtList();
-         for(int i = 0; i < inv.size(); i++){ // Re-serialize
-            ItemStack itemStack = inv.getStack(i);
-            if(itemStack.isEmpty()) continue;
-            NbtCompound item = itemStack.writeNbt(new NbtCompound());
-            item.putByte("Slot", (byte) i);
-            items.add(item);
-         }
-         magicNbt.put("items",items);
+         serialize(stack,inv);
       }
       
       @Override

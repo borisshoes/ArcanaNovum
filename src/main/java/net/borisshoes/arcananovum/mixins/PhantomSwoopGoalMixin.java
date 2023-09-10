@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
+import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -42,7 +44,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
             if(!isMagic)
                continue; // Item not magic, skip
          
-            if(MagicItemUtils.identifyItem(item) instanceof FelidaeCharm){
+            if(MagicItemUtils.identifyItem(item) instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item, ArcanaRegistry.FELIDAE_CHARM.getItem())){
                if(field_7333 instanceof DragonPhantomEntity){
                   return; // Guardian Phantoms immune to Felidae Charm
                }

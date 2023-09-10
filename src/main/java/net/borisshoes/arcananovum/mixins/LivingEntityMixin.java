@@ -1,12 +1,12 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
 import net.borisshoes.arcananovum.items.*;
@@ -26,6 +26,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -215,9 +216,6 @@ public abstract class LivingEntityMixin {
          }
       }
       
-      
-      
-      
       if(attacker instanceof ServerPlayerEntity player){
          // Juggernaut Augment
          ItemStack boots = player.getEquippedStack(EquipmentSlot.FEET);
@@ -280,66 +278,98 @@ public abstract class LivingEntityMixin {
       }
    
       if(entity instanceof ServerPlayerEntity player){
-         PlayerInventory inv = player.getInventory();
-         for(int i=0; i<inv.size();i++){
-            ItemStack item = inv.getStack(i);
+         List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
+         PlayerInventory playerInv = player.getInventory();
+         boolean procdFelidae = false;
+         
+         List<ItemStack> invItems = new ArrayList<>();
+         for(int i=0; i<playerInv.size();i++){
+            ItemStack item = playerInv.getStack(i);
             if(item.isEmpty()){
                continue;
             }
          
-            boolean isMagic = MagicItemUtils.isMagic(item);
-            if(!isMagic)
-               continue; // Item not magic, skip
+            invItems.add(item);
             MagicItem magicItem = MagicItemUtils.identifyItem(item);
+            if(magicItem instanceof ArcanistsBelt belt){
+               SimpleInventory beltInv = belt.deserialize(item);
+               ArrayList<ItemStack> beltList = new ArrayList<>();
+               for(int j = 0; j < beltInv.size(); j++){
+                  beltList.add(beltInv.getStack(j));
+               }
+               allItems.add(new Pair<>(beltList,item));
+            }
+         }
+         allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
          
-            if(magicItem instanceof FelidaeCharm && source.isIn(DamageTypeTags.IS_FALL)){ // Felidae Charm
-               int graceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.FELINE_GRACE.id));
-               float dmgMod = (float) (0.5 - 0.125*graceLvl);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
-               float oldReturn = newReturn;
-               newReturn = newReturn * dmgMod < 2 ? 0 : newReturn * dmgMod; // Reduce the damage, if the remaining damage is less than a heart, remove all of it.
-               PLAYER_DATA.get(player).addXP(10*(int)(oldReturn-newReturn)); // Add xp
-               if(oldReturn > player.getHealth() && newReturn < player.getHealth()) ArcanaAchievements.grant(player,ArcanaAchievements.LAND_ON_FEET.id);
-               break; // Make it so multiple charms don't stack
-               
-            }else if(magicItem instanceof PearlOfRecall){ // Cancel all Pearls of Recall
-               NbtCompound itemNbt = item.getNbt();
-               NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-               int defenseLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PHASE_DEFENSE.id));
-               final double[] defenseChance = {0,.15,.35,.5};
+         for(int i = 0; i < allItems.size(); i++){
+            List<ItemStack> itemList = allItems.get(i).getLeft();
+            ItemStack carrier = allItems.get(i).getRight();
+            SimpleInventory sinv = new SimpleInventory(itemList.size());
             
-               if(magicNbt.getInt("heat") > 0){
-                  if(Math.random() >= defenseChance[defenseLvl]){
-                     player.sendMessage(Text.literal("Your Recall Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
-                     magicNbt.putInt("heat", -1);
-                  }else{
-                     newReturn = 0;
-                  }
-               }
-            }else if(magicItem instanceof Planeshifter){ // Cancel all Planeshifters
-               NbtCompound itemNbt = item.getNbt();
-               NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            for(int j = 0; j < itemList.size(); j++){
+               ItemStack item = itemList.get(j);
                
-               if(magicNbt.getInt("heat") > 0){
-                  player.sendMessage(Text.literal("Your Plane-Shift Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
-                  magicNbt.putInt("heat", -1);
-               }
-            }else if(magicItem instanceof CindersCharm cinders && source.isIn(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
-               boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"cremation")) >= 1;
-               if(cremation){
+               boolean isMagic = MagicItemUtils.isMagic(item);
+               if(!isMagic)
+                  continue; // Item not magic, skip
+               MagicItem magicItem = MagicItemUtils.identifyItem(item);
+               
+               if((magicItem instanceof FelidaeCharm) && source.isIn(DamageTypeTags.IS_FALL) && !procdFelidae){ // Felidae Charm
+                  int graceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.FELINE_GRACE.id));
+                  float dmgMod = (float) (0.5 - 0.125*graceLvl);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
                   float oldReturn = newReturn;
-                  int energy = cinders.getEnergy(item);
-                  float dmgReduction = (float) Math.min(energy / 4.0, oldReturn);
-                  newReturn = oldReturn - dmgReduction;
-                  cinders.addEnergy(item, (int) -dmgReduction * 4);
-   
-                  energy = cinders.getEnergy(item);
-                  StringBuilder message = new StringBuilder("Cinders: ");
-                  for(int j = 1; j <= cinders.getMaxEnergy(item)/20; j++){
-                     message.append(energy >= j * 20 ? "✦ " : "✧ ");
+                  newReturn = newReturn * dmgMod < 2 ? 0 : newReturn * dmgMod; // Reduce the damage, if the remaining damage is less than a heart, remove all of it.
+                  PLAYER_DATA.get(player).addXP(10*(int)(oldReturn-newReturn)); // Add xp
+                  if(oldReturn > player.getHealth() && newReturn < player.getHealth()) ArcanaAchievements.grant(player,ArcanaAchievements.LAND_ON_FEET.id);
+                  procdFelidae = true; // Make it so multiple charms don't stack
+                  
+               }else if(magicItem instanceof PearlOfRecall){ // Cancel all Pearls of Recall
+                  NbtCompound itemNbt = item.getNbt();
+                  NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+                  int defenseLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PHASE_DEFENSE.id));
+                  final double[] defenseChance = {0,.15,.35,.5};
+                  
+                  if(magicNbt.getInt("heat") > 0){
+                     if(Math.random() >= defenseChance[defenseLvl]){
+                        player.sendMessage(Text.literal("Your Recall Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
+                        magicNbt.putInt("heat", -1);
+                     }else{
+                        newReturn = 0;
+                     }
                   }
-                  player.sendMessage(Text.literal(message.toString()).formatted(Formatting.AQUA), true);
+               }else if(magicItem instanceof Planeshifter){ // Cancel all Planeshifters
+                  NbtCompound itemNbt = item.getNbt();
+                  NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+                  
+                  if(magicNbt.getInt("heat") > 0){
+                     player.sendMessage(Text.literal("Your Plane-Shift Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
+                     magicNbt.putInt("heat", -1);
+                  }
+               }else if(magicItem instanceof CindersCharm cinders && source.isIn(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
+                  boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"cremation")) >= 1;
+                  if(cremation){
+                     float oldReturn = newReturn;
+                     int energy = cinders.getEnergy(item);
+                     float dmgReduction = (float) Math.min(energy / 4.0, oldReturn);
+                     newReturn = oldReturn - dmgReduction;
+                     cinders.addEnergy(item, (int) -dmgReduction * 4);
+                     
+                     energy = cinders.getEnergy(item);
+                     StringBuilder message = new StringBuilder("Cinders: ");
+                     for(int k = 1; k <= cinders.getMaxEnergy(item)/20; k++){
+                        message.append(energy >= k * 20 ? "✦ " : "✧ ");
+                     }
+                     player.sendMessage(Text.literal(message.toString()).formatted(Formatting.AQUA), true);
+                  }
                }
+               
+               sinv.setStack(j,item);
+            }
+            
+            if(MagicItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
+               belt.serialize(carrier, sinv);
             }
          }
       }

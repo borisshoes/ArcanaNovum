@@ -196,6 +196,7 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
                Multiblock.MultiblockCheck check = new Multiblock.MultiblockCheck(player.getServerWorld(),pos,state,new BlockPos(-5,0,-5),world.getBlockState(pos).get(HORIZONTAL_FACING));
                if(multiblock.matches(check)){
                   altar.openGui(player);
+                  player.getItemCooldownManager().set(playerEntity.getStackInHand(hand).getItem(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(check);

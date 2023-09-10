@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.achievements;
 
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.item.ItemStack;

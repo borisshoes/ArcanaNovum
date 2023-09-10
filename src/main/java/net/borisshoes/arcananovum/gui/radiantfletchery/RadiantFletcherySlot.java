@@ -20,7 +20,7 @@ public class RadiantFletcherySlot extends Slot {
       if(mode == 0){
          return stack.isOf(Items.ARROW);
       }else if(mode == 1){
-         return PotionUtil.getPotion(stack) != Potions.EMPTY || !PotionUtil.getCustomPotionEffects(stack).isEmpty();
+         return (PotionUtil.getPotion(stack) != Potions.EMPTY || !PotionUtil.getCustomPotionEffects(stack).isEmpty()) && !stack.isOf(Items.TIPPED_ARROW);
       }
       return false;
    }

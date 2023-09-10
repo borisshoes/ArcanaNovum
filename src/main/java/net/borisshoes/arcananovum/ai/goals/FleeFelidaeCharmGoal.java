@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.ai.goals;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -54,7 +57,8 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal
                      if(!isMagic)
                         continue; // Item not magic, skip
                      
-                     if(MagicItemUtils.identifyItem(item) instanceof FelidaeCharm){
+                     MagicItem magicItem = MagicItemUtils.identifyItem(item);
+                     if(magicItem instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item,ArcanaRegistry.FELIDAE_CHARM.getItem())){
                         return true;
                      }
                   }

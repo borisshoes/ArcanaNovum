@@ -63,8 +63,8 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             ItemStack input2 = inv.getStack(1);
             TwilightAnvilBlockEntity.AnvilOutputSet outputSet = blockEntity.calculateOutput(input1,input2);
             
+            int points = LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost());
             if (!player.getAbilities().creativeMode) {
-               int points = LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost());
                if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ANVIL_EXPERTISE.id) > 0){
                   if(player.totalExperience < points){
                      player.sendMessage(Text.literal("Not Enough Experience").formatted(Formatting.RED));
@@ -79,7 +79,6 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                   player.addExperienceLevels(-outputSet.levelCost());
                }
                
-               PLAYER_DATA.get(player).addXP(points);
             }
             if(outputSet.levelCost() > 40){
                ArcanaAchievements.grant(player,ArcanaAchievements.BEYOND_IRONS_LIMIT.id);
@@ -87,7 +86,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             if(EnhancedStatUtils.isEnhanced(outputSet.output()) && outputSet.output().getNbt().getDouble("ArcanaStats") >= 1){
                ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP.id);
             }
-            PLAYER_DATA.get(player).addXP(Math.min(500,10*outputSet.levelCost()));
+            PLAYER_DATA.get(player).addXP(Math.min(1000,points));
             
             listener.setUpdating();
             inv.setStack(0, ItemStack.EMPTY);
@@ -176,6 +175,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                      player.sendMessage(Text.literal("This augment is incompatible with existing augments").formatted(Formatting.RED), false);
                   }else{ // Item level = 0 | (Item level != max & < player level): Augment Catalyst
                      if(attemptAugment(item, augment, curItemLevel + 1)){
+                        PLAYER_DATA.get(player).addXP(tiers[curItemLevel] == MagicRarity.MYTHICAL ? 10000 : MagicRarity.getCraftXp(tiers[curItemLevel])/10);
                         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(curItemLevel+1)/(tiers.length-1))));
                         inv.setStack(0,item);
                      }
