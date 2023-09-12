@@ -62,6 +62,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             ItemStack input1 = inv.getStack(0);
             ItemStack input2 = inv.getStack(1);
             TwilightAnvilBlockEntity.AnvilOutputSet outputSet = blockEntity.calculateOutput(input1,input2);
+            if(outputSet.output().isEmpty()) return true;
             
             int points = LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost());
             if (!player.getAbilities().creativeMode) {

@@ -21,6 +21,7 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -34,21 +35,27 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Hand;
+import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import static java.util.Map.entry;
 
 public class StellarCore extends MagicBlock implements MultiblockCore {
    
    private Multiblock multiblock;
+   public static Map<Item,Item> MOLTEN_CORE_ITEMS = Map.ofEntries(
+         entry(Items.RAW_IRON,Items.IRON_INGOT),
+         entry(Items.RAW_COPPER,Items.COPPER_INGOT),
+         entry(Items.RAW_GOLD,Items.GOLD_INGOT),
+         entry(Items.RAW_IRON_BLOCK,Items.IRON_BLOCK),
+         entry(Items.RAW_COPPER_BLOCK,Items.COPPER_BLOCK),
+         entry(Items.RAW_GOLD_BLOCK,Items.GOLD_BLOCK)
+   );
    
    public StellarCore(){
       id = "stellar_core";

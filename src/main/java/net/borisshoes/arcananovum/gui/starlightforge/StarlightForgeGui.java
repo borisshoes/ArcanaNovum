@@ -167,7 +167,11 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
                DefaultedList<ItemStack> remainders = listener.getRemainders(inv);
                int stardustCount = inv.getStack(9).getCount();
                for(int i = 0; i < inv.size(); i++){
-                  inv.setStack(i,ItemStack.EMPTY); // Clear all slots
+                  if(i < 9){
+                     inv.removeStack(i,1); // Remove 1 from ingredients
+                  }else{
+                     inv.setStack(i,ItemStack.EMPTY); // Clear stardust
+                  }
                }
                int influence = 0;
                if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MOONLIT_FORGE.id) >= 1){

@@ -217,6 +217,10 @@ public class TinkerInventoryListener implements InventoryChangedListener {
             gui.setSlot(16,xpItem);
          }
          
+      }else if(mode == 1){
+         if(item.isEmpty()){
+            gui.setSlot(2,ItemStack.EMPTY);
+         }
       }
    }
    

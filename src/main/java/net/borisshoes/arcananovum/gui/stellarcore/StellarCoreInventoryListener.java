@@ -1,12 +1,15 @@
 package net.borisshoes.arcananovum.gui.stellarcore;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StellarCoreBlockEntity;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
@@ -15,6 +18,7 @@ import net.minecraft.sound.SoundEvents;
 
 import java.util.List;
 
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.MOLTEN_CORE_ITEMS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class StellarCoreInventoryListener implements InventoryChangedListener {
@@ -31,6 +35,7 @@ public class StellarCoreInventoryListener implements InventoryChangedListener {
    public void onInventoryChanged(Inventory inv){
       if(!updating){
          setUpdating();
+         boolean moltenCore = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MOLTEN_CORE.id) >= 1;
          
          ItemStack stack = inv.getStack(0);
          List<ItemStack> salvage = blockEntity.salvageItem(stack);
@@ -49,6 +54,31 @@ public class StellarCoreInventoryListener implements InventoryChangedListener {
             if(blockEntity.getWorld() instanceof ServerWorld serverWorld){
                SoundUtils.playSound(serverWorld,blockEntity.getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);
                SoundUtils.playSound(serverWorld,blockEntity.getPos(), SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.BLOCKS, 1, 1.2f);
+            }
+         }else if(moltenCore){
+            Item moltenItem = MOLTEN_CORE_ITEMS.get(stack.getItem());
+            if(moltenItem != null){
+               int returnCount = stack.getCount() * 2;
+               inv.setStack(0,ItemStack.EMPTY);
+               PLAYER_DATA.get(gui.getPlayer()).addXP(moltenItem instanceof BlockItem ? returnCount*9*2 : returnCount*2);
+               
+               SimpleInventory newInv = new SimpleInventory((int) Math.ceil(returnCount / 64.0));
+               int i = 0;
+               while(returnCount > 64){
+                  newInv.setStack(i,new ItemStack(moltenItem,64));
+                  returnCount -= 64;
+                  i++;
+               }
+               if(returnCount > 0){
+                  newInv.setStack(i,new ItemStack(moltenItem,returnCount));
+               }
+               //TODO: For some reason returning a full stack causes items to sometimes be deleted??
+               MiscUtils.returnItems(newInv,gui.getPlayer());
+               
+               if(blockEntity.getWorld() instanceof ServerWorld serverWorld){
+                  SoundUtils.playSound(serverWorld,blockEntity.getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);
+                  SoundUtils.playSound(serverWorld,blockEntity.getPos(), SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.BLOCKS, 1, 1.2f);
+               }
             }
          }
          

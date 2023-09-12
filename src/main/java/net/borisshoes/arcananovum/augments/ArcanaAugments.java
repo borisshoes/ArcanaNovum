@@ -792,6 +792,11 @@ public class ArcanaAugments {
          new String[]{"The Stellar Core gives an additional 15% Stardust per level"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC}
    ));
+   public static final ArcanaAugment MOLTEN_CORE = ArcanaAugments.register(
+         new ArcanaAugment("Molten Core", "molten_core", new ItemStack(Items.MAGMA_BLOCK), ArcanaRegistry.STELLAR_CORE,
+         new String[]{"The Core can now smelt raw ores and raw ore blocks"," giving two ingots or metal blocks per raw ore smelted"},
+         new MagicRarity[]{EXOTIC}
+   ));
    
    // Radiant Fletchery
    public static final ArcanaAugment ALCHEMICAL_EFFICIENCY = ArcanaAugments.register(

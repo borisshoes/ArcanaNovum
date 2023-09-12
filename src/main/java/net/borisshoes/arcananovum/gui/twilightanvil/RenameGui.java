@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.SharedConstants;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -19,6 +20,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -57,14 +61,15 @@ public class RenameGui extends AnvilInputGui implements WatchedGui {
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
       if(index == 2){
-         if(item != null && !item.isEmpty()){
+         ItemStack outputStack = getSlot(2) == null ? ItemStack.EMPTY : getSlot(2).getItemStack();
+         if(item != null && !item.isEmpty() && !outputStack.isEmpty()){
             item.setCustomName(newName);
             if(MagicItemUtils.isMagic(item)){
                ArcanaAchievements.grant(player,ArcanaAchievements.TOUCH_OF_PERSONALITY.id);
             }
             SoundUtils.playSound(player.getServerWorld(),blockEntity.getPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
+            this.close();
          }
-         this.close();
       }
       return true;
    }
@@ -74,13 +79,32 @@ public class RenameGui extends AnvilInputGui implements WatchedGui {
       if(item != null && !item.isEmpty()){
          ItemStack newItem = item.copy();
          Text name = newItem.getName();
-         newName = Text.literal(input);
-         List<Text> textList = newName.getWithStyle(name.getStyle());
-         if(!textList.isEmpty()){
-            newName = textList.get(0);
-            setSlot(2, GuiElementBuilder.from(newItem.setCustomName(newName)));
+         input = sanitize(input);
+         if (input == null || input.equals(name.getString())) {
+            setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
+            return;
          }
+         newName = Text.literal(input);
+         if(MagicItemUtils.isMagic(newItem) || name.getStyle().isBold()){
+            List<Text> textList = newName.getWithStyle(name.getStyle());
+            if(!textList.isEmpty()){
+               newName = textList.get(0);
+            }
+         }else{
+            newName = Text.literal(input).formatted(newItem.getRarity().formatting, Formatting.ITALIC);
+         }
+         newItem.setCustomName(newName);
+         setSlot(2, GuiElementBuilder.from(newItem));
       }
+   }
+   
+   @Nullable
+   private static String sanitize(String name) {
+      String string = SharedConstants.stripInvalidChars(name);
+      if (string.length() <= 50 && !Util.isBlank(string)) {
+         return string;
+      }
+      return null;
    }
    
    @Override
