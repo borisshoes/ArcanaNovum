@@ -333,8 +333,12 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
       boolean upgrade = enchantments.containsKey(enchant) && enchantments.get(enchant) < level;
       for(EnchantEntry entry : getSelected()){
          enchantments.put(entry.enchantment,entry.level);
-         if(entry.level != level && upgrade) return false;
-         if(entry.enchantment == enchant && entry.level == level) return true;
+         if(entry.enchantment == enchant && entry.level != level && upgrade){
+            return false;
+         }
+         if(entry.enchantment == enchant && entry.level == level){
+            return true;
+         }
       }
       if(upgrade) return true;
       return EnchantmentHelper.isCompatible(enchantments.keySet(),enchant);
