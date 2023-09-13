@@ -17,7 +17,7 @@ import java.util.Map;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ConditionalsAchievement extends ArcanaAchievement{
-   private HashMap<String,Boolean> conditions;
+   private final HashMap<String,Boolean> conditions;
    
    public ConditionalsAchievement(String name, String id, ItemStack displayItem, MagicItem magicItem, int xpReward, int pointsReward, String[] description, String[] conditions){
       super(name, id, 2, displayItem, magicItem, xpReward, pointsReward, description);
@@ -58,12 +58,12 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    
    @Override
    public ConditionalsAchievement fromNbt(String id, NbtCompound nbt){
-      conditions.clear();
       ConditionalsAchievement ach = (ConditionalsAchievement) ArcanaAchievements.registry.get(id).makeNew();
+      ach.conditions.clear();
       ach.setAcquired(nbt.getBoolean("acquired"));
       NbtCompound condsTag = nbt.getCompound("conditions");
       for(String key : condsTag.getKeys()){
-         conditions.put(key,condsTag.getBoolean(key));
+         ach.conditions.put(key,condsTag.getBoolean(key));
       }
       return ach;
    }

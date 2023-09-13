@@ -15,7 +15,9 @@ import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ItemScatterer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.MOLTEN_CORE_ITEMS;
@@ -61,19 +63,18 @@ public class StellarCoreInventoryListener implements InventoryChangedListener {
                int returnCount = stack.getCount() * 2;
                inv.setStack(0,ItemStack.EMPTY);
                PLAYER_DATA.get(gui.getPlayer()).addXP(moltenItem instanceof BlockItem ? returnCount*9*2 : returnCount*2);
+               ArrayList<ItemStack> items = new ArrayList<>();
                
-               SimpleInventory newInv = new SimpleInventory((int) Math.ceil(returnCount / 64.0));
-               int i = 0;
                while(returnCount > 64){
-                  newInv.setStack(i,new ItemStack(moltenItem,64));
+                  items.add(new ItemStack(moltenItem,64));
                   returnCount -= 64;
-                  i++;
                }
-               if(returnCount > 0){
-                  newInv.setStack(i,new ItemStack(moltenItem,returnCount));
+               if(returnCount == 64){ //For some reason returning a full stack causes items to sometimes be deleted, so this is my workaround
+                  ItemScatterer.spawn(gui.getPlayer().getWorld(), gui.getPlayer().getX(),gui.getPlayer().getY(),gui.getPlayer().getZ(), new ItemStack(moltenItem,64));
+               }else if(returnCount > 0){
+                  items.add(new ItemStack(moltenItem,returnCount));
                }
-               //TODO: For some reason returning a full stack causes items to sometimes be deleted??
-               MiscUtils.returnItems(newInv,gui.getPlayer());
+               MiscUtils.returnItems(new SimpleInventory(items.toArray(new ItemStack[0])),gui.getPlayer());
                
                if(blockEntity.getWorld() instanceof ServerWorld serverWorld){
                   SoundUtils.playSound(serverWorld,blockEntity.getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);
