@@ -214,7 +214,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment FARADAY_CAGE = ArcanaAugments.register(
          new ArcanaAugment("Faraday Cage", "faraday_cage", new ItemStack(Items.HOPPER), ArcanaRegistry.MAGNETISM_CHARM,
-         new String[]{"Allows you to filter items attracted","Sneak Right Click with an item in"," your offhand to add it to the filter", "Sneak Right Click with the Charm in", " your offhand to reset the filter"},
+         new String[]{"Allows you to filter items attracted","Sneak Right Click with an item in"," your offhand to add it to the filter", "Sneak Right Click with the Charm in", " your main hand to reset the filter"},
          new MagicRarity[]{LEGENDARY}
    ));
    public static final ArcanaAugment POLARITY_REVERSAL = ArcanaAugments.register(

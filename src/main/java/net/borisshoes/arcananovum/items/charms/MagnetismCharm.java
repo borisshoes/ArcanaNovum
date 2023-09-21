@@ -383,13 +383,13 @@ public class MagnetismCharm extends MagicItem {
          boolean canFilter = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FARADAY_CAGE.id) >= 1;
          ItemStack offHand = playerEntity.getStackInHand(Hand.OFF_HAND);
          
-         if(canFilter && hand == Hand.OFF_HAND){
+         if(canFilter && hand == Hand.OFF_HAND && playerEntity.isSneaking()){
             NbtCompound itemNbt = stack.getNbt();
             NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
             magicNbt.put("filter",new NbtCompound());
             player.sendMessage(Text.translatable("Filter Cleared").formatted(Formatting.GRAY,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 0.5f,1f);
-         }else if(canFilter && hand == Hand.MAIN_HAND && !offHand.isEmpty()){
+         }else if(canFilter && hand == Hand.MAIN_HAND && !offHand.isEmpty() && playerEntity.isSneaking()){
             toggleFilterItem(player,stack,offHand.getItem());
          }else if(playerEntity.isSneaking()){
             toggleMode((ServerPlayerEntity) playerEntity,stack);

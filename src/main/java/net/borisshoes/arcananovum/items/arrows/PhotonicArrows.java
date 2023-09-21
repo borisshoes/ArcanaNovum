@@ -1,11 +1,10 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
@@ -109,7 +108,7 @@ public class PhotonicArrows extends RunicArrow {
       hits.sort(Comparator.comparingDouble(e->e.distanceTo(entity)));
       
       float damage = (float)MathHelper.clamp(proj.getVelocity().length()*5,1,20);
-      if(alignmentLvl == 5) damage += 4 + damage*0.2;
+      if(alignmentLvl == 5) damage += (float) (4 + damage*0.2);
       float bonusDmg = 0;
       
       Vec3d endPoint = raycast.getPos();
@@ -127,21 +126,13 @@ public class PhotonicArrows extends RunicArrow {
                
                //Activate Shield of Fortitude
                ItemStack activeItem = hitPlayer.getActiveItem();
-               MagicItem magic;
-               ItemStack item = null;
                
-               if(MagicItemUtils.isMagic(activeItem)){
-                  magic = MagicItemUtils.identifyItem(activeItem);
-                  item = activeItem;
-               }else{
-                  return;
-               }
-               if(magic instanceof ShieldOfFortitude shield){
-                  float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH.id));
+               if(MagicItemUtils.identifyItem(activeItem) instanceof ShieldOfFortitude shield){
+                  float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(activeItem,ArcanaAugments.SHIELD_OF_FAITH.id));
                   float curAbs = hitPlayer.getAbsorptionAmount();
                   float addedAbs = (float) Math.min(maxAbs,finalDmg*.5);
-                  int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
-                  Arcananovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,hitPlayer,addedAbs));
+                  int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(activeItem,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
+                  Arcananovum.addTickTimerCallback(new ShieldTimerCallback(duration,activeItem,hitPlayer,addedAbs));
                   SoundUtils.playSongToPlayer(hitPlayer,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
                   hitPlayer.setAbsorptionAmount((curAbs + addedAbs));
                }

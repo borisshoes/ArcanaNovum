@@ -184,6 +184,7 @@ public class ArcanaRegistry {
          String id = entry.getKey();
          MagicItem magicItem = entry.getValue();
          registerItem(id, magicItem.getItem());
+         //System.out.println("  \"item.arcananovum."+id+"\": \"\",");
          
          if(magicItem instanceof MagicBlock magicBlock){
             registerBlock(id, magicBlock.getBlock());
@@ -224,11 +225,13 @@ public class ArcanaRegistry {
    public static <T extends Entity> EntityType<T> registerEntity(String id, EntityType<T> build){
       Registry.register(Registries.ENTITY_TYPE, new Identifier(Arcananovum.MOD_ID,id), build);
       PolymerEntityUtils.registerType(build);
+      //System.out.println("  \""+build.getTranslationKey()+"\": \"\",");
       return build;
    }
    
    public static StatusEffect registerStatusEffect(String id, StatusEffect effect){
       Registry.register(Registries.STATUS_EFFECT, new Identifier(Arcananovum.MOD_ID,id), effect);
+      //System.out.println("  \""+effect.getTranslationKey()+"\": \"\",");
       return effect;
    }
    

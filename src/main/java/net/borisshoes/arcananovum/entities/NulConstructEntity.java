@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.mixins.WitherEntityAccessor;
 import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -40,8 +41,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldEvents;
 
 import java.util.*;
 
@@ -120,6 +123,12 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             }
          }
          
+        if(server.getTicks() % 20 == 0 && this.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)){
+           destructiveAura();
+        }
+        
+        placateSkeletons();
+         
          float curHP = getHealth();
          if(spellCooldown > 0) spellCooldown--;
          DamageSource recentDamage = getRecentDamageSource();
@@ -179,9 +188,20 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       }
    }
    
+   private void placateSkeletons(){
+      List<WitherSkeletonEntity> skeletons = getWorld().getEntitiesByType(EntityType.WITHER_SKELETON,getBoundingBox().expand(16),(e) -> true);
+      for(WitherSkeletonEntity skeleton : skeletons){
+         if(skeleton.getTarget() != null && skeleton.getTarget().getId() == this.getId()){
+            PlayerEntity nearestPlayer = getWorld().getClosestPlayer(this,64);
+            skeleton.setTarget(nearestPlayer);
+         }
+      }
+   }
+   
    @Override
    protected float modifyAppliedDamage(DamageSource source, float amount){
       float modified = super.modifyAppliedDamage(source, amount);
+      modified = modified > 100 ? 100 : modified;
       
       if(spells.get("reflective_armor").isActive()){
          Entity attacker = source.getAttacker();
@@ -195,6 +215,29 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       }
       
       return modified * 0.5f;
+   }
+   
+   private void destructiveAura(){
+      int thisX = MathHelper.floor(this.getX());
+      int thisY = MathHelper.floor(this.getY());
+      int thisZ = MathHelper.floor(this.getZ());
+      boolean bl = false;
+      for (int xOff = -2; xOff <= 2; ++xOff) {
+         for (int zOff = -2; zOff <= 2; ++zOff) {
+            for (int yOff = 0; yOff <= 4; ++yOff) {
+               int x = thisX + xOff;
+               int y = thisY + yOff;
+               int z = thisZ + zOff;
+               BlockPos blockPos = new BlockPos(x, y, z);
+               BlockState blockState = this.getWorld().getBlockState(blockPos);
+               if (!WitherEntity.canDestroy(blockState)) continue;
+               bl = this.getWorld().breakBlock(blockPos, true, this) || bl;
+            }
+         }
+      }
+      if (bl) {
+         this.getWorld().syncWorldEvent(null, WorldEvents.WITHER_BREAKS_BLOCK, this.getBlockPos(), 0);
+      }
    }
    
    public void onSummoned(PlayerEntity summoner) {

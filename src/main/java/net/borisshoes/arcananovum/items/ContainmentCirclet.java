@@ -15,8 +15,8 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -140,7 +140,7 @@ public class ContainmentCirclet extends MagicItem {
       
       boolean hostiles = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CONFINEMENT.id) > 0;
       
-      if((entity instanceof HostileEntity && hostiles) || entity instanceof PassiveEntity){
+      if((entity instanceof Monster && hostiles) || entity instanceof MobEntity){
          NbtCompound data = entity.writeNbt(new NbtCompound());
          data.putString("id", EntityType.getId(entity.getType()).toString());
          magicNbt.put("contents",data);
@@ -151,7 +151,7 @@ public class ContainmentCirclet extends MagicItem {
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
          PLAYER_DATA.get(user).addXP(5); // Add xp
          redoLore(stack);
-      }else if(entity instanceof HostileEntity){
+      }else if(entity instanceof Monster){
          user.sendMessage(Text.literal("This Circlet cannot capture hostile creatures").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
       }
