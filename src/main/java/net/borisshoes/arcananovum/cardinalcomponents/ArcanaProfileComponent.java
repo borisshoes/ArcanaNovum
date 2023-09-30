@@ -117,6 +117,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       return crafted;
    }
    
+   @Override
+   public boolean hasCrafted(MagicItem magicItem){
+      return crafted.stream().anyMatch(s -> s.equals(magicItem.getId()));
+   }
+   
 //   @Override
 //   public List<String> getRecipes(){
 //      return recipes;
@@ -247,6 +252,16 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public boolean setLevel(int lvl){
       this.level = lvl;
       return true;
+   }
+   
+   @Override
+   public boolean addCraftedSilent(ItemStack stack){
+      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
+      if(magicItem == null) return false;
+      String itemId = magicItem.getId();
+      if (crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
+      addXP(MagicRarity.getFirstCraftXp(magicItem.getRarity()));
+      return crafted.add(itemId);
    }
    
    @Override

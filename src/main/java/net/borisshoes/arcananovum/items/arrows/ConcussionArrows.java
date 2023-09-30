@@ -18,6 +18,8 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.boss.WitherEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
@@ -101,7 +103,7 @@ public class ConcussionArrows extends RunicArrow {
       float percent = (1+levelBoost*.75f)*range/6;
       int mobsHit = 0;
       for(Entity entity : entities){
-         if(entity instanceof LivingEntity e){
+         if(entity instanceof LivingEntity e && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity)){
             if(e instanceof MobEntity) mobsHit++;
             
             StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS, (int)(25*percent), 0, false, false, true);

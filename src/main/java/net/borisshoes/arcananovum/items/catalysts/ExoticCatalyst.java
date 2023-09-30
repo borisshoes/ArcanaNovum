@@ -59,15 +59,16 @@ public class ExoticCatalyst extends MagicItem {
       MagicItemIngredient a = MagicItemIngredient.EMPTY;
       MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,32,null);
       MagicItemIngredient c = new MagicItemIngredient(Items.CRYING_OBSIDIAN,32,null);
+      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND,8,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.DIAMOND,16,null);
       MagicItemIngredient l = new MagicItemIngredient(Items.NETHER_STAR,2,null);
       GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.EMPOWERED_CATALYST,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,b,c,b,a},
-            {b,g,g,g,b},
+            {b,d,g,d,b},
             {c,l,m,l,c},
-            {b,g,g,g,b},
+            {b,d,g,d,b},
             {a,b,c,b,a}};
       return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil());
    

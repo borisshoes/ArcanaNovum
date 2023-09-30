@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.ArmorMaterials;
@@ -31,42 +32,20 @@ public class WingsOfEnderia extends EnergyItem {
       NbtCompound display = new NbtCompound();
       NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
-      NbtList attributes = new NbtList();
       NbtCompound prot = new NbtCompound();
       prot.putString("id","protection");
       prot.putInt("lvl",4);
       enchants.add(prot);
-      display.putString("Name","[{\"text\":\"Armored Wings of Enderia\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Gentle Wings\",\"color\":\"gray\"},{\"text\":\" will shield you from the \"},{\"text\":\"dangers \",\"color\":\"yellow\"},{\"text\":\"of the land.\",\"color\":\"white\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Wings \",\"color\":\"gray\"},{\"text\":\"act as a \"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection IV\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"white\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"They store \",\"italic\":false,\"color\":\"white\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"gray\"},{\"text\":\" and are \"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Armored Wings of Enderia\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Armored Wings\",\"color\":\"dark_purple\"},{\"text\":\" will shield you from the \"},{\"text\":\"dangers \",\"color\":\"yellow\"},{\"text\":\"of the land.\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Wings \",\"color\":\"dark_purple\"},{\"text\":\"act as a \"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection IV\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"They store \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"dark_purple\"},{\"text\":\" and are \"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Mythical \",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       display.put("Lore",loreList);
-      NbtCompound kbRes = new NbtCompound();
-      kbRes.putDouble("Amount",0.1);
-      kbRes.putString("AttributeName","generic.knockback_resistance");
-      kbRes.putString("Name","generic.knockback_resistance");
-      kbRes.putString("Slot","chest");
-      kbRes.putIntArray("UUID", new int[]{-122030, 92433, 23139, -184866});
-      attributes.add(kbRes);
-      NbtCompound toughness = new NbtCompound();
-      toughness.putInt("Amount",3);
-      toughness.putString("AttributeName","generic.armor_toughness");
-      toughness.putString("Name","generic.armor_toughness");
-      toughness.putString("Slot","chest");
-      toughness.putIntArray("UUID", new int[]{-122030, 92533, 23139, -185066});
-      attributes.add(toughness);
-      NbtCompound armor = new NbtCompound();
-      armor.putInt("Amount",8);
-      armor.putString("AttributeName","generic.armor");
-      armor.putString("Name","generic.armor");
-      armor.putString("Slot","chest");
-      armor.putIntArray("UUID", new int[]{-122030, 92633, 23139, -185266});
-      attributes.add(armor);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      tag.put("AttributeModifiers",attributes);
+      //tag.put("AttributeModifiers",attributes);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
    
@@ -87,6 +66,12 @@ public class WingsOfEnderia extends EnergyItem {
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
+      if(itemNbt.contains("ArcanaStats")){
+         double percentile = itemNbt.getDouble("ArcanaStats");
+         newTag.putDouble("ArcanaStats",percentile);
+         stack.removeSubNbt("AttributeModifiers");
+         EnhancedStatUtils.enhanceItem(stack,percentile);
+      }
       stack.setNbt(newTag);
       return stack;
    }

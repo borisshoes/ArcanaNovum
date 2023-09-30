@@ -26,7 +26,7 @@ public class GenericMagicIngredient extends MagicItemIngredient{
    
    @Override
    public ItemStack ingredientAsStack(){
-      return item.getPrefItem();
+      return item.getPrefItem().copyWithCount(count);
    }
    
    @Override

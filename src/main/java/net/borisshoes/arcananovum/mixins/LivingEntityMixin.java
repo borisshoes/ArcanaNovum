@@ -178,13 +178,13 @@ public abstract class LivingEntityMixin {
             if(entity instanceof ServerPlayerEntity player){
                if(dmgReduction == maxDmgReduction || dmgReduction > 12){
                   if(source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall")){
-                     player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.GRAY, Formatting.ITALIC), true);
+                     player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
                   }
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, 1.3f);
                   Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
                      @Override
                      public void run(){
-                        player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.GRAY), true);
+                        player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.DARK_PURPLE), true);
                      }
                   }));
                }

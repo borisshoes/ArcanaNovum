@@ -101,6 +101,11 @@ public class SojournerBoots extends EnergyItem {
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
+      if(itemNbt.contains("ArcanaStats")){
+         double percentile = itemNbt.getDouble("ArcanaStats");
+         newTag.putDouble("ArcanaStats",percentile);
+         EnhancedStatUtils.enhanceItem(stack,percentile);
+      }
       stack.setNbt(newTag);
       return stack;
    }

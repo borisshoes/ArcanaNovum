@@ -14,8 +14,11 @@ import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.EndermanEntity;
+import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.DragonFireballEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
@@ -177,7 +180,7 @@ public class DragonAbilities {
       if(corruptArcanaTicks < 200 && corruptArcanaTicks % 20 == 0){
          List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
          for(ServerPlayerEntity player : nearbyPlayers300){
-            float damage = MagicItemUtils.getUsedConcentration(player)/8f;
+            float damage = MagicItemUtils.getUsedConcentration(player)/8f * (player.getMaxHealth()/20f);
             if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
             
             player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),damage);
@@ -354,6 +357,21 @@ public class DragonAbilities {
       }else if(ability == DragonAbilityTypes.CORRUPT_ARCANA){
          corruptArcanaTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_CORRUPT_ARCANA,server,null);
+         for(ServerPlayerEntity player : nearbyPlayers300){
+            if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
+            
+            PlayerInventory playerInv = player.getInventory();
+            ItemCooldownManager manager = player.getItemCooldownManager();
+            for(int i=0; i<playerInv.size();i++){
+               ItemStack item = playerInv.getStack(i);
+               if(item.isEmpty()){
+                  continue;
+               }
+               if(MagicItemUtils.isMagic(item) && !manager.isCoolingDown(item.getItem())){
+                  manager.set(item.getItem(),200);
+               }
+            }
+         }
       }else if(ability == DragonAbilityTypes.OBLITERATE_TOWER){
          List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
          if(reclaimStates != null){

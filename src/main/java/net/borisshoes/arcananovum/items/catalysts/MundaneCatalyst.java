@@ -59,7 +59,7 @@ public class MundaneCatalyst extends MagicItem {
       MagicItemIngredient c = new MagicItemIngredient(Items.CRYING_OBSIDIAN,16,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.OBSIDIAN,16,null);
       MagicItemIngredient h = new MagicItemIngredient(Items.QUARTZ,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.CATALYTIC_MATRIX,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,a,c,a,a},
@@ -72,7 +72,7 @@ public class MundaneCatalyst extends MagicItem {
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"Mundane Augmentation\\n         Catalyst\\n\\nRarity: Mundane\\n\\nThe Runic Matrix is truly incredible, every day I discover new Runic equations that it can implement.\\nI with some extra crystals I can adapt it to augment the abilities of every item.\"}");
+      list.add("{\"text\":\"Mundane Augmentation\\n         Catalyst\\n\\nRarity: Mundane\\n\\nThe Catalytic Matrix is truly incredible, every day I discover new equations that it can implement.\\nWith some extra crystals I can adapt it to augment the abilities of every item.\"}");
       return list;
    }
    

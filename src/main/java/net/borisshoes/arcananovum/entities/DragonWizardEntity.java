@@ -208,7 +208,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
             }
          }else if(summonTick == 59){
             for(int i = 0; i < skeletons.length; i++){
-               if(skeletons[i] == null) continue;;
+               if(skeletons[i] == null) continue;
                skeletons[i].setInvulnerable(false);
                skeletons[i].setAiDisabled(false);
             }
@@ -290,9 +290,11 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       if(crystalId != null) nbt.putString("crystalId",crystalId.toString());
       
       NbtList skeletonTag = new NbtList();
-      for(SkeletonEntity skeleton : skeletons){
-         if(skeleton != null){
-            skeletonTag.add(NbtString.of(skeleton.getUuidAsString()));
+      if(skeletons != null){
+         for(SkeletonEntity skeleton : skeletons){
+            if(skeleton != null){
+               skeletonTag.add(NbtString.of(skeleton.getUuidAsString()));
+            }
          }
       }
       nbt.put("skeletons",skeletonTag);

@@ -184,7 +184,7 @@ public class TickCallback {
          if(player.isFallFlying()){ // Wings of Enderia
             wings.addEnergy(item,1); // Add 1 energy for each tick of flying
             if(wings.getEnergy(item) % 1000 == 999)
-               player.sendMessage(Text.literal("Wing Energy Stored: "+Integer.toString(wings.getEnergy(item)+1)).formatted(Formatting.GRAY),true);
+               player.sendMessage(Text.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).formatted(Formatting.DARK_PURPLE),true);
             PLAYER_DATA.get(player).addXP(2); // Add xp
          }
          NbtCompound leftShoulder = player.getShoulderEntityLeft();

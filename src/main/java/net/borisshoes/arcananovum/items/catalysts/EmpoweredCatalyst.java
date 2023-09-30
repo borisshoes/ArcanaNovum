@@ -61,14 +61,15 @@ public class EmpoweredCatalyst extends MagicItem {
       MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,16,null);
       MagicItemIngredient c = new MagicItemIngredient(Items.CRYING_OBSIDIAN,16,null);
       MagicItemIngredient g = new MagicItemIngredient(Items.EMERALD,32,null);
+      MagicItemIngredient i = new MagicItemIngredient(Items.EMERALD,16,null);
       MagicItemIngredient h = new MagicItemIngredient(Items.NETHER_STAR,1,null);
       GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.MUNDANE_CATALYST,1);
    
       MagicItemIngredient[][] ingredients = {
             {a,b,c,b,a},
-            {b,g,h,g,b},
+            {b,i,h,i,b},
             {c,g,m,g,c},
-            {b,g,h,g,b},
+            {b,i,h,i,b},
             {a,b,c,b,a}};
       return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil());
    }
@@ -83,8 +84,6 @@ public class EmpoweredCatalyst extends MagicItem {
       public EmpoweredCatalystItem(Settings settings){
          super(getThis(),settings);
       }
-      
-      
       
       @Override
       public ItemStack getDefaultStack(){

@@ -3,11 +3,9 @@ package net.borisshoes.arcananovum.gui.stellarcore;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StellarCoreBlockEntity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -49,8 +47,10 @@ public class StellarCoreInventoryListener implements InventoryChangedListener {
             }
             
             inv.setStack(0,ItemStack.EMPTY);
-            SimpleInventory newInv = new SimpleInventory(salvage.toArray(new ItemStack[0]));
-            MiscUtils.returnItems(newInv,gui.getPlayer());
+            
+            for(ItemStack itemStack : salvage){
+               ItemScatterer.spawn(gui.getPlayer().getWorld(), gui.getPlayer().getX(),gui.getPlayer().getY(),gui.getPlayer().getZ(), itemStack);
+            }
             PLAYER_DATA.get(gui.getPlayer()).addXP(100);
             
             if(blockEntity.getWorld() instanceof ServerWorld serverWorld){
@@ -69,12 +69,12 @@ public class StellarCoreInventoryListener implements InventoryChangedListener {
                   items.add(new ItemStack(moltenItem,64));
                   returnCount -= 64;
                }
-               if(returnCount == 64){ //For some reason returning a full stack causes items to sometimes be deleted, so this is my workaround
-                  ItemScatterer.spawn(gui.getPlayer().getWorld(), gui.getPlayer().getX(),gui.getPlayer().getY(),gui.getPlayer().getZ(), new ItemStack(moltenItem,64));
-               }else if(returnCount > 0){
+               if(returnCount > 0){
                   items.add(new ItemStack(moltenItem,returnCount));
                }
-               MiscUtils.returnItems(new SimpleInventory(items.toArray(new ItemStack[0])),gui.getPlayer());
+               for(ItemStack itemStack : items){
+                  ItemScatterer.spawn(gui.getPlayer().getWorld(), gui.getPlayer().getX(),gui.getPlayer().getY(),gui.getPlayer().getZ(), itemStack);
+               }
                
                if(blockEntity.getWorld() instanceof ServerWorld serverWorld){
                   SoundUtils.playSound(serverWorld,blockEntity.getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);

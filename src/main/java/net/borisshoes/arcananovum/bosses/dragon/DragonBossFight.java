@@ -6,13 +6,13 @@ import eu.pb4.holograms.api.elements.clickable.CubeHitboxHologramElement;
 import eu.pb4.holograms.api.elements.text.StaticTextHologramElement;
 import eu.pb4.holograms.api.holograms.AbstractHologram;
 import eu.pb4.holograms.api.holograms.WorldHologram;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
 import net.borisshoes.arcananovum.entities.DragonWizardEntity;
@@ -63,6 +63,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.Arcananovum.devPrint;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
 
@@ -206,6 +207,7 @@ public class DragonBossFight {
                         guardianPhantoms[i] = DragonGoonHelper.makeGuardianPhantom(endWorld,numPlayers);
                         phantomBossBars[i] = endWorld.getServer().getBossBarManager().add(new Identifier("guardianphantom-"+guardianPhantoms[i].getUuidAsString()),guardianPhantoms[i].getCustomName());
                         phantomBossBars[i].setColor(BossBar.Color.PURPLE);
+                        guardianPhantoms[i].addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE,100,4));
                         endWorld.spawnEntityAndPassengers(guardianPhantoms[i]);
                         phantomData.add(NbtString.of(guardianPhantoms[i].getUuidAsString()));
                      }
@@ -219,6 +221,7 @@ public class DragonBossFight {
                         wizards[i].setPosition(crystal.getPos().add(0,2,0));
                         wizards[i].setInvulnerable(true);
                         wizards[i].setCrystalId(crystal.getUuid());
+                        wizards[i].addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE,100,4));
                         endWorld.spawnEntityAndPassengers(wizards[i]);
                         wizardData.add(NbtString.of(wizards[i].getUuidAsString()));
                      }
@@ -425,6 +428,7 @@ public class DragonBossFight {
             }
             if(!quarterHPNotif && dragonHP/dragonMax <= 0.25){
                DragonDialog.announce(DragonDialog.Announcements.DRAGON_QUARTER_HP,server,null);
+               dragon.heal(dragonMax*0.25f);
                quarterHPNotif = true;
             }
             
@@ -557,6 +561,7 @@ public class DragonBossFight {
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
             ItemStack wings = magicWings.addCrafter(magicWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
+            PLAYER_DATA.get(player).addCraftedSilent(wings);
          
             ItemEntity itemEntity;
             boolean bl = player.getInventory().insertStack(wings);
@@ -627,7 +632,7 @@ public class DragonBossFight {
          message.add(Text.literal("")
                .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
       
-         Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(200, new TimerTask() {
+         Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(400, new TimerTask() {
             @Override
             public void run(){
                for(MutableText msg : message){
@@ -1238,7 +1243,7 @@ public class DragonBossFight {
          Vec3d end = player.getEyePos().add(player.getRotationVector().normalize().multiply(75));
          BlockHitResult result = endWorld.raycast(new RaycastContext(player.getEyePos(),end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE,player));
          Vec3d hit = result.getPos();
-         ParticleEffectUtils.line(endWorld,null,player.getPos().add(0,.7,0),hit, ParticleTypes.GLOW,(int)(2*hit.length()),1,0.1,0);
+         ParticleEffectUtils.longDistLine(endWorld,player.getPos().add(0,.7,0),hit, ParticleTypes.GLOW,(int)(2*hit.length()),1,0.1,0);
          List<Entity> entities = endWorld.getOtherEntities(player,new Box(hit.x+2,hit.y+2,hit.z+2,hit.x-2,hit.y-2,hit.z-2),e -> (e instanceof LivingEntity && !(e instanceof ServerPlayerEntity)));
    
          Scoreboard scoreboard = endWorld.getServer().getScoreboard();
@@ -1253,6 +1258,9 @@ public class DragonBossFight {
          }
          if(distToLine(dragon.getPos(),player.getPos(),hit) < 10){
             float damage = 10f+dragon.getMaxHealth()/100;
+            if(dragon.getStatusEffect(StatusEffects.RESISTANCE) != null){
+               damage *= 0.1f;
+            }
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));
             dragon.damage(endWorld.getDamageSources().playerAttack(player),damage);
@@ -1261,7 +1269,7 @@ public class DragonBossFight {
    
       public WorldHologram getHologram(){
          return hologram;
-      }
+      } //TODO, switch hologram type
    
       public ServerPlayerEntity getPlayer(){
          return player;

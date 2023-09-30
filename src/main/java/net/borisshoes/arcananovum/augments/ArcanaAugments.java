@@ -4,6 +4,8 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.AlchemicalArbalest;
 import net.borisshoes.arcananovum.items.ExoticMatter;
+import net.borisshoes.arcananovum.items.WingsOfEnderia;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -307,7 +309,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment TIME_IN_A_BOTTLE = ArcanaAugments.register(
          new ArcanaAugment("Time in a Bottle", "time_in_a_bottle", new ItemStack(Items.CLOCK), ArcanaRegistry.EXOTIC_MATTER,
          new String[]{"Augment to increase fuel content and refuel","Extra Fuel Per Level: 1.5x/2x/2.5x/3x/5x"},
-         new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED,EMPOWERED,EXOTIC}
+         new MagicRarity[]{MUNDANE,MUNDANE,MUNDANE,MUNDANE,EMPOWERED}
    ));
    
    // Fractal Sponge
@@ -589,8 +591,8 @@ public class ArcanaAugments {
    // Wings of Enderia
    public static final ArcanaAugment SCALES_OF_THE_CHAMPION = ArcanaAugments.register(
          new ArcanaAugment("Scales of the Champion", "scales_of_the_champion", new ItemStack(Items.NETHERITE_CHESTPLATE), ArcanaRegistry.WINGS_OF_ENDERIA,
-         new String[]{"Unlocks the ability for the Wings to use","stored energy to mitigate all damage types"},
-         new MagicRarity[]{MYTHICAL}
+         new String[]{"First Level: Gives the Wings max enhanced stats","Second Level: Unlocks the ability for the Wings to"," use stored energy to mitigate all damage types"},
+         new MagicRarity[]{MYTHICAL,MYTHICAL}
    ));
    public static final ArcanaAugment WING_BUFFET = ArcanaAugments.register(
          new ArcanaAugment("Wing Buffet", "wing_buffet", new ItemStack(Items.FEATHER), ArcanaRegistry.WINGS_OF_ENDERIA,
@@ -731,8 +733,8 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment SKILLED = ArcanaAugments.register(
          new ArcanaAugment("Skilled", "skilled", new ItemStack(Items.BOOK), ArcanaRegistry.STARLIGHT_FORGE,
-         new String[]{"Chance to forge an item with some"," unlocked augments already applied","Chance Per Level: 25%/50%/75%/100%","Levels V-VIII attempt to add a second augment"},
-         new MagicRarity[]{EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
+         new String[]{"Forging a Magic Item automatically applies augments"," valued within a set amount of skill points","Skill Points Per Level: 1/2/3/5/7/9/12/15","Augment selection is random from unlocked augments"},
+         new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,EXOTIC,LEGENDARY,LEGENDARY,MYTHICAL,MYTHICAL}
    ));
    public static final ArcanaAugment MOONLIT_FORGE = ArcanaAugments.register(
          new ArcanaAugment("Moonlit Forge", "moonlit_forge", new ItemStack(Items.PEARLESCENT_FROGLIGHT), ArcanaRegistry.STARLIGHT_FORGE,
@@ -915,7 +917,7 @@ public class ArcanaAugments {
       NbtCompound augmentTag = magicTag.getCompound("augments");
       augmentTag.putInt(id,level);
    
-      if(magicItem instanceof ExoticMatter matter){
+      if(magicItem instanceof ExoticMatter matter && id.equals(TIME_IN_A_BOTTLE.id)){
          matter.setFuel(item,matter.getMaxEnergy(item));
       }
       if(magicItem instanceof AlchemicalArbalest && id.equals(RUNIC_ARBALEST.id)){
@@ -930,6 +932,10 @@ public class ArcanaAugments {
             }
             item.getNbt().put("Enchantments",enchants);
          }
+      }
+      if(magicItem instanceof WingsOfEnderia && id.equals(SCALES_OF_THE_CHAMPION.id) && level == 1){
+         item.removeSubNbt("AttributeModifiers");
+         EnhancedStatUtils.enhanceItem(item,1);
       }
       
       magicItem.redoAugmentLore(item);

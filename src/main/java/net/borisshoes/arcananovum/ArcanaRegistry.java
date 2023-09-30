@@ -140,6 +140,7 @@ public class ArcanaRegistry {
    public static final MagicItem RUNIC_QUIVER = ArcanaRegistry.register(new RunicQuiver());
    
    // 1.4 Items
+   public static final MagicItem CATALYTIC_MATRIX = ArcanaRegistry.register(new CatalyticMatrix()); // Technically a 2.0 item, but registry order is a thing
    public static final MagicItem MUNDANE_CATALYST = ArcanaRegistry.register(new MundaneCatalyst());
    public static final MagicItem EMPOWERED_CATALYST = ArcanaRegistry.register(new EmpoweredCatalyst());
    public static final MagicItem EXOTIC_CATALYST = ArcanaRegistry.register(new ExoticCatalyst());
@@ -299,6 +300,7 @@ public class ArcanaRegistry {
          WINGS_OF_ENDERIA,
          PICKAXE_OF_CEPTYUS,
          LEADERSHIP_CHARM,
+         CATALYTIC_MATRIX,
          MUNDANE_CATALYST,
          EMPOWERED_CATALYST,
          EXOTIC_CATALYST,

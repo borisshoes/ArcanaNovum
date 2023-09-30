@@ -20,6 +20,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -30,6 +31,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -393,6 +395,14 @@ public class BrainJar extends EnergyItem {
       public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
          openGui(playerEntity, playerEntity.getStackInHand(hand));
          return TypedActionResult.success(playerEntity.getStackInHand(hand));
+      }
+      
+      @Override
+      public ActionResult useOnBlock(ItemUsageContext context){
+         PlayerEntity playerEntity = context.getPlayer();
+         ItemStack stack = context.getStack();
+         openGui(playerEntity, stack);
+         return ActionResult.SUCCESS;
       }
    }
 }

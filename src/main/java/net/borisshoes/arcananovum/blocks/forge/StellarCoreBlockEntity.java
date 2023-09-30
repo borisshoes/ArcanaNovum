@@ -123,9 +123,9 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
          ItemStack[] repairItems = tool.getMaterial().getRepairIngredient().getMatchingStacks();
          if(repairItems.length > 0){
             if(repairItems[0].isOf(Items.NETHERITE_INGOT)){
-               salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
+               salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.max(1,Math.round(4*salvageLvl))));
             }else{
-               salvage.add(repairItems[0].copyWithCount((int) Math.round(baseAmt*salvageLvl)));
+               salvage.add(repairItems[0].copyWithCount((int) Math.max(1,Math.round(baseAmt*salvageLvl))));
             }
          }
       }

@@ -37,7 +37,7 @@ public class Arcananovum implements ModInitializer {
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
    public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
    public static final ArrayList<Pair<ServerWorld,BlockPos>> ACTIVE_ANCHORS = new ArrayList<>();
-   public static final boolean devMode = false;
+   public static final boolean devMode = true;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static ConfigUtils config;

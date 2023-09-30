@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.utils;
 
 import com.google.common.collect.Multimap;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -25,7 +26,7 @@ public class EnhancedStatUtils {
    }
    
    public static void enhanceItem(ItemStack stack, double percentile){
-      if(stack.isIn(ItemTags.TRIMMABLE_ARMOR) && stack.getItem() instanceof ArmorItem armorItem){
+      if((stack.isIn(ItemTags.TRIMMABLE_ARMOR) || stack.isOf(ArcanaRegistry.WINGS_OF_ENDERIA.getItem())) && stack.getItem() instanceof ArmorItem armorItem){
          double armor = armorItem.getProtection();
          double toughness = armorItem.getToughness();
          double kbRes = armorItem.getMaterial().getKnockbackResistance();

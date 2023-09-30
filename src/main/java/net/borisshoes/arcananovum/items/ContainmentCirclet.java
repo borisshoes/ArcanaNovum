@@ -17,6 +17,7 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -132,8 +133,8 @@ public class ContainmentCirclet extends MagicItem {
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;
       }
-      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity){
-         user.sendMessage(Text.literal("The Circlet cannot contain bosses").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
+      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof WardenEntity){
+         user.sendMessage(Text.literal("The Circlet cannot contain this creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;
       }

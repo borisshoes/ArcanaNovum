@@ -7,9 +7,12 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.bosses.dragon.DragonDialog;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
@@ -60,6 +63,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.Arcananovum.devMode;
 import static net.borisshoes.arcananovum.Arcananovum.devPrint;
@@ -532,7 +536,7 @@ public class ArcanaCommands {
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          
-         
+         DragonDialog.announce(DragonDialog.Announcements.EVENT_END,objectCommandContext.getSource().getServer(),null);
          
       } catch (Exception e) {
          e.printStackTrace();
@@ -567,6 +571,98 @@ public class ArcanaCommands {
       Set<String> items = ArcanaAchievements.registry.keySet();
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
+   }
+   
+   public static CompletableFuture<Suggestions> getAugmentSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+      ServerCommandSource src = context.getSource();
+      String start = builder.getRemaining().toLowerCase();
+      MagicItem magicItem;
+      if(src.isExecutedByPlayer() && src.getPlayer() != null){
+         ItemStack handItem = src.getPlayer().getMainHandStack();
+         magicItem = MagicItemUtils.identifyItem(handItem);
+      }else{
+         magicItem = null;
+      }
+      Set<String> augments = ArcanaAugments.registry.keySet();
+      if(magicItem != null){
+         augments = augments.stream().filter(s -> ArcanaAugments.registry.get(s).getMagicItem().getId().equals(magicItem.getId())).collect(Collectors.toSet());
+      }
+      augments.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
+      return builder.buildFuture();
+   }
+   
+   public static int setAugment(CommandContext<ServerCommandSource> ctx, String id, int level, ServerPlayerEntity player){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer() && player == null){
+            src.sendError(Text.literal("Must specify player, or run command as a player"));
+            return -1;
+         }else if(player == null && src.getPlayer() != null){
+            player = src.getPlayer();
+         }
+         ArcanaAugment augment = ArcanaAugments.registry.get(id);
+         if(augment == null){
+            src.sendError(Text.literal("That is not a valid Augment"));
+            return -1;
+         }
+         if(level < 0 || level > augment.getTiers().length){
+            src.sendError(Text.literal("Level out of bounds (0-"+augment.getTiers().length+")"));
+            return -1;
+         }
+         if(level == 0){
+            PLAYER_DATA.get(player).removeAugment(id);
+            src.sendMessage(Text.literal("Successfully removed "+augment.name+" from ").append(player.getDisplayName()));
+         }else{
+            PLAYER_DATA.get(player).setAugmentLevel(id,level);
+            src.sendMessage(Text.literal("Successfully set "+augment.name+" to level "+level+" for ").append(player.getDisplayName()));
+         }
+         return 1;
+      }catch(Exception e){
+         e.printStackTrace();
+         return -1;
+      }
+   }
+   
+   public static int applyAugment(CommandContext<ServerCommandSource> ctx, String id, int level, ServerPlayerEntity player){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer() && player == null){
+            src.sendError(Text.literal("Must specify player, or run command as a player"));
+            return -1;
+         }else if(player == null && src.getPlayer() != null){
+            player = src.getPlayer();
+         }
+         ArcanaAugment augment = ArcanaAugments.registry.get(id);
+         ItemStack handItem = player.getMainHandStack();
+         MagicItem magicItem = MagicItemUtils.identifyItem(handItem);
+         
+         if(augment == null){
+            src.sendError(Text.literal("That is not a valid Augment"));
+            return -1;
+         }
+         if(level < 1 || level > augment.getTiers().length){
+            src.sendError(Text.literal("Level out of bounds (1-"+augment.getTiers().length+")"));
+            return -1;
+         }
+         if(magicItem == null || !magicItem.getId().equals(augment.getMagicItem().getId())){
+            src.sendError(Text.literal("Player is not holding a valid Magic Item"));
+            return -1;
+         }
+         if(ArcanaAugments.isIncompatible(handItem,id)){
+            src.sendError(Text.literal("This augment is incompatible with existing augments"));
+            return -1;
+         }
+         if(ArcanaAugments.applyAugment(handItem,id,level)){
+            src.sendMessage(Text.literal("Successfully applied "+augment.name+" at level "+level+" for ").append(player.getDisplayName()));
+            return 1;
+         }else{
+            src.sendError(Text.literal("Couldn't apply augment (Cannot downgrade existing augments)"));
+            return -1;
+         }
+      }catch(Exception e){
+         e.printStackTrace();
+         return -1;
+      }
    }
    
    

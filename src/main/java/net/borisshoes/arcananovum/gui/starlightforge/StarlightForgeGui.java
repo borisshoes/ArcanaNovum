@@ -41,10 +41,7 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.items.ArcaneTome.CRAFTING_SLOTS;
@@ -99,22 +96,31 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
                }
                
                if(!(magicItem instanceof ArcaneTome)){
-                  double skillChance = new double[]{0, .25, .5, .75, 1, 1.25, 1.5, 1.75, 2}[settings.skillLvl];
+                  int skillPoints = new int[]{0, 1, 2, 3, 5, 7, 9, 12, 15}[settings.skillLvl];
                   List<ArcanaAugment> allAugs = ArcanaAugments.getAugmentsForItem(magicItem);
-                  allAugs.removeIf(aug -> profile.getAugmentLevel(aug.id) <= 0);
-                  if(Math.random() < skillChance && allAugs.size() > 0){
+                  allAugs.removeIf(aug -> profile.getAugmentLevel(aug.id) <= 0); // Filter locked augments
+                  
+                  while(skillPoints > 0 && !allAugs.isEmpty()){
+                     TreeMap<ArcanaAugment,Integer> itemAugs = ArcanaAugments.getAugmentsOnItem(newMagicItem);
+                     if(itemAugs == null) break;
+                     int finalSkillPoints = skillPoints;
+                     allAugs.removeIf(aug -> {
+                        int existingLvl = itemAugs.getOrDefault(aug, 0);
+                        if(existingLvl >= aug.getTiers().length) return true; // Maxed
+                        if(profile.getAugmentLevel(aug.id) <= existingLvl) return true; // Next level not unlocked
+                        int nextPoints = aug.getTiers()[existingLvl].rarity + 1;
+                        if(nextPoints > finalSkillPoints) return true; // Too expensive
+                        return false;
+                     });
+                     if(allAugs.isEmpty()) break;
+                     
                      int ind = (int) (Math.random() * allAugs.size());
                      ArcanaAugment aug = allAugs.get(ind);
-                     ArcanaAugments.applyAugment(newMagicItem, aug.id, Math.min(settings.skillLvl,(int)(Math.random()*profile.getAugmentLevel(aug.id)+1)));
-                     if(Math.random() < (skillChance-1) && allAugs.size() > 1){
-                        int newInd = (int) (Math.random() * allAugs.size());
-                        while(newInd == ind){
-                           newInd = (int) (Math.random() * allAugs.size());
-                        }
-                        ArcanaAugment aug2 = allAugs.get(newInd);
-                        ArcanaAugments.applyAugment(newMagicItem, aug2.id, Math.min(settings.skillLvl,(int)(Math.random()*profile.getAugmentLevel(aug2.id)+1)));
-                     }
+                     int existingLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(newMagicItem,aug.id));
+                     skillPoints -= aug.getTiers()[existingLvl].rarity + 1;
+                     ArcanaAugments.applyAugment(newMagicItem, aug.id, existingLvl+1);
                   }
+                  
                   magicItem.redoAugmentLore(newMagicItem);
                }
                
@@ -398,6 +404,7 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
          
          for(int i = 0; i < 25; i++){
             MagicItemIngredient ingredient = ingredients[i/5][i%5];
+            boolean found = false;
             
             for(int j = 0; j < playerInventory.size(); j++){
                ItemStack invSlot = playerInventory.getStack(j);
@@ -409,11 +416,12 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
                   }
                   inv.setStack(i,toMove);
                   playerInventory.setStack(j,invSlot);
+                  found = true;
                   break;
                }
             }
             
-            if(collect){
+            if(collect && !found){
                searchBlock: {
                   for(Inventory inventory : inventories){
                      for(int j = 0; j < inventory.size(); j++){

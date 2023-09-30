@@ -762,7 +762,7 @@ public class ParticleEffectUtils {
       ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(9694975).toVector3f(),1.5f);
       float t = -(float)(Math.PI/(period/200)*calls + Math.PI);
       
-      sphere(world,null,center.add(0,2,0),dust,5.5,75,1,0,1,-t);
+      longDistSphere(world,center.add(0,2,0),dust,5.5,75,1,0,1,-t);
       
       if(calls < (period/200)){
          Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {

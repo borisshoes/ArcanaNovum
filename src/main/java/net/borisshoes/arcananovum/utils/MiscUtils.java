@@ -32,6 +32,7 @@ public class MiscUtils {
             if (itemEntity != null) {
                itemEntity.setDespawnImmediately();
             }
+            player.currentScreenHandler.sendContentUpdates();
          }
       }
    }
