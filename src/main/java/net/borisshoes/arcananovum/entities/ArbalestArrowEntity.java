@@ -82,6 +82,10 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
          deployAura(world,getPos(),0);
       }
       super.onBlockHit(blockHitResult);
+      
+      if(pickupType != PickupPermission.ALLOWED){
+         this.discard();
+      }
    }
    
    private void deployAura(ServerWorld serverWorld, Vec3d pos, int calls){

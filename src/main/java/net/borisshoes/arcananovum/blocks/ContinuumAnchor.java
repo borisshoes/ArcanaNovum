@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
-import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
@@ -49,7 +49,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
@@ -100,17 +99,10 @@ public class ContinuumAnchor extends MagicBlock {
    
    public static List<ChunkPos> getLoadedChunks(ServerWorld serverWorld){
       ArrayList<ChunkPos> chunks = new ArrayList<>();
-      Iterator<Pair<ServerWorld,BlockPos>> iter = Arcananovum.ACTIVE_ANCHORS.iterator();
-      while(iter.hasNext()){
-         Pair<ServerWorld,BlockPos> pair = iter.next();
+      
+      for(Pair<ServerWorld, ChunkPos> pair : Arcananovum.ANCHOR_CHUNKS){
          if(!serverWorld.getRegistryKey().getValue().equals(pair.getLeft().getRegistryKey().getValue())) continue;
-         BlockPos anchorPos = pair.getRight();
-         ChunkPos chunkPos = new ChunkPos(anchorPos);
-         for(int i = -ContinuumAnchorBlockEntity.RANGE; i <= ContinuumAnchorBlockEntity.RANGE; i++){
-            for(int j = -ContinuumAnchorBlockEntity.RANGE; j <= ContinuumAnchorBlockEntity.RANGE; j++){
-               chunks.add(new ChunkPos(chunkPos.x+i,chunkPos.z+j));
-            }
-         }
+         chunks.add(pair.getRight());
       }
       return chunks;
    }

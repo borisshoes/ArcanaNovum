@@ -1,12 +1,13 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.ContinuumAnchorBlockEntity;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.items.LevitationHarness;
@@ -32,13 +33,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.Arcananovum.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
@@ -137,8 +140,23 @@ public class TickCallback {
             }
          }
          SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
+         
+         anchorUpdate(server);
       }catch(Exception e){
          e.printStackTrace();
+      }
+   }
+   
+   private static void anchorUpdate(MinecraftServer server){
+      ANCHOR_CHUNKS.clear();
+      for(Pair<ServerWorld, BlockPos> pair : ACTIVE_ANCHORS){
+         BlockPos anchorPos = pair.getRight();
+         ChunkPos chunkPos = new ChunkPos(anchorPos);
+         for(int i = -ContinuumAnchorBlockEntity.RANGE; i <= ContinuumAnchorBlockEntity.RANGE; i++){
+            for(int j = -ContinuumAnchorBlockEntity.RANGE; j <= ContinuumAnchorBlockEntity.RANGE; j++){
+               ANCHOR_CHUNKS.add(new Pair<>(pair.getLeft(),new ChunkPos(chunkPos.x+i,chunkPos.z+j)));
+            }
+         }
       }
    }
    

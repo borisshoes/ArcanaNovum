@@ -20,6 +20,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,6 +38,7 @@ public class Arcananovum implements ModInitializer {
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
    public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
    public static final ArrayList<Pair<ServerWorld,BlockPos>> ACTIVE_ANCHORS = new ArrayList<>();
+   public static final ArrayList<Pair<ServerWorld,ChunkPos>> ANCHOR_CHUNKS = new ArrayList<>();
    public static final boolean devMode = true;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";

@@ -170,7 +170,7 @@ public abstract class LivingEntityMixin {
    
       ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
       if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings){
-         boolean canReduce = source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall") || ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.SCALES_OF_THE_CHAMPION.id) >= 1;
+         boolean canReduce = source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall") || ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.SCALES_OF_THE_CHAMPION.id) >= 2;
          if(canReduce){
             int energy = wings.getEnergy(chestItem);
             double maxDmgReduction = reduced * .5;

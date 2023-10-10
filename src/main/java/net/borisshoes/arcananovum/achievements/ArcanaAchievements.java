@@ -32,7 +32,7 @@ public class ArcanaAchievements {
    
    // Arcane Flak Arrows
    public static final ArcanaAchievement AA_ARTILLERY = ArcanaAchievements.register(
-         new EventAchievement("Anti-Air Artillery", "aa_artillery", new ItemStack(Items.FIREWORK_STAR), ArcanaRegistry.ARCANE_FLAK_ARROWS, 5000,2,
+         new EventAchievement("Aerial Bane", "aa_artillery", new ItemStack(Items.FIREWORK_STAR), ArcanaRegistry.ARCANE_FLAK_ARROWS, 5000,2,
          new String[]{"Kill 5 phantoms with a single Arcane Flak Arrow"}
    ));
    
@@ -169,7 +169,7 @@ public class ArcanaAchievements {
          new String[]{"Have 30 Magic Items taking concentration"}
    ));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register(
-         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000,25,
+         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000,500,
          new String[]{"Unlock all Non-Mythical related Achievements", "(Grants Mythical Achievements honorarily)"}
    ));
    

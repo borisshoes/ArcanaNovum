@@ -121,7 +121,7 @@ public abstract class QuiverItem extends MagicItem {
       int invSlot = ((NbtInt)profile.getMiscData(runic ? "runicInvSlot" : "arrowInvSlot")).intValue();
    
       List<Pair<String,Integer>> options = getArrowOptions(player,runic);
-      if(options.size() == 0){
+      if(options.isEmpty()){
          return null;
       }
       for(Pair<String, Integer> option : options){
@@ -138,7 +138,7 @@ public abstract class QuiverItem extends MagicItem {
       int invSlot = ((NbtInt)profile.getMiscData(runic ? "runicInvSlot" : "arrowInvSlot")).intValue();
    
       List<Pair<String,Integer>> options = getArrowOptions(player,runic);
-      if(options.size() == 0){
+      if(options.isEmpty()){
          return null;
       }
       
@@ -204,7 +204,7 @@ public abstract class QuiverItem extends MagicItem {
    
             MagicItem magicItem = MagicItemUtils.identifyItem(item);
             if(magicItem == null) continue;
-            if(magicItem.getUUID(item).equals(invId)){
+            if(getUUID(item).equals(invId)){
                if(magicItem instanceof RunicQuiver quiver){
                   ItemStack stack = quiver.getArrow(item,invSlot);
                   if(display){
@@ -252,7 +252,7 @@ public abstract class QuiverItem extends MagicItem {
          }
       
          MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         if(magicItem instanceof RunicQuiver quiver && runic){
+         if(magicItem instanceof RunicQuiver quiver){
             NbtCompound itemNbt = item.getNbt();
             NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
             NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
@@ -260,7 +260,8 @@ public abstract class QuiverItem extends MagicItem {
                NbtCompound stack = arrows.getCompound(j);
                if(!stack.contains("Slot") || !stack.contains("Count") || !stack.contains("id")) continue;
                if(stack.getByte("Count") <= 0 || stack.getString("id").equals("minecraft:air")) continue;
-               options.add(new Pair<>(quiver.getUUID(item),(int) stack.getByte("Slot")));
+               if(MagicItemUtils.isRunicArrow(ItemStack.fromNbt(stack)) && !runic) continue;
+               options.add(new Pair<>(getUUID(item),(int) stack.getByte("Slot")));
             }
          }else if(magicItem instanceof OverflowingQuiver quiver){
             NbtCompound itemNbt = item.getNbt();
@@ -270,7 +271,7 @@ public abstract class QuiverItem extends MagicItem {
                NbtCompound stack = arrows.getCompound(j);
                if(!stack.contains("Slot") || !stack.contains("Count") || !stack.contains("id")) continue;
                if(stack.getByte("Count") <= 0 || stack.getString("id").equals("minecraft:air")) continue;
-               options.add(new Pair<>(quiver.getUUID(item),(int) stack.getByte("Slot")));
+               options.add(new Pair<>(getUUID(item),(int) stack.getByte("Slot")));
             }
          }
    
@@ -328,7 +329,7 @@ public abstract class QuiverItem extends MagicItem {
                
                MagicItem magicItem = MagicItemUtils.identifyItem(item);
                if(magicItem instanceof QuiverItem quiver){
-                  if(quiver.getUUID(item).equals(quiverId)){
+                  if(getUUID(item).equals(quiverId)){
                      quiver.shootArrow(item,slot,player,bow);
                      return;
                   }

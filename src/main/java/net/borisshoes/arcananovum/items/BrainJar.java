@@ -386,7 +386,11 @@ public class BrainJar extends EnergyItem {
          
          if(world.getServer().getTicks() % 1200 == 0 && getEnergy(stack) < getMaxEnergy(stack)){
             double interestRate = .002 * Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.KNOWLEDGE_BANK.id));
-            addEnergy(stack, (int) (interestRate*getEnergy(stack)));
+            int beforeEnergy = getEnergy(stack);
+            addEnergy(stack, (int) (interestRate*beforeEnergy));
+            if(beforeEnergy < getMaxEnergy(stack) && getEnergy(stack) >= getMaxEnergy(stack)){
+               ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
+            }
             editStatusLore(stack);
          }
       }

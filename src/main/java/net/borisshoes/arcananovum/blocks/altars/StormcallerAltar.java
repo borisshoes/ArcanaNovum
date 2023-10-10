@@ -12,10 +12,7 @@ import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.MapColor;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -45,7 +42,7 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
    
    public StormcallerAltar(){
       id = "stormcaller_altar";
-      name = "Stormcaller Altar";
+      name = "Altar of the Stormcaller";
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.ALTARS};
       itemVersion = 0;

@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.EquipmentSlot;
@@ -100,5 +100,11 @@ public class PlayerEntityMixin {
    @Redirect(method="checkFallFlying", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
    private boolean arcananovum_elytraTick(ItemStack stack, Item item){
       return stack.isOf(item) || MagicItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
+   }
+   
+   @Inject(method = "disableShield", at = @At(value="INVOKE",target="Lnet/minecraft/entity/player/PlayerEntity;getItemCooldownManager()Lnet/minecraft/entity/player/ItemCooldownManager;"))
+   private void arcananovum_mobDisableShield(boolean sprinting, CallbackInfo ci){
+      PlayerEntity player = (PlayerEntity) (Object) this;
+      player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(), 100);
    }
 }

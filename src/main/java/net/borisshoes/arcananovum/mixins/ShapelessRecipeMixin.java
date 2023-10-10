@@ -53,7 +53,7 @@ public class ShapelessRecipeMixin {
          enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
          display.putString("Name","[{\"text\":\"Mysterious Tome\",\"italic\":true,\"bold\":true,\"color\":\"dark_purple\"}]");
          loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ender Eye\",\"color\":\"green\"},{\"text\":\" gravitates to the table.\",\"color\":\"blue\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"It\\'s presence causes the table to \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"transform\",\"italic\":true,\"color\":\"light_purple\"},{\"text\":\"!\"}]"));
+         loreList.add(NbtString.of("[{\"text\":\"Its presence causes the table to \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"transform\",\"italic\":true,\"color\":\"light_purple\"},{\"text\":\"!\"}]"));
          display.put("Lore",loreList);
          tag.put("display",display);
          tag.putBoolean("ArcanaGuideBook",true);
@@ -85,7 +85,7 @@ public class ShapelessRecipeMixin {
             enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
             display.putString("Name","[{\"text\":\"Mysterious Tome\",\"italic\":true,\"bold\":true,\"color\":\"dark_purple\"}]");
             loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ender Eye\",\"color\":\"green\"},{\"text\":\" gravitates to the table.\",\"color\":\"blue\"}]"));
-            loreList.add(NbtString.of("[{\"text\":\"It\\'s presence causes the table to \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"transform\",\"italic\":true,\"color\":\"light_purple\"},{\"text\":\"!\"}]"));
+            loreList.add(NbtString.of("[{\"text\":\"Its presence causes the table to \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"transform\",\"italic\":true,\"color\":\"light_purple\"},{\"text\":\"!\"}]"));
             display.put("Lore",loreList);
             tag.put("display",display);
             tag.putBoolean("ArcanaGuideBook",true);

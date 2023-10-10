@@ -144,11 +144,18 @@ public class WildGrowthCharm extends MagicItem {
             for(BlockPos blockPos : BlockPos.iterateRandomly(player.getRandom(), 3, player.getBlockPos(), 4)){
                BlockState state = world.getBlockState(blockPos);
                Block block = state.getBlock();
-               if((block instanceof AbstractPlantStemBlock ||
-                  block instanceof CropBlock ||
-                  block instanceof CocoaBlock ||
-                  block instanceof StemBlock ||
-                  block instanceof SweetBerryBushBlock) && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+               if(block instanceof SugarCaneBlock ||
+                     block instanceof NetherWartBlock ||
+                     block instanceof CactusBlock ||
+                     block instanceof ChorusFlowerBlock ||
+                     block instanceof OxidizableBlock){
+                  state.randomTick(player.getServerWorld(),blockPos,world.getRandom());
+                  world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);
+               }else if((block instanceof AbstractPlantStemBlock ||
+                     block instanceof CropBlock ||
+                     block instanceof CocoaBlock ||
+                     block instanceof StemBlock ||
+                     block instanceof SweetBerryBushBlock) && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
                   world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);
                   
                   if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
@@ -211,12 +218,33 @@ public class WildGrowthCharm extends MagicItem {
       
       @Override
       public ActionResult useOnBlock(ItemUsageContext context) {
-         if(ArcanaAugments.getAugmentOnItem(context.getStack(),ArcanaAugments.CHARM_OF_BLOOMING.id) < 1) return ActionResult.PASS;
-         if(context.getPlayer() != null && context.getPlayer().isSneaking()) return ActionResult.PASS;
-         
+         PlayerEntity playerEntity = context.getPlayer();
          World world = context.getWorld();
          BlockPos blockPos = context.getBlockPos();
          BlockPos blockPos2 = blockPos.offset(context.getSide());
+         
+         if(playerEntity != null && playerEntity.isSneaking() && playerEntity instanceof ServerPlayerEntity player){
+            NbtCompound itemNbt = context.getStack().getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            boolean active = magicNbt.getBoolean("active");
+            
+            active = !active;
+            magicNbt.putBoolean("active",active);
+            itemNbt.put("arcananovum",magicNbt);
+            if(active){
+               playerEntity.sendMessage(Text.translatable("The Charm Begins to Bloom").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_GRASS_PLACE, .7f,.7f);
+            }else{
+               playerEntity.sendMessage(Text.translatable("The Charm Recedes").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
+            }
+            return ActionResult.success(world.isClient);
+         }
+         
+         if(ArcanaAugments.getAugmentOnItem(context.getStack(),ArcanaAugments.CHARM_OF_BLOOMING.id) < 1){
+            return ActionResult.PASS;
+         }
+         
          if (BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)) {
             if (!world.isClient) {
                world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);

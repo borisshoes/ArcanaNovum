@@ -81,7 +81,7 @@ public class PickaxeOfCeptyus extends MagicItem {
       enchants.add(fortune);
       enchants.add(efficiency);
       display.putString("Name","[{\"text\":\"Ancient Pickaxe of Ceptyus\",\"italic\":false,\"bold\":true,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"A long lost \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"Pickaxe \",\"color\":\"dark_aqua\"},{\"text\":\"that could \"},{\"text\":\"shatter \",\"color\":\"gold\"},{\"text\":\"the \"},{\"text\":\"World\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"A long-lost \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"Pickaxe \",\"color\":\"dark_aqua\"},{\"text\":\"that could \"},{\"text\":\"shatter \",\"color\":\"gold\"},{\"text\":\"the \"},{\"text\":\"World\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"Netherite Pickaxe\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Fortune V\",\"color\":\"green\"},{\"text\":\" and \"},{\"text\":\"Efficiency V\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"It gives ramping \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"haste \",\"color\":\"gold\"},{\"text\":\"and \"},{\"text\":\"mines \",\"color\":\"dark_aqua\"},{\"text\":\"whole \"},{\"text\":\"ore veins\",\"color\":\"green\"},{\"text\":\". \"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));

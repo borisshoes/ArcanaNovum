@@ -202,7 +202,6 @@ public class EverlastingRocket extends EnergyItem {
          if(player.getServer().getTicks() % (600-(100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SULFUR_REPLICATION.id)))) == 0){
             addEnergy(stack,1);
             redoLore(stack);
-            PLAYER_DATA.get(player).addXP(50); // Add xp
          }
       }
       

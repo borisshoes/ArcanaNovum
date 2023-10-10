@@ -82,7 +82,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
             double senseRange = 4;
             List<Entity> triggerTargets = getWorld().getOtherEntities(this,this.getBoundingBox().expand(senseRange*2),
                   e -> !e.isSpectator() && e.distanceTo(this) <= senseRange && e instanceof LivingEntity && !e.isOnGround());
-            if(triggerTargets.size() > 0){
+            if(!triggerTargets.isEmpty()){
                double radius = 4 + 1.25*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.AIRBURST.id);
                ArcaneFlakArrows.detonate(this,radius);
             }

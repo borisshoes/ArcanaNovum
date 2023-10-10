@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-import static net.borisshoes.arcananovum.Arcananovum.OPEN_GUIS;
-import static net.borisshoes.arcananovum.Arcananovum.WORLD_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.Arcananovum.*;
 
 public class WorldTickCallback {
    
