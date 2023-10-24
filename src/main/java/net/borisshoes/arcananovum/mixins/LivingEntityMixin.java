@@ -164,8 +164,7 @@ public abstract class LivingEntityMixin {
    // Mixin for damage modifiers
    @Inject(method = "modifyAppliedDamage", at = @At("RETURN"), cancellable = true)
    private void arcananovum_modifyDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
-      float reduced = cir.getReturnValueF();
-      float newReturn = reduced;
+      float newReturn = cir.getReturnValueF();
       LivingEntity entity = (LivingEntity) (Object) this;
       Entity attacker = source.getAttacker();
       
@@ -332,8 +331,8 @@ public abstract class LivingEntityMixin {
          boolean canReduce = source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall") || ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.SCALES_OF_THE_CHAMPION.id) >= 2;
          if(canReduce){
             int energy = wings.getEnergy(chestItem);
-            double maxDmgReduction = reduced * .5;
-            double dmgReduction = Math.min(energy / 100.0, maxDmgReduction);
+            float maxDmgReduction = newReturn * .5f;
+            float dmgReduction = (float) Math.min(energy / 100.0, maxDmgReduction);
             if(entity instanceof ServerPlayerEntity player){
                if(dmgReduction == maxDmgReduction || dmgReduction > 12){
                   if(source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall")){
@@ -348,11 +347,11 @@ public abstract class LivingEntityMixin {
                   }));
                }
                PLAYER_DATA.get(player).addXP((int) dmgReduction * 25); // Add xp
-               if(source.getName().equals("flyIntoWall") && reduced > player.getHealth() && (reduced - dmgReduction) < player.getHealth())
+               if(source.getName().equals("flyIntoWall") && newReturn > player.getHealth() && (newReturn - dmgReduction) < player.getHealth())
                   ArcanaAchievements.grant(player, ArcanaAchievements.SEE_GLASS.id);
             }
             wings.addEnergy(chestItem, (int) -dmgReduction * 100);
-            newReturn = (float) (reduced - dmgReduction);
+            newReturn -= dmgReduction;
          }
          
          // Wing Buffet ability
