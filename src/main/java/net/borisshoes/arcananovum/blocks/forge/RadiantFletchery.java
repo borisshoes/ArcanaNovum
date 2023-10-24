@@ -52,7 +52,7 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.FLETCHING_TABLE;
-      block = new RadiantFletcheryBlock(FabricBlockSettings.create().strength(2.5f).sounds(BlockSoundGroup.WOOD));
+      block = new RadiantFletcheryBlock(FabricBlockSettings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
       item = new RadiantFletcheryItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);

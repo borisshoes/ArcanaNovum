@@ -167,7 +167,13 @@ public class StasisPearl extends EnergyItem {
          boolean active = magicNbt.getBoolean("active");
          
          if(!pearlID.isEmpty()){
-            Entity foundEntity = serverWorld.getEntity(UUID.fromString(pearlID));
+            Entity foundEntity = null;
+            for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
+               Entity possibleEntity = possibleWorlds.getEntity(UUID.fromString(pearlID));
+               if(foundEntity == null && possibleEntity != null){
+                  foundEntity = possibleEntity;
+               }
+            }
             if(!(foundEntity instanceof StasisPearlEntity pearlEntity)){
                magicNbt.putString("pearlID","");
                magicNbt.putBoolean("active",false);
@@ -213,8 +219,14 @@ public class StasisPearl extends EnergyItem {
                }
             }else if(canDelete){ // Delete current pearl
                if(world instanceof ServerWorld serverWorld){
-                  Entity pearlEntity = serverWorld.getEntity(UUID.fromString(pearlID));
-                  if(pearlEntity != null) pearlEntity.kill();
+                  Entity foundEntity = null;
+                  for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
+                     Entity possibleEntity = possibleWorlds.getEntity(UUID.fromString(pearlID));
+                     if(foundEntity == null && possibleEntity != null){
+                        foundEntity = possibleEntity;
+                     }
+                  }
+                  if(foundEntity != null) foundEntity.kill();
                   playerEntity.getItemCooldownManager().set(this, 0);
                }
                // Reset data
@@ -226,8 +238,14 @@ public class StasisPearl extends EnergyItem {
                }
             }else if(active){ // Un-stasis to pearl
                if(world instanceof ServerWorld serverWorld){
-                  Entity entity = serverWorld.getEntity(UUID.fromString(pearlID));
-                  if(entity instanceof StasisPearlEntity pearlEntity){
+                  Entity foundEntity = null;
+                  for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
+                     Entity possibleEntity = possibleWorlds.getEntity(UUID.fromString(pearlID));
+                     if(foundEntity == null && possibleEntity != null){
+                        foundEntity = possibleEntity;
+                     }
+                  }
+                  if(foundEntity instanceof StasisPearlEntity pearlEntity){
                      pearlEntity.setStasis(false);
                      magicNbt.putBoolean("active", false);
                      playerEntity.getItemCooldownManager().set(this, 0);
@@ -240,8 +258,14 @@ public class StasisPearl extends EnergyItem {
                magicNbt.putBoolean("active",false);
             }else{ // Stasis the pearl
                if(world instanceof ServerWorld serverWorld){
-                  Entity entity = serverWorld.getEntity(UUID.fromString(pearlID));
-                  if(entity instanceof StasisPearlEntity pearlEntity){
+                  Entity foundEntity = null;
+                  for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
+                     Entity possibleEntity = possibleWorlds.getEntity(UUID.fromString(pearlID));
+                     if(foundEntity == null && possibleEntity != null){
+                        foundEntity = possibleEntity;
+                     }
+                  }
+                  if(foundEntity instanceof StasisPearlEntity pearlEntity){
                      pearlEntity.setStasis(true);
                      magicNbt.putBoolean("active", true);
                      playerEntity.getItemCooldownManager().set(this, 0);

@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 
 public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements PolymerBlock {
    protected MagicPolymerBlockEntity(Settings settings){
@@ -54,6 +55,7 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
       if ((player.isCreative() || player.canHarvest(world.getBlockState(pos))) && world instanceof ServerWorld) {
          if (!world.isClient) {
             String uuid = magicBlock.getUuid();
+            if(uuid == null) uuid = UUID.randomUUID().toString();
             NbtCompound augmentsTag = new NbtCompound();
             if(magicBlock.getAugments() != null){
                for(Map.Entry<ArcanaAugment, Integer> entry : magicBlock.getAugments().entrySet()){
@@ -75,7 +77,7 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
             }
             magicTag.putString("UUID",uuid);
             
-            if(!magicBlock.getCustomArcanaName().isEmpty()){
+            if(magicBlock.getCustomArcanaName() != null && !magicBlock.getCustomArcanaName().isEmpty()){
                dropNbt.getCompound("display").putString("Name",magicBlock.getCustomArcanaName());
             }
             

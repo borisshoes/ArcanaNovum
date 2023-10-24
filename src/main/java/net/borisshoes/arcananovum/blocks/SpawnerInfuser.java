@@ -66,7 +66,7 @@ public class SpawnerInfuser extends MagicBlock {
       rarity = MagicRarity.LEGENDARY;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.BLOCKS};
       vanillaItem = Items.SCULK_SHRIEKER;
-      block = new SpawnerInfuserBlock(FabricBlockSettings.create().mapColor(MapColor.BLACK).strength(3.0f, 3.0f).sounds(BlockSoundGroup.SCULK_SHRIEKER));
+      block = new SpawnerInfuserBlock(FabricBlockSettings.create().mapColor(MapColor.BLACK).strength(3.0f, 1200.0f).sounds(BlockSoundGroup.SCULK_SHRIEKER));
       item = new SpawnerInfuserItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);

@@ -321,7 +321,7 @@ public class ArcanaAchievements {
    
    // Sojourner's Boots
    public static final ArcanaAchievement RUNNING = ArcanaAchievements.register(
-         new TimedAchievement("Running in the 90s", "running", new ItemStack(Items.GOLDEN_BOOTS), ArcanaRegistry.SOJOURNER_BOOTS, 1000,1,
+         new TimedAchievement("Running in the 90s", "running", new ItemStack(Items.GOLDEN_BOOTS), ArcanaRegistry.SOJOURNER_BOOTS, 10000,3,
          new String[]{"Spend 5 consecutive minutes at full speed"},5900 ,6001
    ));
    public static final ArcanaAchievement PHEIDIPPIDES = ArcanaAchievements.register(
@@ -561,7 +561,7 @@ public class ArcanaAchievements {
    ));
    public static final ArcanaAchievement RECLAMATION = ArcanaAchievements.register(
          new ProgressAchievement("Reclamation", "reclamation", new ItemStack(Items.DIAMOND), ArcanaRegistry.STELLAR_CORE, 10000,3,
-         new String[]{"Salvage 1000 enchanted pieces of equipment"}, 1000
+         new String[]{"Salvage 1000 pieces of equipment"}, 1000
    ));
    
    // Radiant Fletchery

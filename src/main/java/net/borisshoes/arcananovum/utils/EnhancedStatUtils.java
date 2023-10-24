@@ -20,7 +20,7 @@ public class EnhancedStatUtils {
    }
    
    public static double generatePercentile(int stardustCount, int influence){
-      double random = Math.min(1,Math.random()+0.125*influence);
+      double random = Math.min(1,Math.random()+0.002*influence*stardustCount);
       double n = 0.046875 * stardustCount;
       return random*random*random - n*random*random + n*random;
    }

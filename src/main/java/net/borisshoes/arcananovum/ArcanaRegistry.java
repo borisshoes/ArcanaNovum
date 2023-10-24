@@ -9,6 +9,8 @@ import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
+import net.borisshoes.arcananovum.effects.GreaterBlindnessEffect;
+import net.borisshoes.arcananovum.effects.GreaterInvisibilityEffect;
 import net.borisshoes.arcananovum.entities.*;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.arrows.*;
@@ -85,6 +87,8 @@ public class ArcanaRegistry {
    
    // Status Effects
    public static final StatusEffect DAMAGE_AMP_EFFECT = registerStatusEffect("damage_amp",new DamageAmpEffect());
+   public static final StatusEffect GREATER_INVISIBILITY_EFFECT = registerStatusEffect("greater_invisibility",new GreaterInvisibilityEffect());
+   public static final StatusEffect GREATER_BLINDNESS_EFFECT = registerStatusEffect("greater_blindness",new GreaterBlindnessEffect());
    
    // Non-magic Items
    public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence",new NebulousEssenceItem(new FabricItemSettings().maxCount(64).fireproof()));

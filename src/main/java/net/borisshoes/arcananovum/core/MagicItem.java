@@ -88,6 +88,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    public ItemStack addCrafter(ItemStack stack, String player, boolean synthetic, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      player = player == null ? "" : player;
       magicTag.putString("crafter", player);
       magicTag.putBoolean("synthetic",synthetic);
       NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);

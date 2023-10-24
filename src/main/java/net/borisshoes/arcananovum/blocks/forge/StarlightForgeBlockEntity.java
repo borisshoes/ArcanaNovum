@@ -105,7 +105,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
          if(getForgeAddition(serverWorld, ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY) == null) hasAll = false;
          if(getForgeAddition(serverWorld, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null) hasAll = false;
          if(hasAll){
-            if(!crafterId.isEmpty()){
+            if(crafterId != null && !crafterId.isEmpty()){
                ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
                if(player != null){
                   ArcanaAchievements.grant(player,ArcanaAchievements.NIDAVELLIR.id);

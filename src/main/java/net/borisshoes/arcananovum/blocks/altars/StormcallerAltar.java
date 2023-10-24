@@ -47,7 +47,7 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.RAW_COPPER_BLOCK;
-      block = new StormcallerAltarBlock(FabricBlockSettings.create().mapColor(MapColor.ORANGE).strength(5.0f,6.0f).requiresTool().sounds(BlockSoundGroup.METAL));
+      block = new StormcallerAltarBlock(FabricBlockSettings.create().mapColor(MapColor.ORANGE).strength(5.0f,1200.0f).requiresTool().sounds(BlockSoundGroup.METAL));
       item = new StormcallerAltarItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);

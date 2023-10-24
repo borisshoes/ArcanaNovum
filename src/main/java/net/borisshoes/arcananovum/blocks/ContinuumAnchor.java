@@ -51,6 +51,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.Arcananovum.ANCHOR_CHUNKS;
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
+
 // Credit to xZarex for some of the Chunk Loading mixin code
 public class ContinuumAnchor extends MagicBlock {
    public static final ChunkTicketType<ChunkPos> TICKET_TYPE = ChunkTicketType.create("ArcanaNovum_Anchor", Comparator.comparingLong(ChunkPos::toLong));
@@ -98,13 +101,7 @@ public class ContinuumAnchor extends MagicBlock {
    }
    
    public static List<ChunkPos> getLoadedChunks(ServerWorld serverWorld){
-      ArrayList<ChunkPos> chunks = new ArrayList<>();
-      
-      for(Pair<ServerWorld, ChunkPos> pair : Arcananovum.ANCHOR_CHUNKS){
-         if(!serverWorld.getRegistryKey().getValue().equals(pair.getLeft().getRegistryKey().getValue())) continue;
-         chunks.add(pair.getRight());
-      }
-      return chunks;
+      return Arcananovum.ANCHOR_CHUNKS.get(serverWorld);
    }
    
    public static boolean isChunkLoaded(ServerWorld serverWorld, ChunkPos chunk){
@@ -115,9 +112,25 @@ public class ContinuumAnchor extends MagicBlock {
       return false;
    }
    
+   public static void updateLoadedChunks(MinecraftServer server){
+      ANCHOR_CHUNKS.clear();
+      for(ServerWorld world : server.getWorlds()){
+         ArrayList<ChunkPos> chunkList = new ArrayList<>();
+         for(BlockPos anchorPos : ACTIVE_ANCHORS.get(world).getAnchors()){
+            ChunkPos chunkPos = new ChunkPos(anchorPos);
+            for(int i = -ContinuumAnchorBlockEntity.RANGE; i <= ContinuumAnchorBlockEntity.RANGE; i++){
+               for(int j = -ContinuumAnchorBlockEntity.RANGE; j <= ContinuumAnchorBlockEntity.RANGE; j++){
+                  chunkList.add(new ChunkPos(chunkPos.x+i,chunkPos.z+j));
+               }
+            }
+         }
+         ANCHOR_CHUNKS.put(world,chunkList);
+      }
+   }
+   
    public static void initLoadedChunks(MinecraftServer minecraftServer){
+      updateLoadedChunks(minecraftServer);
       for(ServerWorld serverWorld : minecraftServer.getWorlds()){
-         //log("Initializing chunks in "+serverWorld.getRegistryKey().getValue().toString());
          List<ChunkPos> chunks = getLoadedChunks(serverWorld);
          for(ChunkPos chunk : chunks){
             addChunk(serverWorld,chunk);

@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -16,6 +16,8 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.TadpoleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BoneMealItem;
 import net.minecraft.item.ItemStack;
@@ -141,14 +143,19 @@ public class WildGrowthCharm extends MagicItem {
          if(active && !world.isClient && player.getServer().getTicks() % tickTime == 0){
             boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING.id) >= 1;
             
-            for(BlockPos blockPos : BlockPos.iterateRandomly(player.getRandom(), 3, player.getBlockPos(), 4)){
+            int count = 0;
+            for(BlockPos blockPos : BlockPos.iterateRandomly(player.getRandom(), 100, player.getBlockPos(), 4)){
                BlockState state = world.getBlockState(blockPos);
                Block block = state.getBlock();
+               if(count >= 2) break;
+               count++;
+               
                if(block instanceof SugarCaneBlock ||
                      block instanceof NetherWartBlock ||
                      block instanceof CactusBlock ||
                      block instanceof ChorusFlowerBlock ||
-                     block instanceof OxidizableBlock){
+                     block instanceof OxidizableBlock ||
+                     block instanceof BuddingAmethystBlock){
                   state.randomTick(player.getServerWorld(),blockPos,world.getRandom());
                   world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);
                }else if((block instanceof AbstractPlantStemBlock ||
@@ -166,28 +173,39 @@ public class WildGrowthCharm extends MagicItem {
                   world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);
                }else if(bloom && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos, Direction.random(player.getRandom()))){
                   world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);
+               }else{
+                  count--;
                }
             }
             
-            List<Entity> animals = world.getOtherEntities(player,player.getBoundingBox().expand(5), e -> e instanceof AnimalEntity);
+            List<Entity> animals = world.getOtherEntities(player,player.getBoundingBox().expand(5), e -> e instanceof AnimalEntity || e instanceof TadpoleEntity);
             Collections.shuffle(animals);
             for(Entity a : animals){
-               AnimalEntity animal = (AnimalEntity) a;
                
-               int i = animal.getBreedingAge();
-               if(!animal.getWorld().isClient && i == 0 && animal.canEat()){
-                  animal.lovePlayer(player);
-                  break;
-               }
-               if(animal.isBaby()){
-                  animal.growUp(AnimalEntity.toGrowUpAge(-i), true);
-                  ((ServerWorld) world).spawnParticles(ParticleTypes.COMPOSTER,animal.getX(),animal.getY()+animal.getHeight()*0.5,animal.getZ(),3,0.2,0.2,0.2,1);
+               if(a instanceof AnimalEntity animal){
+                  int i = animal.getBreedingAge();
+                  if(!animal.getWorld().isClient && i == 0 && animal.canEat()){
+                     animal.lovePlayer(player);
+                     break;
+                  }
+                  if(animal.isBaby()){
+                     animal.growUp(AnimalEntity.toGrowUpAge(-i), true);
+                     ((ServerWorld) world).spawnParticles(ParticleTypes.COMPOSTER,animal.getX(),animal.getY()+animal.getHeight()*0.5,animal.getZ(),3,0.2,0.2,0.2,1);
+                     break;
+                  }
+               }else if(a instanceof TadpoleEntity tadpole){
+                  tadpole.increaseAge(PassiveEntity.toGrowUpAge(tadpole.getTicksUntilGrowth()));
+                  ((ServerWorld) world).spawnParticles(ParticleTypes.COMPOSTER,tadpole.getX(),tadpole.getY()+tadpole.getHeight()*0.5,tadpole.getZ(),3,0.2,0.2,0.2,1);
                   break;
                }
             }
             
             if(animals.stream().filter(e -> (e instanceof AnimalEntity animal && animal.isBaby())).count() >= 5){
                ArcanaAchievements.grant(player,ArcanaAchievements.THEY_GROW_UP_SO_FAST.id);
+            }
+            
+            if(count >= 2){
+               PLAYER_DATA.get(player).addXP(1); // Add xp
             }
          }
       }

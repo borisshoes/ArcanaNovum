@@ -171,7 +171,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                
                SoundUtils.playSound(serverWorld,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
                
-               if(!crafterId.isEmpty()){
+               if(crafterId != null && !crafterId.isEmpty()){
                   ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
                   if(player == null){
                      Arcananovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));

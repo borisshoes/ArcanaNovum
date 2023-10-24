@@ -157,7 +157,7 @@ public class ArcaneSingularityGui extends SimpleGui implements WatchedGui {
          newBook2.setSubNbt("singularityId", NbtString.of(UUID.randomUUID().toString()));
          blockEntity.getBooks().add(newBook2);
       }
-      
+      blockEntity.markDirty();
       return true;
    }
    
@@ -199,7 +199,7 @@ public class ArcaneSingularityGui extends SimpleGui implements WatchedGui {
       EnchantmentHelper.set(outputEnchants,newBook);
       newBook.setSubNbt("singularityId", NbtString.of(UUID.randomUUID().toString()));
       blockEntity.getBooks().add(newBook);
-      
+      blockEntity.markDirty();
       return true;
    }
    
@@ -214,6 +214,7 @@ public class ArcaneSingularityGui extends SimpleGui implements WatchedGui {
       book.setSubNbt("singularityId", NbtString.of(UUID.randomUUID().toString()));
       blockEntity.getBooks().add(book);
       buildGui();
+      blockEntity.markDirty();
       return true;
    }
    

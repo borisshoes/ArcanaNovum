@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum;
 
 import net.borisshoes.arcananovum.callbacks.*;
+import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ModInitializer;
@@ -16,6 +17,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
@@ -27,8 +29,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
 public class Arcananovum implements ModInitializer {
@@ -37,9 +39,9 @@ public class Arcananovum implements ModInitializer {
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
    public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
-   public static final ArrayList<Pair<ServerWorld,BlockPos>> ACTIVE_ANCHORS = new ArrayList<>();
-   public static final ArrayList<Pair<ServerWorld,ChunkPos>> ANCHOR_CHUNKS = new ArrayList<>();
-   public static final boolean devMode = true;
+   public static final HashMap<ServerWorld,ArrayList<ChunkPos>> ANCHOR_CHUNKS = new HashMap<>();
+   public static final ArrayList<Pair<BlockEntity,MagicBlockEntity>> ACTIVE_MAGIC_BLOCKS = new ArrayList<>();
+   public static final boolean devMode = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static ConfigUtils config;
@@ -55,7 +57,8 @@ public class Arcananovum implements ModInitializer {
       PlayerBlockBreakEvents.BEFORE.register(BlockBreakCallback::breakBlock);
       ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(EntityKilledCallback::killedEntity);
       AttackEntityCallback.EVENT.register(EntityAttackCallback::attackEntity);
-      ServerPlayConnectionEvents.JOIN.register(PlayerJoinCallback::onPlayerJoin);
+      ServerPlayConnectionEvents.JOIN.register(PlayerConnectionCallback::onPlayerJoin);
+      ServerPlayConnectionEvents.DISCONNECT.register(PlayerConnectionCallback::onPlayerLeave);
       CommandRegistrationCallback.EVENT.register(CommandRegisterCallback::registerCommands);
       ServerEntityEvents.ENTITY_LOAD.register(EntityLoadCallbacks::loadEntity);
       ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
@@ -87,22 +90,11 @@ public class Arcananovum implements ModInitializer {
    }
    
    public static boolean addActiveAnchor(ServerWorld world, BlockPos pos){
-      return ACTIVE_ANCHORS.add(new Pair<>(world,pos));
+      return ACTIVE_ANCHORS.get(world).addAnchor(pos);
    }
    
    public static boolean removeActiveAnchor(ServerWorld targetWorld, BlockPos pos){
-      Iterator<Pair<ServerWorld,BlockPos>> iter = Arcananovum.ACTIVE_ANCHORS.iterator();
-      boolean found = false;
-      while(iter.hasNext()){
-         Pair<ServerWorld,BlockPos> pair = iter.next();
-         BlockPos anchorPos = pair.getRight();
-         ServerWorld world = pair.getLeft();
-         if(anchorPos.getX() == pos.getX() && anchorPos.getX() == pos.getX() && anchorPos.getX() == pos.getX() && targetWorld.getRegistryKey().getValue().equals(world.getRegistryKey().getValue())){
-            iter.remove();
-            found = true;
-         }
-      }
-      return found;
+      return ACTIVE_ANCHORS.get(targetWorld).removeAnchor(pos);
    }
    
    public static void devPrint(String msg){

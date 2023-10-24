@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -12,7 +13,6 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -256,11 +256,11 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   if(target instanceof MobEntity) ArcanaAchievements.progress(player,"shadow_fury",0);
                   
                   int blindDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PARANOIA.id))];
-                  int invisDur = new int[]{0,20,100,200}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHADOW_STRIDE.id))];
-                  StatusEffectInstance invis = new StatusEffectInstance(StatusEffects.INVISIBILITY, invisDur, 0, false, false, true);
+                  int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHADOW_STRIDE.id))];
+                  StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                   player.addStatusEffect(invis);
                   if(target instanceof LivingEntity living){
-                     StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS, blindDur, 0, false, true, true);
+                     StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, blindDur, 0, false, true, true);
                      living.addStatusEffect(blind);
                   }
                   
@@ -288,8 +288,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
                player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
                PLAYER_DATA.get(player).addXP(100); // Add xp
                
-               int invisDur = new int[]{0,20,100,200}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHADOW_STRIDE.id))];
-               StatusEffectInstance invis = new StatusEffectInstance(StatusEffects.INVISIBILITY, invisDur, 0, false, false, true);
+               int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHADOW_STRIDE.id))];
+               StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                player.addStatusEffect(invis);
                
                return TypedActionResult.success(item);

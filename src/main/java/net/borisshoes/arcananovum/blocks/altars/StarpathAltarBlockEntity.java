@@ -95,6 +95,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
             activeTicks--;
          }
       }
+      this.markDirty();
    }
    
    public void setActiveTicks(int ticks){
@@ -118,6 +119,9 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    public BlockPos getTargetCoords(){
+      if(this.targetCoords == null){
+         this.targetCoords = this.getPos();
+      }
       return this.targetCoords;
    }
    

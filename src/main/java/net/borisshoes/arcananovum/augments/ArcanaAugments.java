@@ -446,12 +446,12 @@ public class ArcanaAugments {
    // Shadow Stalker's Glaive
    public static final ArcanaAugment SHADOW_STRIDE = ArcanaAugments.register(
          new ArcanaAugment("Shadow Stride", "shadow_stride", new ItemStack(Items.GLASS), ArcanaRegistry.SHADOW_STALKERS_GLAIVE,
-         new String[]{"Gives the wielder invisibility when using"," the stalk or teleport abilities","Duration per level: 1/5/10 seconds"},
-         new MagicRarity[]{LEGENDARY,EMPOWERED,EXOTIC}
+         new String[]{"Gives the wielder Greater Invisibility"," when using the stalk or teleport abilities","Duration per level: 1/2/5 seconds"},
+         new MagicRarity[]{LEGENDARY,EXOTIC,LEGENDARY}
    ));
    public static final ArcanaAugment PARANOIA = ArcanaAugments.register(
          new ArcanaAugment("Paranoia", "paranoia", new ItemStack(Items.TINTED_GLASS), ArcanaRegistry.SHADOW_STALKERS_GLAIVE,
-         new String[]{"Gives target blindness when using stalk ability","Duration per level: 1/2/5 seconds"},
+         new String[]{"Gives target Greater Blindness when", " using the stalk ability","Duration per level: 1/2/5 seconds"},
          new MagicRarity[]{LEGENDARY,EXOTIC,LEGENDARY}
    ));
    public static final ArcanaAugment BLOODLETTER = ArcanaAugments.register(

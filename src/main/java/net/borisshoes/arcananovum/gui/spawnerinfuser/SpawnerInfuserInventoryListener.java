@@ -123,6 +123,7 @@ public class SpawnerInfuserInventoryListener implements InventoryChangedListener
          gui.build();
          setUpdating();
          inv.setStack(1,extraPoints);
+         blockEntity.markDirty();
          
          finishUpdate();
       }

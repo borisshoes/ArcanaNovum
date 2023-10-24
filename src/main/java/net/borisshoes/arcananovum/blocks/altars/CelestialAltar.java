@@ -56,7 +56,7 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.PEARLESCENT_FROGLIGHT;
-      block = new CelestialAltarBlock(FabricBlockSettings.create().mapColor(MapColor.PINK).strength(.3f).luminance(state -> 15).sounds(BlockSoundGroup.FROGLIGHT));
+      block = new CelestialAltarBlock(FabricBlockSettings.create().mapColor(MapColor.PINK).strength(.3f,1200.0f).luminance(state -> 15).sounds(BlockSoundGroup.FROGLIGHT));
       item = new CelestialAltarItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);

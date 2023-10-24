@@ -305,7 +305,7 @@ public class BrainJar extends EnergyItem {
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"     Brain in a Jar\\n\\nRarity: Exotic\\n\\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time similar to you or me.\\n\\nIf I can expand their\"}");
-      list.add("{\"text\":\"     Brain in a Jar\\n\\ncapacity for knowledge using the extra-dimensional capabilities of Ender Chests it should hold enough XP for practical use.\\n\\nThere should also be a way to incorperate the use of Mending enchantments to have\"}");
+      list.add("{\"text\":\"     Brain in a Jar\\n\\ncapacity for knowledge using the extra-dimensional capabilities of Ender Chests it should hold enough XP for practical use.\\n\\nThere should also be a way to incorporate the use of Mending enchantments to have\"}");
       list.add("{\"text\":\"     Brain in a Jar\\n\\ndirect access to the storage.\\n\\nRight Click the Brain in a Jar to open its internal storage where you can set its Mending interaction or deposit or withdraw XP. It has a base-line internal storage of 1 million XP\"}");
       return list;
    }

@@ -59,6 +59,7 @@ public class RadiantFletcheryInventoryListener implements InventoryChangedListen
          }
          
          //Update gui
+         blockEntity.markDirty();
          finishUpdate();
       }
    }

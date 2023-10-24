@@ -54,7 +54,7 @@ public class StarpathAltar extends MagicBlock implements MultiblockCore {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.SCULK_CATALYST;
-      block = new StarpathAltarBlock(FabricBlockSettings.create().mapColor(MapColor.BLACK).strength(3.0f,3.0f).luminance(state -> 6).sounds(BlockSoundGroup.SCULK_CATALYST));
+      block = new StarpathAltarBlock(FabricBlockSettings.create().mapColor(MapColor.BLACK).strength(3.0f,1200.0f).luminance(state -> 6).sounds(BlockSoundGroup.SCULK_CATALYST));
       item = new StarpathAltarItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);

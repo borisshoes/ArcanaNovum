@@ -51,7 +51,7 @@ public class StarlightForge extends MagicBlock implements MultiblockCore {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.SMITHING_TABLE;
-      block = new StarlightForgeBlock(FabricBlockSettings.create().strength(2.5f).sounds(BlockSoundGroup.WOOD));
+      block = new StarlightForgeBlock(FabricBlockSettings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
       item = new StarlightForgeItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);
@@ -120,8 +120,8 @@ public class StarlightForge extends MagicBlock implements MultiblockCore {
       tag = moon.getOrCreateNbt();
       display = new NbtCompound();
       loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Light of a New Moon\",\"italic\":false,\"color\":\"gray\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Follow this Recipe under the light of a New Moon\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      display.putString("Name","[{\"text\":\"Night of a New Moon\",\"italic\":false,\"color\":\"gray\",\"bold\":true}]");
+      loreList.add(NbtString.of("[{\"text\":\"Follow this Recipe under the darkness of a New Moon\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       

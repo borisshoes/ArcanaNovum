@@ -24,6 +24,7 @@
     "PistonMixin",
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
+    "PlayerManagerMixin",
     "ServerPlayerMixin",
     "ServerPlayNetworkHandlerMixin",
     "ServerWorldMixin",

@@ -58,6 +58,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    
    private void tick(){
       if(cooldown > 0) cooldown--;
+      this.markDirty();
    }
    
    public int getCooldown(){

@@ -149,7 +149,7 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
                }
             }
             
-            if(!crafterId.isEmpty()){
+            if(crafterId != null && !crafterId.isEmpty()){
                ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
                if(player == null){
                   Arcananovum.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
@@ -182,6 +182,8 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
             }
             SoundUtils.playSound(serverWorld,pos,SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS,1,0.7f);
          }
+         
+         this.markDirty();
       }
    }
    

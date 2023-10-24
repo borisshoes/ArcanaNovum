@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -18,7 +19,7 @@ import java.util.Map;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
-public class PlayerJoinCallback {
+public class PlayerConnectionCallback {
    public static void onPlayerJoin(ServerPlayNetworkHandler netHandler, PacketSender sender, MinecraftServer server){
       ServerPlayerEntity player = netHandler.player;
       //log(player.getEntityName()+" has joined the game");
@@ -90,6 +91,13 @@ public class PlayerJoinCallback {
       }
       if(profile.getMiscData("arrowInvSlot") == null){
          profile.addMiscData("arrowInvSlot",NbtInt.of(0));
+      }
+   }
+   
+   public static void onPlayerLeave(ServerPlayNetworkHandler handler, MinecraftServer server){
+      ServerPlayerEntity player = handler.player;
+      if(player.getMaxHealth() > 20 && player.getHealth() > 20){
+         Arcananovum.addLoginCallback(new MaxHealthLoginCallback(server,player.getUuidAsString(),player.getHealth()));
       }
    }
 }

@@ -5,7 +5,7 @@ import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import java.util.TimerTask;
 
 public class GenericTimer extends TickTimerCallback {
-   private TimerTask onTimer;
+   private final TimerTask onTimer;
    
    public GenericTimer(int time, TimerTask onTimer){
       super(time, null, null);

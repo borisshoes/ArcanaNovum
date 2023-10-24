@@ -49,6 +49,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
@@ -167,54 +168,6 @@ public abstract class LivingEntityMixin {
       float newReturn = reduced;
       LivingEntity entity = (LivingEntity) (Object) this;
       Entity attacker = source.getAttacker();
-   
-      ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
-      if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings){
-         boolean canReduce = source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall") || ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.SCALES_OF_THE_CHAMPION.id) >= 2;
-         if(canReduce){
-            int energy = wings.getEnergy(chestItem);
-            double maxDmgReduction = reduced * .5;
-            double dmgReduction = Math.min(energy / 100.0, maxDmgReduction);
-            if(entity instanceof ServerPlayerEntity player){
-               if(dmgReduction == maxDmgReduction || dmgReduction > 12){
-                  if(source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall")){
-                     player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
-                  }
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, 1.3f);
-                  Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
-                     @Override
-                     public void run(){
-                        player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.DARK_PURPLE), true);
-                     }
-                  }));
-               }
-               PLAYER_DATA.get(player).addXP((int) dmgReduction * 25); // Add xp
-               if(source.getName().equals("flyIntoWall") && reduced > player.getHealth() && (reduced - dmgReduction) < player.getHealth())
-                  ArcanaAchievements.grant(player, ArcanaAchievements.SEE_GLASS.id);
-            }
-            wings.addEnergy(chestItem, (int) -dmgReduction * 100);
-            newReturn = (float) (reduced - dmgReduction);
-         }
-   
-         // Wing Buffet ability
-         double buffetChance = new double[]{0,.1,.2,.3,.4,1}[Math.max(0,ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.WING_BUFFET.id))];
-         if(entity instanceof ServerPlayerEntity player && Math.random() < buffetChance){
-            ServerWorld world = player.getServerWorld();
-            Vec3d pos = player.getPos().add(0,player.getHeight()/2,0);
-            Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-            int range = 3;
-            List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && (e instanceof MobEntity));
-            for(Entity entity1 : entities){
-               if(wings.getEnergy(chestItem) < 50) break;
-               Vec3d diff = entity1.getPos().subtract(pos);
-               double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,3);
-               Vec3d motion = diff.multiply(1,0,1).add(0,1,0).normalize().multiply(multiplier);
-               entity1.setVelocity(motion.x,motion.y,motion.z);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, .7f);
-               wings.addEnergy(chestItem,-50);
-            }
-         }
-      }
       
       if(attacker instanceof ServerPlayerEntity player){
          // Juggernaut Augment
@@ -373,6 +326,54 @@ public abstract class LivingEntityMixin {
             }
          }
       }
+      
+      ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
+      if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings){
+         boolean canReduce = source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall") || ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.SCALES_OF_THE_CHAMPION.id) >= 2;
+         if(canReduce){
+            int energy = wings.getEnergy(chestItem);
+            double maxDmgReduction = reduced * .5;
+            double dmgReduction = Math.min(energy / 100.0, maxDmgReduction);
+            if(entity instanceof ServerPlayerEntity player){
+               if(dmgReduction == maxDmgReduction || dmgReduction > 12){
+                  if(source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall")){
+                     player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
+                  }
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, 1.3f);
+                  Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
+                     @Override
+                     public void run(){
+                        player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.DARK_PURPLE), true);
+                     }
+                  }));
+               }
+               PLAYER_DATA.get(player).addXP((int) dmgReduction * 25); // Add xp
+               if(source.getName().equals("flyIntoWall") && reduced > player.getHealth() && (reduced - dmgReduction) < player.getHealth())
+                  ArcanaAchievements.grant(player, ArcanaAchievements.SEE_GLASS.id);
+            }
+            wings.addEnergy(chestItem, (int) -dmgReduction * 100);
+            newReturn = (float) (reduced - dmgReduction);
+         }
+         
+         // Wing Buffet ability
+         double buffetChance = new double[]{0,.1,.2,.3,.4,1}[Math.max(0,ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.WING_BUFFET.id))];
+         if(entity instanceof ServerPlayerEntity player && Math.random() < buffetChance){
+            ServerWorld world = player.getServerWorld();
+            Vec3d pos = player.getPos().add(0,player.getHeight()/2,0);
+            Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
+            int range = 3;
+            List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && (e instanceof MobEntity));
+            for(Entity entity1 : entities){
+               if(wings.getEnergy(chestItem) < 50) break;
+               Vec3d diff = entity1.getPos().subtract(pos);
+               double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,3);
+               Vec3d motion = diff.multiply(1,0,1).add(0,1,0).normalize().multiply(multiplier);
+               entity1.setVelocity(motion.x,motion.y,motion.z);
+               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, .7f);
+               wings.addEnergy(chestItem,-50);
+            }
+         }
+      }
    
       
       // Enderia Boss health scale
@@ -451,5 +452,11 @@ public abstract class LivingEntityMixin {
    @Redirect(method="tickFallFlying", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
    private boolean arcananovum_elytraTick(ItemStack stack, Item item){
       return stack.isOf(item) || MagicItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
+   }
+   
+   @Inject(method="updatePotionVisibility", at=@At(value="INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setInvisible(Z)V", ordinal = 1, shift = At.Shift.AFTER))
+   private void arcananovum_greaterInvisibilityUpdate(CallbackInfo ci){
+      LivingEntity livingEntity = (LivingEntity) (Object) this;
+      livingEntity.setInvisible(livingEntity.isInvisible() || livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT));
    }
 }

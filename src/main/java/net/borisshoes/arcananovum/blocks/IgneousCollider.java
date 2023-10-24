@@ -45,7 +45,7 @@ public class IgneousCollider extends MagicBlock {
       rarity = MagicRarity.EXOTIC;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS};
       vanillaItem = Items.LODESTONE;
-      block = new IgneousColliderBlock(FabricBlockSettings.create().requiresTool().strength(3.5f, 3600000).sounds(BlockSoundGroup.LODESTONE));
+      block = new IgneousColliderBlock(FabricBlockSettings.create().requiresTool().strength(3.5f, 1200.0f).sounds(BlockSoundGroup.LODESTONE));
       item = new IgneousColliderItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
    
       ItemStack stack = new ItemStack(item);

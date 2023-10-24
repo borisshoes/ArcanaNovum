@@ -64,7 +64,7 @@ public class StellarCore extends MagicBlock implements MultiblockCore {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.BLAST_FURNACE;
-      this.block = new StellarCoreBlock(FabricBlockSettings.create().requiresTool().strength(3.5f).luminance(StellarCoreBlock::getLightLevel).sounds(BlockSoundGroup.METAL));
+      this.block = new StellarCoreBlock(FabricBlockSettings.create().requiresTool().strength(3.5f,1200.0f).luminance(StellarCoreBlock::getLightLevel).sounds(BlockSoundGroup.METAL));
       item = new StellarCoreItem(block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);

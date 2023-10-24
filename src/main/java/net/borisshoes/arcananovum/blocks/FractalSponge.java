@@ -52,7 +52,7 @@ public class FractalSponge extends MagicBlock {
       rarity = MagicRarity.EMPOWERED;
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.BLOCKS};
       vanillaItem = Items.SPONGE;
-      block = new FractalSpongeBlock(FabricBlockSettings.create().strength(.6f).sounds(BlockSoundGroup.GRASS));
+      block = new FractalSpongeBlock(FabricBlockSettings.create().strength(.6f,1200.0f).sounds(BlockSoundGroup.GRASS));
       item = new FractalSpongeItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
    
       ItemStack stack = new ItemStack(item);

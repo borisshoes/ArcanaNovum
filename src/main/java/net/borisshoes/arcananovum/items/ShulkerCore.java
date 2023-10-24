@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
@@ -16,7 +16,6 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffect;
@@ -26,6 +25,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -41,10 +41,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -63,6 +63,7 @@ public class ShulkerCore extends EnergyItem {
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
       item = new ShulkerCoreItem(new FabricItemSettings().maxCount(1).fireproof());
+      itemVersion = 1;
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -76,7 +77,7 @@ public class ShulkerCore extends EnergyItem {
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\" must be \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"refilled \",\"color\":\"dark_aqua\"},{\"text\":\"with \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Shulkers\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to grant \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to change the \",\"color\":\"gray\"},{\"text\":\"speed \",\"color\":\"dark_aqua\"},{\"text\":\"of \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Left Click a block \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"refill \",\"color\":\"dark_aqua\"},{\"text\":\"the \",\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click in off-hand \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"refill \",\"color\":\"dark_aqua\"},{\"text\":\"the \",\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Shulkers Left\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" - \",\"color\":\"gray\"},{\"text\":\"1000\",\"color\":\"yellow\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
@@ -339,24 +340,35 @@ public class ShulkerCore extends EnergyItem {
          super(getThis(),settings);
       }
       
-      
-      
       @Override
       public ItemStack getDefaultStack(){
          return prefItem;
       }
       
       @Override
-      public boolean canMine(BlockState state, World world, BlockPos pos, PlayerEntity miner){
-         ItemStack item = miner.getStackInHand(Hand.MAIN_HAND);
-         openGui(miner,item);
-         return super.canMine(state, world, pos, miner);
+      public ActionResult useOnBlock(ItemUsageContext context){
+         PlayerEntity playerEntity = context.getPlayer();
+         ItemStack stack = context.getStack();
+         if(playerEntity != null && playerEntity.isSneaking()){
+            if(context.getHand() == Hand.MAIN_HAND){
+               changeSpeed(playerEntity,context.getWorld(),context.getHand());
+            }else{
+               openGui(playerEntity,stack);
+            }
+         }else if(playerEntity != null){
+            levitate(playerEntity,context.getWorld(),context.getHand());
+         }
+         return ActionResult.SUCCESS;
       }
       
       @Override
       public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
-            changeSpeed(playerEntity,world,hand);
+            if(hand == Hand.MAIN_HAND){
+               changeSpeed(playerEntity,world,hand);
+            }else{
+               openGui(playerEntity,playerEntity.getStackInHand(hand));
+            }
          }else{
             levitate(playerEntity,world,hand);
          }

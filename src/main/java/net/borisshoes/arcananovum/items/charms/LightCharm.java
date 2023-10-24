@@ -325,6 +325,7 @@ public class LightCharm extends MagicItem {
             world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
             PLAYER_DATA.get(player).addXP(15); // Add xp
+            ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
             return ActionResult.SUCCESS;
          }
          return ActionResult.PASS;

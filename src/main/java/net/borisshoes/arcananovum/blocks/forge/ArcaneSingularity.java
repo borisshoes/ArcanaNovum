@@ -59,7 +59,7 @@ public class ArcaneSingularity extends MagicBlock implements MultiblockCore {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.LECTERN;
-      block = new ArcaneSingularityBlock(FabricBlockSettings.create().strength(2.5f).sounds(BlockSoundGroup.WOOD));
+      block = new ArcaneSingularityBlock(FabricBlockSettings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
       item = new ArcaneSingularityItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
       
       ItemStack stack = new ItemStack(item);

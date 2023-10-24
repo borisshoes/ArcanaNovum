@@ -12,7 +12,6 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.bosses.dragon.DragonDialog;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
@@ -536,7 +535,7 @@ public class ArcanaCommands {
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          
-         DragonDialog.announce(DragonDialog.Announcements.EVENT_END,objectCommandContext.getSource().getServer(),null);
+         
          
       } catch (Exception e) {
          e.printStackTrace();

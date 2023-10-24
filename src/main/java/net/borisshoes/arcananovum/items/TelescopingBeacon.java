@@ -94,7 +94,7 @@ public class TelescopingBeacon extends MagicItem {
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtList blocksNbt = magicTag.getList("blocks",NbtElement.COMPOUND_TYPE).copy();
+      NbtElement blocksNbt = magicTag.getList("blocks",NbtElement.COMPOUND_TYPE).copy();
       boolean hasData = magicTag.contains("data");
       NbtCompound dataTag = new NbtCompound();
       if(hasData){
@@ -356,10 +356,12 @@ public class TelescopingBeacon extends MagicItem {
             // Scan for support blocks
             List<Pair<BlockPos,BlockState>> baseBlocks = getBaseBlocks(world,placePos);
             int tier = blocksToTier(baseBlocks.size());
+            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION.id)) >= 1;
             // Remove support blocks and add them to NBT
             blocks = new NbtList();
             if(tier != 0){
                HashMap<Block,Integer> blockTypes = new HashMap<>();
+               ArrayList<Block> orderedBlocks = new ArrayList<>();
                for(int i = 0; i < tiers[tier-1]; i++){
                   BlockState blockState = baseBlocks.get(i).getRight();
                   Block blockType = blockState.getBlock();
@@ -368,19 +370,29 @@ public class TelescopingBeacon extends MagicItem {
                   }else{
                      blockTypes.put(blockType,1);
                   }
+                  orderedBlocks.add(blockType);
                   world.setBlockState(baseBlocks.get(i).getLeft(), Blocks.AIR.getDefaultState(), 3);
                }
-               for(Map.Entry<Block, Integer> entry : blockTypes.entrySet()){
-                  NbtCompound blockType = new NbtCompound();
-                  blockType.putString("id",Registries.BLOCK.getId(entry.getKey()).toString());
-                  blockType.putInt("count",entry.getValue());
-                  blocks.add(blockType);
+               
+               if(careful){
+                  for(Block orderedBlock : orderedBlocks){
+                     NbtCompound blockType = new NbtCompound();
+                     blockType.putString("id",Registries.BLOCK.getId(orderedBlock).toString());
+                     blockType.putInt("count",1);
+                     blocks.add(blockType);
+                  }
+               }else{
+                  for(Map.Entry<Block, Integer> entry : blockTypes.entrySet()){
+                     NbtCompound blockType = new NbtCompound();
+                     blockType.putString("id",Registries.BLOCK.getId(entry.getKey()).toString());
+                     blockType.putInt("count",entry.getValue());
+                     blocks.add(blockType);
+                  }
                }
             }
             magicNbt.put("blocks",blocks);
             magicNbt.putBoolean("beacon",true);
             
-            boolean careful = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION.id)) >= 1;
             if(careful){
                magicNbt.put("data",beaconBlock.createNbt());
             }

@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
@@ -32,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -57,7 +58,7 @@ public class Soulstone extends MagicItem {
       loreList.add(NbtString.of("[{\"text\":\"The dark stone \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"crackles\",\"italic\":false,\"color\":\"red\"},{\"text\":\" with \"},{\"text\":\"red energy\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"souls\",\"color\":\"dark_purple\"},{\"text\":\" of mobs \"},{\"text\":\"killed\",\"color\":\"red\",\"italic\":false},{\"text\":\" seems to get \"},{\"text\":\"trapped\",\"color\":\"blue\"},{\"text\":\" inside...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Tier 0 - (0 Mobs Killed)\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
@@ -214,7 +215,7 @@ public class Soulstone extends MagicItem {
       return item;
    }
    
-   public static ItemStack getShowcaseItem(int souls, @Nullable String typeName){
+   public static ItemStack getShowcaseItem(int souls, @Nullable String typeId){
       ItemStack item = new ItemStack(Items.FIRE_CHARGE);
       NbtCompound tag = item.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
@@ -225,10 +226,13 @@ public class Soulstone extends MagicItem {
       loreList.add(NbtString.of("[{\"text\":\"The dark stone \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"crackles\",\"italic\":true,\"color\":\"red\"},{\"text\":\" with \"},{\"text\":\"red energy\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"souls\",\"color\":\"dark_purple\"},{\"text\":\" of mobs \"},{\"text\":\"killed\",\"color\":\"red\",\"italic\":true},{\"text\":\" seems to get \"},{\"text\":\"trapped\",\"color\":\"blue\"},{\"text\":\" inside...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      if(typeName == null || typeName.equalsIgnoreCase("unattuned")){
+      
+      Optional<EntityType<?>> eType = EntityType.get(typeId);
+      if(eType.isEmpty() || typeId == null || typeId.equalsIgnoreCase("unattuned")){
          loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       }else{
-         loreList.add(NbtString.of("[{\"text\":\"Attuned - "+typeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+         String entityTypeName = eType.get().getName().getString();
+         loreList.add(NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
       }
       int tier = soulsToTier(souls);
       loreList.add(NbtString.of("[{\"text\":\"Tier "+tier+" - ("+souls+" Mobs Killed)\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
