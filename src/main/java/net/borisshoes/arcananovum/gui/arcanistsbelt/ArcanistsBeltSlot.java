@@ -33,7 +33,8 @@ public class ArcanistsBeltSlot extends Slot {
          ArcanaRegistry.LIGHT_CHARM,
          ArcanaRegistry.LEADERSHIP_CHARM,
          ArcanaRegistry.MAGNETISM_CHARM,
-         ArcanaRegistry.WILD_GROWTH_CHARM
+         ArcanaRegistry.WILD_GROWTH_CHARM,
+         ArcanaRegistry.TELESCOPING_BEACON
    ));
    
    public ArcanistsBeltSlot(Inventory inventory, int index, int x, int y){
