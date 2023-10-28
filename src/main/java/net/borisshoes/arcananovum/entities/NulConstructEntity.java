@@ -43,6 +43,7 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -104,6 +105,14 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)
             .add(EntityAttributes.GENERIC_ARMOR, 10.0)
             .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10.0);
+   }
+   
+   @Override
+   public boolean addStatusEffect(StatusEffectInstance effect, @Nullable Entity source) {
+      if(effect.getEffectType() == ArcanaRegistry.DAMAGE_AMP_EFFECT){
+         return super.addStatusEffect(effect);
+      }
+      return false;
    }
    
    @Override

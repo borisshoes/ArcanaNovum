@@ -82,7 +82,7 @@ public class NulMemento extends MagicItem {
       item.getNbt().getCompound("arcananovum").putBoolean("active",true);
    
       int increments = 100;
-      StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS,increments*5 , 0, false, false, true);
+      StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT,increments*5 , 0, false, false, true);
       StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, increments*5, 9, false, false, true);
       StatusEffectInstance fatigue = new StatusEffectInstance(StatusEffects.MINING_FATIGUE, increments*5 , 4, false, false, true);
       StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS,increments*5 , 4, false, false, true);
