@@ -33,7 +33,7 @@ public class AnchorTimeLoginCallback extends LoginCallback{
       // Double check that this is the correct player
       ServerPlayerEntity player = netHandler.player;
       if(player.getUuidAsString().equals(playerUUID)){
-         ArcanaAchievements.progress(player,"timey_wimey",seconds);
+         ArcanaAchievements.progress(player,ArcanaAchievements.TIMEY_WIMEY.id, seconds);
       }
    }
    

@@ -106,7 +106,7 @@ public class ConcussionArrows extends RunicArrow {
          if(entity instanceof LivingEntity e && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity)){
             if(e instanceof MobEntity) mobsHit++;
             
-            StatusEffectInstance blind = new StatusEffectInstance(StatusEffects.BLINDNESS, (int)(25*percent), 0, false, false, true);
+            StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, (int)(25*percent), 0, false, false, true);
             StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA, (int)(120*percent), 0, false, false, true);
             StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, (int)(40*percent), 4, false, false, true);
             StatusEffectInstance slow2 = new StatusEffectInstance(StatusEffects.SLOWNESS, (int)(120*percent), 2, false, false, true);

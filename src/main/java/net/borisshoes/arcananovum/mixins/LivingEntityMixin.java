@@ -396,7 +396,7 @@ public abstract class LivingEntityMixin {
    public void arcananovum_useTotem(DamageSource source, CallbackInfoReturnable<Boolean> cir){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
    
-      if(source.getName().contains("ArcanaNovum.Concentration")){ // Allow totem usage on Concentration damage
+      if(source.getName().contains("arcananovum.concentration")){ // Allow totem usage on Concentration damage
          ItemStack itemStack = null;
          Hand[] var4 = Hand.values();
          int var5 = var4.length;

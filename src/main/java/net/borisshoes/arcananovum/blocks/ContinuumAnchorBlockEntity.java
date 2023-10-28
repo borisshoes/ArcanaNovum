@@ -37,7 +37,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
    private static final double[] anchorEfficiency = {0,.05,.1,.15,.2,.5};
-   public static final int RANGE = 5;
+   public static final int RANGE = 2;
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
