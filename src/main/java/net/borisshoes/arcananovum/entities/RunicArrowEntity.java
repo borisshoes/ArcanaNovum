@@ -111,14 +111,13 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
                   baseAch.setData(comp);
                   profile.setAchievement(itemId, newAch);
                   ArcanaAchievements.progress(player, "arrow_for_every_foe",1);
-               }else{
-                  if(achievement.isAcquired()) return;
+               }else if(!achievement.isAcquired()){
                   NbtCompound comp = achievement.getData();
                   if(!comp.contains(arrowType.getId())){
-                     comp.putBoolean(arrowType.getId(),true);
+                     comp.putBoolean(arrowType.getId(), true);
                      baseAch.setData(comp);
                      profile.setAchievement(itemId, achievement);
-                     ArcanaAchievements.progress(player, "arrow_for_every_foe",1);
+                     ArcanaAchievements.progress(player, "arrow_for_every_foe", 1);
                   }
                }
             }
@@ -173,6 +172,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    @Override
    public void readCustomDataFromNbt(NbtCompound nbt) {
       super.readCustomDataFromNbt(nbt);
+      augments = new TreeMap<>();
       if(nbt.contains("runicAugments")){
          NbtCompound augCompound = nbt.getCompound("runicAugments");
          for(String key : augCompound.getKeys()){

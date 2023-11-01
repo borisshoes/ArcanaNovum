@@ -6,7 +6,10 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 
@@ -18,6 +21,14 @@ public class DamageAmpEffect extends StatusEffect implements PolymerStatusEffect
    
    public DamageAmpEffect(){
       super(StatusEffectCategory.HARMFUL,0xdff595);
+   }
+   
+   @Override
+   public void applyUpdateEffect(LivingEntity entity, int amplifier){
+      if(entity.getWorld() instanceof ServerWorld serverWorld){
+         Vec3d pos = entity.getPos();
+         serverWorld.spawnParticles(ParticleTypes.CRIT,pos.x,pos.y+entity.getHeight()/2,pos.z,1,.4,.4,.4,0.05);
+      }
    }
    
    @Override

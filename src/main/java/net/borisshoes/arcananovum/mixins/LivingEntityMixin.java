@@ -171,12 +171,12 @@ public abstract class LivingEntityMixin {
       if(attacker instanceof ServerPlayerEntity player){
          // Juggernaut Augment
          ItemStack boots = player.getEquippedStack(EquipmentSlot.FEET);
-         if(MagicItemUtils.identifyItem(boots) instanceof SojournerBoots sojournerBoots){
+         if(MagicItemUtils.identifyItem(boots) instanceof SojournerBoots sojournerBoots && !source.isIndirect()){
             boolean juggernaut = ArcanaAugments.getAugmentOnItem(boots,ArcanaAugments.JUGGERNAUT.id) >= 1;
             int energy = sojournerBoots.getEnergy(boots);
             if(juggernaut && energy >= 200){
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, 60, 4, false, false, true);
-               StatusEffectInstance dmgAmp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, false, false);
+               StatusEffectInstance dmgAmp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, true, false);
                entity.addStatusEffect(slow);
                entity.addStatusEffect(dmgAmp);
                sojournerBoots.setEnergy(boots,0);
@@ -192,8 +192,9 @@ public abstract class LivingEntityMixin {
          }else if(MagicItemUtils.identifyItem(player.getEquippedStack(EquipmentSlot.MAINHAND)) instanceof ShieldOfFortitude){
             shieldStack = player.getEquippedStack(EquipmentSlot.MAINHAND);
          }
-         if(shieldStack != null && ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_BASH.id) >= 1){
-            ArrayList<TickTimerCallback> toRemove = new ArrayList<>();
+         
+         if(shieldStack != null && ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_BASH.id) >= 1 && !player.getItemCooldownManager().isCoolingDown(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem()) && !source.isIndirect()){
+            ArrayList<ShieldTimerCallback> toRemove = new ArrayList<>();
             float shieldTotal = 0;
             float absAmt = player.getAbsorptionAmount();
             for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
@@ -201,7 +202,6 @@ public abstract class LivingEntityMixin {
                if(t instanceof ShieldTimerCallback st){
                   if(st.getPlayer().getUuidAsString().equals(player.getUuidAsString())){
                      shieldTotal += st.getHearts();
-                     st.onTimer();
                      toRemove.add(st);
                   }
                }
@@ -209,9 +209,10 @@ public abstract class LivingEntityMixin {
             shieldTotal = Math.min(Math.min(absAmt,shieldTotal),50);
             if(shieldTotal >= 10){
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, 60, 4, false, false, true);
-               StatusEffectInstance dmgAmp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, false, false);
+               StatusEffectInstance dmgAmp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, true, false);
                entity.addStatusEffect(slow);
                entity.addStatusEffect(dmgAmp);
+               toRemove.forEach(ShieldTimerCallback::onTimer);
                SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains); // Remove all absorption callbacks
                int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
                Arcananovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,10)); // Put 5 hearts back
@@ -334,7 +335,7 @@ public abstract class LivingEntityMixin {
             float maxDmgReduction = newReturn * .5f;
             float dmgReduction = (float) Math.min(energy / 100.0, maxDmgReduction);
             if(entity instanceof ServerPlayerEntity player){
-               if(dmgReduction == maxDmgReduction || dmgReduction > 12){
+               if(dmgReduction >= 4){
                   if(source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall")){
                      player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
                   }

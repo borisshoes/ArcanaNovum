@@ -11,10 +11,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
@@ -34,10 +32,6 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
    @Override
    public void applyUpdateEffect(LivingEntity entity, int amplifier){
       MinecraftServer server = entity.getServer();
-      if(entity.getWorld() instanceof ServerWorld serverWorld && amplifier == 0){
-         Vec3d pos = entity.getPos();
-         serverWorld.spawnParticles(ParticleTypes.LARGE_SMOKE,pos.x,entity.getEyeY(),pos.z,1,.2,.2,.2,0);
-      }
       
       if(entity instanceof ServerPlayerEntity player && server != null && server.getTicks() % 10 == 0){
          ElementHolder holder = new ElementHolder() {
@@ -54,7 +48,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
             }
          };
          
-         final float size = 4.5F;
+         final float size = 1.5F + 1F*amplifier;
          for(Direction value : Direction.values()){
             BlockDisplayElement element = new BlockDisplayElement();
             Vec3d directionOffset = Vec3d.of(value.getVector()).multiply(value.getDirection().offset());

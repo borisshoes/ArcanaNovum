@@ -260,7 +260,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                   player.addStatusEffect(invis);
                   if(target instanceof LivingEntity living){
-                     StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, blindDur, 0, false, true, true);
+                     StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, blindDur, 5, false, true, true);
                      living.addStatusEffect(blind);
                   }
                   

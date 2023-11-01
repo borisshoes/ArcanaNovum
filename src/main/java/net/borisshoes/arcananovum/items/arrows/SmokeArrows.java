@@ -115,7 +115,7 @@ public class SmokeArrows extends RunicArrow {
       for(Entity entity1 : entities){
          if(entity1 instanceof LivingEntity e){
             int amp = e instanceof MobEntity ? 5 : 0;
-            StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60*(gasLvl+1), 0, false, false, true);
+            StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60*(gasLvl+1), 7, false, false, true);
             StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 60*(gasLvl+1), amp+gasLvl, false, false, true);
             e.addStatusEffect(blind);
             e.addStatusEffect(weakness);

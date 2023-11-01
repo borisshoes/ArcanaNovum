@@ -25,6 +25,7 @@
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
     "PlayerManagerMixin",
+    "PolymerItemUtilsMixin",
     "ServerPlayerMixin",
     "ServerPlayNetworkHandlerMixin",
     "ServerWorldMixin",

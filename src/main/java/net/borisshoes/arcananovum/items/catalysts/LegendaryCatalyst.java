@@ -38,6 +38,8 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstructPattern;
+
 public class LegendaryCatalyst extends MagicItem {
    
    public LegendaryCatalyst(){
@@ -70,15 +72,6 @@ public class LegendaryCatalyst extends MagicItem {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
-   }
-   
-   private static BlockPattern getWitherBossPattern() {
-      return BlockPatternBuilder.start().aisle("^^^", "#@#", "~#~")
-            .where('#', (pos) -> pos.getBlockState().isIn(BlockTags.WITHER_SUMMON_BASE_BLOCKS))
-            .where('^', CachedBlockPosition.matchesBlockState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL))))
-            .where('~', CachedBlockPosition.matchesBlockState(AbstractBlock.AbstractBlockState::isAir))
-            .where('@', CachedBlockPosition.matchesBlockState(BlockStatePredicate.forBlock(Blocks.NETHERITE_BLOCK)))
-            .build();
    }
    
    private MagicItemRecipe makeRecipe(){
@@ -123,7 +116,7 @@ public class LegendaryCatalyst extends MagicItem {
          BlockPos pos = context.getBlockPos();
          BlockState state = world.getBlockState(pos);
          if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY()){ // Check construct
-            BlockPattern.Result patternResult = getWitherBossPattern().searchAround(world, pos);
+            BlockPattern.Result patternResult = getConstructPattern().searchAround(world, pos);
             if (patternResult != null) {
                NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world);
                if (constructEntity != null && world instanceof ServerWorld serverWorld) {

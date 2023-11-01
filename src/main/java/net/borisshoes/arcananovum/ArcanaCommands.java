@@ -21,6 +21,7 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -535,7 +536,7 @@ public class ArcanaCommands {
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          
-         
+         ParticleEffectUtils.mythicalConstructSummon(player.getServerWorld(),new Vec3d(-32.5,120.5,94.5),0);
          
       } catch (Exception e) {
          e.printStackTrace();

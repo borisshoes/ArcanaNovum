@@ -7,7 +7,12 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.mixins.WitherEntityAccessor;
 import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.pattern.BlockPattern;
+import net.minecraft.block.pattern.BlockPatternBuilder;
+import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -27,6 +32,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.predicate.block.BlockStatePredicate;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -55,6 +62,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    private boolean shouldHaveSummoner;
    private boolean summonerHasWings;
    private boolean summonerHasMythical;
+   private boolean isMythical;
    private float prevHP;
    private int numPlayers;
    private int spellCooldown;
@@ -142,9 +150,15 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             }
          }
          
-        if(server.getTicks() % 20 == 0 && this.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)){
-           destructiveAura();
+        if(this.age % 20 == 0){
+           if(this.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)){
+              destructiveAura();
+           }
+           if(isMythical){
+              mythicalAura();
+           }
         }
+        
         
         placateSkeletons();
          
@@ -208,7 +222,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    }
    
    private void placateSkeletons(){
-      List<WitherSkeletonEntity> skeletons = getWorld().getEntitiesByType(EntityType.WITHER_SKELETON,getBoundingBox().expand(16),(e) -> true);
+      List<WitherSkeletonEntity> skeletons = getWorld().getEntitiesByType(EntityType.WITHER_SKELETON,getBoundingBox().expand(32),(e) -> true);
       for(WitherSkeletonEntity skeleton : skeletons){
          if(skeleton.getTarget() != null && skeleton.getTarget().getId() == this.getId()){
             PlayerEntity nearestPlayer = getWorld().getClosestPlayer(this,64);
@@ -220,20 +234,47 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    @Override
    protected float modifyAppliedDamage(DamageSource source, float amount){
       float modified = super.modifyAppliedDamage(source, amount);
+      if(source.isSourceCreativePlayer() || source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY)) return modified;
+      
       modified = modified > 100 ? 100 : modified;
       
       if(spells.get("reflective_armor").isActive()){
          Entity attacker = source.getAttacker();
          if(attacker != null){
             attacker.damage(getDamageSources().thorns(this), amount * 0.5f);
-            heal(amount*0.5f);
+            if(spells.get("dark_conversion").isActive()){
+               heal(amount*0.5f);
+            }
          }
       }
       if(source.isIn(DamageTypeTags.IS_EXPLOSION)){
-         modified *= 0.25f;
+         if(isMythical){
+            modified = 0;
+         }else{
+            modified *= 0.25f;
+         }
       }
       
-      return modified * 0.5f;
+      return isMythical ? modified * 0.3f : modified * 0.5f;
+   }
+   
+   private void mythicalAura(){
+      List<PlayerEntity> players = getWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(32),(e) -> true);
+      
+      for(PlayerEntity player : players){
+         StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 100, 13, false, true, true);
+         StatusEffectInstance amp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, true, true);
+         StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 1, false, true, true);
+         StatusEffectInstance fatigue = new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 100, 2, false, true, true);
+         StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 100, 1, false, true, true);
+         player.addStatusEffect(blind);
+         player.addStatusEffect(amp);
+         player.addStatusEffect(slow);
+         player.addStatusEffect(fatigue);
+         player.addStatusEffect(weakness);
+      }
+      
+      this.heal(1.0f);
    }
    
    private void destructiveAura(){
@@ -260,21 +301,43 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    }
    
    public void onSummoned(PlayerEntity summoner) {
+      this.onSummoned(summoner,false);
+   }
+   
+   public void onSummoned(PlayerEntity summoner, boolean mythic) {
       super.onSummoned();
       if(!(getEntityWorld() instanceof ServerWorld serverWorld)) return;
       this.summoner = summoner;
       this.shouldHaveSummoner = true;
+      this.isMythical = mythic;
       
-      MutableText witherName = Text.literal("")
-            .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" "))
-            .append(Text.literal("Nul Construct").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.UNDERLINE))
-            .append(Text.literal(" "))
-            .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("-").formatted(Formatting.DARK_GRAY));
+      MutableText witherName;
+      if(isMythical){
+         witherName = Text.literal("")
+               .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+               .append(Text.literal("▓").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.OBFUSCATED))
+               .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+               .append(Text.literal(" "))
+               .append(Text.literal("Mythical Nul Construct").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.UNDERLINE))
+               .append(Text.literal(" "))
+               .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+               .append(Text.literal("▓").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.OBFUSCATED))
+               .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD));
+         ParticleEffectUtils.mythicalConstructSummon(serverWorld,getPos().add(0,0,0),0);
+      }else{
+         witherName = Text.literal("")
+               .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
+               .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
+               .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
+               .append(Text.literal(" "))
+               .append(Text.literal("Nul Construct").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.UNDERLINE))
+               .append(Text.literal(" "))
+               .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
+               .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
+               .append(Text.literal("-").formatted(Formatting.DARK_GRAY));
+         ParticleEffectUtils.nulConstructSummon(serverWorld,getPos().add(0,0,0),0);
+      }
+      
       setCustomName(witherName);
       setCustomNameVisible(true);
       setPersistent();
@@ -293,13 +356,11 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       prevHP = getHealth();
       
       NulConstructDialog.announce(summoner.getServer(),summoner,this, Announcements.SUMMON_TEXT);
-      boolean finalHasMythical = summonerHasMythical;
-      boolean finalHasWings = summonerHasWings;
       NulConstructEntity construct = this;
       Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), new TimerTask() {
          @Override
          public void run(){
-            NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{finalHasMythical,finalHasWings});
+            NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasMythical,summonerHasWings,false,isMythical});
             setHealth(getMaxHealth());
          }
       }));
@@ -373,6 +434,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       if(spell.getName().equals("reflexive_blast")){
          spellCooldown = 25;
+         spell.setCooldown(200);
          
          int range = 25;
          List<Entity> entities = world.getOtherEntities(this,getBoundingBox().expand(30), e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && (e instanceof LivingEntity));
@@ -452,7 +514,6 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       MinecraftServer server = getServer();
       if(server == null) return;
-      boolean dropped = false;
       
       for(int i = 0; i < (int)(Math.random()*33+16); i++){
          ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
@@ -461,10 +522,11 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       if(summoner == null) return;
       
-      if(Math.random() < 0.05){
+      boolean dropped = isMythical ? Math.random() < 0.75 : Math.random() < 0.05;
+      
+      if(dropped){
          ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),false,server);
          dropItem(getWorld(),stack,getPos());
-         dropped = true;
       }
       
       ItemStack stack = ArcanaRegistry.MYTHICAL_CATALYST.addCrafter(ArcanaRegistry.MYTHICAL_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
@@ -472,7 +534,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       dropItem(getWorld(),stack,getPos());
       
       
-      NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasMythical,summonerHasWings,dropped});
+      NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasMythical,summonerHasWings,dropped&&!isMythical,isMythical,isMythical&&dropped,isMythical&&!dropped});
       
       if(summoner instanceof ServerPlayerEntity player){
          ArcanaAchievements.grant(player,ArcanaAchievements.CONSTRUCT_DECONSTRUCTED.id);
@@ -484,7 +546,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    public void deconstruct(){
       if(summoner != null){
-         NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasMythical,summonerHasWings});
+         NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasMythical,summonerHasWings,false,isMythical});
       }
       
       dropItem(getWorld(),new ItemStack(Items.NETHERITE_BLOCK),getPos());
@@ -527,6 +589,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       nbt.putBoolean("shouldHaveSummoner",shouldHaveSummoner);
       nbt.putBoolean("summonerHasMythical",summonerHasMythical);
       nbt.putBoolean("summonerHasWings",summonerHasWings);
+      nbt.putBoolean("isMythical",isMythical);
       nbt.putFloat("prevHP",prevHP);
       
       if(summoner != null){
@@ -548,6 +611,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       shouldHaveSummoner = nbt.getBoolean("shouldHaveSummoner");
       summonerHasMythical = nbt.getBoolean("summonerHasMythical");
       summonerHasWings = nbt.getBoolean("summonerHasWings");
+      isMythical = nbt.getBoolean("isMythical");
       prevHP = nbt.getFloat("prevHP");
       
       if(nbt.contains("summoner")){
@@ -730,9 +794,10 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I am the ").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("God of ").formatted(Formatting.AQUA, Formatting.BOLD))
+                     .append(Text.literal("God").formatted(Formatting.AQUA, Formatting.BOLD))
+                     .append(Text.literal(" of ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Death").formatted(Formatting.GRAY, Formatting.BOLD))
-                     .append(Text.literal(" and ").formatted(Formatting.AQUA, Formatting.BOLD))
+                     .append(Text.literal(" and ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Knowledge").formatted(Formatting.BLUE, Formatting.BOLD))
                      .append(Text.literal(". If my ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Construct").formatted(Formatting.GRAY))
@@ -748,7 +813,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("So you have defeated ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" and now knock on my door? You seek to challenge the ").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("God of ").formatted(Formatting.AQUA, Formatting.BOLD))
+                     .append(Text.literal("God").formatted(Formatting.AQUA, Formatting.BOLD))
+                     .append(Text.literal(" of ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Death").formatted(Formatting.GRAY, Formatting.BOLD))
                      .append(Text.literal("!?").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
@@ -782,6 +848,33 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal(" to more.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
          )),0,10,0));
+         DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("So you would sacrifice my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("gift").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
+                     .append(Text.literal(" to curry my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("favor").formatted(Formatting.GOLD))
+                     .append(Text.literal("? Let's see if you're worth it...").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,3));
+         DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("You reject my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("divine gift").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
+                     .append(Text.literal("? If it's me you want, you must prove yourself ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("worthy").formatted(Formatting.GOLD))
+                     .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,3));
+         DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("If you want my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("favor").formatted(Formatting.BLUE))
+                     .append(Text.literal(" you must face a ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("real").formatted(Formatting.GOLD, Formatting.ITALIC))
+                     .append(Text.literal(" challenge!").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,3));
          
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -880,6 +973,50 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal(" shall be my gift to you.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
          )),0,-1,2));
+         DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("You did well to survive my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("stronger construct").formatted(Formatting.RED))
+                     .append(Text.literal(", but not well enough to ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("impress").formatted(Formatting.GOLD))
+                     .append(Text.literal(" me.").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,5));
+         DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("You may have survived, but your performance showed").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("weakness").formatted(Formatting.RED, Formatting.ITALIC))
+                     .append(Text.literal(" that I do not").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("tolerate").formatted(Formatting.GOLD))
+                     .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,5));
+         DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("So your").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("gambit").formatted(Formatting.GOLD))
+                     .append(Text.literal(" paid off... I am ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("impressed").formatted(Formatting.BLUE))
+                     .append(Text.literal(" mortal, let my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("Memento").formatted(Formatting.BLACK, Formatting.BOLD))
+                     .append(Text.literal(" offer you ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("wisdom").formatted(Formatting.BLUE))
+                     .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,4));
+         DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("spectacular").formatted(Formatting.GOLD, Formatting.ITALIC))
+                     .append(Text.literal(" display of ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("competence").formatted(Formatting.AQUA))
+                     .append(Text.literal("! Take my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("Memento").formatted(Formatting.BLACK, Formatting.BOLD))
+                     .append(Text.literal(", and let my new gift ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("guide").formatted(Formatting.BLUE))
+                     .append(Text.literal(" you well.").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,4));
          
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -959,6 +1096,37 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal(" must be earned!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
          )),0,20,0));
+         DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("I always knew you were too ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("weak").formatted(Formatting.RED, Formatting.ITALIC))
+                     .append(Text.literal(" to handle real ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("power").formatted(Formatting.LIGHT_PURPLE))
+                     .append(Text.literal("...").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,150,3));
+         DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("An interesting ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("gambit").formatted(Formatting.GOLD))
+                     .append(Text.literal(", too bad you aren't ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("skilled").formatted(Formatting.BLUE))
+                     .append(Text.literal(" enough to execute it.").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,3));
+         DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
+               Text.literal("")
+                     .append(Text.literal("Your ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("weakness").formatted(Formatting.RED))
+                     .append(Text.literal(" is ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("revolting!").formatted(Formatting.DARK_RED, Formatting.ITALIC))
+                     .append(Text.literal(" Your ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("divine catalyst").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
+                     .append(Text.literal(" is ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("forfeit").formatted(Formatting.GOLD))
+                     .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
+               Text.literal("")
+         )),0,200,3));
       }
       
       public static void abilityText(PlayerEntity summoner, WitherEntity wither, String text){
@@ -973,6 +1141,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          announce(server,summoner,wither,type,new boolean[]{});
       }
       
+      // hasMythical, hasWings, droppedMemento & !isMythical, isMythical, droppedMemento & isMythical, !droppedMemento & isMythical
       public static void announce(MinecraftServer server, PlayerEntity summoner, WitherEntity wither, Announcements type, boolean[] args){
          ArrayList<MutableText> message = getWeightedResult(DIALOG.get(type),args);
          List<ServerPlayerEntity> playersInRange = wither.getWorld().getNonSpectatingEntities(ServerPlayerEntity.class, wither.getBoundingBox().expand(50.0));
@@ -1022,6 +1191,15 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          if(condInd == -1) return weightWithCond;
          return (args.length > condInd && args[condInd]) ? weightWithCond : weightNoCond;
       }
+   }
+   
+   public static BlockPattern getConstructPattern() {
+      return BlockPatternBuilder.start().aisle("^^^", "#@#", "~#~")
+            .where('#', (pos) -> pos.getBlockState().isIn(BlockTags.WITHER_SUMMON_BASE_BLOCKS))
+            .where('^', CachedBlockPosition.matchesBlockState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL))))
+            .where('~', CachedBlockPosition.matchesBlockState(AbstractBlock.AbstractBlockState::isAir))
+            .where('@', CachedBlockPosition.matchesBlockState(BlockStatePredicate.forBlock(Blocks.NETHERITE_BLOCK)))
+            .build();
    }
 }
 

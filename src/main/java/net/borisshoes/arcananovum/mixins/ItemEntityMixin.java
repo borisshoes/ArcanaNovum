@@ -17,10 +17,13 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -30,6 +33,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.UUID;
@@ -176,6 +180,21 @@ public class ItemEntityMixin {
             }
          }
          
+      }
+   }
+   
+   @Inject(method="damage",at=@At(value="INVOKE", target = "Lnet/minecraft/item/Item;damage(Lnet/minecraft/entity/damage/DamageSource;)Z"), cancellable = true)
+   private void arcananovum_explosionImmunity(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+      ItemEntity itemEntity = (ItemEntity) (Object) this;
+      ItemStack stack = itemEntity.getStack();
+      
+      if (!stack.isEmpty() && source.isIn(DamageTypeTags.IS_EXPLOSION)) {
+         for(Item item : ArcanaRegistry.ITEMS.values()){
+            if(stack.isOf(item)){
+               cir.setReturnValue(false);
+               return;
+            }
+         }
       }
    }
 }

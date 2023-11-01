@@ -1,22 +1,38 @@
 package net.borisshoes.arcananovum.items.catalysts;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.entities.NulConstructEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.CarvedPumpkinBlock;
+import net.minecraft.block.pattern.BlockPattern;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstructPattern;
 
 public class MythicalCatalyst extends MagicItem {
    
@@ -135,6 +151,38 @@ public class MythicalCatalyst extends MagicItem {
       @Override
       public ItemStack getDefaultStack(){
          return prefItem;
+      }
+      
+      @Override
+      public ActionResult useOnBlock(ItemUsageContext context){
+         World world = context.getWorld();
+         PlayerEntity playerEntity = context.getPlayer();
+         BlockPos pos = context.getBlockPos();
+         BlockState state = world.getBlockState(pos);
+         if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY()){ // Check construct
+            BlockPattern.Result patternResult = getConstructPattern().searchAround(world, pos);
+            if (patternResult != null) {
+               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world);
+               if (constructEntity != null && world instanceof ServerWorld serverWorld) {
+                  CarvedPumpkinBlock.breakPatternBlocks(world, patternResult);
+                  BlockPos blockPos = patternResult.translate(1, 1, 0).getBlockPos();
+                  constructEntity.refreshPositionAndAngles((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
+                  constructEntity.bodyYaw = patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
+                  constructEntity.onSummoned(playerEntity,true);
+                  
+                  world.spawnEntity(constructEntity);
+                  CarvedPumpkinBlock.updatePatternBlocks(world, patternResult);
+                  
+                  if(playerEntity instanceof ServerPlayerEntity player){
+                     ArcanaAchievements.grant(player,ArcanaAchievements.DOOR_OF_DIVINITY.id);
+                  }
+                  
+                  context.getStack().decrement(1);
+               }
+               return ActionResult.SUCCESS;
+            }
+         }
+         return ActionResult.PASS;
       }
    }
 }

@@ -319,17 +319,114 @@ public class ParticleEffectUtils {
       }
    }
    
+   public static void nulConstructSummon(ServerWorld world, Vec3d pos, int tick){
+      double or = 5*(1-tick/220.0);
+      double inter = 0.15;
+      int num = 2;
+      double theta = (0.000259635756495*tick*tick); // Magic quadratic value (sets theta to 6pi at tick 100)
+      double dt = Math.PI*2 * 0.05;
+      int times = 5;
+      for(int i = 0; i < num; i++){
+         double r = or - (i*inter);
+         if(r <= 0) break;
+         
+         double dA = Math.PI * 2 / times;
+         for(int j = 0; j < times; j++){
+            double angle = dA * j + (theta + dt*i);
+            double x = r * Math.cos(angle) + pos.x;
+            double z = r * Math.sin(angle) + pos.z;
+            double y = pos.y + 0.6;
+            
+            world.spawnParticles(ParticleTypes.SOUL,x,y,z,1,0,0,0,0.01);
+            world.spawnParticles(ParticleTypes.FALLING_OBSIDIAN_TEAR,x,y,z,1,0,0,0,0.01);
+         }
+      }
+      
+      world.spawnParticles(ParticleTypes.PORTAL,pos.x,pos.y,pos.z,20,0.3,0.3,0.3,1);
+      
+      
+      if(tick < 220){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               nulConstructSummon(world,pos,tick+1);
+            }
+         }));
+      }else{
+         world.spawnParticles(ParticleTypes.WITCH,pos.x,pos.y,pos.z,150,1,1,1,0.01);
+      }
+   }
+   
+   public static void mythicalConstructSummon(ServerWorld world, Vec3d pos, int tick){
+      double or = 5*(1-tick/220.0);
+      double inter = 0.15;
+      int num = 2;
+      double theta = (0.000259635756495*tick*tick); // Magic quadratic value (sets theta to 6pi at tick 100)
+      double dt = Math.PI*2 * 0.05;
+      int times = 5;
+      for(int i = 0; i < num; i++){
+         double r = or - (i*inter);
+         if(r <= 0) break;
+         
+         double dA = Math.PI * 2 / times;
+         for(int j = 0; j < times; j++){
+            double angle = dA * j + (theta + dt*i);
+            double x = r * Math.cos(angle) + pos.x;
+            double z = r * Math.sin(angle) + pos.z;
+            double y = pos.y + 0.6;
+            
+            world.spawnParticles(ParticleTypes.SOUL,x,y,z,1,0,0,0,0.01);
+            world.spawnParticles(ParticleTypes.FALLING_OBSIDIAN_TEAR,x,y,z,1,0,0,0,0.01);
+         }
+      }
+      
+      world.spawnParticles(ParticleTypes.PORTAL,pos.x,pos.y,pos.z,20,0.3,0.3,0.3,1);
+      world.spawnParticles(ParticleTypes.DRAGON_BREATH,pos.x,pos.y+0.75,pos.z,3,0.3,0.3,0.3,0.03);
+      
+      if(tick%2 == 0){
+         ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xFF00D4).toVector3f(),0.75f);
+         Vec3d circleCenter = pos.add(0,-1,0);
+         double r = 2.5;
+         float t = (float)(Math.PI/220.0*tick);
+         double sqrt3 = Math.sqrt(3);
+         
+         circle(world,null,circleCenter,dust,r,40,1,0,1);
+         
+         Vec3d[] tri1 = {new Vec3d(0, 0, r),new Vec3d(-r*sqrt3/2, 0, -r/2),new Vec3d(r*sqrt3/2, 0, -r/2)};
+         Vec3d[] tri2 = {new Vec3d(0, 0, -r),new Vec3d(-r*sqrt3/2, 0, r/2),new Vec3d(r*sqrt3/2, 0, +r/2)};
+         for(int i = 0; i < 3; i++){
+            Vec3d p1 = tri1[i].rotateY(t).add(circleCenter);
+            Vec3d p2 = tri1[(i+1)%3].rotateY(t).add(circleCenter);
+            Vec3d p3 = tri2[i].rotateY(t).add(circleCenter);
+            Vec3d p4 = tri2[(i+1)%3].rotateY(t).add(circleCenter);
+            line(world,null,p1,p2,dust,12,1,0,1);
+            line(world,null,p3,p4,dust,12,1,0,1);
+         }
+      }
+      
+      if(tick < 220){
+         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
+            @Override
+            public void run(){
+               mythicalConstructSummon(world,pos,tick+1);
+            }
+         }));
+      }else{
+         world.spawnParticles(ParticleTypes.WITCH,pos.x,pos.y,pos.z,150,1,1,1,0.01);
+      }
+   }
+   
    public static void nulConstructNecroticShroud(ServerWorld world, Vec3d pos){
       world.spawnParticles(ParticleTypes.LARGE_SMOKE,pos.getX(),pos.getY()+1.5,pos.getZ(),150,1.5,1.5,1.5,0.07);
    }
    
    public static void nulConstructDarkConversion(ServerWorld world, Vec3d pos){
       ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x9e0945).toVector3f(),0.8f);
-      world.spawnParticles(dust, pos.getX(), pos.getY() + 1.75, pos.getZ(), 20,0.75,1,0.75,0.03);
+      world.spawnParticles(dust, pos.getX(), pos.getY() + 1.75, pos.getZ(), 10,0.75,1,0.75,0.03);
    }
    
    public static void nulConstructReflectiveArmor(ServerWorld world, Vec3d pos){
-      world.spawnParticles(ParticleTypes.END_ROD, pos.getX(), pos.getY() + 1.75, pos.getZ(), 5,0.75,1,0.75,0.03);
+      world.spawnParticles(ParticleTypes.END_ROD, pos.getX(), pos.getY() + 1.75, pos.getZ(), 3,0.75,1,0.75,0.03);
    }
    
    public static void nulConstructCurseOfDecay(ServerWorld world, Vec3d pos){
