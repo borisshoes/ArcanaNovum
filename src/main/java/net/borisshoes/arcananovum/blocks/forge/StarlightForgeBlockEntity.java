@@ -14,10 +14,7 @@ import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.block.entity.*;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandlerType;
@@ -139,6 +136,10 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
          }else if(be instanceof BarrelBlockEntity barrelBe){
             if(!invs.contains(barrelBe)){
                invs.add(barrelBe);
+            }
+         }else if(be instanceof ShulkerBoxBlockEntity shulkerBox){
+            if(!invs.contains(shulkerBox)){
+               invs.add(shulkerBox);
             }
          }
       }

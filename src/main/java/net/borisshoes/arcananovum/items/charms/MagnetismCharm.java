@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -31,6 +32,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,19 +120,12 @@ public class MagnetismCharm extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Charm of Magnetism\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"You can feel the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"charm\",\"color\":\"gray\"},{\"text\":\" \"},{\"text\":\"tugging \",\"color\":\"dark_green\"},{\"text\":\"on surrounding objects.\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to \",\"color\":\"dark_gray\"},{\"text\":\"drag \",\"color\":\"gray\"},{\"text\":\"nearby items to you.\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to toggle the \",\"color\":\"dark_gray\"},{\"text\":\"magnetism \",\"color\":\"gray\"},{\"text\":\"passively\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to temporarily disable the \",\"color\":\"dark_gray\"},{\"text\":\"passive\",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\" pull\",\"color\":\"gray\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -145,6 +140,16 @@ public class MagnetismCharm extends MagicItem {
    }
    
    @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"You can feel the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"charm\",\"color\":\"gray\"},{\"text\":\" \"},{\"text\":\"tugging \",\"color\":\"dark_green\"},{\"text\":\"on surrounding objects.\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to \",\"color\":\"dark_gray\"},{\"text\":\"drag \",\"color\":\"gray\"},{\"text\":\"nearby items to you.\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to toggle the \",\"color\":\"dark_gray\"},{\"text\":\"magnetism \",\"color\":\"gray\"},{\"text\":\"passively\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to temporarily disable the \",\"color\":\"dark_gray\"},{\"text\":\"passive\",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\" pull\",\"color\":\"gray\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      return loreList;
+   }
+   
+   @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
@@ -156,7 +161,7 @@ public class MagnetismCharm extends MagicItem {
       newTag.getCompound("arcananovum").putInt("mode",mode);
       newTag.getCompound("arcananovum").put("filter",filter);
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    public void activeUse(ServerPlayerEntity player, World world, ItemStack charm){

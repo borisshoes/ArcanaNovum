@@ -41,6 +41,7 @@ public class ArcaneSingularityBlockEntity extends BlockEntity implements Polymer
    private final Multiblock multiblock;
    private boolean assembled;
    private ArrayList<ItemStack> books;
+   private boolean seenForge;
    
    public ArcaneSingularityBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY, pos, state);
@@ -70,9 +71,10 @@ public class ArcaneSingularityBlockEntity extends BlockEntity implements Polymer
       
       if(ticks % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
+         this.seenForge = StarlightForge.findActiveForge(serverWorld,pos) != null;
       }
       
-      if(assembled){
+      if(assembled && seenForge){
          Direction dir = serverWorld.getBlockState(pos).get(ArcaneSingularity.ArcaneSingularityBlock.HORIZONTAL_FACING);
          Vec3d center = pos.add(dir.getVector().multiply(-1)).toCenterPos().add(0,2.5,0);
          ParticleEffectUtils.arcaneSingularityAnim(serverWorld,center,ticks % 300,dir);

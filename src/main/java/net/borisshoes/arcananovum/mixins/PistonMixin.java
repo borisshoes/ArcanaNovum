@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.minecraft.block.BlockState;
@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.TimerTask;
 
 @Mixin(PistonBlock.class)
 public class PistonMixin {
@@ -28,18 +27,15 @@ public class PistonMixin {
          if(ArcanaRegistry.BLOCKS.containsValue(state.getBlock())){
             cir.setReturnValue(false);
             
-            Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(4, new TimerTask() {
-               @Override
-               public void run(){
-                  List<ServerPlayerEntity> players = serverWorld.getPlayers(p -> p.squaredDistanceTo(pos.getX(),pos.getY(),pos.getZ()) <= 25000);
+            ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(4, () -> {
+               List<ServerPlayerEntity> players = serverWorld.getPlayers(p -> p.squaredDistanceTo(pos.getX(),pos.getY(),pos.getZ()) <= 25000);
                   for(ServerPlayerEntity player : players){
-                     player.networkHandler.sendPacket(new BlockUpdateS2CPacket(pos,state));
-                     
-                     for(Direction direction : Direction.values()){
-                        BlockPos blockPos2 = pos.offset(direction);
-                        BlockState blockState = world.getBlockState(blockPos2);
-                        player.networkHandler.sendPacket(new BlockUpdateS2CPacket(blockPos2, blockState));
-                     }
+                  player.networkHandler.sendPacket(new BlockUpdateS2CPacket(pos,state));
+                  
+                  for(Direction dir : Direction.values()){
+                     BlockPos blockPos2 = pos.offset(dir);
+                     BlockState blockState = world.getBlockState(blockPos2);
+                     player.networkHandler.sendPacket(new BlockUpdateS2CPacket(blockPos2, blockState));
                   }
                }
             }));

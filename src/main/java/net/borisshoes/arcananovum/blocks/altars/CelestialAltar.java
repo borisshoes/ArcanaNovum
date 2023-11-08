@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -62,10 +63,24 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Celestial Altar\",\"italic\":false,\"color\":\"blue\",\"bold\":true}]");
+      tag.put("display",display);
+      tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
+      
+      setBookLore(makeLore());
+      setRecipe(makeRecipe());
+      prefNBT = addMagicNbt(tag);
+      
+      stack.setNbt(prefNBT);
+      prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
       loreList.add(NbtString.of("[{\"text\":\"Altars \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"are \",\"color\":\"blue\"},{\"text\":\"multiblock structures\",\"color\":\"dark_purple\"},{\"text\":\" that must be \",\"color\":\"blue\"},{\"text\":\"built \",\"color\":\"dark_purple\"},{\"text\":\"in the world.\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Left click a block\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" with an \",\"color\":\"blue\"},{\"text\":\"Altar \"},{\"text\":\"to see a \",\"color\":\"blue\"},{\"text\":\"hologram \",\"color\":\"dark_purple\"},{\"text\":\"of the \",\"color\":\"blue\"},{\"text\":\"structure\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" a \",\"color\":\"blue\"},{\"text\":\"completed \",\"color\":\"dark_purple\"},{\"text\":\"Altar \"},{\"text\":\"setup to \",\"color\":\"blue\"},{\"text\":\"activate \",\"color\":\"dark_purple\"},{\"text\":\"the \",\"color\":\"blue\"},{\"text\":\"Altar\"},{\"text\":\".\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
@@ -74,18 +89,7 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"blue\"},{\"text\":\"glistens \",\"color\":\"yellow\"},{\"text\":\"in the \"},{\"text\":\"light \",\"color\":\"yellow\"},{\"text\":\"of the \"},{\"text\":\"Sun \",\"color\":\"yellow\"},{\"text\":\"and \"},{\"text\":\"Moon\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"blue\"},{\"text\":\"lets you change the \"},{\"text\":\"time of day\",\"color\":\"yellow\"},{\"text\":\" \",\"color\":\"yellow\"},{\"text\":\"and the \"},{\"text\":\"phase\",\"color\":\"blue\"},{\"text\":\" of the \"},{\"text\":\"Moon\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"blue\"},{\"text\":\"requires a \"},{\"text\":\"Nether Star\",\"color\":\"yellow\"},{\"text\":\" to \"},{\"text\":\"activate\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      return loreList;
    }
    
    @Override

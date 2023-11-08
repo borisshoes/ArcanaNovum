@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
@@ -24,8 +24,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
-import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -84,12 +82,9 @@ public class CelestialAltarGui extends SimpleGui implements WatchedGui {
                if(MiscUtils.removeItems(player,Items.NETHER_STAR,1)){
                   ParticleEffectUtils.celestialAltarAnim(serverWorld,blockEntity.getPos().toCenterPos(), 0, serverWorld.getBlockState(blockEntity.getPos()).get(HORIZONTAL_FACING));
                   blockEntity.resetCooldown();
-                  Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(400, new TimerTask() {
-                     @Override
-                     public void run(){
-                        changeTime();
-                        PLAYER_DATA.get(player).addXP(1000);
-                     }
+                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(400, () -> {
+                     changeTime();
+                     PLAYER_DATA.get(player).addXP(1000);
                   }));
                   close();
                }else{

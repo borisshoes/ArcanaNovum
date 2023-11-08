@@ -5,7 +5,7 @@ import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.utils.RepeatTimer;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
@@ -15,8 +15,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-
-import java.util.TimerTask;
 
 public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatusEffect {
    
@@ -67,12 +65,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
          attachment.updateTracking(player.networkHandler);
          attachment.holder().startWatching(player);
          
-         Arcananovum.addTickTimerCallback(new RepeatTimer(1,16, new TimerTask() {
-            @Override
-            public void run(){
-               attachment.tick();
-            }
-         },null));
+         ArcanaNovum.addTickTimerCallback(new RepeatTimer(1,16, attachment::tick,null));
       }
    }
 }

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -23,7 +24,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
@@ -37,6 +37,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,22 +58,13 @@ public class BrainJar extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Brain in a Jar\",\"italic\":false,\"color\":\"green\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"zombie\",\"color\":\"dark_green\"},{\"text\":\" has more aptitude for storing \",\"color\":\"dark_purple\"},{\"text\":\"knowledge\",\"color\":\"green\"},{\"text\":\" than most mobs.\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Containing its \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"brain\",\"color\":\"dark_green\"},{\"text\":\" in a jar could serve as \"},{\"text\":\"XP storage\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It should also be capable of activating the \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"mending\",\"color\":\"light_purple\"},{\"text\":\" enchantment.\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to configure.\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"0 XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"OFF\",\"italic\":false,\"color\":\"red\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic\",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-   
+      buildItemLore(stack, ArcanaNovum.SERVER);
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -81,6 +73,32 @@ public class BrainJar extends EnergyItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"zombie\",\"color\":\"dark_green\"},{\"text\":\" has more aptitude for storing \",\"color\":\"dark_purple\"},{\"text\":\"knowledge\",\"color\":\"green\"},{\"text\":\" than most mobs.\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Containing its \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"brain\",\"color\":\"dark_green\"},{\"text\":\" in a jar could serve as \"},{\"text\":\"XP storage\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"It should also be capable of activating the \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"mending\",\"color\":\"light_purple\"},{\"text\":\" enchantment.\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to configure.\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      if(itemStack != null){
+         int xp = getEnergy(itemStack);
+         NbtCompound itemNbt = itemStack.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         boolean mending = magicNbt.getInt("mode") == 1;
+         if(mending){
+            loreList.add(NbtString.of("[{\"text\":\"" + xp + " XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ON\",\"italic\":false,\"color\":\"dark_green\"}]"));
+         }else{
+            loreList.add(NbtString.of("[{\"text\":\"" + xp + " XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"OFF\",\"italic\":false,\"color\":\"red\"}]"));
+         }
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"0 XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"OFF\",\"italic\":false,\"color\":\"red\"}]"));
+      }
+      
+      return loreList;
    }
    
    @Override
@@ -97,8 +115,7 @@ public class BrainJar extends EnergyItem {
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putInt("mode",mode);
       stack.setNbt(newTag);
-      editStatusLore(stack);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    public void openGui(PlayerEntity playerEntity, ItemStack item){
@@ -205,7 +222,7 @@ public class BrainJar extends EnergyItem {
    
          magicNbt.putInt("mode", 1);
       }
-      editStatusLore(item);
+      buildItemLore(item,player.getServer());
    }
    
    public void withdrawXP(ServerPlayerEntity player, ItemStack item, boolean single, BrainJarGui gui){
@@ -244,7 +261,7 @@ public class BrainJar extends EnergyItem {
       
       gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
       gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      editStatusLore(item);
+      buildItemLore(item,player.getServer());
    }
    
    public void depositXP(ServerPlayerEntity player, ItemStack item, boolean single, BrainJarGui gui){
@@ -286,20 +303,7 @@ public class BrainJar extends EnergyItem {
       
       gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
       gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      editStatusLore(item);
-   }
-   
-   public void editStatusLore(ItemStack item){
-      int xp = getEnergy(item);
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      boolean mending = magicNbt.getInt("mode") == 1;
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      if(mending){
-         loreList.set(5,NbtString.of("[{\"text\":\""+xp+" XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ON\",\"italic\":false,\"color\":\"dark_green\"}]"));
-      }else{
-         loreList.set(5,NbtString.of("[{\"text\":\""+xp+" XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"OFF\",\"italic\":false,\"color\":\"red\"}]"));
-      }
+      buildItemLore(item,player.getServer());
    }
    
    private List<String> makeLore(){
@@ -377,7 +381,7 @@ public class BrainJar extends EnergyItem {
                   ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
                   addEnergy(stack,-1);
                   PLAYER_DATA.get(player).addXP(5);
-                  editStatusLore(stack);
+                  buildItemLore(stack,player.getServer());
                   nbt.putInt("Damage", newDura);
                   tool.setNbt(nbt);
                }
@@ -391,7 +395,7 @@ public class BrainJar extends EnergyItem {
             if(beforeEnergy < getMaxEnergy(stack) && getEnergy(stack) >= getMaxEnergy(stack)){
                ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
             }
-            editStatusLore(stack);
+            buildItemLore(stack,player.getServer());
          }
       }
       

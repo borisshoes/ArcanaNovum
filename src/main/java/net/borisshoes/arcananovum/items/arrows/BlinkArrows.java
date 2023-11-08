@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.arrows;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -27,6 +28,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,22 +48,15 @@ public class BlinkArrows extends RunicArrow {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Runic Arrows - Blink\",\"italic\":false,\"bold\":true,\"color\":\"dark_aqua\"}]");
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Blink Arrows:\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" take after \"},{\"text\":\"Ender Pearls\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Upon \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"impact \",\"color\":\"green\"},{\"text\":\"or \"},{\"text\":\"hitting a target\",\"color\":\"green\"},{\"text\":\" you get \"},{\"text\":\"teleported\",\"color\":\"dark_aqua\"},{\"text\":\" to the \"},{\"text\":\"arrow\",\"color\":\"light_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",1404502);
       tag.putInt("HideFlags", 255);
       stack.setCount(64);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -69,6 +64,16 @@ public class BlinkArrows extends RunicArrow {
    
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      addRunicArrowLore(loreList);
+      loreList.add(NbtString.of("[{\"text\":\"Blink Arrows:\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" take after \"},{\"text\":\"Ender Pearls\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Upon \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"impact \",\"color\":\"green\"},{\"text\":\"or \"},{\"text\":\"hitting a target\",\"color\":\"green\"},{\"text\":\" you get \"},{\"text\":\"teleported\",\"color\":\"dark_aqua\"},{\"text\":\" to the \"},{\"text\":\"arrow\",\"color\":\"light_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    @Override

@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -24,10 +24,10 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -48,21 +48,10 @@ public class NulMemento extends MagicItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Nul Memento\",\"italic\":false,\"color\":\"black\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"skull \",\"color\":\"gray\"},{\"text\":\"forged out of the \"},{\"text\":\"discoveries \",\"color\":\"blue\"},{\"text\":\"you have made\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"You have \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"seen\",\"color\":\"blue\"},{\"text\":\" things that most \"},{\"text\":\"mortals \",\"color\":\"gray\"},{\"text\":\"never will\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"curse of knowledge\",\"color\":\"blue\"},{\"text\":\" binds \"},{\"text\":\"tighter \",\"color\":\"gray\"},{\"text\":\"than any other\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"What has been \",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"learned \",\"color\":\"blue\"},{\"text\":\"must now be \"},{\"text\":\"forgotten\",\"color\":\"gray\"},{\"text\":\"...\"},{\"text\":\"\",\"italic\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"calls \",\"color\":\"gray\"},{\"text\":\"to your \"},{\"text\":\"mind \",\"color\":\"blue\"},{\"text\":\"with a familiar \"},{\"text\":\"burn of concentration\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It yearns to be worn...\",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"When \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"activated\",\"color\":\"gray\"},{\"text\":\", all \"},{\"text\":\"Skill Points\",\"color\":\"blue\"},{\"text\":\" will be \"},{\"text\":\"deallocated\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       
@@ -72,6 +61,21 @@ public class NulMemento extends MagicItem {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"skull \",\"color\":\"gray\"},{\"text\":\"forged out of the \"},{\"text\":\"discoveries \",\"color\":\"blue\"},{\"text\":\"you have made\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"You have \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"seen\",\"color\":\"blue\"},{\"text\":\" things that most \"},{\"text\":\"mortals \",\"color\":\"gray\"},{\"text\":\"never will\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"curse of knowledge\",\"color\":\"blue\"},{\"text\":\" binds \"},{\"text\":\"tighter \",\"color\":\"gray\"},{\"text\":\"than any other\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"What has been \",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"learned \",\"color\":\"blue\"},{\"text\":\"must now be \"},{\"text\":\"forgotten\",\"color\":\"gray\"},{\"text\":\"...\"},{\"text\":\"\",\"italic\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"It \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"calls \",\"color\":\"gray\"},{\"text\":\"to your \"},{\"text\":\"mind \",\"color\":\"blue\"},{\"text\":\"with a familiar \"},{\"text\":\"burn of concentration\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"It yearns to be worn...\",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"When \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"activated\",\"color\":\"gray\"},{\"text\":\", all \"},{\"text\":\"Skill Points\",\"color\":\"blue\"},{\"text\":\" will be \"},{\"text\":\"deallocated\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    public boolean isActive(ItemStack item){
@@ -105,131 +109,113 @@ public class NulMemento extends MagicItem {
             .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD))
             .append(Text.literal(" whisper...")).formatted(Formatting.DARK_GRAY), false);
 
-      Arcananovum.addTickTimerCallback(new GenericTimer(increments*1, new TimerTask() {
-         @Override
-         public void run(){
-            if(cont[0]){
-               ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
-                  cont[0] = false;
-                  processHalted(player);
-               }else{
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal("Feel the weight, embrace it... let me in...").formatted(Formatting.DARK_GRAY, Formatting.ITALIC), false);
-               }
+      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*1, () -> {
+         if(cont[0]){
+            ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
+            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+               cont[0] = false;
+               processHalted(player);
+            }else{
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal("Feel the weight, embrace it... let me in...").formatted(Formatting.DARK_GRAY, Formatting.ITALIC), false);
             }
          }
       }));
-      Arcananovum.addTickTimerCallback(new GenericTimer(increments*2, new TimerTask() {
-         @Override
-         public void run(){
-            if(cont[0]){
-               ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
-                  cont[0] = false;
-                  processHalted(player);
-               }else{
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal("")
-                        .append(Text.literal("You feel as though your ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("skull").formatted(Formatting.GRAY))
-                        .append(Text.literal(" is about to ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("collapse").formatted(Formatting.RED))
-                        .append(Text.literal(" when a ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("gentle breeze").formatted(Formatting.GRAY))
-                        .append(Text.literal(" sweeps through you.").formatted(Formatting.DARK_GRAY)), false);
-               }
+      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*2, () -> {
+         if(cont[0]){
+            ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
+            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+               cont[0] = false;
+               processHalted(player);
+            }else{
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal("")
+                     .append(Text.literal("You feel as though your ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("skull").formatted(Formatting.GRAY))
+                     .append(Text.literal(" is about to ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("collapse").formatted(Formatting.RED))
+                     .append(Text.literal(" when a ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("gentle breeze").formatted(Formatting.GRAY))
+                     .append(Text.literal(" sweeps through you.").formatted(Formatting.DARK_GRAY)), false);
             }
          }
       }));
-      Arcananovum.addTickTimerCallback(new GenericTimer(increments*3, new TimerTask() {
-         @Override
-         public void run(){
-            if(cont[0]){
-               ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
-                  cont[0] = false;
-                  processHalted(player);
-               }else{
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal("Your secrets are safe with me. Be free of this burden, for I now bear it alone.").formatted(Formatting.DARK_GRAY, Formatting.ITALIC), false);
-               }
+      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*3, () -> {
+         if(cont[0]){
+            ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
+            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+               cont[0] = false;
+               processHalted(player);
+            }else{
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal("Your secrets are safe with me. Be free of this burden, for I now bear it alone.").formatted(Formatting.DARK_GRAY, Formatting.ITALIC), false);
             }
          }
       }));
-      Arcananovum.addTickTimerCallback(new GenericTimer(increments*4, new TimerTask() {
-         @Override
-         public void run(){
-            if(cont[0]){
-               ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
-                  cont[0] = false;
-                  processHalted(player);
-               }else{
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal("That is, until we meet again...").formatted(Formatting.DARK_GRAY, Formatting.ITALIC), false);
-               }
+      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*4, () -> {
+         if(cont[0]){
+            ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
+            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+               cont[0] = false;
+               processHalted(player);
+            }else{
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal("That is, until we meet again...").formatted(Formatting.DARK_GRAY, Formatting.ITALIC), false);
             }
          }
       }));
-      Arcananovum.addTickTimerCallback(new GenericTimer(increments*5, new TimerTask() {
-         @Override
-         public void run(){
-            if(cont[0]){
-               ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
-                  cont[0] = false;
-                  processHalted(player);
-               }else{
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal("")
-                        .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD))
-                        .append(Text.literal(" crumbles ").formatted(Formatting.GRAY))
-                        .append(Text.literal("into").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal(" ash ").formatted(Formatting.GRAY))
-                        .append(Text.literal("around your head, your mind still ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("burning").formatted(Formatting.RED))
-                        .append(Text.literal(" from the ").formatted(Formatting.DARK_GRAY))
-                        .append(Text.literal("overwhelming ").formatted(Formatting.RED))
-                        .append(Text.literal("Arcana.").formatted(Formatting.LIGHT_PURPLE)), false);
-                  StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA,200, 4, false, false, true);
-                  player.addStatusEffect(nausea);
-               }
+      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*5, () -> {
+         if(cont[0]){
+            ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
+            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+               cont[0] = false;
+               processHalted(player);
+            }else{
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal("")
+                     .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD))
+                     .append(Text.literal(" crumbles ").formatted(Formatting.GRAY))
+                     .append(Text.literal("into").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal(" ash ").formatted(Formatting.GRAY))
+                     .append(Text.literal("around your head, your mind still ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("burning").formatted(Formatting.RED))
+                     .append(Text.literal(" from the ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("overwhelming ").formatted(Formatting.RED))
+                     .append(Text.literal("Arcana.").formatted(Formatting.LIGHT_PURPLE)), false);
+               StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA,200, 4, false, false, true);
+               player.addStatusEffect(nausea);
             }
          }
       }));
-      Arcananovum.addTickTimerCallback(new GenericTimer(increments*6, new TimerTask() {
-         @Override
-         public void run(){
-            if(cont[0]){
-               ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-               if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
-                  cont[0] = false;
-                  processHalted(player);
-               }else{
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal(""),false);
-                  player.sendMessage(Text.literal("All of your Skill Points have been deallocated").formatted(Formatting.AQUA), false);
-                  headStack.decrement(headStack.getCount());
-                  headStack.setNbt(new NbtCompound());
-                  PLAYER_DATA.get(player).removeAllAugments();
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1f, 1f);
-   
-                  ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE.id);
-                  ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC.id,1);
-               }
+      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*6, () -> {
+         if(cont[0]){
+            ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
+            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+               cont[0] = false;
+               processHalted(player);
+            }else{
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal(""),false);
+               player.sendMessage(Text.literal("All of your Skill Points have been deallocated").formatted(Formatting.AQUA), false);
+               headStack.decrement(headStack.getCount());
+               headStack.setNbt(new NbtCompound());
+               PLAYER_DATA.get(player).removeAllAugments();
+               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1f, 1f);
+               
+               ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE.id);
+               ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC.id,1);
             }
          }
       }));

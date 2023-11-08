@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.borisshoes.arcananovum.ArcanaCommands;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.MessageArgumentType;
 import net.minecraft.server.command.CommandManager;
@@ -14,7 +14,7 @@ import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
-import static net.borisshoes.arcananovum.Arcananovum.devMode;
+import static net.borisshoes.arcananovum.ArcanaNovum.devMode;
 import static net.minecraft.command.argument.EntityArgumentType.*;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -108,11 +108,14 @@ public class CommandRegisterCallback {
                               .executes(context ->ArcanaCommands.bossTeleport(context,context.getSource().getPlayer(),true)))))
       );
    
-      dispatcher.register(Arcananovum.config.generateCommand());
+      dispatcher.register(ArcanaNovum.config.generateCommand());
    
       if(devMode){
          dispatcher.register(literal("arcana")
-               .then(literal("test").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::testCommand))
+               .then(literal("test").requires(source -> source.hasPermissionLevel(2))
+                     .executes(ArcanaCommands::testCommand)
+                     .then(argument("num",integer())
+                           .executes(ctx -> ArcanaCommands.testCommand(ctx, getInteger(ctx, "num")))))
                .then(literal("getbookdata").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::getBookData))
                .then(literal("getitemdata").requires(source -> source.hasPermissionLevel(2))
                      .then(argument("name", string()).executes(ctx -> ArcanaCommands.getItemData(ctx, getString(ctx, "name")))))

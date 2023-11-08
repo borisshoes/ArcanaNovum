@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -42,7 +42,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
 
 public class GravitonArrows extends RunicArrow {
    
@@ -57,22 +56,15 @@ public class GravitonArrows extends RunicArrow {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Runic Arrows - Graviton\",\"italic\":false,\"color\":\"dark_blue\",\"bold\":true}]");
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Graviton Arrows:\",\"italic\":false,\"color\":\"dark_blue\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"attract\",\"color\":\"dark_aqua\"},{\"text\":\" \"},{\"text\":\"entities\",\"color\":\"aqua\"},{\"text\":\" near the area of \"},{\"text\":\"impact\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"A hit \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"entity\",\"color\":\"aqua\"},{\"text\":\" is \"},{\"text\":\"not affected\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",869887);
       tag.putInt("HideFlags", 255);
       stack.setCount(64);
+      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -80,6 +72,16 @@ public class GravitonArrows extends RunicArrow {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      addRunicArrowLore(loreList);
+      loreList.add(NbtString.of("[{\"text\":\"Graviton Arrows:\",\"italic\":false,\"color\":\"dark_blue\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"attract\",\"color\":\"dark_aqua\"},{\"text\":\" \"},{\"text\":\"entities\",\"color\":\"aqua\"},{\"text\":\" near the area of \"},{\"text\":\"impact\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"blue\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"A hit \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"entity\",\"color\":\"aqua\"},{\"text\":\" is \"},{\"text\":\"not affected\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    @Override
@@ -132,12 +134,7 @@ public class GravitonArrows extends RunicArrow {
       }
       
       if(calls < duration){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
-            @Override
-            public void run(){
-               gravitonPulse(arrow, world, pos, entity,duration,range,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(5, () -> gravitonPulse(arrow, world, pos, entity,duration,range,calls + 1)));
       }
    }
    

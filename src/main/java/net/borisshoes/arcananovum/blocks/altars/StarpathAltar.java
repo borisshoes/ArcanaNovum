@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -60,10 +61,24 @@ public class StarpathAltar extends MagicBlock implements MultiblockCore {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Starpath Altar\",\"italic\":false,\"color\":\"white\",\"bold\":true}]");
+      tag.put("display",display);
+      tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
+      
+      setBookLore(makeLore());
+      setRecipe(makeRecipe());
+      prefNBT = addMagicNbt(tag);
+      
+      stack.setNbt(prefNBT);
+      prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
       loreList.add(NbtString.of("[{\"text\":\"Altars \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"are \",\"color\":\"blue\"},{\"text\":\"multiblock structures\",\"color\":\"dark_purple\"},{\"text\":\" that must be \",\"color\":\"blue\"},{\"text\":\"built \",\"color\":\"dark_purple\"},{\"text\":\"in the world.\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Left click a block\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" with an \",\"color\":\"blue\"},{\"text\":\"Altar \"},{\"text\":\"to see a \",\"color\":\"blue\"},{\"text\":\"hologram \",\"color\":\"dark_purple\"},{\"text\":\"of the \",\"color\":\"blue\"},{\"text\":\"structure\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" a \",\"color\":\"blue\"},{\"text\":\"completed \",\"color\":\"dark_purple\"},{\"text\":\"Altar \"},{\"text\":\"setup to \",\"color\":\"blue\"},{\"text\":\"activate \",\"color\":\"dark_purple\"},{\"text\":\"the \",\"color\":\"blue\"},{\"text\":\"Altar\"},{\"text\":\".\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
@@ -72,18 +87,7 @@ public class StarpathAltar extends MagicBlock implements MultiblockCore {
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"white\"},{\"text\":\"finds a \"},{\"text\":\"path \",\"color\":\"dark_aqua\"},{\"text\":\"through the \"},{\"text\":\"stars \",\"color\":\"white\"},{\"text\":\"to \"},{\"text\":\"anywhere \",\"color\":\"dark_aqua\"},{\"text\":\"in the world.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"All creatures\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" standing in the \",\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"white\"},{\"text\":\"will be \",\"color\":\"dark_gray\"},{\"text\":\"teleported\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"white\"},{\"text\":\"requires \"},{\"text\":\"Eyes of Ender\",\"color\":\"dark_aqua\"},{\"text\":\" to \"},{\"text\":\"activate\",\"color\":\"white\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      return loreList;
    }
    
    @Override

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -24,7 +25,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.potion.PotionUtil;
@@ -39,6 +39,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,22 +61,13 @@ public class ContainmentCirclet extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Containment Circlet\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Animals \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"often have a \",\"color\":\"green\"},{\"text\":\"mind of their own\",\"color\":\"aqua\"},{\"text\":\"; They must be \",\"color\":\"green\"},{\"text\":\"contained\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The Circlet\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"stores animals\",\"color\":\"dark_green\"},{\"text\":\" for safe \",\"color\":\"green\"},{\"text\":\"keeping \",\"color\":\"aqua\"},{\"text\":\"and easy \",\"color\":\"green\"},{\"text\":\"transport\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" a \",\"color\":\"green\"},{\"text\":\"passive animal\",\"color\":\"dark_green\"},{\"text\":\" to \",\"color\":\"green\"},{\"text\":\"contain \",\"color\":\"aqua\"},{\"text\":\"them.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" again to \",\"color\":\"green\"},{\"text\":\"release \",\"color\":\"aqua\"},{\"text\":\"them.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Contains\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" - \",\"color\":\"aqua\"},{\"text\":\"Nothing\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -86,6 +78,32 @@ public class ContainmentCirclet extends MagicItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtCompound itemNbt = itemStack.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtCompound contents = magicNbt.getCompound("contents");
+      int hp = (int) magicNbt.getFloat("hp");
+      int maxHp = (int) magicNbt.getFloat("maxHp");
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"Animals \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"often have a \",\"color\":\"green\"},{\"text\":\"mind of their own\",\"color\":\"aqua\"},{\"text\":\"; They must be \",\"color\":\"green\"},{\"text\":\"contained\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The Circlet\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"stores animals\",\"color\":\"dark_green\"},{\"text\":\" for safe \",\"color\":\"green\"},{\"text\":\"keeping \",\"color\":\"aqua\"},{\"text\":\"and easy \",\"color\":\"green\"},{\"text\":\"transport\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" a \",\"color\":\"green\"},{\"text\":\"passive animal\",\"color\":\"dark_green\"},{\"text\":\" to \",\"color\":\"green\"},{\"text\":\"contain \",\"color\":\"aqua\"},{\"text\":\"them.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" again to \",\"color\":\"green\"},{\"text\":\"release \",\"color\":\"aqua\"},{\"text\":\"them.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      Optional<EntityType<?>> entity = EntityType.fromNbt(contents);
+      if(!contents.isEmpty() && entity.isPresent()){
+         String entityTypeName = entity.get().getName().getString();
+         loreList.add(NbtString.of("[{\"text\":\"Contains\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" - \",\"color\":\"aqua\"},{\"text\":\""+entityTypeName+" ("+hp+"/"+maxHp+")\",\"color\":\"green\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Contains\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" - \",\"color\":\"aqua\"},{\"text\":\"Nothing\",\"color\":\"green\"}]"));
+      }
+      
+      
+      return loreList;
    }
    
    @Override
@@ -100,24 +118,7 @@ public class ContainmentCirclet extends MagicItem {
       newTag.getCompound("arcananovum").putFloat("hp",hp);
       newTag.getCompound("arcananovum").putFloat("maxHp",maxHp);
       stack.setNbt(newTag);
-      redoLore(stack);
-      return stack;
-   }
-   
-   private void redoLore(ItemStack stack){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound contents = magicNbt.getCompound("contents");
-      int hp = (int) magicNbt.getFloat("hp");
-      int maxHp = (int) magicNbt.getFloat("maxHp");
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      Optional<EntityType<?>> entity = EntityType.fromNbt(contents);
-      if(!contents.isEmpty() && entity.isPresent()){
-         String entityTypeName = entity.get().getName().getString();
-         loreList.set(5,NbtString.of("[{\"text\":\"Contains\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" - \",\"color\":\"aqua\"},{\"text\":\""+entityTypeName+" ("+hp+"/"+maxHp+")\",\"color\":\"green\"}]"));
-      }else{
-         loreList.set(5,NbtString.of("[{\"text\":\"Contains\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" - \",\"color\":\"aqua\"},{\"text\":\"Nothing\",\"color\":\"green\"}]"));
-      }
+      return buildItemLore(stack,server);
    }
    
    // Normal override in item class doesn't work because tamed animals consume the item interaction
@@ -154,7 +155,7 @@ public class ContainmentCirclet extends MagicItem {
          user.sendMessage(Text.literal("The Circlet contains the creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
          PLAYER_DATA.get(user).addXP(5); // Add xp
-         redoLore(stack);
+         buildItemLore(stack,user.getServer());
       }
       
       return ActionResult.SUCCESS;
@@ -223,7 +224,7 @@ public class ContainmentCirclet extends MagicItem {
                   ArcanaAchievements.grant(player,ArcanaAchievements.I_CHOOSE_YOU.id);
                }
             }
-            redoLore(stack);
+            buildItemLore(stack,serverWorld.getServer());
             return ActionResult.SUCCESS;
          }
          
@@ -243,7 +244,7 @@ public class ContainmentCirclet extends MagicItem {
          
          if(heals && player.getServer().getTicks() % 1200 == 0){
             magicNbt.putFloat("hp",Math.min(maxHp,hp+1));
-            redoLore(stack);
+            buildItemLore(stack,serverWorld.getServer());
          }
       }
       

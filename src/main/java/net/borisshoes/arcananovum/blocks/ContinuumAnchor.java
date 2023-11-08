@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
@@ -38,7 +38,10 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -51,7 +54,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.ANCHOR_CHUNKS;
+import static net.borisshoes.arcananovum.ArcanaNovum.ANCHOR_CHUNKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
@@ -71,19 +74,12 @@ public class ContinuumAnchor extends MagicBlock {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Continuum Anchor\",\"italic\":false,\"bold\":true,\"color\":\"dark_blue\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"anchor\",\"color\":\"dark_blue\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"has the extraordinary ability to manipulate \"},{\"text\":\"spacetime\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It just needs the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"right type\",\"color\":\"gray\"},{\"text\":\" of\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"fuel\",\"color\":\"gold\"},{\"text\":\"...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"continuum anchor\",\"color\":\"dark_blue\"},{\"text\":\" consumes \"},{\"text\":\"exotic matter\",\"color\":\"blue\"},{\"text\":\" to \"},{\"text\":\"chunk load\",\"color\":\"aqua\"},{\"text\":\" a \"},{\"text\":\"5x5 area\",\"color\":\"dark_green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"area \",\"color\":\"dark_green\"},{\"text\":\"also receives \"},{\"text\":\"random ticks\",\"color\":\"blue\"},{\"text\":\" and keeps \"},{\"text\":\"mobs \",\"color\":\"gray\"},{\"text\":\"loaded\",\"color\":\"aqua\"},{\"text\":\".\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary\",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -92,16 +88,26 @@ public class ContinuumAnchor extends MagicBlock {
       prefItem = stack;
    }
    
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"anchor\",\"color\":\"dark_blue\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"has the extraordinary ability to manipulate \"},{\"text\":\"spacetime\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"It just needs the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"right type\",\"color\":\"gray\"},{\"text\":\" of\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"fuel\",\"color\":\"gold\"},{\"text\":\"...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"continuum anchor\",\"color\":\"dark_blue\"},{\"text\":\" consumes \"},{\"text\":\"exotic matter\",\"color\":\"blue\"},{\"text\":\" to \"},{\"text\":\"chunk load\",\"color\":\"aqua\"},{\"text\":\" a \"},{\"text\":\"5x5 area\",\"color\":\"dark_green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"area \",\"color\":\"dark_green\"},{\"text\":\"also receives \"},{\"text\":\"random ticks\",\"color\":\"blue\"},{\"text\":\" and keeps \"},{\"text\":\"mobs \",\"color\":\"gray\"},{\"text\":\"loaded\",\"color\":\"aqua\"},{\"text\":\".\"}]"));
+      return loreList;
+   }
+   
    public static void addChunk(ServerWorld world, ChunkPos chunk){
-      world.getChunkManager().threadedAnvilChunkStorage.getTicketManager().addTicket(ContinuumAnchor.TICKET_TYPE,chunk,2,chunk);
+      world.getChunkManager().addTicket(ContinuumAnchor.TICKET_TYPE,chunk,2,chunk);
    }
    
    public static void removeChunk(ServerWorld world, ChunkPos chunk){
-      world.getChunkManager().threadedAnvilChunkStorage.getTicketManager().removeTicket(ContinuumAnchor.TICKET_TYPE,chunk,2,chunk);
+      world.getChunkManager().removeTicket(ContinuumAnchor.TICKET_TYPE,chunk,2,chunk);
    }
    
    public static List<ChunkPos> getLoadedChunks(ServerWorld serverWorld){
-      return Arcananovum.ANCHOR_CHUNKS.get(serverWorld);
+      return ArcanaNovum.ANCHOR_CHUNKS.get(serverWorld);
    }
    
    public static boolean isChunkLoaded(ServerWorld serverWorld, ChunkPos chunk){
@@ -234,7 +240,7 @@ public class ContinuumAnchor extends MagicBlock {
       @Override
       public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
          if (world.getBlockEntity(pos) instanceof ContinuumAnchorBlockEntity anchor) {
-            if (!player.isCreative() && player.canHarvest(world.getBlockState(pos)) && world instanceof ServerWorld serverWorld) {
+            if (world instanceof ServerWorld serverWorld) {
                if (!world.isClient) {
                   dropBlockItem(world,pos,state,player,anchor);
                   
@@ -250,7 +256,7 @@ public class ContinuumAnchor extends MagicBlock {
                      }
                   }
                }
-               Arcananovum.removeActiveAnchor(serverWorld, pos);
+               ArcanaNovum.removeActiveAnchor(serverWorld, pos);
             }
             
             world.removeBlockEntity(pos);

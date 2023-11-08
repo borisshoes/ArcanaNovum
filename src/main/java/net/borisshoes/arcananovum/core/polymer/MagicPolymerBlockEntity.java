@@ -52,7 +52,7 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
    }
    
    protected void dropBlockItem(World world, BlockPos pos, BlockState state, PlayerEntity player, MagicBlockEntity magicBlock){
-      if ((player.isCreative() || player.canHarvest(world.getBlockState(pos))) && world instanceof ServerWorld) {
+      if ((player.isCreative() || player.canHarvest(world.getBlockState(pos))) && world instanceof ServerWorld serverWorld) {
          if (!world.isClient) {
             String uuid = magicBlock.getUuid();
             if(uuid == null) uuid = UUID.randomUUID().toString();
@@ -73,7 +73,7 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
             NbtCompound magicTag = dropNbt.getCompound("arcananovum");
             if(augmentsTag != null) {
                magicTag.put("augments",augmentsTag);
-               magicItem.redoAugmentLore(drop);
+               magicItem.buildItemLore(drop,serverWorld.getServer());
             }
             magicTag.putString("UUID",uuid);
             

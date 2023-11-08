@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerCrossbowItem;
@@ -39,6 +40,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -60,24 +62,17 @@ public class AlchemicalArbalest extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       NbtCompound power = new NbtCompound();
       power.putString("id","multishot");
       power.putInt("lvl",1);
       enchants.add(power);
       display.putString("Name","[{\"text\":\"Alchemical Arbalest\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Crossbow \",\"color\":\"dark_aqua\"},{\"text\":\"is outfitted with \"},{\"text\":\"enchanted \",\"color\":\"light_purple\"},{\"text\":\"clockwork mechanisms\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Tipped Arrows\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" fired from the \",\"color\":\"yellow\"},{\"text\":\"bow \",\"color\":\"dark_aqua\"},{\"text\":\"create a \",\"color\":\"yellow\"},{\"text\":\"lingering \",\"color\":\"dark_aqua\"},{\"text\":\"field\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Spectral Arrows\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" create a zone of \",\"color\":\"yellow\"},{\"text\":\"damage \",\"color\":\"dark_aqua\"},{\"text\":\"amplification\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"yellow\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Crossbow \",\"color\":\"dark_aqua\"},{\"text\":\"is \"},{\"text\":\"Unbreakable \",\"color\":\"blue\"},{\"text\":\"and comes with \"},{\"text\":\"Multishot\",\"color\":\"light_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("Unbreakable",1);
       tag.putInt("HideFlags", 255);
+      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -88,13 +83,23 @@ public class AlchemicalArbalest extends MagicItem {
    }
    
    @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Crossbow \",\"color\":\"dark_aqua\"},{\"text\":\"is outfitted with \"},{\"text\":\"enchanted \",\"color\":\"light_purple\"},{\"text\":\"clockwork mechanisms\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Tipped Arrows\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" fired from the \",\"color\":\"yellow\"},{\"text\":\"bow \",\"color\":\"dark_aqua\"},{\"text\":\"create a \",\"color\":\"yellow\"},{\"text\":\"lingering \",\"color\":\"dark_aqua\"},{\"text\":\"field\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Spectral Arrows\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" create a zone of \",\"color\":\"yellow\"},{\"text\":\"damage \",\"color\":\"dark_aqua\"},{\"text\":\"amplification\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"yellow\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Crossbow \",\"color\":\"dark_aqua\"},{\"text\":\"is \"},{\"text\":\"Unbreakable \",\"color\":\"blue\"},{\"text\":\"and comes with \"},{\"text\":\"Multishot\",\"color\":\"light_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
+   }
+   
+   @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    @Override

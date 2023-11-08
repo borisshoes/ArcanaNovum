@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Multimap;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -44,6 +45,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -61,23 +63,15 @@ public class SojournerBoots extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Sojourner\\'s Boots\",\"italic\":false,\"color\":\"dark_green\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"shall take you to see the \"},{\"text\":\"world\",\"color\":\"dark_aqua\"},{\"text\":\"...\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Merely \",\"italic\":false,\"color\":\"green\"},{\"text\":\"wearing \",\"color\":\"blue\"},{\"text\":\"them makes you want to go on an \"},{\"text\":\"adventure\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"are \"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"and equal to \"},{\"text\":\"unenchanted netherite\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Wearing them gives \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ramping move speed\",\"color\":\"dark_aqua\"},{\"text\":\" and \"},{\"text\":\"uphill step assist\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" the \",\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"to \",\"color\":\"green\"},{\"text\":\"toggle \"},{\"text\":\"their \",\"color\":\"green\"},{\"text\":\"step assist\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary\",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       display.putInt("color",3385600);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -87,6 +81,17 @@ public class SojournerBoots extends EnergyItem {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"shall take you to see the \"},{\"text\":\"world\",\"color\":\"dark_aqua\"},{\"text\":\"...\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Merely \",\"italic\":false,\"color\":\"green\"},{\"text\":\"wearing \",\"color\":\"blue\"},{\"text\":\"them makes you want to go on an \"},{\"text\":\"adventure\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"are \"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"and equal to \"},{\"text\":\"unenchanted netherite\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Wearing them gives \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ramping move speed\",\"color\":\"dark_aqua\"},{\"text\":\" and \"},{\"text\":\"uphill step assist\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" the \",\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"to \",\"color\":\"green\"},{\"text\":\"toggle \"},{\"text\":\"their \",\"color\":\"green\"},{\"text\":\"step assist\",\"color\":\"blue\"}]"));
+      return loreList;
    }
    
    @Override
@@ -107,7 +112,7 @@ public class SojournerBoots extends EnergyItem {
          EnhancedStatUtils.enhanceItem(stack,percentile);
       }
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    // Holy fuck, the fact that doing this server-side is so unbelievably difficult is absurd.

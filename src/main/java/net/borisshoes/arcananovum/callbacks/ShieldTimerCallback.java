@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -26,7 +26,7 @@ public class ShieldTimerCallback extends TickTimerCallback{
          ServerPlayerEntity player1 = player.getServer().getPlayerManager().getPlayer(player.getUuid());
          if(player1 == null){
             //log("Player ("+player.getEntityName()+") is not connected, creating login callback");
-            Arcananovum.addLoginCallback(new ShieldLoginCallback(player,hearts));
+            ArcanaNovum.addLoginCallback(new ShieldLoginCallback(player,hearts));
          }else{
             float removed = Math.max(0,player1.getAbsorptionAmount()-hearts);
             float diff = hearts - player1.getAbsorptionAmount() + removed;

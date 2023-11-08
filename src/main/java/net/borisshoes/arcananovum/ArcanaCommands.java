@@ -21,7 +21,6 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -65,8 +64,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static net.borisshoes.arcananovum.Arcananovum.devMode;
-import static net.borisshoes.arcananovum.Arcananovum.devPrint;
+import static net.borisshoes.arcananovum.ArcanaNovum.DEBUG_VALUE;
+import static net.borisshoes.arcananovum.ArcanaNovum.devMode;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
@@ -536,7 +535,21 @@ public class ArcanaCommands {
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          
-         ParticleEffectUtils.mythicalConstructSummon(player.getServerWorld(),new Vec3d(-32.5,120.5,94.5),0);
+         System.out.println(DEBUG_VALUE);
+         
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+      return 0;
+   }
+   
+   public static int testCommand(CommandContext<ServerCommandSource> objectCommandContext, int num) {
+      if (!devMode)
+         return 0;
+      try {
+         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         
+         DEBUG_VALUE = num;
          
       } catch (Exception e) {
          e.printStackTrace();
@@ -868,8 +881,7 @@ public class ArcanaCommands {
    
    public static int testBoss(CommandContext<ServerCommandSource> context){
       ServerCommandSource source = context.getSource();
-      devPrint("Test Boss");
-      DragonBossFight.test();
+      
       return 0;
    }
    

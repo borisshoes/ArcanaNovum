@@ -17,7 +17,7 @@ public abstract class EnergyItem extends MagicItem{
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").putInt("energy",energy);
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    public int getEnergy(ItemStack item){

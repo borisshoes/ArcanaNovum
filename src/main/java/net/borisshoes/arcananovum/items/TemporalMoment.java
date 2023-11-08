@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
@@ -11,6 +12,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,25 +29,28 @@ public class TemporalMoment extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Temporal Moment\",\"italic\":false,\"bold\":true,\"color\":\"dark_blue\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"A piece of \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"spacetime \",\"color\":\"dark_gray\"},{\"text\":\"collapsing\",\"color\":\"dark_aqua\",\"italic\":true},{\"text\":\" \",\"italic\":true},{\"text\":\"down to a single \"},{\"text\":\"moment\",\"color\":\"dark_blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"clock\",\"color\":\"aqua\"},{\"text\":\" itself is stuck between \"},{\"text\":\"one \",\"color\":\"dark_aqua\"},{\"text\":\"instant of \"},{\"text\":\"time\",\"color\":\"dark_blue\"},{\"text\":\" and \"},{\"text\":\"another\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"discovery\",\"color\":\"aqua\"},{\"text\":\" unlocks a whole \"},{\"text\":\"world\",\"color\":\"dark_gray\"},{\"text\":\" of \"},{\"text\":\"possibilites\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Mundane \",\"italic\":false,\"color\":\"gray\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"A piece of \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"spacetime \",\"color\":\"dark_gray\"},{\"text\":\"collapsing\",\"color\":\"dark_aqua\",\"italic\":true},{\"text\":\" \",\"italic\":true},{\"text\":\"down to a single \"},{\"text\":\"moment\",\"color\":\"dark_blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"clock\",\"color\":\"aqua\"},{\"text\":\" itself is stuck between \"},{\"text\":\"one \",\"color\":\"dark_aqua\"},{\"text\":\"instant of \"},{\"text\":\"time\",\"color\":\"dark_blue\"},{\"text\":\" and \"},{\"text\":\"another\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"discovery\",\"color\":\"aqua\"},{\"text\":\" unlocks a whole \"},{\"text\":\"world\",\"color\":\"dark_gray\"},{\"text\":\" of \"},{\"text\":\"possibilites\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    private MagicItemRecipe makeRecipe(){

@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -97,7 +97,7 @@ public class PlayerConnectionCallback {
    public static void onPlayerLeave(ServerPlayNetworkHandler handler, MinecraftServer server){
       ServerPlayerEntity player = handler.player;
       if(player.getMaxHealth() > 20 && player.getHealth() > 20){
-         Arcananovum.addLoginCallback(new MaxHealthLoginCallback(server,player.getUuidAsString(),player.getHealth()));
+         ArcanaNovum.addLoginCallback(new MaxHealthLoginCallback(server,player.getUuidAsString(),player.getHealth()));
       }
    }
 }

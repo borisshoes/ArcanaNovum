@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
@@ -24,8 +24,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
-import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -73,12 +71,9 @@ public class StormcallerAltarGui  extends SimpleGui implements WatchedGui {
                if(MiscUtils.removeItems(player,Items.DIAMOND_BLOCK,1)){
                   ParticleEffectUtils.stormcallerAltarAnim(player.getServerWorld(),blockEntity.getPos().toCenterPos(), 0);
                   blockEntity.resetCooldown();
-                  Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(100, new TimerTask() {
-                     @Override
-                     public void run(){
-                        changeWeather();
-                        PLAYER_DATA.get(player).addXP(1000);
-                     }
+                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(100, () -> {
+                     changeWeather();
+                     PLAYER_DATA.get(player).addXP(1000);
                   }));
                   close();
                }else{

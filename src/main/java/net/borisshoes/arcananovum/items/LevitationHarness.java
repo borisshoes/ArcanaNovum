@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -42,6 +43,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,21 +67,10 @@ public class LevitationHarness extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       NbtList attributes = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Levitation Harness\",\"italic\":false,\"color\":\"gray\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Mastery over the nature of \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Shulkers \",\"color\":\"yellow\"},{\"text\":\"has yielded the \"},{\"text\":\"Levitation Harness!\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Grants \",\"italic\":false,\"color\":\"white\"},{\"text\":\"creative flight\",\"color\":\"aqua\"},{\"text\":\" while consuming \"},{\"text\":\"Shulker \",\"color\":\"yellow\"},{\"text\":\"souls \",\"color\":\"dark_red\"},{\"text\":\"and \"},{\"text\":\"Glowstone\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"white\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Harness \",\"color\":\"gray\"},{\"text\":\"is quite \"},{\"text\":\"fragile \",\"color\":\"yellow\"},{\"text\":\"and the slightest bump causes it to \"},{\"text\":\"stall\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"white\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Harness \",\"color\":\"gray\"},{\"text\":\"also provides \"},{\"text\":\"no protection\",\"color\":\"dark_red\"},{\"text\":\" against \"},{\"text\":\"damage\",\"color\":\"aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right click\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" while \",\"color\":\"white\"},{\"text\":\"holding \",\"color\":\"aqua\"},{\"text\":\"the \",\"color\":\"white\"},{\"text\":\"harness \",\"color\":\"gray\"},{\"text\":\"to open the refuelling menu.\",\"color\":\"white\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Flight Duration \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"- \",\"color\":\"white\"},{\"text\":\"60 Minutes\",\"color\":\"yellow\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       display.putInt("color",9857430);
       NbtCompound armor = new NbtCompound();
       armor.putInt("Amount",0);
@@ -93,6 +84,7 @@ public class LevitationHarness extends EnergyItem {
       tag.put("AttributeModifiers",attributes);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -105,6 +97,26 @@ public class LevitationHarness extends EnergyItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"Mastery over the nature of \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Shulkers \",\"color\":\"yellow\"},{\"text\":\"has yielded the \"},{\"text\":\"Levitation Harness!\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Grants \",\"italic\":false,\"color\":\"white\"},{\"text\":\"creative flight\",\"color\":\"aqua\"},{\"text\":\" while consuming \"},{\"text\":\"Shulker \",\"color\":\"yellow\"},{\"text\":\"souls \",\"color\":\"dark_red\"},{\"text\":\"and \"},{\"text\":\"Glowstone\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"white\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Harness \",\"color\":\"gray\"},{\"text\":\"is quite \"},{\"text\":\"fragile \",\"color\":\"yellow\"},{\"text\":\"and the slightest bump causes it to \"},{\"text\":\"stall\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"white\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Harness \",\"color\":\"gray\"},{\"text\":\"also provides \"},{\"text\":\"no protection\",\"color\":\"dark_red\"},{\"text\":\" against \"},{\"text\":\"damage\",\"color\":\"aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right click\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" while \",\"color\":\"white\"},{\"text\":\"holding \",\"color\":\"aqua\"},{\"text\":\"the \",\"color\":\"white\"},{\"text\":\"harness \",\"color\":\"gray\"},{\"text\":\"to open the refuelling menu.\",\"color\":\"white\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      if(itemStack != null){
+         String duration = getDuration(itemStack);
+         loreList.add(NbtString.of("[{\"text\":\"Flight Duration \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"- \",\"color\":\"white\"},{\"text\":\""+duration+"\",\"color\":\"yellow\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Flight Duration \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"- \",\"color\":\"white\"},{\"text\":\"60 Minutes\",\"color\":\"yellow\"}]"));
+      }
+      
+      return loreList;
    }
    
    @Override
@@ -130,15 +142,7 @@ public class LevitationHarness extends EnergyItem {
       newTag.getCompound("arcananovum").putBoolean("wasFlying",wasFlying);
       if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
-      redoLore(stack);
-      return stack;
-   }
-   
-   public void redoLore(ItemStack stack){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      String duration = getDuration(stack);
-      loreList.set(6,NbtString.of("[{\"text\":\"Flight Duration \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"- \",\"color\":\"white\"},{\"text\":\""+duration+"\",\"color\":\"yellow\"}]"));
+      return buildItemLore(stack,server);
    }
    
    public String getDuration(ItemStack item){
@@ -161,7 +165,7 @@ public class LevitationHarness extends EnergyItem {
       int souls = magicTag.getInt("souls");
       int glowstone = magicTag.getInt("glowstone") / 16;
       setEnergy(item,60*Math.min(souls,glowstone));
-      redoLore(item);
+      buildItemLore(item,ArcanaNovum.SERVER);
    }
    
    public int getGlow(ItemStack item){
@@ -275,7 +279,7 @@ public class LevitationHarness extends EnergyItem {
       if(MagicItemUtils.identifyItem(coreStack) instanceof ShulkerCore core){
          newMagicItem = getNewItem();
          setStone(newMagicItem,core.getStone(coreStack));
-         redoLore(newMagicItem);
+         buildItemLore(newMagicItem,ArcanaNovum.SERVER);
          
          int o = ArcanaAugments.getAugmentOnItem(coreStack, ArcanaAugments.SHULKER_RECYCLER.id);
          if(o > 0){
@@ -349,7 +353,7 @@ public class LevitationHarness extends EnergyItem {
                }
                ParticleEffectUtils.harnessFly(serverWorld,player,10);
                PLAYER_DATA.get(player).addXP(25);
-               redoLore(stack);
+               buildItemLore(stack,player.getServer());
                
                if(world.getServer().getTicks() % 120 == 0){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_AMBIENT,1f,0.8f);

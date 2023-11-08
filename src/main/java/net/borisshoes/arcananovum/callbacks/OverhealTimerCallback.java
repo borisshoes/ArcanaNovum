@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
@@ -23,7 +23,7 @@ public class OverhealTimerCallback  extends TickTimerCallback{
          ServerPlayerEntity player1 = player.getServer().getPlayerManager().getPlayer(player.getUuid());
          if(player1 == null){
             //log("Player ("+player.getEntityName()+") is not connected, creating login callback");
-            Arcananovum.addLoginCallback(new OverhealLoginCallback(player,hearts));
+            ArcanaNovum.addLoginCallback(new OverhealLoginCallback(player,hearts));
          }else{
             float removed = Math.max(0,player1.getAbsorptionAmount()-hearts);
             if(player1.getAbsorptionAmount() != 0){

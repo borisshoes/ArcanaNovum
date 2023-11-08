@@ -15,7 +15,7 @@
   "environment": "server",
   "entrypoints": {
     "main": [
-      "net.borisshoes.arcananovum.Arcananovum"
+      "net.borisshoes.arcananovum.ArcanaNovum"
     ],
     "cardinal-components-entity": [
       "net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer"

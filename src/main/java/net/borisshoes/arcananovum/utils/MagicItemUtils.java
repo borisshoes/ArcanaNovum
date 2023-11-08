@@ -24,7 +24,7 @@ import net.minecraft.util.collection.DefaultedList;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.Arcananovum.log;
+import static net.borisshoes.arcananovum.ArcanaNovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class MagicItemUtils {

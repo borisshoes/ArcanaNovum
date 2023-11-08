@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.server.world.ServerWorld;
@@ -27,7 +27,7 @@ public class BeaconMiningLaserCallback extends TickTimerCallback{
             world.breakBlock(breakPos,true);
          }
          if(world.isInBuildLimit(breakPos.up())){
-            Arcananovum.addTickTimerCallback(world,new BeaconMiningLaserCallback(world,beaconPos,breakPos.up()));
+            ArcanaNovum.addTickTimerCallback(world,new BeaconMiningLaserCallback(world,beaconPos,breakPos.up()));
          }
       }
    }

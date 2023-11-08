@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -58,10 +59,24 @@ public class MidnightEnchanter extends MagicBlock implements MultiblockCore {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Midnight Enchanter\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
+      tag.put("display",display);
+      tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
+      
+      setBookLore(makeLore());
+      setRecipe(makeRecipe());
+      prefNBT = addMagicNbt(tag);
+      
+      stack.setNbt(prefNBT);
+      prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
       loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Forge Structure\",\"color\":\"light_purple\"},{\"text\":\" addon to the \"},{\"text\":\"Starlight Forge\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Normal \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Enchanting Tables\",\"color\":\"dark_aqua\"},{\"text\":\" are \"},{\"text\":\"unpredictable \",\"color\":\"aqua\"},{\"text\":\"and \"},{\"text\":\"inconsistent\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"blue\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Table \",\"color\":\"dark_aqua\"},{\"text\":\"not only enables \"},{\"text\":\"precise control \",\"color\":\"light_purple\"},{\"text\":\"of \"},{\"text\":\"enchantments\",\"color\":\"dark_aqua\"},{\"text\":\"...\",\"color\":\"blue\"}]"));
@@ -73,18 +88,7 @@ public class MidnightEnchanter extends MagicBlock implements MultiblockCore {
       loreList.add(NbtString.of("[{\"text\":\"Must \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"be \",\"color\":\"dark_purple\"},{\"text\":\"placed \",\"color\":\"aqua\"},{\"text\":\"within a \",\"color\":\"dark_purple\"},{\"text\":\"17x11x17\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"cube around a \",\"color\":\"dark_purple\"},{\"text\":\"Starlight Forge\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" a \",\"color\":\"dark_purple\"},{\"text\":\"completed \",\"color\":\"aqua\"},{\"text\":\"Forge Structure\",\"color\":\"light_purple\"},{\"text\":\" to \",\"color\":\"dark_purple\"},{\"text\":\"use\",\"color\":\"aqua\"},{\"text\":\" it.\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" a \",\"color\":\"dark_purple\"},{\"text\":\"Forge Structure\",\"color\":\"light_purple\"},{\"text\":\" to see a \",\"color\":\"dark_purple\"},{\"text\":\"hologram \",\"color\":\"aqua\"},{\"text\":\"of the \",\"color\":\"dark_purple\"},{\"text\":\"structure\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      return loreList;
    }
    
    @Override
@@ -208,13 +212,7 @@ public class MidnightEnchanter extends MagicBlock implements MultiblockCore {
                   if(StarlightForge.findActiveForge(player.getServerWorld(),pos) == null){
                      player.sendMessage(Text.literal("The Enchanter must be within the range of an active Starlight Forge"));
                   }else{
-                     int bookshelfCount = 0;
-                     for(BlockPos blockPos : BlockPos.iterate(pos.add(-2, -2, -2), pos.add(2, 2, 2))){
-                        if(world.getBlockState(blockPos).isOf(Blocks.BOOKSHELF) || world.getBlockState(blockPos).isOf(Blocks.CHISELED_BOOKSHELF)){
-                           bookshelfCount++;
-                        }
-                     }
-                     if(bookshelfCount >= 20){
+                     if(enchanter.hasBooks()){
                         enchanter.openGui(player);
                      }else{
                         player.sendMessage(Text.literal("The Enchanter needs at least 20 bookshelves nearby"));

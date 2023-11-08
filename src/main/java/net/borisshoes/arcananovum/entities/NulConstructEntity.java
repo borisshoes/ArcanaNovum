@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.mixins.WitherEntityAccessor;
@@ -357,12 +357,9 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       NulConstructDialog.announce(summoner.getServer(),summoner,this, Announcements.SUMMON_TEXT);
       NulConstructEntity construct = this;
-      Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), new TimerTask() {
-         @Override
-         public void run(){
-            NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasMythical,summonerHasWings,false,isMythical});
-            setHealth(getMaxHealth());
-         }
+      ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), () -> {
+         NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasMythical,summonerHasWings,false,isMythical});
+         setHealth(getMaxHealth());
       }));
    }
    
@@ -515,9 +512,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       MinecraftServer server = getServer();
       if(server == null) return;
       
-      for(int i = 0; i < (int)(Math.random()*33+16); i++){
-         ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
-         dropItem(getWorld(),stack,getPos());
+      if(isMythical){
+         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(64),getPos());
+      }else{
+         for(int i = 0; i < (int)(Math.random()*33+16); i++){
+            ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
+            dropItem(getWorld(),stack,getPos());
+         }
       }
       
       if(summoner == null) return;
@@ -529,10 +530,11 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          dropItem(getWorld(),stack,getPos());
       }
       
-      ItemStack stack = ArcanaRegistry.MYTHICAL_CATALYST.addCrafter(ArcanaRegistry.MYTHICAL_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
-      PLAYER_DATA.get(summoner).addCraftedSilent(stack);
-      dropItem(getWorld(),stack,getPos());
-      
+      if(!isMythical){
+         ItemStack stack = ArcanaRegistry.MYTHICAL_CATALYST.addCrafter(ArcanaRegistry.MYTHICAL_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
+         PLAYER_DATA.get(summoner).addCraftedSilent(stack);
+         dropItem(getWorld(),stack,getPos());
+      }
       
       NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasMythical,summonerHasWings,dropped&&!isMythical,isMythical,isMythical&&dropped,isMythical&&!dropped});
       
@@ -984,9 +986,9 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          )),0,200,5));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
-                     .append(Text.literal("You may have survived, but your performance showed").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("You may have survived, but your performance showed ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("weakness").formatted(Formatting.RED, Formatting.ITALIC))
-                     .append(Text.literal(" that I do not").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal(" that I do not ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("tolerate").formatted(Formatting.GOLD))
                      .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")

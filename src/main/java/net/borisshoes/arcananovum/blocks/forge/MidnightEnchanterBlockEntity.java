@@ -4,9 +4,14 @@ import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.core.MagicBlockEntity;
+import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -28,6 +33,8 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
+   private boolean seenForge;
+   private boolean hasBooks;
    
    public MidnightEnchanterBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY, pos, state);
@@ -52,9 +59,23 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return;
       }
+      int ticks = serverWorld.getServer().getTicks();
       
-      if(serverWorld.getServer().getTicks() % 10 == 0){
+      if(ticks % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
+         this.seenForge = StarlightForge.findActiveForge(serverWorld,pos) != null;
+         
+         int bookshelfCount = 0;
+         for(BlockPos blockPos : BlockPos.iterate(pos.add(-2, -2, -2), pos.add(2, 2, 2))){
+            if(world.getBlockState(blockPos).isOf(Blocks.BOOKSHELF) || world.getBlockState(blockPos).isOf(Blocks.CHISELED_BOOKSHELF)){
+               bookshelfCount++;
+            }
+         }
+         hasBooks = bookshelfCount >= 20;
+      }
+      
+      if(assembled && seenForge && hasBooks){
+         ParticleEffectUtils.midnightEnchanterAnim(serverWorld,pos.toCenterPos(),ticks % 300);
       }
    }
    
@@ -68,6 +89,10 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    
    public boolean isAssembled(){
       return assembled;
+   }
+   
+   public boolean hasBooks(){
+      return hasBooks;
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){

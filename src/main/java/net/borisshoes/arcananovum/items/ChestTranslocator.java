@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -61,20 +62,13 @@ public class ChestTranslocator extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Chest Translocator\",\"italic\":false,\"bold\":true,\"color\":\"gold\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Moving items\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" from one \",\"color\":\"gray\"},{\"text\":\"chest \",\"color\":\"gold\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"another \",\"color\":\"gold\"},{\"text\":\"is a \",\"color\":\"gray\"},{\"text\":\"hassle\",\"color\":\"red\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Chests\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" are \",\"color\":\"gray\"},{\"text\":\"heavy\",\"color\":\"red\"},{\"text\":\" and carrying them \",\"color\":\"gray\"},{\"text\":\"slows \",\"color\":\"red\"},{\"text\":\"you down \",\"color\":\"gray\"},{\"text\":\"significantly\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" a \",\"color\":\"gray\"},{\"text\":\"chest \",\"color\":\"gold\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"store \",\"color\":\"red\"},{\"text\":\"it in the \",\"color\":\"gray\"},{\"text\":\"Translocator\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to \",\"color\":\"gray\"},{\"text\":\"place \",\"color\":\"red\"},{\"text\":\"a \",\"color\":\"gray\"},{\"text\":\"stored \",\"color\":\"red\"},{\"text\":\"chest\",\"color\":\"gold\"},{\"text\":\" down.\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -84,6 +78,17 @@ public class ChestTranslocator extends EnergyItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"Moving items\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" from one \",\"color\":\"gray\"},{\"text\":\"chest \",\"color\":\"gold\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"another \",\"color\":\"gold\"},{\"text\":\"is a \",\"color\":\"gray\"},{\"text\":\"hassle\",\"color\":\"red\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Chests\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" are \",\"color\":\"gray\"},{\"text\":\"heavy\",\"color\":\"red\"},{\"text\":\" and carrying them \",\"color\":\"gray\"},{\"text\":\"slows \",\"color\":\"red\"},{\"text\":\"you down \",\"color\":\"gray\"},{\"text\":\"significantly\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" a \",\"color\":\"gray\"},{\"text\":\"chest \",\"color\":\"gold\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"store \",\"color\":\"red\"},{\"text\":\"it in the \",\"color\":\"gray\"},{\"text\":\"Translocator\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to \",\"color\":\"gray\"},{\"text\":\"place \",\"color\":\"red\"},{\"text\":\"a \",\"color\":\"gray\"},{\"text\":\"stored \",\"color\":\"red\"},{\"text\":\"chest\",\"color\":\"gold\"},{\"text\":\" down.\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      
+      return loreList;
    }
    
    @Override
@@ -102,7 +107,7 @@ public class ChestTranslocator extends EnergyItem {
       newTag.getCompound("arcananovum").put("contents",contents);
       newTag.getCompound("arcananovum").put("state",state);
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    private MagicItemRecipe makeRecipe(){

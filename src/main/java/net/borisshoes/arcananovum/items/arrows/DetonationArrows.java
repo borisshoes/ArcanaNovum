@@ -1,7 +1,8 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
@@ -24,6 +25,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,22 +43,15 @@ public class DetonationArrows extends RunicArrow {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Runic Arrows - Detonation\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true}]");
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Detonation Arrows:\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"explode\",\"color\":\"red\"},{\"text\":\" on impact \"},{\"text\":\"destroying\",\"color\":\"red\"},{\"text\":\" nearby terrain.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" \"},{\"text\":\"explosion\",\"color\":\"red\"},{\"text\":\" does \"},{\"text\":\"reduced damage\",\"color\":\"red\"},{\"text\":\" to \"},{\"text\":\"players\",\"color\":\"red\"},{\"text\":\".\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("CustomPotionColor",11035949);
       tag.putInt("HideFlags", 255);
       stack.setCount(64);
+      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -64,6 +59,17 @@ public class DetonationArrows extends RunicArrow {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      addRunicArrowLore(loreList);
+      loreList.add(NbtString.of("[{\"text\":\"Detonation Arrows:\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"explode\",\"color\":\"red\"},{\"text\":\" on impact \"},{\"text\":\"destroying\",\"color\":\"red\"},{\"text\":\" nearby terrain.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" \"},{\"text\":\"explosion\",\"color\":\"red\"},{\"text\":\" does \"},{\"text\":\"reduced damage\",\"color\":\"red\"},{\"text\":\" to \"},{\"text\":\"players\",\"color\":\"red\"},{\"text\":\".\"}]"));
+      
+      return loreList;
    }
    
    @Override

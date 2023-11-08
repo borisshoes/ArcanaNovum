@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -152,8 +152,8 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
             if(crafterId != null && !crafterId.isEmpty()){
                ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
                if(player == null){
-                  Arcananovum.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
-                  if(serverWorld.getServer().getTicks() % 100 == 0) Arcananovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,1));
+                  ArcanaNovum.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
+                  if(serverWorld.getServer().getTicks() % 100 == 0) ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,1));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.TIMEY_WIMEY.id, 1);
                   if(serverWorld.getServer().getTicks() % 100 == 0) PLAYER_DATA.get(player).addXP(1);
@@ -166,7 +166,7 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
          
          // Do the chunk loading thing
          if(prevActive && !active){ // Power Down
-            Arcananovum.removeActiveAnchor(serverWorld,pos);
+            ArcanaNovum.removeActiveAnchor(serverWorld,pos);
             for(int i = -RANGE; i <= RANGE; i++){
                for(int j = -RANGE; j <= RANGE; j++){
                   ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
@@ -174,7 +174,7 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
             }
             SoundUtils.playSound(serverWorld,pos,SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.BLOCKS,1,1.5f);
          }else if(!prevActive && active){ // Power Up
-            Arcananovum.addActiveAnchor(serverWorld,pos);
+            ArcanaNovum.addActiveAnchor(serverWorld,pos);
             for(int i = -RANGE; i <= RANGE; i++){
                for(int j = -RANGE; j <= RANGE; j++){
                   ContinuumAnchor.addChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));

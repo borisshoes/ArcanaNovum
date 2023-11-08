@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static net.borisshoes.arcananovum.Arcananovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class Multiblock {
    private final int[][][] statePattern;

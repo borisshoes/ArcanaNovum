@@ -52,7 +52,7 @@ public class ShulkerCoreGui extends SimpleGui {
             }
          }
       }
-      core.redoLore(item);
+      core.buildItemLore(item,player.getServer());
    }
    
    public void validStone(ItemStack newStone){

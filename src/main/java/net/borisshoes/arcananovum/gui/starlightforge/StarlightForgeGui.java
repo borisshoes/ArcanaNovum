@@ -121,7 +121,7 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
                      ArcanaAugments.applyAugment(newMagicItem, aug.id, existingLvl+1);
                   }
                   
-                  magicItem.redoAugmentLore(newMagicItem);
+                  magicItem.buildItemLore(newMagicItem,player.getServer());
                }
                
                

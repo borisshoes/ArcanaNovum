@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
@@ -12,7 +12,6 @@ import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.TimerTask;
 
 public class DragonDialog {
    
@@ -105,10 +104,10 @@ public class DragonDialog {
                   .append(Text.literal("   By all means... prove to me you aren't an indolent waste as you've led me to believe.").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage4.add(Text.literal(""));
             
-            Arcananovum.addTickTimerCallback(new GenericTimer(100, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage1); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(200, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage2); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(300, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage3); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(400, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage4); }}));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage1); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () ->{ announceHelper(server,subMessage2); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage3); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(400, () ->{ announceHelper(server,subMessage4); }));
             break;
          case PHASE_ONE_START:
             mainMessage.add(Text.literal("")
@@ -233,9 +232,9 @@ public class DragonDialog {
                   .append(Text.literal("   Ho ho... No, no, this is what you deserve. If they are mere insects, squish them yourself!").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage7.add(Text.literal(""));
             
-            Arcananovum.addTickTimerCallback(new GenericTimer(100, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage5); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(200, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage6); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(300, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage7); }}));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage5); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () ->{ announceHelper(server,subMessage6); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage7); }));
             break;
          case DRAGON_QUARTER_HP:
             ArrayList<MutableText> subMessage8 = new ArrayList<>();
@@ -316,11 +315,11 @@ public class DragonDialog {
                   .append(Text.literal("   You cowered in your realm, and became just like them!").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage12.add(Text.literal(""));
             
-            Arcananovum.addTickTimerCallback(new GenericTimer(150, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage8); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(250, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage9); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(400, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage10); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(650, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage11); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(690, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage12); }}));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(150, () ->{ announceHelper(server,subMessage8); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(250, () ->{ announceHelper(server,subMessage9); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(400, () ->{ announceHelper(server,subMessage10); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(650, () ->{ announceHelper(server,subMessage11); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(690, () ->{ announceHelper(server,subMessage12); }));
             break;
          case DRAGON_DEATH:
             ArrayList<MutableText> subMessage13 = new ArrayList<>();
@@ -343,7 +342,7 @@ public class DragonDialog {
                   .append(Text.literal("   I'm sorry Sister. You had your chance, and now I have mine. The mortals are our best shot at restoring this world. I'll see if they are worthy...").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage13.add(Text.literal(""));
             
-            Arcananovum.addTickTimerCallback(new GenericTimer(100, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage13); }}));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage13); }));
             break;
          case EVENT_END:
             ArrayList<MutableText> subMessage14 = new ArrayList<>();
@@ -399,8 +398,8 @@ public class DragonDialog {
                   .append(Text.literal(" and let them guide you to new heights!").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage15.add(Text.literal(""));
             
-            Arcananovum.addTickTimerCallback(new GenericTimer(100, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage14); }}));
-            Arcananovum.addTickTimerCallback(new GenericTimer(200, new TimerTask() { @Override public void run(){ announceHelper(server,subMessage15); }}));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage14); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () ->{ announceHelper(server,subMessage15); }));
             
             break;
          case PHASE_ONE_GOONS:

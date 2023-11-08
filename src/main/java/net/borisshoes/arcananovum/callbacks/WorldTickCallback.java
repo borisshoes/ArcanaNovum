@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-import static net.borisshoes.arcananovum.Arcananovum.*;
+import static net.borisshoes.arcananovum.ArcanaNovum.*;
 
 public class WorldTickCallback {
    

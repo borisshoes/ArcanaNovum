@@ -2,18 +2,16 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 
-import java.util.TimerTask;
-
 public class GenericTimer extends TickTimerCallback {
-   private final TimerTask onTimer;
+   private final Runnable task;
    
-   public GenericTimer(int time, TimerTask onTimer){
-      super(time, null, null);
-      this.onTimer = onTimer;
+   public GenericTimer(int time, Runnable task){
+      super(time,null,null);
+      this.task = task;
    }
    
    @Override
    public void onTimer(){
-      onTimer.run();
+      task.run();
    }
 }

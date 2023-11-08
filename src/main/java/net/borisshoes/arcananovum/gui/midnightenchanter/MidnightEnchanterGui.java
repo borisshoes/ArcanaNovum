@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.midnightenchanter;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -71,7 +72,7 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
                return true;
             }
-            if(player.experienceLevel < xpCost){
+            if(player.experienceLevel < xpCost || player.isCreative()){
                player.sendMessage(Text.literal("You do not have enough levels").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
                return true;
@@ -91,7 +92,7 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
             }
          }else{
-            if(player.experienceLevel >= xpCost){
+            if(player.experienceLevel >= xpCost || player.isCreative()){
                if(MiscUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
                   applyEnchants();
                   player.addExperienceLevels(-xpCost);
@@ -540,6 +541,9 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
             newStack.setCustomName(stack.getName());
          }
          stack = newStack;
+      }
+      if(MagicItemUtils.isMagic(stack)){
+         MagicItemUtils.identifyItem(stack).buildItemLore(stack, ArcanaNovum.SERVER);
       }
       inv.setStack(0,stack);
       listener.finishUpdate();

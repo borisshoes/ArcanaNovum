@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items;
 import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -36,10 +37,11 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.Arcananovum.log;
+import static net.borisshoes.arcananovum.ArcanaNovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.ArcanaRegistry.RECOMMENDED_LIST;
 
@@ -58,24 +60,27 @@ public class ArcaneTome extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Tome of Arcana Novum\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"The knowledge within shall be your \",\"italic\":false,\"color\":\"green\"},{\"text\":\"guide\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"There is so much \",\"italic\":false,\"color\":\"green\"},{\"text\":\"new magic\",\"color\":\"light_purple\"},{\"text\":\" to explore...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"yellow\"},{\"text\":\" to open the tome.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Mundane\",\"italic\":false,\"color\":\"gray\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"The knowledge within shall be your \",\"italic\":false,\"color\":\"green\"},{\"text\":\"guide\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"There is so much \",\"italic\":false,\"color\":\"green\"},{\"text\":\"new magic\",\"color\":\"light_purple\"},{\"text\":\" to explore...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"yellow\"},{\"text\":\" to open the tome.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    public void openGui(PlayerEntity playerEntity, TomeMode mode, TomeGui.CompendiumSettings settings){
@@ -467,7 +472,7 @@ public class ArcaneTome extends MagicItem {
       ItemStack filterItem = new ItemStack(Items.HOPPER);
       NbtCompound tag = filterItem.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      display.putString("Name","[{\"text\":\"Filter Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      display.putString("Name","[{\"text\":\"Filter Achievements\",\"italic\":false,\"color\":\"dark_purple\"}]");
       tag.put("display",display);
       tag.putInt("HideFlags",103);
       GuiElementBuilder filterBuilt = GuiElementBuilder.from(filterItem);
@@ -481,7 +486,7 @@ public class ArcaneTome extends MagicItem {
       ItemStack sortItem = new ItemStack(Items.NETHER_STAR);
       tag = sortItem.getOrCreateNbt();
       display = new NbtCompound();
-      display.putString("Name","[{\"text\":\"Sort Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      display.putString("Name","[{\"text\":\"Sort Achievements\",\"italic\":false,\"color\":\"dark_purple\"}]");
       tag.put("display",display);
       tag.putInt("HideFlags",103);
       GuiElementBuilder sortBuilt = GuiElementBuilder.from(sortItem);

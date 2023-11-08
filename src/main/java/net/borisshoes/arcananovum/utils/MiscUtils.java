@@ -38,6 +38,7 @@ public class MiscUtils {
    }
    
    public static boolean removeItems(PlayerEntity player, Item item, int count){
+      if(player.isCreative()) return true;
       int remaining = count;
       PlayerInventory inv = player.getInventory();
       int[] slots = new int[inv.size()];

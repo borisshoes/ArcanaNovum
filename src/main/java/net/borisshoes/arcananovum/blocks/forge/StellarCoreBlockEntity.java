@@ -39,6 +39,7 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
+   private boolean seenForge;
    
    public StellarCoreBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY, pos, state);
@@ -68,9 +69,10 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
       
       if(ticks % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
+         this.seenForge = StarlightForge.findActiveForge(serverWorld,pos) != null;
       }
       
-      if(assembled){
+      if(assembled && seenForge){
          Direction dir = blockState.get(StellarCore.StellarCoreBlock.HORIZONTAL_FACING);
          ParticleEffectUtils.stellarCoreAnim(serverWorld,pos.add(dir.getVector().multiply(-2)).toCenterPos().add(0,1,0),ticks % 300, dir);
       }

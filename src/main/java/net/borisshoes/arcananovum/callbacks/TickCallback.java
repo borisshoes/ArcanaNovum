@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
@@ -73,12 +73,12 @@ public class TickCallback {
                
                // Detect un-formatted item
                Identifier id = Registries.ITEM.getId(item.getItem());
-               if(id.getNamespace().equals(Arcananovum.MOD_ID)){
+               if(id.getNamespace().equals(ArcanaNovum.MOD_ID)){
                   if(!MagicItemUtils.isMagic(item)){
                      MagicItem magicItem = ArcanaRegistry.registry.get(id.getPath());
                      if(magicItem != null){
                         item.setNbt(magicItem.getNewItem().getNbt());
-                        //Arcananovum.devPrint("Replacing data on: "+id.getPath());
+                        //ArcanaNovum.devPrint("Replacing data on: "+id.getPath());
                      }
                   }
                }
@@ -163,7 +163,7 @@ public class TickCallback {
       int curConc = MagicItemUtils.getUsedConcentration(player);
       if(MagicItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
-         if((boolean) Arcananovum.config.getValue("doConcentrationDamage")){
+         if((boolean) ArcanaNovum.config.getValue("doConcentrationDamage")){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
             player.damage(ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), 8);

@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -41,7 +41,7 @@ public abstract class QuiverItem extends MagicItem {
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").put("arrows",arrowsList);
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    public Formatting getColor(){
@@ -190,7 +190,7 @@ public abstract class QuiverItem extends MagicItem {
                }
                return stack;
             }else{
-               Arcananovum.log(2,"Quiver Error Occurred, this shouldn't be possible! Player: "+player.getDisplayName().getString());
+               ArcanaNovum.log(2,"Quiver Error Occurred, this shouldn't be possible! Player: "+player.getDisplayName().getString());
                return null;
             }
          }
@@ -228,14 +228,14 @@ public abstract class QuiverItem extends MagicItem {
                   }
                   return stack;
                }else{
-                  Arcananovum.log(2,"Quiver Error Occurred, this shouldn't be possible! Player: "+player.getDisplayName().getString());
+                  ArcanaNovum.log(2,"Quiver Error Occurred, this shouldn't be possible! Player: "+player.getDisplayName().getString());
                   return null;
                }
             }
          }
          
       }
-      Arcananovum.log(2,"Quiver Error Occurred, this shouldn't be possible! Player: "+player.getDisplayName().getString());
+      ArcanaNovum.log(2,"Quiver Error Occurred, this shouldn't be possible! Player: "+player.getDisplayName().getString());
       return null;
    }
    

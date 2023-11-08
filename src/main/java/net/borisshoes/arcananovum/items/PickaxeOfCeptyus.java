@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -25,6 +26,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +72,6 @@ public class PickaxeOfCeptyus extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       NbtCompound fortune = new NbtCompound();
       fortune.putString("id","fortune");
@@ -81,21 +82,25 @@ public class PickaxeOfCeptyus extends MagicItem {
       enchants.add(fortune);
       enchants.add(efficiency);
       display.putString("Name","[{\"text\":\"Ancient Pickaxe of Ceptyus\",\"italic\":false,\"bold\":true,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"A long-lost \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"Pickaxe \",\"color\":\"dark_aqua\"},{\"text\":\"that could \"},{\"text\":\"shatter \",\"color\":\"gold\"},{\"text\":\"the \"},{\"text\":\"World\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"Netherite Pickaxe\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Fortune V\",\"color\":\"green\"},{\"text\":\" and \"},{\"text\":\"Efficiency V\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It gives ramping \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"haste \",\"color\":\"gold\"},{\"text\":\"and \"},{\"text\":\"mines \",\"color\":\"dark_aqua\"},{\"text\":\"whole \"},{\"text\":\"ore veins\",\"color\":\"green\"},{\"text\":\". \"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Mythical\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       prefNBT = addMagicNbt(tag);
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"A long-lost \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"Pickaxe \",\"color\":\"dark_aqua\"},{\"text\":\"that could \"},{\"text\":\"shatter \",\"color\":\"gold\"},{\"text\":\"the \"},{\"text\":\"World\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"Netherite Pickaxe\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Fortune V\",\"color\":\"green\"},{\"text\":\" and \"},{\"text\":\"Efficiency V\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"It gives ramping \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"haste \",\"color\":\"gold\"},{\"text\":\"and \"},{\"text\":\"mines \",\"color\":\"dark_aqua\"},{\"text\":\"whole \"},{\"text\":\"ore veins\",\"color\":\"green\"},{\"text\":\". \"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    @Override
@@ -105,7 +110,7 @@ public class PickaxeOfCeptyus extends MagicItem {
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    public void veinMine(World world, PlayerEntity player, ItemStack item, BlockPos pos){

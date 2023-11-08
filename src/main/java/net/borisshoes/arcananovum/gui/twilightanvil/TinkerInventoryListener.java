@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
@@ -95,7 +95,7 @@ public class TinkerInventoryListener implements InventoryChangedListener {
                
                int curItemLevel = ArcanaAugments.getAugmentOnItem(item,augment.id);
                if(curItemLevel == -2){
-                  Arcananovum.log(3,"Magic item errored in Tinker's Screen: "+magicItem.getId());
+                  ArcanaNovum.log(3,"Magic item errored in Tinker's Screen: "+magicItem.getId());
                }else if(curItemLevel == -1) curItemLevel = 0;
                
                GuiElementBuilder augmentItem2;

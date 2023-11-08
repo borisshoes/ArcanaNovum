@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -27,6 +28,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,20 +47,13 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Arcanist's Belt\",\"italic\":false,\"color\":\"#996633\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"For when you have too many \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"tools \",\"color\":\"dark_aqua\"},{\"text\":\"and \"},{\"text\":\"Magic Items \",\"color\":\"dark_purple\"},{\"text\":\"to carry...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\" in the belt will maintain their \",\"color\":\"yellow\"},{\"text\":\"passive effects\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\" consume a \",\"color\":\"yellow\"},{\"text\":\"reduced\",\"color\":\"dark_aqua\"},{\"text\":\" amount of \",\"color\":\"yellow\"},{\"text\":\"concentration\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to access the \",\"color\":\"yellow\"},{\"text\":\"Belt's\",\"color\":\"#996633\"},{\"text\":\" slots\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic\",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -72,6 +67,16 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
    }
    
    @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"For when you have too many \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"tools \",\"color\":\"dark_aqua\"},{\"text\":\"and \"},{\"text\":\"Magic Items \",\"color\":\"dark_purple\"},{\"text\":\"to carry...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\" in the belt will maintain their \",\"color\":\"yellow\"},{\"text\":\"passive effects\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\" consume a \",\"color\":\"yellow\"},{\"text\":\"reduced\",\"color\":\"dark_aqua\"},{\"text\":\" amount of \",\"color\":\"yellow\"},{\"text\":\"concentration\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to access the \",\"color\":\"yellow\"},{\"text\":\"Belt's\",\"color\":\"#996633\"},{\"text\":\" slots\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
+   }
+   
+   @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound itemNbt = stack.getNbt();
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
@@ -79,7 +84,7 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").put("items",itemsList);
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    public static boolean checkBeltAndHasItem(ItemStack beltStack, Item searchItem){

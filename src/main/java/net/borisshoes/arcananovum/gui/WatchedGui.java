@@ -7,7 +7,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Map;
 
-import static net.borisshoes.arcananovum.Arcananovum.OPEN_GUIS;
+import static net.borisshoes.arcananovum.ArcanaNovum.OPEN_GUIS;
 
 public interface WatchedGui {
    public BlockEntity getBlockEntity();

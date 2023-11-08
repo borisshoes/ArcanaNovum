@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -159,7 +159,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                   MagicRarity[] tiers = augment.getTiers();
                   int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment.id);
                   if(curItemLevel == -2){
-                     Arcananovum.log(3, "Magic item errored in Tinker's Screen: " + magicItem.getId());
+                     ArcanaNovum.log(3, "Magic item errored in Tinker's Screen: " + magicItem.getId());
                   }else if(curItemLevel == -1) curItemLevel = 0;
                   
                   boolean generic = magicItem.getId().equals(ArcanaRegistry.ARCANE_TOME.getId());
@@ -335,7 +335,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             if(!creative) playerInv.removeStack(catalystSlot);
             return true;
          }else{
-            Arcananovum.log(3,"Error applying augment "+augment.id+" to "+MagicItemUtils.identifyItem(item).getId());
+            ArcanaNovum.log(3,"Error applying augment "+augment.id+" to "+MagicItemUtils.identifyItem(item).getId());
          }
       }
       

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -39,6 +40,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,18 +64,12 @@ public class WildGrowthCharm extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Charm of Wild Growth\",\"italic\":false,\"bold\":true,\"color\":\"green\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"charm\",\"color\":\"green\"},{\"text\":\" smells of a \"},{\"text\":\"cool\",\"color\":\"aqua\"},{\"text\":\" spring\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"breeze.\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Nearby \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"plants\",\"color\":\"green\"},{\"text\":\" and \"},{\"text\":\"animals\",\"color\":\"green\"},{\"text\":\" seem to be\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"invigorated\",\"color\":\"aqua\"},{\"text\":\" by its \"},{\"text\":\"proximity\",\"color\":\"green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" the \",\"color\":\"dark_green\"},{\"text\":\"charm \",\"color\":\"green\"},{\"text\":\"to toggle \",\"color\":\"dark_green\"},{\"text\":\"its \",\"color\":\"dark_green\"},{\"text\":\"effect\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -83,6 +79,17 @@ public class WildGrowthCharm extends MagicItem {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"charm\",\"color\":\"green\"},{\"text\":\" smells of a \"},{\"text\":\"cool\",\"color\":\"aqua\"},{\"text\":\" spring\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"breeze.\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Nearby \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"plants\",\"color\":\"green\"},{\"text\":\" and \"},{\"text\":\"animals\",\"color\":\"green\"},{\"text\":\" seem to be\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"invigorated\",\"color\":\"aqua\"},{\"text\":\" by its \"},{\"text\":\"proximity\",\"color\":\"green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" the \",\"color\":\"dark_green\"},{\"text\":\"charm \",\"color\":\"green\"},{\"text\":\"to toggle \",\"color\":\"dark_green\"},{\"text\":\"its \",\"color\":\"dark_green\"},{\"text\":\"effect\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
+      return loreList;
    }
    
    private MagicItemRecipe makeRecipe(){

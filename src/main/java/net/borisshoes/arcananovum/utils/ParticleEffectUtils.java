@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.entity.Entity;
@@ -28,7 +28,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.TimerTask;
 
 public class ParticleEffectUtils {
    
@@ -89,12 +88,7 @@ public class ParticleEffectUtils {
       }
       
       if(tick < 100){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               stormcallerAltarAnim(world,center,tick+1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> stormcallerAltarAnim(world,center,tick+1)));
       }else{
          LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, world);
          lightning.setPosition(center);
@@ -170,12 +164,7 @@ public class ParticleEffectUtils {
       
       
       if(tick < 500){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               celestialAltarAnim(world,center,tick+1, direction);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> celestialAltarAnim(world,center,tick+1, direction)));
       }
    }
    
@@ -266,13 +255,61 @@ public class ParticleEffectUtils {
       }
       
       if(tick < 500){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               starpathAltarAnim(world,center,tick+1,groundStars,skyStars);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> starpathAltarAnim(world,center,tick+1,groundStars,skyStars)));
       }
+   }
+   
+   public static void midnightEnchanterAnim(ServerWorld world, Vec3d center, int tick){
+      if(tick % 2 == 0){
+         return;
+      }
+      
+      world.spawnParticles(ParticleTypes.ENCHANT,center.getX(),center.getY()+0.75,center.getZ(),5,0.1,0.1,0.1,1);
+      
+      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
+      final double L1 = 2.35;
+      final double S1 = 0.85;
+      final int I1 = 10;
+      final double D1 = 0.02;
+      final int C1 = 1;
+      
+      line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,S1),blue,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,L1),center.add(S1,-0.4,S1),blue,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,L1),center.add(-S1,-0.4,S1),blue,I1,C1,D1,1);
+      line(world,null,center.add(-L1,-0.4,0),center.add(-S1,-0.4,S1),blue,I1,C1,D1,1);
+      line(world,null,center.add(-L1,-0.4,0),center.add(-S1,-0.4,-S1),blue,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,-L1),center.add(S1,-0.4,-S1),blue,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,-L1),center.add(-S1,-0.4,-S1),blue,I1,C1,D1,1);
+      line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,-S1),blue,I1,C1,D1,1);
+      
+      
+      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
+      final double L2 = 1.4;
+      final double S2 = 0.6;
+      final int I2 = 10;
+      final double D2 = 0.02;
+      final int C2 = 1;
+      
+      line(world,null,center.add(L2,-0.4,L2),center.add(0,-0.4,S2),purple,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,L2),center.add(S2,-0.4,0),purple,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,L2),center.add(0,-0.4,S2),purple,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,L2),center.add(-S2,-0.4,0),purple,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,-L2),center.add(0,-0.4,-S2),purple,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,-L2),center.add(S2,-0.4,0),purple,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,-L2),center.add(0,-0.4,-S2),purple,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,-L2),center.add(-S2,-0.4,0),purple,I2,C2,D2,1);
+      
+      ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.7f);
+      final double L3 = 2.0;
+      final double S3 = 1.15;
+      final int I3 = 30;
+      final double D3 = 0.02;
+      final int C3 = 1;
+      
+      line(world,null,center.add(L3,-0.4,0),center.add(-L3,-0.4,0),pink,I3,C3,D3,1);
+      line(world,null,center.add(0,-0.4,L3),center.add(0,-0.4,-L3),pink,I3,C3,D3,1);
+      line(world,null,center.add(S3,-0.4,S3),center.add(-S3,-0.4,-S3),pink,I3,C3,D3,1);
+      line(world,null,center.add(-S3,-0.4,S3),center.add(S3,-0.4,-S3),pink,I3,C3,D3,1);
    }
    
    public static void stellarCoreAnim(ServerWorld world, Vec3d center, int tick, Direction direction){
@@ -296,7 +333,6 @@ public class ParticleEffectUtils {
       sphere(world,null,center,black,0.7,50,2,0.1,0,piPercent);
       sphere(world,null,center,ParticleTypes.WITCH,1.25,80,1,0.05,0,3*piPercent);
       sphere(world,null,center,blue,1,80,1,0.01,0,-3*piPercent);
-      sphere(world,null,center,ParticleTypes.NAUTILUS,1,1,1,0.1,1,piPercent);
       world.spawnParticles(ParticleTypes.WITCH,center.getX(),center.getY()-1.2,center.getZ(),4,0.3,0.4,0.3,0);
       
       List<Vec3d> rods = new ArrayList<>(Arrays.asList(
@@ -346,12 +382,7 @@ public class ParticleEffectUtils {
       
       
       if(tick < 220){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               nulConstructSummon(world,pos,tick+1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> nulConstructSummon(world,pos,tick+1)));
       }else{
          world.spawnParticles(ParticleTypes.WITCH,pos.x,pos.y,pos.z,150,1,1,1,0.01);
       }
@@ -405,12 +436,7 @@ public class ParticleEffectUtils {
       }
       
       if(tick < 220){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               mythicalConstructSummon(world,pos,tick+1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> mythicalConstructSummon(world,pos,tick+1)));
       }else{
          world.spawnParticles(ParticleTypes.WITCH,pos.x,pos.y,pos.z,150,1,1,1,0.01);
       }
@@ -438,12 +464,7 @@ public class ParticleEffectUtils {
       ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x36332b).toVector3f(),1.5f);
       sphere(world,null,pos,dust,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,calls*Math.PI*2/5);
       if(calls < 5){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               nulConstructReflexiveBlast(world,pos,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> nulConstructReflexiveBlast(world,pos,calls + 1)));
       }
    }
    
@@ -478,12 +499,7 @@ public class ParticleEffectUtils {
       }
       
       if(calls < totalCalls){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               webOfFireCast(world, type,caster,hits,range,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> webOfFireCast(world, type,caster,hits,range,calls + 1)));
       }
    }
    
@@ -491,12 +507,7 @@ public class ParticleEffectUtils {
       double radius = .5+calls*(range/5);
       sphere(world,null,pos,type,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,calls*Math.PI*2/5);
       if(calls < 5){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               pyroblastExplosion(world, type,pos,range,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> pyroblastExplosion(world, type,pos,range,calls + 1)));
       }
    }
    
@@ -518,12 +529,7 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.FLASH,pos.x,pos.y,pos.z,1,0,0,0,1);
       
       if(calls < 5){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               arcaneFlakArrowDetonate(world, pos,range,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> arcaneFlakArrowDetonate(world, pos,range,calls + 1)));
       }
    }
    
@@ -548,12 +554,7 @@ public class ParticleEffectUtils {
       double radius = .5+calls*(range/5);
       sphere(world,null,pos,dust,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,0);
       if(calls < 5){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               expulsionArrowEmit(world, pos,range,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> expulsionArrowEmit(world, pos,range,calls + 1)));
       }
    }
    
@@ -571,12 +572,7 @@ public class ParticleEffectUtils {
       }
       
       if(calls < 20){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
-            @Override
-            public void run(){
-               smokeArrowEmit(world, pos, entity,range,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(5, () -> smokeArrowEmit(world, pos, entity,range,calls + 1)));
       }
    }
    
@@ -584,12 +580,7 @@ public class ParticleEffectUtils {
       double radius = .5+calls*(range/5);
       sphere(world,null,pos,ParticleTypes.SQUID_INK,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,0);
       if(calls < 5){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               concussionArrowShot(world, pos, range,calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> concussionArrowShot(world, pos, range,calls + 1)));
       }
    }
    
@@ -639,12 +630,7 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.INSTANT_EFFECT,pos.x,pos.y,pos.z,1,.3,.3,.3,1);
       
       if(0 < duration){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
-            @Override
-            public void run(){
-               harnessFly(world, player,duration-1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(2, () -> harnessFly(world, player,duration-1)));
       }
    }
    
@@ -660,24 +646,14 @@ public class ParticleEffectUtils {
       spawnLongParticle(world,ParticleTypes.FLAME,pos.x+0.5,pos.y+0.5,pos.z+0.5,.4,.4,.4,.05,3);
       
       if(calls < (duration)){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(3, new TimerTask() {
-            @Override
-            public void run(){
-               dowsingRodEmitter(world, pos, calls + 1, duration);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(3, () -> dowsingRodEmitter(world, pos, calls + 1, duration)));
       }
    }
    
    public static void dowsingRodArrow(ServerWorld world, Vec3d start, Vec3d end, int calls){
       line(world,null,start,end,ParticleTypes.FLAME,8,3,.08,0);
       if(calls < (16)){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(5, new TimerTask() {
-            @Override
-            public void run(){
-               dowsingRodArrow(world, start, end, calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(5, () -> dowsingRodArrow(world, start, end, calls + 1)));
       }
    }
    
@@ -692,12 +668,7 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y+1,pos.z,1,.3,.3,.3,0.05);
    
       if(0 < duration){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               shulkerCoreLevitate(world, player,duration-1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> shulkerCoreLevitate(world, player,duration-1)));
       }
    }
    
@@ -727,12 +698,7 @@ public class ParticleEffectUtils {
       circle(world,null,pos.subtract(0,0.5,0),ParticleTypes.WITCH,1,20,1,0.1,0);
       
       if(tick < animLength){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               recallTeleport(world,pos,tick+1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> recallTeleport(world,pos,tick+1)));
       }
    }
    
@@ -784,12 +750,7 @@ public class ParticleEffectUtils {
       }
    
       if(calls < (period/100)){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
-            @Override
-            public void run(){
-               dragonBossTowerCircleInvuln(world, center, period, calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(2, () -> dragonBossTowerCircleInvuln(world, center, period, calls + 1)));
       }
    }
    
@@ -816,12 +777,7 @@ public class ParticleEffectUtils {
       sphere(world,null,center.add(0,2,0),dustLarge,5.5,25,1,0,1,-t);
       
       if(calls < (period/100)){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
-            @Override
-            public void run(){
-               dragonBossTowerCirclePush(world, center, period, calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(2, () -> dragonBossTowerCirclePush(world, center, period, calls + 1)));
       }
    }
    
@@ -845,12 +801,7 @@ public class ParticleEffectUtils {
       }
       
       if(calls < (period/100)){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
-            @Override
-            public void run(){
-               dragonReclaimTowerCircle(world, center, period, calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(2, () -> dragonReclaimTowerCircle(world, center, period, calls + 1)));
       }
    }
    
@@ -862,12 +813,7 @@ public class ParticleEffectUtils {
       longDistSphere(world,center.add(0,2,0),dust,5.5,75,1,0,1,-t);
       
       if(calls < (period/200)){
-         Arcananovum.addTickTimerCallback(world, new GenericTimer(2, new TimerTask() {
-            @Override
-            public void run(){
-               dragonReclaimTowerShield(world, center, calls + 1);
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(2, () -> dragonReclaimTowerShield(world, center, calls + 1)));
       }
    }
    

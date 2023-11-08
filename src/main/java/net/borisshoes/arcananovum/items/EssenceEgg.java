@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -29,7 +31,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
@@ -46,6 +47,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,22 +66,13 @@ public class EssenceEgg extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Essence Egg\",\"italic\":false,\"bold\":true,\"color\":\"aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Harness the power of a filled \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Soulstone\",\"color\":\"dark_red\"},{\"text\":\"...\",\"color\":\"light_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"With enough \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"souls\",\"color\":\"dark_red\"},{\"text\":\" a new form can be \"},{\"text\":\"spawned\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Spawns\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" a mob of the \",\"color\":\"light_purple\"},{\"text\":\"attuned type\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"0 Uses Left\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-   
+      buildItemLore(stack, ArcanaNovum.SERVER);
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -89,6 +82,35 @@ public class EssenceEgg extends MagicItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"Harness the power of a filled \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Soulstone\",\"color\":\"dark_red\"},{\"text\":\"...\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"With enough \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"souls\",\"color\":\"dark_red\"},{\"text\":\" a new form can be \"},{\"text\":\"spawned\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Spawns\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" a mob of the \",\"color\":\"light_purple\"},{\"text\":\"attuned type\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      if(itemStack != null){
+         NbtCompound itemNbt = itemStack.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         String entityId = magicNbt.getString("type");;
+         if(entityId.equals("unattuned")){
+            loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"}]"));
+         }else{
+            String entityTypeName = EntityType.get(entityId).get().getName().getString();
+            loreList.add(NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+         }
+         
+         int uses = magicNbt.getInt("uses");
+         loreList.add(NbtString.of("[{\"text\":\"Uses "+uses+" Left\",\"italic\":false,\"color\":\"gray\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+         loreList.add(NbtString.of("[{\"text\":\"0 Uses Left\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      }
+      
+      return loreList;
    }
    
    @Override
@@ -103,20 +125,14 @@ public class EssenceEgg extends MagicItem {
       stack.setNbt(newTag);
       setType(stack,type);
       setUses(stack,uses);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    public static void setType(ItemStack item, String entityId){
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      String entityTypeName = EntityType.get(entityId).get().getName().getString();
-      if(entityId.equals("unattuned")){
-         loreList.set(4,NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"}]"));
-      }else{
-         loreList.set(4,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
-      }
       magicNbt.putString("type",entityId);
+      ArcanaRegistry.ESSENCE_EGG.buildItemLore(item,ArcanaNovum.SERVER);
    }
    
    public static String getType(ItemStack item){
@@ -139,9 +155,7 @@ public class EssenceEgg extends MagicItem {
          item.setNbt(new NbtCompound());
       }else{
          magicNbt.putInt("uses", uses);
-      
-         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-         loreList.set(5,NbtString.of("[{\"text\":\"Uses "+uses+" Left\",\"italic\":false,\"color\":\"gray\"}]"));
+         ArcanaRegistry.ESSENCE_EGG.buildItemLore(item,ArcanaNovum.SERVER);
       }
    }
    
@@ -155,9 +169,7 @@ public class EssenceEgg extends MagicItem {
          item.setNbt(new NbtCompound());
       }else{
          magicNbt.putInt("uses", newUses);
-   
-         NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-         loreList.set(5,NbtString.of("[{\"text\":\"Uses "+newUses+" Left\",\"italic\":false,\"color\":\"gray\"}]"));
+         ArcanaRegistry.ESSENCE_EGG.buildItemLore(item,ArcanaNovum.SERVER);
       }
    }
    

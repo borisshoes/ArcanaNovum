@@ -594,7 +594,7 @@ public class ArcanaAchievements {
    private static ArcanaAchievement register(ArcanaAchievement achievement){
       String id = achievement.id;
       registry.put(id,achievement);
-      if(achievement.getMagicItem().getRarity() != MagicRarity.MYTHICAL && !id.equals("god_boon") && !id.equals("all_achievements")){
+      if(achievement.getMagicItem().getRarity() != MagicRarity.MYTHICAL && !id.equals("all_achievements")){
          allNonMythical.add(achievement);
       }else{
          allMythical.add(achievement);

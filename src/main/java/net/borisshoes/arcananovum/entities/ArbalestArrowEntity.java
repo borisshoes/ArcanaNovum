@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
@@ -24,7 +24,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.List;
-import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -110,12 +109,9 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
          serverWorld.spawnParticles(dust,pos.getX(),pos.getY(),pos.getZ(),pCount,range*.5,range*.5,range*.5,0);
       }
       
-      Arcananovum.addTickTimerCallback(serverWorld, new GenericTimer(5, new TimerTask() {
-         @Override
-         public void run(){
-            if(calls < 40){
-               deployAura(serverWorld, pos, calls+1);
-            }
+      ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(5, () -> {
+         if(calls < 40){
+            deployAura(serverWorld, pos, calls+1);
          }
       }));
    }

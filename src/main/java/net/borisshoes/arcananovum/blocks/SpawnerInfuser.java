@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicBlock;
@@ -72,21 +73,12 @@ public class SpawnerInfuser extends MagicBlock {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Spawner Infuser\",\"italic\":false,\"color\":\"dark_green\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Spawners \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"have their \",\"color\":\"dark_aqua\"},{\"text\":\"natural limit\",\"color\":\"yellow\"},{\"text\":\", \",\"color\":\"dark_aqua\"},{\"text\":\"Arcana \",\"color\":\"dark_purple\"},{\"text\":\"can now push them \",\"color\":\"dark_aqua\"},{\"text\":\"further\",\"color\":\"yellow\",\"italic\":true},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Place \",\"italic\":false,\"color\":\"green\"},{\"text\":\"the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"two blocks \",\"color\":\"dark_aqua\"},{\"text\":\"below \",\"color\":\"yellow\"},{\"text\":\"a \",\"color\":\"dark_aqua\"},{\"text\":\"spawner\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"requires a \"},{\"text\":\"soulstone \",\"color\":\"dark_red\"},{\"text\":\"matching the \"},{\"text\":\"spawner \",\"color\":\"dark_green\"},{\"text\":\"type\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"also requires \"},{\"text\":\"Nether Stars\",\"color\":\"aqua\"},{\"text\":\" to unlock \"},{\"text\":\"enhanced \",\"color\":\"yellow\"},{\"text\":\"infusions\",\"color\":\"dark_green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Apply \",\"italic\":false,\"color\":\"green\"},{\"text\":\"a \",\"color\":\"dark_aqua\"},{\"text\":\"Redstone signal\",\"color\":\"red\"},{\"text\":\" to \",\"color\":\"dark_aqua\"},{\"text\":\"activate \"},{\"text\":\"the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"green\"},{\"text\":\" the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"to \",\"color\":\"dark_aqua\"},{\"text\":\"configure \",\"color\":\"yellow\"},{\"text\":\"its \",\"color\":\"dark_aqua\"},{\"text\":\"abilities\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Legendary \",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -94,6 +86,18 @@ public class SpawnerInfuser extends MagicBlock {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"Spawners \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"have their \",\"color\":\"dark_aqua\"},{\"text\":\"natural limit\",\"color\":\"yellow\"},{\"text\":\", \",\"color\":\"dark_aqua\"},{\"text\":\"Arcana \",\"color\":\"dark_purple\"},{\"text\":\"can now push them \",\"color\":\"dark_aqua\"},{\"text\":\"further\",\"color\":\"yellow\",\"italic\":true},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Place \",\"italic\":false,\"color\":\"green\"},{\"text\":\"the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"two blocks \",\"color\":\"dark_aqua\"},{\"text\":\"below \",\"color\":\"yellow\"},{\"text\":\"a \",\"color\":\"dark_aqua\"},{\"text\":\"spawner\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"requires a \"},{\"text\":\"soulstone \",\"color\":\"dark_red\"},{\"text\":\"matching the \"},{\"text\":\"spawner \",\"color\":\"dark_green\"},{\"text\":\"type\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"also requires \"},{\"text\":\"Nether Stars\",\"color\":\"aqua\"},{\"text\":\" to unlock \"},{\"text\":\"enhanced \",\"color\":\"yellow\"},{\"text\":\"infusions\",\"color\":\"dark_green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Apply \",\"italic\":false,\"color\":\"green\"},{\"text\":\"a \",\"color\":\"dark_aqua\"},{\"text\":\"Redstone signal\",\"color\":\"red\"},{\"text\":\" to \",\"color\":\"dark_aqua\"},{\"text\":\"activate \"},{\"text\":\"the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"green\"},{\"text\":\" the \",\"color\":\"dark_aqua\"},{\"text\":\"Infuser \",\"color\":\"dark_green\"},{\"text\":\"to \",\"color\":\"dark_aqua\"},{\"text\":\"configure \",\"color\":\"yellow\"},{\"text\":\"its \",\"color\":\"dark_aqua\"},{\"text\":\"abilities\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    private MagicItemRecipe makeRecipe(){

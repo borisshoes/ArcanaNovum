@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -149,7 +149,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                      transaction.commit();
                      
                   }catch(Exception e){
-                     Arcananovum.log(2,"Exception in Igneous Collider inventory insertion at "+this.pos.toShortString());
+                     ArcanaNovum.log(2,"Exception in Igneous Collider inventory insertion at "+this.pos.toShortString());
                      e.printStackTrace();
                   }
                }
@@ -174,8 +174,8 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                if(crafterId != null && !crafterId.isEmpty()){
                   ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
                   if(player == null){
-                     Arcananovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
-                     Arcananovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,10));
+                     ArcanaNovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
+                     ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,10));
                   }else{
                      ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,1);
                      PLAYER_DATA.get(player).addXP(10);

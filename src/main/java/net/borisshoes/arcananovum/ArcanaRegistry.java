@@ -58,11 +58,11 @@ public class ArcanaRegistry {
    public static final SpecialRecipeSerializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_SERIALIZER;
    public static final RecipeType<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION;
    static {
-      ARCANA_SHIELD_DECORATION = Registry.register(Registries.RECIPE_TYPE, new Identifier(Arcananovum.MOD_ID, "arcana_shield_decoration"), new RecipeType<ArcanaShieldDecoratorRecipe>() {
+      ARCANA_SHIELD_DECORATION = Registry.register(Registries.RECIPE_TYPE, new Identifier(ArcanaNovum.MOD_ID, "arcana_shield_decoration"), new RecipeType<ArcanaShieldDecoratorRecipe>() {
          @Override
          public String toString() {return "arcana_shield_decoration_recipe";}
       });
-      ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(Arcananovum.MOD_ID, "arcana_shield_decoration"), new SpecialRecipeSerializer<>(ArcanaShieldDecoratorRecipe::new));
+      ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(ArcanaNovum.MOD_ID, "arcana_shield_decoration"), new SpecialRecipeSerializer<>(ArcanaShieldDecoratorRecipe::new));
    }
    
    // Entities
@@ -212,30 +212,30 @@ public class ArcanaRegistry {
    }
    
    private static Item registerItem(String id, Item item) {
-      ITEMS.put(id, Registry.register(Registries.ITEM, new Identifier(Arcananovum.MOD_ID, id), item));
+      ITEMS.put(id, Registry.register(Registries.ITEM, new Identifier(ArcanaNovum.MOD_ID, id), item));
       return item;
    }
    
    private static void registerBlock(String id, Block block) {
       BLOCKS.put(id, block);
-      Registry.register(Registries.BLOCK, new Identifier(Arcananovum.MOD_ID, id), block);
+      Registry.register(Registries.BLOCK, new Identifier(ArcanaNovum.MOD_ID, id), block);
    }
    
    public static BlockEntityType<? extends BlockEntity> registerBlockEntity(String id, BlockEntityType<? extends BlockEntity> blockEntityType) {
-      Registry.register(Registries.BLOCK_ENTITY_TYPE, new Identifier(Arcananovum.MOD_ID, id), blockEntityType);
+      Registry.register(Registries.BLOCK_ENTITY_TYPE, new Identifier(ArcanaNovum.MOD_ID, id), blockEntityType);
       PolymerBlockUtils.registerBlockEntity(blockEntityType);
       return blockEntityType;
    }
    
    public static <T extends Entity> EntityType<T> registerEntity(String id, EntityType<T> build){
-      Registry.register(Registries.ENTITY_TYPE, new Identifier(Arcananovum.MOD_ID,id), build);
+      Registry.register(Registries.ENTITY_TYPE, new Identifier(ArcanaNovum.MOD_ID,id), build);
       PolymerEntityUtils.registerType(build);
       //System.out.println("  \""+build.getTranslationKey()+"\": \"\",");
       return build;
    }
    
    public static StatusEffect registerStatusEffect(String id, StatusEffect effect){
-      Registry.register(Registries.STATUS_EFFECT, new Identifier(Arcananovum.MOD_ID,id), effect);
+      Registry.register(Registries.STATUS_EFFECT, new Identifier(ArcanaNovum.MOD_ID,id), effect);
       //System.out.println("  \""+effect.getTranslationKey()+"\": \"\",");
       return effect;
    }

@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFights;
@@ -20,6 +20,7 @@ import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -54,9 +55,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
 
-import static net.borisshoes.arcananovum.Arcananovum.SERVER_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
@@ -87,7 +87,7 @@ public abstract class LivingEntityMixin {
          float addedAbs = (float) Math.min(maxAbs,amount*.5);
          int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
          if(entity instanceof ServerPlayerEntity player){
-            Arcananovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
+            ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
             SoundUtils.playSongToPlayer(player,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
          }
          entity.setAbsorptionAmount((curAbs + addedAbs));
@@ -215,7 +215,7 @@ public abstract class LivingEntityMixin {
                toRemove.forEach(ShieldTimerCallback::onTimer);
                SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains); // Remove all absorption callbacks
                int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
-               Arcananovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,10)); // Put 5 hearts back
+               ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,10)); // Put 5 hearts back
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 10f);
                player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(),60);
                SoundUtils.playSound(player.getServerWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
@@ -340,12 +340,7 @@ public abstract class LivingEntityMixin {
                      player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
                   }
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, 1.3f);
-                  Arcananovum.addTickTimerCallback(new GenericTimer(50, new TimerTask() {
-                     @Override
-                     public void run(){
-                        player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.DARK_PURPLE), true);
-                     }
-                  }));
+                  ArcanaNovum.addTickTimerCallback(new GenericTimer(50, () -> player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.DARK_PURPLE), true)));
                }
                PLAYER_DATA.get(player).addXP((int) dmgReduction * 25); // Add xp
                if(source.getName().equals("flyIntoWall") && newReturn > player.getHealth() && (newReturn - dmgReduction) < player.getHealth())
@@ -458,5 +453,23 @@ public abstract class LivingEntityMixin {
    private void arcananovum_greaterInvisibilityUpdate(CallbackInfo ci){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       livingEntity.setInvisible(livingEntity.isInvisible() || livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT));
+   }
+   
+   @Inject(method="getAttackDistanceScalingFactor", at=@At("RETURN"), cancellable = true)
+   private void arcananovum_greaterInvisibilityAttackRangeScale(Entity entity, CallbackInfoReturnable<Double> cir){
+      LivingEntity livingEntity = (LivingEntity) (Object) this;
+      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity) return;
+      if(livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
+         cir.setReturnValue(cir.getReturnValue()*0.01);
+      }
+   }
+   
+   @Inject(method="canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at=@At("RETURN"), cancellable = true)
+   private void arcananovum_canTarget(LivingEntity target, CallbackInfoReturnable<Boolean> cir){
+      LivingEntity livingEntity = (LivingEntity) (Object) this;
+      if(livingEntity instanceof EnderDragonEntity || livingEntity instanceof WitherEntity) return;
+      if(target.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) || livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_BLINDNESS_EFFECT)){
+         cir.setReturnValue(false);
+      }
    }
 }

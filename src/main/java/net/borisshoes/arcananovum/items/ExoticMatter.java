@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,21 +37,13 @@ public class ExoticMatter extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Exotic Matter\",\"italic\":false,\"color\":\"blue\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"strange matter\",\"color\":\"blue\"},{\"text\":\" seems to warp \"},{\"text\":\"spacetime\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Perhaps it could be \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"useful\",\"italic\":true,\"color\":\"gray\"},{\"text\":\" for something...\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Used as \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"fuel\",\"color\":\"gold\"},{\"text\":\" for the \"},{\"text\":\"Continuum Anchor\",\"color\":\"dark_blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"7 Days\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Mundane\",\"italic\":false,\"color\":\"gray\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-   
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
@@ -58,11 +52,27 @@ public class ExoticMatter extends EnergyItem {
    }
    
    @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"strange matter\",\"color\":\"blue\"},{\"text\":\" seems to warp \"},{\"text\":\"spacetime\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Perhaps it could be \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"useful\",\"italic\":true,\"color\":\"gray\"},{\"text\":\" for something...\",\"italic\":false,\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Used as \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"fuel\",\"color\":\"gold\"},{\"text\":\" for the \"},{\"text\":\"Continuum Anchor\",\"color\":\"dark_blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      if(itemStack != null){
+         loreList.add(NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(itemStack)+"\",\"color\":\"blue\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"7 Days\",\"color\":\"blue\"}]"));
+      }
+      
+      return loreList;
+   }
+   
+   @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       stack.setNbt(newTag);
       setFuel(stack,getEnergy(stack));
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    @Override
@@ -78,7 +88,7 @@ public class ExoticMatter extends EnergyItem {
       
       int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
-      loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(item)+"\",\"color\":\"blue\"}]"));
+      buildItemLore(item,ArcanaNovum.SERVER);
       return newFuel;
    }
    
@@ -88,7 +98,7 @@ public class ExoticMatter extends EnergyItem {
    
       int newFuel = MathHelper.clamp(fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
-      loreList.set(4, NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(item)+"\",\"color\":\"blue\"}]"));
+      buildItemLore(item,ArcanaNovum.SERVER);
    }
    
    public String getDuration(ItemStack item){

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -24,7 +25,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
@@ -40,6 +40,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,27 +62,38 @@ public class EverlastingRocket extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Everlasting Rocket\",\"italic\":false,\"bold\":true,\"color\":\"yellow\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Rocket\",\"color\":\"yellow\"},{\"text\":\" that has near \"},{\"text\":\"infinite \",\"color\":\"light_purple\"},{\"text\":\"uses.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Can be used for \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"everything\",\"color\":\"light_purple\"},{\"text\":\" a \"},{\"text\":\"normal rocket\",\"color\":\"yellow\"},{\"text\":\" is used for.\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Stores \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"charges \",\"color\":\"yellow\"},{\"text\":\"that slowly \"},{\"text\":\"recharge \",\"color\":\"light_purple\"},{\"text\":\"over \"},{\"text\":\"time\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Charges \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"- \",\"color\":\"dark_purple\"},{\"text\":\"16 / 16\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Rocket\",\"color\":\"yellow\"},{\"text\":\" that has near \"},{\"text\":\"infinite \",\"color\":\"light_purple\"},{\"text\":\"uses.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Can be used for \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"everything\",\"color\":\"light_purple\"},{\"text\":\" a \"},{\"text\":\"normal rocket\",\"color\":\"yellow\"},{\"text\":\" is used for.\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Stores \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"charges \",\"color\":\"yellow\"},{\"text\":\"that slowly \"},{\"text\":\"recharge \",\"color\":\"light_purple\"},{\"text\":\"over \"},{\"text\":\"time\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      if(itemStack != null){
+         String chargeString = getEnergy(itemStack) + " / " + getMaxEnergy(itemStack);
+         loreList.add(NbtString.of("[{\"text\":\"Charges \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"- \",\"color\":\"dark_purple\"},{\"text\":\""+chargeString+"\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Charges \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"- \",\"color\":\"dark_purple\"},{\"text\":\"16 / 16\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      }
+      
+      
+      return loreList;
    }
    
    @Override
@@ -106,8 +118,7 @@ public class EverlastingRocket extends EnergyItem {
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       newTag.getCompound("arcananovum").put("Fireworks",firework);
       stack.setNbt(newTag);
-      redoLore(stack);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    @Override
@@ -140,19 +151,12 @@ public class EverlastingRocket extends EnergyItem {
          MagicItem magicItem = MagicItemUtils.identifyItem(item);
          if(magicItem instanceof EverlastingRocket rocket && getUUID(item).equals(rocketId)){
             rocket.addEnergy(item,-1);
-            rocket.redoLore(item);
+            rocket.buildItemLore(stack,player.getServer());
             ArcanaAchievements.progress(player,ArcanaAchievements.MISSILE_LAUNCHER.id, 1);
             PLAYER_DATA.get(player).addXP(100); // Add xp
             return;
          }
       }
-   }
-   
-   private void redoLore(ItemStack stack){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      String chargeString = getEnergy(stack) + " / " + getMaxEnergy(stack);
-      loreList.set(4,NbtString.of("[{\"text\":\"Charges \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"- \",\"color\":\"dark_purple\"},{\"text\":\""+chargeString+"\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
    }
    
    private MagicItemRecipe makeRecipe(){
@@ -201,7 +205,7 @@ public class EverlastingRocket extends EnergyItem {
          
          if(player.getServer().getTicks() % (600-(100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SULFUR_REPLICATION.id)))) == 0){
             addEnergy(stack,1);
-            redoLore(stack);
+            buildItemLore(stack,player.getServer());
          }
       }
       
@@ -216,7 +220,7 @@ public class EverlastingRocket extends EnergyItem {
                FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, context.getPlayer(), vec3d.x + (double)direction.getOffsetX() * 0.15, vec3d.y + (double)direction.getOffsetY() * 0.15, vec3d.z + (double)direction.getOffsetZ() * 0.15, getFireworkStack(itemStack));
                world.spawnEntity(fireworkRocketEntity);
                ((EnergyItem)getThis()).addEnergy(context.getStack(),-1);
-               redoLore(itemStack);
+               buildItemLore(itemStack,player.getServer());
                PLAYER_DATA.get(player).addXP(100); // Add xp
             }else{
                player.sendMessage(Text.literal("The Rocket is out of Charges").formatted(Formatting.YELLOW),true);
@@ -243,7 +247,7 @@ public class EverlastingRocket extends EnergyItem {
                   world.spawnEntity(fireworkRocketEntity);
                   if (!user.getAbilities().creativeMode) {
                      ((EnergyItem)getThis()).addEnergy(itemStack,-1);
-                     redoLore(itemStack);
+                     buildItemLore(itemStack,player.getServer());
                      PLAYER_DATA.get(player).addXP(100); // Add xp
                   }
                   user.incrementStat(Stats.USED.getOrCreateStat(this));

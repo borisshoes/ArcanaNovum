@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -28,7 +29,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.potion.PotionUtil;
@@ -46,6 +46,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,24 +69,13 @@ public class ShulkerCore extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Shulker Core\",\"italic\":false,\"color\":\"#ffff99\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Shulkers \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"possess a \",\"color\":\"gray\"},{\"text\":\"unique \",\"color\":\"dark_purple\"},{\"text\":\"ability to defy \",\"color\":\"gray\"},{\"text\":\"gravity\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Core \",\"color\":\"dark_purple\"},{\"text\":\"has \"},{\"text\":\"harnessed\",\"color\":\"yellow\"},{\"text\":\" that ability to allow \"},{\"text\":\"controlled\",\"color\":\"yellow\"},{\"text\":\" \"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\" must be \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"refilled \",\"color\":\"dark_aqua\"},{\"text\":\"with \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Shulkers\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to grant \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to change the \",\"color\":\"gray\"},{\"text\":\"speed \",\"color\":\"dark_aqua\"},{\"text\":\"of \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click in off-hand \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"refill \",\"color\":\"dark_aqua\"},{\"text\":\"the \",\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Shulkers Left\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" - \",\"color\":\"gray\"},{\"text\":\"1000\",\"color\":\"yellow\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-   
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -96,6 +86,26 @@ public class ShulkerCore extends EnergyItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"Shulkers \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"possess a \",\"color\":\"gray\"},{\"text\":\"unique \",\"color\":\"dark_purple\"},{\"text\":\"ability to defy \",\"color\":\"gray\"},{\"text\":\"gravity\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Core \",\"color\":\"dark_purple\"},{\"text\":\"has \"},{\"text\":\"harnessed\",\"color\":\"yellow\"},{\"text\":\" that ability to allow \"},{\"text\":\"controlled\",\"color\":\"yellow\"},{\"text\":\" \"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\" must be \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"refilled \",\"color\":\"dark_aqua\"},{\"text\":\"with \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Shulkers\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to grant \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to change the \",\"color\":\"gray\"},{\"text\":\"speed \",\"color\":\"dark_aqua\"},{\"text\":\"of \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click in off-hand \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"refill \",\"color\":\"dark_aqua\"},{\"text\":\"the \",\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      if(itemStack != null){
+         loreList.add(NbtString.of("[{\"text\":\"Shulkers Left\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" - \",\"color\":\"gray\"},{\"text\":\""+getEnergy(itemStack)+"\",\"color\":\"yellow\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Shulkers Left\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" - \",\"color\":\"gray\"},{\"text\":\"1000\",\"color\":\"yellow\"}]"));
+      }
+      
+      return loreList;
    }
    
    @Override
@@ -117,14 +127,7 @@ public class ShulkerCore extends EnergyItem {
       newTag.getCompound("arcananovum").putBoolean("stone",stone);
       newTag.getCompound("arcananovum").put("stoneData",stoneData);
       stack.setNbt(newTag);
-      redoLore(stack);
-      return stack;
-   }
-   
-   public void redoLore(ItemStack stack){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      loreList.set(7,NbtString.of("[{\"text\":\"Shulkers Left\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" - \",\"color\":\"gray\"},{\"text\":\""+getEnergy(stack)+"\",\"color\":\"yellow\"}]"));
+      return buildItemLore(stack,server);
    }
    
    private void changeSpeed(PlayerEntity playerEntity, World world, Hand hand){
@@ -195,7 +198,7 @@ public class ShulkerCore extends EnergyItem {
                if(world instanceof ServerWorld serverWorld){
                   ParticleEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
-               redoLore(item);
+               buildItemLore(item,playerEntity.getServer());
             }
          }else{
             playerEntity.sendMessage(Text.literal("The Shulker Core is empty.").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
@@ -304,7 +307,7 @@ public class ShulkerCore extends EnergyItem {
       if(MagicItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
          newMagicItem = getNewItem();
          setStone(newMagicItem,soulstoneStack);
-         redoLore(newMagicItem);
+         buildItemLore(newMagicItem,ArcanaNovum.SERVER);
       }
       return newMagicItem;
    }

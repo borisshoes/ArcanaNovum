@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -200,25 +201,21 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(player instanceof ServerPlayerEntity && getLevel() != newLevel){
          if(getLevel()/5 < newLevel/5){
             MinecraftServer server = player.getServer();
+            List<MutableText> msgs = new ArrayList<>();
             
             if(server != null){
                if(newLevel/5 * 5 == 100){
                   MutableText playerName = Text.literal("").append(player.getDisplayName()).formatted(Formatting.BOLD, Formatting.UNDERLINE);
                   
-                  MutableText lvlUpMsg = Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
-                  server.getPlayerManager().broadcast(lvlUpMsg, false);
-                  
-                  lvlUpMsg = Text.literal("")
+                  msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE));
+                  msgs.add(Text.literal("")
                         .append(Text.literal("=== ").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK))
                         .append(playerName)
                         .append(Text.literal(" has reached Arcana Level ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
                         .append(Text.literal(Integer.toString(newLevel/5 * 5)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
                         .append(Text.literal("!!!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD, Formatting.UNDERLINE))
-                        .append(Text.literal(" ===").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK));
-                  server.getPlayerManager().broadcast(lvlUpMsg, false);
-   
-                  lvlUpMsg = Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
-                  server.getPlayerManager().broadcast(lvlUpMsg, false);
+                        .append(Text.literal(" ===").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK)));
+                  msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.DARK_PURPLE));
                }else{
                   MutableText lvlUpMsg = Text.literal("")
                         .append(player.getDisplayName()).formatted(Formatting.ITALIC)
@@ -227,8 +224,19 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
                         .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC));
                   server.getPlayerManager().broadcast(lvlUpMsg, false);
                }
+               
+               if((boolean) ArcanaNovum.config.getValue("announceAchievements")){
+                  for(MutableText msg : msgs){
+                     server.getPlayerManager().broadcast(msg, false);
+                  }
+               }else{
+                  for(MutableText msg : msgs){
+                     player.sendMessage(msg, false);
+                  }
+               }
             }
          }
+         
          SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
          int resolve = getAugmentLevel(ArcanaAugments.RESOLVE.id);
          player.sendMessage(Text.literal(""),false);

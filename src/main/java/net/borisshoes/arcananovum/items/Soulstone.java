@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -18,7 +19,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
@@ -51,21 +51,13 @@ public class Soulstone extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Soulstone\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"The dark stone \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"crackles\",\"italic\":false,\"color\":\"red\"},{\"text\":\" with \"},{\"text\":\"red energy\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"souls\",\"color\":\"dark_purple\"},{\"text\":\" of mobs \"},{\"text\":\"killed\",\"color\":\"red\",\"italic\":false},{\"text\":\" seems to get \"},{\"text\":\"trapped\",\"color\":\"blue\"},{\"text\":\" inside...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Tier 0 - (0 Mobs Killed)\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-   
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -76,6 +68,35 @@ public class Soulstone extends MagicItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtCompound itemNbt = itemStack.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      String type = magicNbt.getString("type");
+      int souls = magicNbt.getInt("souls");
+      int tier = soulsToTier(souls);
+      
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"The dark stone \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"crackles\",\"italic\":false,\"color\":\"red\"},{\"text\":\" with \"},{\"text\":\"red energy\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"souls\",\"color\":\"dark_purple\"},{\"text\":\" of mobs \"},{\"text\":\"killed\",\"color\":\"red\",\"italic\":false},{\"text\":\" seems to get \"},{\"text\":\"trapped\",\"color\":\"blue\"},{\"text\":\" inside...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      Optional<EntityType<?>> opt = EntityType.get(type);
+      if(!type.equals("unattuned") && opt.isPresent()){
+         String entityTypeName = opt.get().getName().getString();
+         loreList.add(NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      }
+      if(souls != 0){
+         loreList.add(NbtString.of("[{\"text\":\"Tier "+tier+" - ("+souls+" Mobs Killed)\",\"italic\":false,\"color\":\"gray\"}]"));
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Tier 0 - (0 Mobs Killed)\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      }
+      
+      return loreList;
    }
    
    @Override
@@ -90,24 +111,7 @@ public class Soulstone extends MagicItem {
       newTag.getCompound("arcananovum").putInt("maxTier",maxTier);
       newTag.getCompound("arcananovum").putString("type",type);
       stack.setNbt(newTag);
-      redoLore(stack);
-      return stack;
-   }
-   
-   private void redoLore(ItemStack stack){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      String type = magicNbt.getString("type");
-      int souls = magicNbt.getInt("souls");
-      int tier = soulsToTier(souls);
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      if(!type.equals("unattuned")){
-         String entityTypeName = EntityType.get(type).get().getName().getString();
-         loreList.set(3,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
-      }
-      if(souls != 0){
-         loreList.set(4,NbtString.of("[{\"text\":\"Tier "+tier+" - ("+souls+" Mobs Killed)\",\"italic\":false,\"color\":\"gray\"}]"));
-      }
+      return buildItemLore(stack,server);
    }
    
    public void killedEntity(ServerWorld world, ServerPlayerEntity player, LivingEntity dead, ItemStack item){
@@ -117,7 +121,6 @@ public class Soulstone extends MagicItem {
       int maxTier = magicNbt.getInt("maxTier");
       
       String entityTypeId = EntityType.getId(dead.getType()).toString();
-      String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
    
       int toAdd = new int[]{1,2,3,4,5,10}[Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SOUL_REAPER.id))];
       souls += toAdd;
@@ -136,9 +139,7 @@ public class Soulstone extends MagicItem {
          if(tier == 3 && entityTypeId.equals("minecraft:villager")) ArcanaAchievements.grant(player,ArcanaAchievements.TOOK_A_VILLAGE.id);
       }
       magicNbt.putInt("souls",souls);
-      
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      loreList.set(4,NbtString.of("[{\"text\":\"Tier "+tier+" - ("+souls+" Mobs Killed)\",\"italic\":false,\"color\":\"gray\"}]"));
+      buildItemLore(item,player.getServer());
    }
    
    public static String getType(ItemStack item){
@@ -155,21 +156,16 @@ public class Soulstone extends MagicItem {
       }
    }
    
-   public static ItemStack setType(ItemStack stack, EntityType<? extends MobEntity> type){
+   public static ItemStack setType(ItemStack stack, EntityType<?> type){
       if(!(MagicItemUtils.identifyItem(stack) instanceof Soulstone)){
          return null;
       }
       ItemStack item = stack.copy();
-   
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-   
       String entityTypeId = EntityType.getId(type).toString();
-      String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
       magicNbt.putString("type",entityTypeId);
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      loreList.set(3,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
-      return item;
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item,ArcanaNovum.SERVER);
    }
    
    public static ItemStack setUnattuned(ItemStack stack){
@@ -182,9 +178,7 @@ public class Soulstone extends MagicItem {
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       
       magicNbt.putString("type","unattuned");
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      loreList.set(3,NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      return item;
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item,ArcanaNovum.SERVER);
    }
    
    public static int getSouls(ItemStack item){
@@ -204,56 +198,21 @@ public class Soulstone extends MagicItem {
    
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int souls = magicNbt.getInt("souls");
       newSouls = MathHelper.clamp(newSouls,0,Integer.MAX_VALUE);
       
-      int tier = soulsToTier(newSouls);
       magicNbt.putInt("souls",newSouls);
-   
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      loreList.set(4,NbtString.of("[{\"text\":\"Tier "+tier+" - ("+newSouls+" Mobs Killed)\",\"italic\":false,\"color\":\"gray\"}]"));
-      return item;
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item,ArcanaNovum.SERVER);
    }
    
    public static ItemStack getShowcaseItem(int souls, @Nullable String typeId){
-      ItemStack item = new ItemStack(Items.FIRE_CHARGE);
-      NbtCompound tag = item.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Soulstone\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"The dark stone \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"crackles\",\"italic\":true,\"color\":\"red\"},{\"text\":\" with \"},{\"text\":\"red energy\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"souls\",\"color\":\"dark_purple\"},{\"text\":\" of mobs \"},{\"text\":\"killed\",\"color\":\"red\",\"italic\":true},{\"text\":\" seems to get \"},{\"text\":\"trapped\",\"color\":\"blue\"},{\"text\":\" inside...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      ItemStack item = ArcanaRegistry.SOULSTONE.getItem().getDefaultStack().copy();
       
-      if(typeId == null){
-         loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      }else{
-         Optional<EntityType<?>> eType = EntityType.get(typeId);
-         if(eType.isEmpty() || typeId.equalsIgnoreCase("unattuned")){
-            loreList.add(NbtString.of("[{\"text\":\"Unattuned\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-         }else{
-            String entityTypeName = eType.get().getName().getString();
-            loreList.add(NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
-         }
+      if(typeId != null && EntityType.get(typeId).isPresent()){
+         EntityType<?> type = EntityType.get(typeId).get();
+         item = setType(item, type);
       }
-      
-      int tier = soulsToTier(souls);
-      loreList.add(NbtString.of("[{\"text\":\"Tier "+tier+" - ("+souls+" Mobs Killed)\",\"italic\":false,\"color\":\"gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-   
-      NbtCompound magic = new NbtCompound();
-      magic.putString("id", ArcanaRegistry.SOULSTONE.getId());
-      magic.putString("UUID", "-");
-      tag.put("arcananovum",magic);
-      
-      item.setNbt(tag);
-      return item;
+      item = setSouls(item,souls);
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item, ArcanaNovum.SERVER);
    }
    
    public static int soulsToTier(int souls){
@@ -316,8 +275,7 @@ public class Soulstone extends MagicItem {
             String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
             
             magicNbt.putString("type",entityTypeId);
-            NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-            loreList.set(3,NbtString.of("[{\"text\":\"Attuned - "+entityTypeName+"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+            buildItemLore(stack,player.getServer());
             player.sendMessage(Text.literal("The Soulstone attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
          }

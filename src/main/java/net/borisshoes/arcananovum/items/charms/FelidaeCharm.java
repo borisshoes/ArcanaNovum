@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
@@ -30,6 +31,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,19 +50,12 @@ public class FelidaeCharm extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Charm of Felidae\",\"italic\":false,\"bold\":true,\"color\":\"yellow\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"purrs \",\"color\":\"yellow\"},{\"text\":\"softly when worn.\",\"color\":\"gold\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Keeping this \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"charm \",\"color\":\"yellow\"},{\"text\":\"on your person gives you \"},{\"text\":\"cat-like\",\"color\":\"gray\"},{\"text\":\" abilities.\",\"color\":\"gold\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Your \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"falls \",\"color\":\"gray\"},{\"text\":\"become somewhat \"},{\"text\":\"graceful \",\"color\":\"aqua\"},{\"text\":\"and \"},{\"text\":\"cushioned\",\"color\":\"aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Creepers \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"and \",\"color\":\"gold\"},{\"text\":\"Phantoms \",\"color\":\"blue\"},{\"text\":\"give you a \",\"color\":\"gold\"},{\"text\":\"wide berth\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -68,6 +63,16 @@ public class FelidaeCharm extends MagicItem {
    
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"purrs \",\"color\":\"yellow\"},{\"text\":\"softly when worn.\",\"color\":\"gold\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Keeping this \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"charm \",\"color\":\"yellow\"},{\"text\":\"on your person gives you \"},{\"text\":\"cat-like\",\"color\":\"gray\"},{\"text\":\" abilities.\",\"color\":\"gold\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Your \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"falls \",\"color\":\"gray\"},{\"text\":\"become somewhat \"},{\"text\":\"graceful \",\"color\":\"aqua\"},{\"text\":\"and \"},{\"text\":\"cushioned\",\"color\":\"aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Creepers \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"and \",\"color\":\"gold\"},{\"text\":\"Phantoms \",\"color\":\"blue\"},{\"text\":\"give you a \",\"color\":\"gold\"},{\"text\":\"wide berth\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    private MagicItemRecipe makeRecipe(){

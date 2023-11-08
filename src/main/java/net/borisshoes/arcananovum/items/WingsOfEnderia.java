@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -13,6 +14,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,29 +32,32 @@ public class WingsOfEnderia extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       NbtCompound prot = new NbtCompound();
       prot.putString("id","protection");
       prot.putInt("lvl",4);
       enchants.add(prot);
       display.putString("Name","[{\"text\":\"Armored Wings of Enderia\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Armored Wings\",\"color\":\"dark_purple\"},{\"text\":\" will shield you from the \"},{\"text\":\"dangers \",\"color\":\"yellow\"},{\"text\":\"of the land.\",\"color\":\"light_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Wings \",\"color\":\"dark_purple\"},{\"text\":\"act as a \"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection IV\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"They store \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"dark_purple\"},{\"text\":\" and are \"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Mythical \",\"italic\":false,\"color\":\"light_purple\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       //tag.put("AttributeModifiers",attributes);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       prefNBT = addMagicNbt(tag);
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Armored Wings\",\"color\":\"dark_purple\"},{\"text\":\" will shield you from the \"},{\"text\":\"dangers \",\"color\":\"yellow\"},{\"text\":\"of the land.\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Wings \",\"color\":\"dark_purple\"},{\"text\":\"act as a \"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection IV\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"They store \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"dark_purple\"},{\"text\":\" and are \"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      return loreList;
    }
    
    @Override
@@ -73,7 +78,7 @@ public class WingsOfEnderia extends EnergyItem {
          EnhancedStatUtils.enhanceItem(stack,percentile);
       }
       stack.setNbt(newTag);
-      return stack;
+      return buildItemLore(stack,server);
    }
    
    private List<String> makeLore(){

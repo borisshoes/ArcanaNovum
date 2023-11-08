@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.gui.WatchedGui;
@@ -26,7 +26,6 @@ import net.minecraft.util.math.Box;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -85,12 +84,9 @@ public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
                ParticleEffectUtils.starpathAltarAnim(player.getServerWorld(),blockEntity.getPos().toCenterPos());
                blockEntity.setActiveTicks(500);
                blockEntity.resetCooldown();
-               Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(500, new TimerTask() {
-                  @Override
-                  public void run(){
-                     teleport();
-                     PLAYER_DATA.get(player).addXP(1000);
-                  }
+               ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(500, () -> {
+                  teleport();
+                  PLAYER_DATA.get(player).addXP(1000);
                }));
                close();
             }else{

@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.achievements;
 
-import net.borisshoes.arcananovum.Arcananovum;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.utils.GenericTimer;
@@ -11,8 +11,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
-
-import java.util.TimerTask;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -71,12 +69,7 @@ public class TimedAchievement extends ArcanaAchievement{
       if(!had && this.progress == 0 && !active){
          // Start the timer
          active = true;
-         Arcananovum.addTickTimerCallback(new GenericTimer(timeFrame, new TimerTask() {
-            @Override
-            public void run(){
-               reset();
-            }
-         }));
+         ArcanaNovum.addTickTimerCallback(new GenericTimer(timeFrame, this::reset));
       }
       
       this.progress = MathHelper.clamp(this.progress+progress,0,goal);

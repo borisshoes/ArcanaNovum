@@ -6,8 +6,8 @@ import eu.pb4.holograms.api.elements.clickable.CubeHitboxHologramElement;
 import eu.pb4.holograms.api.elements.text.StaticTextHologramElement;
 import eu.pb4.holograms.api.holograms.AbstractHologram;
 import eu.pb4.holograms.api.holograms.WorldHologram;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.Arcananovum;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
@@ -62,7 +62,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.Arcananovum.devPrint;
+import static net.borisshoes.arcananovum.ArcanaNovum.devPrint;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
@@ -190,9 +190,7 @@ public class DragonBossFight {
                numPlayers = calcPlayers(server,false);
                fightData.putInt("numPlayers",numPlayers);
                DragonDialog.announce(DragonDialog.Announcements.EVENT_START,server,null);
-               Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(100, new TimerTask() {
-                  @Override
-                  public void run(){
+               ArcanaNovum.addTickTimerCallback(endWorld, new GenericTimer(100, () -> {
                      List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
                      for(ServerPlayerEntity player : players){
                         if(!player.isCreative() && !player.isSpectator()){
@@ -232,7 +230,7 @@ public class DragonBossFight {
                      DragonDialog.announce(DragonDialog.Announcements.PHASE_ONE_START,server,null);
                      phase = 1;
                   }
-               }));
+               ));
                dragonAbilities = new DragonAbilities(server,endWorld,dragon,crystals);
                lairActions = new DragonLairActions(server,endWorld,dragon);
                phase1Notif = true;
@@ -442,12 +440,7 @@ public class DragonBossFight {
                for(DragonBossFight.ReclaimState reclaimState : reclaimStates){
                   reclaimState.fightEnd();
                }
-               Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(100, new TimerTask() {
-                  @Override
-                  public void run(){
-                     endFight(server,endWorld);
-                  }
-               }));
+               ArcanaNovum.addTickTimerCallback(endWorld, new GenericTimer(100, () -> endFight(server,endWorld)));
                endNotif = true;
             }
          }
@@ -632,12 +625,9 @@ public class DragonBossFight {
          message.add(Text.literal("")
                .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
       
-         Arcananovum.addTickTimerCallback(endWorld, new GenericTimer(400, new TimerTask() {
-            @Override
-            public void run(){
-               for(MutableText msg : message){
-                  endWorld.getServer().getPlayerManager().broadcast(msg, false);
-               }
+         ArcanaNovum.addTickTimerCallback(endWorld, new GenericTimer(400, () -> {
+            for(MutableText msg : message){
+               endWorld.getServer().getPlayerManager().broadcast(msg, false);
             }
          }));
       
@@ -819,7 +809,7 @@ public class DragonBossFight {
          }
          endWorld.getEnderDragonFight().respawnDragon();
          fightData.putString("State", DragonBossFight.States.WAITING_RESPAWN.name());
-         Arcananovum.addTickTimerCallback(new DragonRespawnTimerCallback(player.getServer()));
+         ArcanaNovum.addTickTimerCallback(new DragonRespawnTimerCallback(player.getServer()));
       }else{
          player.sendMessage(Text.translatable("Co-opting Dragon"), false);
          if(endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(new BlockPos(-50,25,-50), new BlockPos(50,115,50)), EndCrystalEntity::shouldShowBottom).size() != 10){

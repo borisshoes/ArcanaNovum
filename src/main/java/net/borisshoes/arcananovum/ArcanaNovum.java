@@ -18,6 +18,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
@@ -33,7 +34,7 @@ import java.util.HashMap;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
-public class Arcananovum implements ModInitializer {
+public class ArcanaNovum implements ModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
@@ -41,10 +42,12 @@ public class Arcananovum implements ModInitializer {
    public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
    public static final HashMap<ServerWorld,ArrayList<ChunkPos>> ANCHOR_CHUNKS = new HashMap<>();
    public static final ArrayList<Pair<BlockEntity,MagicBlockEntity>> ACTIVE_MAGIC_BLOCKS = new ArrayList<>();
+   public static MinecraftServer SERVER = null;
    public static final boolean devMode = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static ConfigUtils config;
+   public static int DEBUG_VALUE = 0;
    
    @Override
    public void onInitialize(){

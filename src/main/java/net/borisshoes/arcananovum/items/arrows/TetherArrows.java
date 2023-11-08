@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.Arcananovum;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -30,10 +30,10 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
 
 public class TetherArrows extends RunicArrow {
    
@@ -48,22 +48,15 @@ public class TetherArrows extends RunicArrow {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name", "[{\"text\":\"Runic Arrows - Tether\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"arrows\",\"color\":\"light_purple\"},{\"text\":\" can be refilled inside a \"},{\"text\":\"Runic Quiver\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Runic Arrows \",\"color\":\"light_purple\"},{\"text\":\"pull\",\"color\":\"aqua\"},{\"text\":\" you to a block like a \"},{\"text\":\"grappling hook\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"They will also \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"pull\",\"color\":\"aqua\"},{\"text\":\" a hit \"},{\"text\":\"entity \",\"color\":\"gray\"},{\"text\":\"towards you.\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered \",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore", loreList);
       tag.put("display", display);
       tag.put("Enchantments", enchants);
       tag.putInt("CustomPotionColor", 10724259);
       tag.putInt("HideFlags", 255);
       stack.setCount(64);
+      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -74,24 +67,33 @@ public class TetherArrows extends RunicArrow {
    }
    
    @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      addRunicArrowLore(loreList);
+      loreList.add(NbtString.of("[{\"text\":\"Tether Arrows:\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"Runic Arrows \",\"color\":\"light_purple\"},{\"text\":\"pull\",\"color\":\"aqua\"},{\"text\":\" you to a block like a \"},{\"text\":\"grappling hook\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"They will also \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"pull\",\"color\":\"aqua\"},{\"text\":\" a hit \"},{\"text\":\"entity \",\"color\":\"gray\"},{\"text\":\"towards you.\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      
+      return loreList;
+   }
+   
+   @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getData().getBoolean("severed")) return;
       if(arrow.getOwner() instanceof ServerPlayerEntity player && entityHitResult.getEntity() instanceof LivingEntity entity){
          Vec3d hitPos = entityHitResult.getPos();
    
-         Arcananovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(1, new TimerTask() {
-            @Override
-            public void run(){
-               Vec3d motion = player.getPos().subtract(hitPos);
-               Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
-               motion = motion.add(horizBoost);
-               double verticalMotion = motion.y < -3 ? (player.getY() - entity.getY())*.3 : velFromHeight(motion.y)/20;
-               Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,verticalMotion,velFromLength(motion.z)*2.0/9.0);
-               entity.setVelocity(velocity);
+         ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(1, () -> {
+            Vec3d motion = player.getPos().subtract(hitPos);
+            Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
+            motion = motion.add(horizBoost);
+            double verticalMotion = motion.y < -3 ? (player.getY() - entity.getY())*.3 : velFromHeight(motion.y)/20;
+            Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,verticalMotion,velFromLength(motion.z)*2.0/9.0);
+            entity.setVelocity(velocity);
+            if(entity instanceof ServerPlayerEntity targetPlayer) targetPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(targetPlayer));
    
-               ParticleEffectUtils.tetherArrowEntity(player.getServerWorld(),entity,player);
-               SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
-            }
+            ParticleEffectUtils.tetherArrowEntity(player.getServerWorld(),entity,player);
+            SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
          }));
       }
    }

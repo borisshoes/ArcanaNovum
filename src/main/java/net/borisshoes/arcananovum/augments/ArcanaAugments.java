@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.augments;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.AlchemicalArbalest;
@@ -938,7 +939,7 @@ public class ArcanaAugments {
          EnhancedStatUtils.enhanceItem(item,1);
       }
       
-      magicItem.redoAugmentLore(item);
+      magicItem.buildItemLore(item, ArcanaNovum.SERVER);
       return true;
    }
 }

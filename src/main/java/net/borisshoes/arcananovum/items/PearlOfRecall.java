@@ -1,8 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
@@ -18,7 +19,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
@@ -32,6 +32,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,18 +59,10 @@ public class PearlOfRecall extends EnergyItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Pearl of Recall\",\"italic\":false,\"bold\":true,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Ender Pearl\",\"color\":\"dark_aqua\"},{\"text\":\" whose \"},{\"text\":\"moment \",\"color\":\"blue\"},{\"text\":\"of \"},{\"text\":\"activation \",\"color\":\"dark_green\"},{\"text\":\"was \"},{\"text\":\"frozen \",\"color\":\"aqua\"},{\"text\":\"for later use.\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It requires the \",\"italic\":false,\"color\":\"green\"},{\"text\":\"flowing of time\",\"color\":\"blue\"},{\"text\":\" \",\"color\":\"blue\"},{\"text\":\"to \"},{\"text\":\"recharge \",\"color\":\"aqua\"},{\"text\":\"it.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to set its \",\"color\":\"green\"},{\"text\":\"location \",\"color\":\"light_purple\"},{\"text\":\"and \",\"color\":\"green\"},{\"text\":\"to \",\"color\":\"green\"},{\"text\":\"teleport \",\"color\":\"dark_green\"},{\"text\":\"to its \",\"color\":\"green\"},{\"text\":\"set point\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Unbound\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Charged - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"100%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Exotic \",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-   
+      buildItemLore(stack, ArcanaNovum.SERVER);
+
       setBookLore(makeLore());
       setRecipe(makeRecipe());
       tag = addMagicNbt(tag);
@@ -81,6 +74,62 @@ public class PearlOfRecall extends EnergyItem {
       prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtCompound itemNbt = itemStack.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtCompound locNbt = magicNbt.getCompound("location");
+      String dim = locNbt.getString("dim");
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Ender Pearl\",\"color\":\"dark_aqua\"},{\"text\":\" whose \"},{\"text\":\"moment \",\"color\":\"blue\"},{\"text\":\"of \"},{\"text\":\"activation \",\"color\":\"dark_green\"},{\"text\":\"was \"},{\"text\":\"frozen \",\"color\":\"aqua\"},{\"text\":\"for later use.\",\"color\":\"green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"It requires the \",\"italic\":false,\"color\":\"green\"},{\"text\":\"flowing of time\",\"color\":\"blue\"},{\"text\":\" \",\"color\":\"blue\"},{\"text\":\"to \"},{\"text\":\"recharge \",\"color\":\"aqua\"},{\"text\":\"it.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to set its \",\"color\":\"green\"},{\"text\":\"location \",\"color\":\"light_purple\"},{\"text\":\"and \",\"color\":\"green\"},{\"text\":\"to \",\"color\":\"green\"},{\"text\":\"teleport \",\"color\":\"dark_green\"},{\"text\":\"to its \",\"color\":\"green\"},{\"text\":\"set point\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      
+      if(itemStack != null){
+         int charge = (getEnergy(itemStack)*100/getMaxEnergy(itemStack));
+         String charging = charge == 100 ? "Charged" : "Charging";
+         if(!dim.equals("unattuned")){
+            int x = (int) locNbt.getDouble("x");
+            int y = (int) locNbt.getDouble("y");
+            int z = (int) locNbt.getDouble("z");
+            String dimColor;
+            String dimensionName;
+            String location;
+            switch(dim){
+               case "minecraft:overworld":
+                  dimColor = "green";
+                  dimensionName = "Overworld";
+                  break;
+               case "minecraft:the_nether":
+                  dimColor = "red";
+                  dimensionName = "The Nether";
+                  break;
+               case "minecraft:the_end":
+                  dimColor = "yellow";
+                  dimensionName = "The End";
+                  break;
+               default:
+                  dimColor = "aqua";
+                  dimensionName = dim;
+                  break;
+            }
+            location = dimensionName + " ("+x+","+y+","+z+")";
+            
+            loreList.add(NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\""+location+"\",\"color\":\""+dimColor+"\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+            loreList.add(NbtString.of("[{\"text\":\""+charging+" - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+charge+"%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
+         }else{
+            loreList.add(NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Unbound\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+            loreList.add(NbtString.of("[{\"text\":\""+charging+" - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+charge+"%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
+         }
+      }else{
+         loreList.add(NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Unbound\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+         loreList.add(NbtString.of("[{\"text\":\"Charged - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"100%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
+      }
+      
+      return loreList;
    }
    
    @Override
@@ -99,52 +148,7 @@ public class PearlOfRecall extends EnergyItem {
       newTag.getCompound("arcananovum").putInt("heat",heat);
       newTag.getCompound("arcananovum").put("location",locNbt);
       stack.setNbt(newTag);
-      redoLore(stack);
-      return stack;
-   }
-   
-   private void redoLore(ItemStack stack){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound locNbt = magicNbt.getCompound("location");
-      String dim = locNbt.getString("dim");
-      
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      int charge = (getEnergy(stack)*100/getMaxEnergy(stack));
-      String charging = charge == 100 ? "Charged" : "Charging";
-      if(!dim.equals("unattuned")){
-         int x = (int) locNbt.getDouble("x");
-         int y = (int) locNbt.getDouble("y");
-         int z = (int) locNbt.getDouble("z");
-         String dimColor;
-         String dimensionName;
-         String location;
-         switch(dim){
-            case "minecraft:overworld":
-               dimColor = "green";
-               dimensionName = "Overworld";
-               break;
-            case "minecraft:the_nether":
-               dimColor = "red";
-               dimensionName = "The Nether";
-               break;
-            case "minecraft:the_end":
-               dimColor = "yellow";
-               dimensionName = "The End";
-               break;
-            default:
-               dimColor = "aqua";
-               dimensionName = dim;
-               break;
-         }
-         location = dimensionName + " ("+x+","+y+","+z+")";
-         
-         loreList.set(4,NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\""+location+"\",\"color\":\""+dimColor+"\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         loreList.set(5,NbtString.of("[{\"text\":\""+charging+" - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+charge+"%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      }else{
-         loreList.set(4,NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Unbound\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         loreList.set(5,NbtString.of("[{\"text\":\""+charging+" - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+charge+"%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
-      }
+      return buildItemLore(stack,server);
    }
    
    private void teleport(ItemStack item, ServerPlayerEntity player){
@@ -249,7 +253,7 @@ public class PearlOfRecall extends EnergyItem {
          
          if(world.getServer().getTicks() % 20 == 0){
             addEnergy(stack, 1); // Recharge
-            redoLore(stack);
+            buildItemLore(stack,world.getServer());
          }
       }
       
@@ -271,7 +275,7 @@ public class PearlOfRecall extends EnergyItem {
                   locNbt.putDouble("z", playerEntity.getPos().z);
                   locNbt.putFloat("yaw", playerEntity.getYaw());
                   locNbt.putFloat("pitch", playerEntity.getPitch());
-                  redoLore(item);
+                  buildItemLore(item,playerEntity.getServer());
                }else{
                   int curEnergy = getEnergy(item);
                   if(curEnergy == getMaxEnergy(item)){

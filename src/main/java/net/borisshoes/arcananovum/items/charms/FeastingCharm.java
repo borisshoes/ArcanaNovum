@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -31,6 +32,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,18 +55,12 @@ public class FeastingCharm extends MagicItem {
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Charm of Feasting\",\"italic\":false,\"bold\":true,\"color\":\"gold\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Just carrying the charm makes you feel \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"well nourished\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"feeds\",\"color\":\"gold\"},{\"text\":\" you from your\"},{\"text\":\" inventory.\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to\",\"color\":\"dark_green\"},{\"text\":\" toggle \",\"color\":\"gold\"},{\"text\":\"the charm between feeding modes.\",\"color\":\"dark_green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" Magic Item\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      display.put("Lore",loreList);
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      buildItemLore(stack, ArcanaNovum.SERVER);
    
       setBookLore(makeLore());
       setRecipe(makeRecipe());
@@ -73,6 +69,15 @@ public class FeastingCharm extends MagicItem {
       
       stack.setNbt(prefNBT);
       prefItem = stack;
+   }
+   
+   @Override
+   public NbtList getItemLore(@Nullable ItemStack itemStack){
+      NbtList loreList = new NbtList();
+      loreList.add(NbtString.of("[{\"text\":\"Just carrying the charm makes you feel \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"well nourished\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"feeds\",\"color\":\"gold\"},{\"text\":\" you from your\"},{\"text\":\" inventory.\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to\",\"color\":\"dark_green\"},{\"text\":\" toggle \",\"color\":\"gold\"},{\"text\":\"the charm between feeding modes.\",\"color\":\"dark_green\"}]"));
+      return loreList;
    }
    
    // Mode 0 is optimal eating - Optimal Eating

@@ -10,6 +10,7 @@ import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -56,6 +57,12 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    private static void addInvis(MinecraftServer server, LivingEntity invisEntity){
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
          if (!playerEntity.equals(invisEntity)) {
+            
+            AbstractTeam abstractTeam = invisEntity.getScoreboardTeam();
+            if (abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()) {
+               return;
+            }
+            
             playerEntity.networkHandler.sendPacket(new EntitiesDestroyS2CPacket(invisEntity.getId()));
             updateEquipment(invisEntity, playerEntity);
          }
@@ -65,6 +72,12 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    private static void removeInvis(MinecraftServer server, LivingEntity invisEntity){
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
          if (!playerEntity.equals(invisEntity)) {
+            
+            AbstractTeam abstractTeam = invisEntity.getScoreboardTeam();
+            if (abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()) {
+               return;
+            }
+            
             if(invisEntity instanceof ServerPlayerEntity invisPlayer){
                playerEntity.networkHandler.sendPacket(new PlayerSpawnS2CPacket(invisPlayer));
             }else{
