@@ -29,6 +29,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +42,11 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class StasisPearl extends EnergyItem {
    
+   private static final String CHARGED_TXT = "item/stasis_pearl_charged";
+   private static final String COOLDOWN_TXT = "item/stasis_pearl_cooldown";
+   private static final String FLIGHT_TXT = "item/stasis_pearl_flight";
+   private static final String STASIS_TXT = "item/stasis_pearl_stasis";
+   
    public StasisPearl(){
       id = "stasis_pearl";
       name = "Stasis Pearl";
@@ -49,6 +55,11 @@ public class StasisPearl extends EnergyItem {
       initEnergy = 60;
       vanillaItem = Items.ENDER_PEARL;
       item = new StasisPearlItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,CHARGED_TXT));
+      models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
+      models.add(new Pair<>(vanillaItem,FLIGHT_TXT));
+      models.add(new Pair<>(Items.ENDER_EYE,STASIS_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -139,6 +150,20 @@ public class StasisPearl extends EnergyItem {
    public class StasisPearlItem extends MagicPolymerItem {
       public StasisPearlItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(CHARGED_TXT).value();
+         NbtCompound magicNbt = itemStack.getNbt().getCompound("arcananovum");
+         boolean active = magicNbt.getBoolean("active");
+         String pearlID = magicNbt.getString("pearlID");
+         
+         if(pearlID.isEmpty()){
+            return getEnergy(itemStack) == getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+         }else{
+            return active ? ArcanaRegistry.MODELS.get(STASIS_TXT).value() : ArcanaRegistry.MODELS.get(FLIGHT_TXT).value();
+         }
       }
       
       @Override

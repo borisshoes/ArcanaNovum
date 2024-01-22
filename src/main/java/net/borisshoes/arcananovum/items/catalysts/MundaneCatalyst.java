@@ -16,12 +16,16 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MundaneCatalyst extends MagicItem {
+   
+   private static final String TXT = "item/mundane_catalyst";
    
    public MundaneCatalyst(){
       id = "mundane_catalyst";
@@ -30,6 +34,8 @@ public class MundaneCatalyst extends MagicItem {
       rarity = MagicRarity.MUNDANE;
       vanillaItem = Items.QUARTZ;
       item = new MundaneCatalystItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -83,6 +89,11 @@ public class MundaneCatalyst extends MagicItem {
    public class MundaneCatalystItem extends MagicPolymerItem {
       public MundaneCatalystItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items.nonmagic;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.polymer.NonMagicPolymerItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -11,11 +12,29 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
-public class NebulousEssenceItem extends Item implements PolymerItem {
+import java.util.ArrayList;
+
+public class NebulousEssenceItem extends NonMagicPolymerItem {
+   
+   private static final String TXT = "item/nebulous_essence";
+   
    public NebulousEssenceItem(Settings settings){
       super(settings);
+   }
+   
+   @Override
+   public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+      return ArcanaRegistry.MODELS.get(TXT).value();
+   }
+   
+   @Override
+   public ArrayList<Pair<Item, String>> getModels(){
+      ArrayList<Pair<Item, String>> models = new ArrayList<>();
+      models.add(new Pair<>(Items.SCULK_VEIN,TXT));
+      return models;
    }
    
    @Override
@@ -41,15 +60,5 @@ public class NebulousEssenceItem extends Item implements PolymerItem {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       return stack;
-   }
-   
-   @Override
-   public boolean allowNbtUpdateAnimation(PlayerEntity player, Hand hand, ItemStack oldStack, ItemStack newStack){
-      return false;
-   }
-   
-   @Override
-   public boolean allowContinuingBlockBreaking(PlayerEntity player, ItemStack oldStack, ItemStack newStack){
-      return true;
    }
 }

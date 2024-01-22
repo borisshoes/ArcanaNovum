@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.mixins.WitherEntityAccessor;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.AbstractBlock;
@@ -24,6 +25,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.WitherSkeletonEntity;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -140,7 +142,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          if(server == null) return;
          if(spells == null || spells.isEmpty()) createSpells();
          
-         if(shouldHaveSummoner && (summoner == null || summoner.isDead())){
+         if(shouldHaveSummoner && (summoner == null || summoner.isDead() || !summoner.getWorld().getRegistryKey().equals(getWorld().getRegistryKey()) || distanceTo(summoner) > 128)){
             deconstruct();
          }
          
@@ -376,9 +378,10 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             for(Entity entity1 : entities){
                if(!(entity1 instanceof LivingEntity living)) continue;;
                float dmg = living.getMaxHealth() / 10.0f;
-               living.damage(new DamageSource(getDamageSources().outOfWorld().getTypeRegistryEntry(), this,this),dmg);
+               float mod = living instanceof ServerPlayerEntity ? 1.0f : 0.33f;
+               living.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),dmg);
                
-               if(conversionActive) heal(dmg*0.5f);
+               if(conversionActive) heal(dmg*mod);
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS,10,1,false,true,true);
                StatusEffectInstance weak = new StatusEffectInstance(StatusEffects.WEAKNESS,10,1,false,true,true);
                living.addStatusEffect(slow);
@@ -402,7 +405,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             
             for(Entity hit : hits){
                if(hit instanceof LivingEntity living){
-                  living.damage(new DamageSource(getDamageSources().outOfWorld().getTypeRegistryEntry(), this,this), damage);
+                  living.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this), damage);
                   StatusEffectInstance wither = new StatusEffectInstance(StatusEffects.WITHER, 40, 1, false, true, true);
                   living.addStatusEffect(wither);
                   if(conversionActive) heal(damage);
@@ -440,7 +443,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,3);
             Vec3d motion = diff.multiply(1,0,1).add(0,1,0).normalize().multiply(multiplier);
             entity1.setVelocity(motion.x,motion.y,motion.z);
-            entity1.damage(getDamageSources().mobAttack(this),10f);
+            entity1.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),10f);
             if(conversionActive) heal(10f);
             if(entity1 instanceof ServerPlayerEntity player) player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          }
@@ -478,7 +481,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          spell.setCooldown(150);
          spell.cast(45);
          tickSpell(spell);
-         NulConstructDialog.abilityText(summoner,this,"The Emits a Withering Ray!");
+         NulConstructDialog.abilityText(summoner,this,"The Construct Emits a Withering Ray!");
       }else if(spell.getName().equals("dark_conversion")){
          spell.setCooldown(475);
          spell.cast(250);
@@ -513,7 +516,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       if(server == null) return;
       
       if(isMythical){
-         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(64),getPos());
+         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(63),getPos());
       }else{
          for(int i = 0; i < (int)(Math.random()*33+16); i++){
             ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
@@ -527,13 +530,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       if(dropped){
          ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),false,server);
-         dropItem(getWorld(),stack,getPos());
+         dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
       if(!isMythical){
          ItemStack stack = ArcanaRegistry.MYTHICAL_CATALYST.addCrafter(ArcanaRegistry.MYTHICAL_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
          PLAYER_DATA.get(summoner).addCraftedSilent(stack);
-         dropItem(getWorld(),stack,getPos());
+         dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
       NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasMythical,summonerHasWings,dropped&&!isMythical,isMythical,isMythical&&dropped,isMythical&&!dropped});
@@ -551,12 +554,11 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasMythical,summonerHasWings,false,isMythical});
       }
       
-      dropItem(getWorld(),new ItemStack(Items.NETHERITE_BLOCK),getPos());
+      dropItem(getWorld(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1),getPos());
       discard();
    }
    
    private void dropItem(World world, ItemStack stack, Vec3d pos){
-      stack.setCount(1);
       ItemEntity itemEntity = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), stack);
       itemEntity.setPickupDelay(40);
       itemEntity.setCovetedItem();
@@ -996,7 +998,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("So your").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("gambit").formatted(Formatting.GOLD))
+                     .append(Text.literal(" gambit").formatted(Formatting.GOLD))
                      .append(Text.literal(" paid off... I am ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("impressed").formatted(Formatting.BLUE))
                      .append(Text.literal(" mortal, let my ").formatted(Formatting.DARK_GRAY))

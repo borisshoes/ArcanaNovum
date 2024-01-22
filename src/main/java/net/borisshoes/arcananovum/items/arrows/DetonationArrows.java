@@ -20,6 +20,8 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
@@ -32,6 +34,8 @@ import java.util.List;
 
 public class DetonationArrows extends RunicArrow {
    
+   private static final String TXT = "item/runic_arrow";
+   
    public DetonationArrows(){
       id = "detonation_arrows";
       name = "Detonation Arrows";
@@ -39,6 +43,8 @@ public class DetonationArrows extends RunicArrow {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new DetonationArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -88,8 +94,8 @@ public class DetonationArrows extends RunicArrow {
    
    private void explode(PersistentProjectileEntity arrow, Vec3d pos, int blastLvl, int personLvl){
       double power = MathHelper.clamp(2*arrow.getVelocity().length(),1.5,8);
-      DamageSource source1 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_TERRAIN,arrow,arrow.getOwner());
-      DamageSource source2 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_DAMAGE,arrow,arrow.getOwner());
+      DamageSource source1 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_TERRAIN,arrow.getOwner(),arrow);
+      DamageSource source2 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_DAMAGE,arrow.getOwner(),arrow);
       if(personLvl != 3){ // Terrain explosion except when personnel lvl 3
          arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),false, World.ExplosionSourceType.TNT);
       }
@@ -129,7 +135,10 @@ public class DetonationArrows extends RunicArrow {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
@@ -12,12 +13,17 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TemporalMoment extends MagicItem {
+   
+   private static final String TXT = "item/temporal_moment";
+   
    public TemporalMoment(){
       id = "temporal_moment";
       name = "Temporal Moment";
@@ -25,6 +31,8 @@ public class TemporalMoment extends MagicItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
       vanillaItem = Items.CLOCK;
       item = new TemporalMomentItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -72,7 +80,7 @@ public class TemporalMoment extends MagicItem {
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Temporal Moment\\n\\nRarity: Mundane\\n\\nTime always moves forwards, but its rate can be changed from fluxuations in spacetime. With enough energy perhaps it could be slowed to a halt, freezing a moment in time to use later.\"}");
+      list.add("{\"text\":\"   Temporal Moment\\n\\nRarity: Mundane\\n\\nTime always moves forwards, but its rate can be changed from fluctuations in spacetime. With enough energy perhaps it could be slowed to a halt, freezing a moment in time to use later.\"}");
       return list;
    }
    
@@ -81,7 +89,10 @@ public class TemporalMoment extends MagicItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

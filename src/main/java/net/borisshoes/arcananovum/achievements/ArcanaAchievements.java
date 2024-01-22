@@ -169,7 +169,7 @@ public class ArcanaAchievements {
          new String[]{"Have 30 Magic Items taking concentration"}
    ));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register(
-         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000,500,
+         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000,666,
          new String[]{"Unlock all Non-Mythical related Achievements", "(Grants Mythical Achievements honorarily)"}
    ));
    

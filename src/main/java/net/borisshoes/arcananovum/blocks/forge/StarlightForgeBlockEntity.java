@@ -112,8 +112,13 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       }
    }
    
+   public BlockPos getForgeRange(){
+      return ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STELLAR_RANGE.id) >= 1 ? new BlockPos(15, 8, 15) : new BlockPos(8, 5, 8);
+   }
+   
    public MagicBlockEntity getForgeAddition(ServerWorld world, BlockEntityType<? extends BlockEntity> additionBlockEntity){
-      for(BlockPos blockPos : BlockPos.iterate(pos.add(-8, -5, -8), pos.add(8, 5, 8))){
+      BlockPos range = this.getForgeRange();
+      for(BlockPos blockPos : BlockPos.iterate(pos.add(range), pos.subtract(range))){
          BlockEntity be = additionBlockEntity.get(world,blockPos);
          if(be instanceof MagicBlockEntity magicBlock && magicBlock.isAssembled()){
             return magicBlock;
@@ -124,8 +129,9 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    
    public ArrayList<Inventory> getIngredientInventories(){
       ArrayList<Inventory> invs = new ArrayList<>();
+      BlockPos range = this.getForgeRange();
       if(!(world instanceof ServerWorld serverWorld)) return invs;
-      for(BlockPos blockPos : BlockPos.iterate(pos.add(-8, -5, -8), pos.add(8, 5, 8))){
+      for(BlockPos blockPos : BlockPos.iterate(pos.add(range), pos.subtract(range))){
          BlockEntity be = serverWorld.getBlockEntity(blockPos);
          BlockState state = serverWorld.getBlockState(blockPos);
          if(be instanceof ChestBlockEntity chestBe && state.getBlock() instanceof ChestBlock chestBlock){

@@ -33,6 +33,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -46,6 +47,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class ShadowStalkersGlaive extends EnergyItem {
    private final int teleportLength = 10;
+   private static final String TXT = "item/shadow_stalkers_glaive";
    
    public ShadowStalkersGlaive(){
       id = "shadow_stalkers_glaive";
@@ -54,6 +56,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_SWORD;
       item = new ShadowStalkersGlaiveItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -171,6 +175,11 @@ public class ShadowStalkersGlaive extends EnergyItem {
    public class ShadowStalkersGlaiveItem extends MagicPolymerSwordItem {
       public ShadowStalkersGlaiveItem(Settings settings){
          super(getThis(),ToolMaterials.NETHERITE,5,-2.0f,settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

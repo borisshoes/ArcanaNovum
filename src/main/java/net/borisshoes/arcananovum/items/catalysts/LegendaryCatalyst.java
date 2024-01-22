@@ -27,6 +27,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -39,6 +40,8 @@ import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstruc
 
 public class LegendaryCatalyst extends MagicItem {
    
+   private static final String TXT = "item/legendary_catalyst";
+   
    public LegendaryCatalyst(){
       id = "legendary_catalyst";
       name = "Legendary Augment Catalyst";
@@ -46,6 +49,8 @@ public class LegendaryCatalyst extends MagicItem {
       rarity = MagicRarity.MUNDANE;
       vanillaItem = Items.GOLD_INGOT;
       item = new LegendaryCatalystItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -102,7 +107,10 @@ public class LegendaryCatalyst extends MagicItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

@@ -190,39 +190,39 @@ public class ArcanaCommands {
    
             String storage = invItem.getShortContainerString();
             
-            MutableText feedback = Text.translatable("")
-                  .append(Text.translatable("(").formatted(Formatting.LIGHT_PURPLE))
+            MutableText feedback = Text.literal("")
+                  .append(Text.literal("(").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.translatable(storage).formatted(Formatting.BLUE))
-                  .append(Text.translatable(") ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.translatable("[").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal(") ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal("[").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.translatable(magicItem.getNameString()).formatted(Formatting.AQUA))
-                  .append(Text.translatable("] ID: ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal("] ID: ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
             response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
             
             if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/magicItem.getPrefItem().getCount())){
-               MutableText duplicateWarning = Text.translatable("")
-                     .append(Text.translatable("Duplicate: ").formatted(Formatting.RED))
+               MutableText duplicateWarning = Text.literal("")
+                     .append(Text.literal("Duplicate: ").formatted(Formatting.RED))
                      .append(Text.translatable(magicItem.getNameString()).formatted(Formatting.AQUA))
-                     .append(Text.translatable(" ID: ").formatted(Formatting.LIGHT_PURPLE))
+                     .append(Text.literal(" ID: ").formatted(Formatting.LIGHT_PURPLE))
                      .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
                response2.add(duplicateWarning);
             }
          }
       }
       
-      MutableText feedback = Text.translatable("")
+      MutableText feedback = Text.literal("")
             .append(player.getDisplayName())
-            .append(Text.translatable(" has ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.translatable(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-            .append(Text.translatable(" items.").formatted(Formatting.LIGHT_PURPLE));
-      source.sendFeedback(()->Text.translatable(""),false);
+            .append(Text.literal(" items.").formatted(Formatting.LIGHT_PURPLE));
+      source.sendFeedback(()->Text.literal(""),false);
       source.sendFeedback(()->feedback,false);
-      source.sendFeedback(()->Text.translatable("================================").formatted(Formatting.LIGHT_PURPLE),false);
+      source.sendFeedback(()->Text.literal("================================").formatted(Formatting.LIGHT_PURPLE),false);
       for(MutableText r : response){
          source.sendFeedback(()->r,false);
       }
-      source.sendFeedback(()->Text.translatable("================================").formatted(Formatting.LIGHT_PURPLE),false);
+      source.sendFeedback(()->Text.literal("================================").formatted(Formatting.LIGHT_PURPLE),false);
       for(MutableText r : response2){
          source.sendFeedback(()->r,false);
       }
@@ -260,15 +260,15 @@ public class ArcanaCommands {
       try{
          ServerCommandSource source = ctx.getSource();
          IArcanaProfileComponent profile = PLAYER_DATA.get(target);
-         MutableText feedback = Text.translatable("")
+         MutableText feedback = Text.literal("")
                .append(target.getDisplayName())
-               .append(Text.translatable(" has ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
                .append(Text.translatable(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(Text.translatable(" levels (").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(" levels (").formatted(Formatting.LIGHT_PURPLE))
                .append(Text.translatable(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
-               .append(Text.translatable("). ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal("). ").formatted(Formatting.LIGHT_PURPLE))
                .append(Text.translatable(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
-               .append(Text.translatable(" Total XP").formatted(Formatting.LIGHT_PURPLE));
+               .append(Text.literal(" Total XP").formatted(Formatting.LIGHT_PURPLE));
          source.sendFeedback(()->feedback, false);
          return 1;
       }catch(Exception e){
@@ -308,48 +308,60 @@ public class ArcanaCommands {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
             ArrayList<String> lines = new ArrayList<>();
             
-            lines.add("public static final MagicItem "+idName.toUpperCase()+" = ArcanaRegistry.register(\""+idName+"\", new "+name+"());");
+            lines.add("public static final MagicItem "+idName.toUpperCase()+" = ArcanaRegistry.register(new "+name+"());");
             
             lines.add("public class "+name+" extends MagicItem {");
+            lines.add("");
+            lines.add("private static final String TXT = \"item/"+idName+"\";");
             lines.add("");
             lines.add("public "+name+"(){");
             
             lines.add("id = \""+idName+"\";");
             lines.add("name = \""+fullName+"\";");
             lines.add("rarity = MagicRarity.;");
-            lines.add("categories = new ArcaneTome.TomeFilter[]{};");
-            lines.add("itemVersion = 0;");
+            lines.add("categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.};");
+            lines.add("vanillaItem = Items."+Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase()+";");
+            lines.add("item = new "+name+"Item(new FabricItemSettings().maxCount(1).fireproof());");
+            lines.add("models = new ArrayList<>();");
+            lines.add("models.add(new Pair<>(vanillaItem,TXT));");
             lines.add("");
-            lines.add("ItemStack item = new ItemStack(Items.);");
-            lines.add("NbtCompound tag = item.getOrCreateNbt();");
+            lines.add("ItemStack stack = new ItemStack(item);");
+            lines.add("NbtCompound tag = stack.getOrCreateNbt();");
             lines.add("NbtCompound display = new NbtCompound();");
-            lines.add("NbtList loreList = new NbtList();");
             lines.add("NbtList enchants = new NbtList();");
             lines.add("enchants.add(new NbtCompound()); // Gives enchant glow with no enchants");
             if(display != null){
                lines.add("display.putString(\"Name\",\""+display.getString("Name").replaceAll("\"","\\\\\"")+"\");");
-               NbtList lore = display.getList("Lore",NbtElement.STRING_TYPE);
-               for(int i = 0; i < lore.size(); i++){
-                  lines.add("loreList.add(NbtString.of(\""+lore.getString(i).replaceAll("\"","\\\\\"")+"\"));");
-               }
             }
-            lines.add("display.put(\"Lore\",loreList);");
             lines.add("tag.put(\"display\",display);");
             lines.add("tag.put(\"Enchantments\",enchants);");
             if(stack.isOf(Items.TIPPED_ARROW)){
                lines.add("tag.putInt(\"CustomPotionColor\","+tag.getInt("CustomPotionColor")+");");
-               lines.add("tag.putInt(\"HideFlags\",127);");
-               lines.add("item.setCount(64);");
+               lines.add("tag.putInt(\"HideFlags\",255);");
+               lines.add("stack.setCount(64);");
             }
+            lines.add("buildItemLore(stack, ArcanaNovum.SERVER);");
             lines.add("");
             lines.add("setBookLore(makeLore());");
             lines.add("//setRecipe(makeRecipe());");
             lines.add("prefNBT = addMagicNbt(tag);");
             lines.add("");
-            lines.add("item.setNbt(prefNBT);");
-            lines.add("prefItem = item;");
+            lines.add("stack.setNbt(prefNBT);");
+            lines.add("prefItem = stack;");
             lines.add("}");
             lines.add("");
+            
+            lines.add("@Override");
+            lines.add("public NbtList getItemLore(@Nullable ItemStack itemStack){");
+            lines.add("NbtList loreList = new NbtList();");
+            if(display != null){
+               NbtList lore = display.getList("Lore",NbtElement.STRING_TYPE);
+               for(int i = 0; i < lore.size(); i++){
+                  lines.add("loreList.add(NbtString.of(\""+lore.getString(i).replaceAll("\"","\\\\\"")+"\"));");
+               }
+            }
+            lines.add("return loreList;");
+            lines.add("}");
    
             lines.add("");
             lines.add("");
@@ -364,6 +376,37 @@ public class ArcanaCommands {
             lines.add("list.add(\"{\\\"text\\\":\\\"TODO\\\"}\");");
             lines.add("return list;");
             lines.add("}");
+            
+            lines.add("");
+            lines.add("public class "+name+"Item extends MagicPolymerItem {");
+            lines.add("public "+name+"Item(Settings settings){");
+            lines.add("super(getThis(),settings);");
+            lines.add("}");
+            lines.add("");
+            lines.add("@Override");
+            lines.add("public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){");
+            lines.add("return ArcanaRegistry.MODELS.get(TXT).value();");
+            lines.add("}");
+            lines.add("");
+            lines.add("@Override");
+            lines.add("public ItemStack getDefaultStack(){");
+            lines.add("return prefItem;");
+            lines.add("}");
+            lines.add("");
+            lines.add("@Override");
+            lines.add("public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){");
+            lines.add("if(!MagicItemUtils.isMagic(stack)) return;");
+            lines.add("if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;");
+            lines.add("");
+            lines.add("}");
+            lines.add("");
+            lines.add("@Override");
+            lines.add("public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {");
+            lines.add("");
+            lines.add("return TypedActionResult.success(playerEntity.getStackInHand(hand));");
+            lines.add("}");
+            lines.add("}");
+            
             lines.add("}");
             
             for(String line : lines){
@@ -371,7 +414,7 @@ public class ArcanaCommands {
             }
             out.close();
          }else{
-            player.sendMessage(Text.translatable("Hold an item to get data"),true);
+            player.sendMessage(Text.literal("Hold an item to get data"),true);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -756,7 +799,7 @@ public class ArcanaCommands {
       try{
          MagicItem magicItem = MagicItemUtils.getItemFromId(id);
          if(magicItem == null){
-            source.getPlayerOrThrow().sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC), false);
+            source.sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }
    
@@ -764,12 +807,12 @@ public class ArcanaCommands {
             ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),target.getUuidAsString(),true,source.getServer());
    
             if(item == null){
-               source.getPlayerOrThrow().sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC), false);
+               source.sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
                return 0;
             }else{
                NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
                String uuid = magicTag.getString("UUID");
-               source.getPlayerOrThrow().sendMessage(Text.translatable("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
+               source.sendFeedback(() -> Text.translatable("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
                target.giveItemStack(item);
             }
          }
@@ -784,18 +827,18 @@ public class ArcanaCommands {
       try{
          MagicItem magicItem = MagicItemUtils.getItemFromId(id);
          if(magicItem == null){
-            source.getPlayerOrThrow().sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC), false);
+            source.sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }
          ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),true,source.getServer());
          
          if(item == null){
-            source.getPlayerOrThrow().sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC), false);
+            source.sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }else{
             NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
             String uuid = magicTag.getString("UUID");
-            source.getPlayerOrThrow().sendMessage(Text.translatable("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
+            source.sendMessage(Text.translatable("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN));
             source.getPlayerOrThrow().giveItemStack(item);
             return 1;
          }

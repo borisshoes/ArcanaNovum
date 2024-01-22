@@ -12,7 +12,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
@@ -21,6 +24,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -32,6 +37,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    private String customName;
    private int cooldown;
    private BlockPos targetCoords;
+   private HashMap<String,BlockPos> savedTargets;
    private int activeTicks;
    
    public StarpathAltarBlockEntity(BlockPos pos, BlockState state){
@@ -46,11 +52,16 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.customName = customName == null ? "" : customName;
       this.targetCoords = getPos().mutableCopy();
       this.activeTicks = 0;
+      this.savedTargets = new HashMap<>();
       resetCooldown();
    }
    
+   public HashMap<String,BlockPos> getSavedTargets(){
+      return this.savedTargets;
+   }
+   
    public void openTargetGui(ServerPlayerEntity player){
-      StarpathTargetGui gui = new StarpathTargetGui(player,this);;
+      StarpathTargetGui gui = new StarpathTargetGui(player,this);
       if(!gui.tryOpen(player)){
          player.sendMessage(Text.literal("Someone else is using the Altar").formatted(Formatting.RED),true);
       }
@@ -149,6 +160,31 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       return ArcanaRegistry.STARPATH_ALTAR;
    }
    
+   public NbtList writeTargets(){
+      if(this.savedTargets != null){
+         NbtList targetList = new NbtList();
+         for(Map.Entry<String, BlockPos> entry : this.savedTargets.entrySet()){
+            NbtCompound target = new NbtCompound();
+            target.putString("name",entry.getKey());
+            target.putInt("x",entry.getValue().getX());
+            target.putInt("y",entry.getValue().getY());
+            target.putInt("z",entry.getValue().getZ());
+            targetList.add(target);
+         }
+         return targetList;
+      }else{
+         return new NbtList();
+      }
+   }
+   
+   public void readTargets(NbtList targetList){
+      this.savedTargets = new HashMap<>();
+      for(NbtElement e : targetList){
+         NbtCompound target = ((NbtCompound) e);
+         this.savedTargets.put(target.getString("name"),new BlockPos(target.getInt("x"),target.getInt("y"),target.getInt("z")));
+      }
+   }
+   
    @Override
    public void readNbt(NbtCompound nbt) {
       super.readNbt(nbt);
@@ -178,6 +214,9 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
             if(aug != null) augments.put(aug,augCompound.getInt(key));
          }
+      }
+      if(nbt.contains("targets")){
+         readTargets(nbt.getList("targets", NbtElement.COMPOUND_TYPE));
       }
    }
    
@@ -209,5 +248,6 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       }
       nbt.putBoolean("synthetic",this.synthetic);
       nbt.putInt("cooldown",this.cooldown);
+      nbt.put("targets",writeTargets());
    }
 }

@@ -35,6 +35,10 @@ public class MagicItemIngredient {
       this.ignoresResourceful = false;
    }
    
+   public MagicItemIngredient copyWithCount(int newCount){
+      return new MagicItemIngredient(itemType,newCount,requiredNbt,ignoresResourceful);
+   }
+   
    public int getCount(){
       return count;
    }

@@ -26,8 +26,10 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
@@ -70,8 +72,11 @@ public class StarpathAltar extends MagicBlock implements MultiblockCore {
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
+      tag = addMagicNbt(tag);
+      NbtCompound magicTag = tag.getCompound("arcananovum");
+      NbtList targetsList = new NbtList();
+      magicTag.put("targets",targetsList);
+      prefNBT = tag;
       stack.setNbt(prefNBT);
       prefItem = stack;
    }
@@ -79,15 +84,23 @@ public class StarpathAltar extends MagicBlock implements MultiblockCore {
    @Override
    public NbtList getItemLore(@Nullable ItemStack itemStack){
       NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Altars \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"are \",\"color\":\"blue\"},{\"text\":\"multiblock structures\",\"color\":\"dark_purple\"},{\"text\":\" that must be \",\"color\":\"blue\"},{\"text\":\"built \",\"color\":\"dark_purple\"},{\"text\":\"in the world.\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Left click a block\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" with an \",\"color\":\"blue\"},{\"text\":\"Altar \"},{\"text\":\"to see a \",\"color\":\"blue\"},{\"text\":\"hologram \",\"color\":\"dark_purple\"},{\"text\":\"of the \",\"color\":\"blue\"},{\"text\":\"structure\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" a \",\"color\":\"blue\"},{\"text\":\"completed \",\"color\":\"dark_purple\"},{\"text\":\"Altar \"},{\"text\":\"setup to \",\"color\":\"blue\"},{\"text\":\"activate \",\"color\":\"dark_purple\"},{\"text\":\"the \",\"color\":\"blue\"},{\"text\":\"Altar\"},{\"text\":\".\",\"color\":\"blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+      addAltarLore(loreList);
       loreList.add(NbtString.of("[{\"text\":\"Starpath Altar:\",\"italic\":false,\"color\":\"white\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"white\"},{\"text\":\"finds a \"},{\"text\":\"path \",\"color\":\"dark_aqua\"},{\"text\":\"through the \"},{\"text\":\"stars \",\"color\":\"white\"},{\"text\":\"to \"},{\"text\":\"anywhere \",\"color\":\"dark_aqua\"},{\"text\":\"in the world.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"All creatures\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" standing in the \",\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"white\"},{\"text\":\"will be \",\"color\":\"dark_gray\"},{\"text\":\"teleported\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"white\"},{\"text\":\"requires \"},{\"text\":\"Eyes of Ender\",\"color\":\"dark_aqua\"},{\"text\":\" to \"},{\"text\":\"activate\",\"color\":\"white\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       return loreList;
+   }
+   
+   @Override
+   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
+      NbtCompound itemNbt = stack.getNbt();
+      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+      NbtList targetsList = magicTag.getList("targets", NbtElement.COMPOUND_TYPE);
+      NbtCompound newTag = super.updateItem(stack,server).getNbt();
+      newTag.getCompound("arcananovum").put("targets",targetsList);
+      stack.setNbt(newTag);
+      return buildItemLore(stack,server);
    }
    
    @Override
@@ -219,6 +232,7 @@ public class StarpathAltar extends MagicBlock implements MultiblockCore {
          BlockEntity entity = world.getBlockEntity(pos);
          if (placer instanceof ServerPlayerEntity player && entity instanceof StarpathAltarBlockEntity altar) {
             initializeMagicBlock(stack,altar);
+            altar.readTargets(stack.getNbt().getCompound("arcananovum").getList("targets", NbtElement.COMPOUND_TYPE));
          }
       }
    }

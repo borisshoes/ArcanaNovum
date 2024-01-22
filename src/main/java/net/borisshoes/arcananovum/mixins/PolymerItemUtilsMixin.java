@@ -27,6 +27,7 @@ public abstract class PolymerItemUtilsMixin {
       throw new LinkageError();
    }
    
+   //TODO: Remove when updating to 1.20.2 polymer build
    @Inject(method= "createItemStack(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/item/TooltipContext;Lnet/minecraft/server/network/ServerPlayerEntity;)Lnet/minecraft/item/ItemStack;"
          , locals = LocalCapture.CAPTURE_FAILHARD , at=@At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getNbt()Lnet/minecraft/nbt/NbtCompound;", ordinal = 16, shift = At.Shift.BEFORE))
    private static void arcananovum_shulkerPreviewFix(ItemStack itemStack, TooltipContext tooltipContext, ServerPlayerEntity player, CallbackInfoReturnable<ItemStack> cir, Item item, int cmd, int color, ItemStack out, NbtList lore){

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -37,6 +38,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +51,11 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class ContainmentCirclet extends MagicItem {
    
+   private static final String TXT_EMPTY = "item/containment_circlet_empty";
+   private static final String TXT_FILLED = "item/containment_circlet_filled";
+   private static final String TXT_CONFINEMENT_EMPTY = "item/containment_circlet_confinement_empty";
+   private static final String TXT_CONFINEMENT_FILLED = "item/containment_circlet_confinement_filled";
+   
    public ContainmentCirclet(){
       id = "containment_circlet";
       name = "Containment Circlet";
@@ -57,6 +64,11 @@ public class ContainmentCirclet extends MagicItem {
       itemVersion = 0;
       vanillaItem = Items.HEART_OF_THE_SEA;
       item = new ContainmentCircletItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT_EMPTY));
+      models.add(new Pair<>(vanillaItem,TXT_FILLED));
+      models.add(new Pair<>(vanillaItem,TXT_CONFINEMENT_EMPTY));
+      models.add(new Pair<>(vanillaItem,TXT_CONFINEMENT_FILLED));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -134,7 +146,7 @@ public class ContainmentCirclet extends MagicItem {
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;
       }
-      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof WardenEntity){
+      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof WardenEntity || entity.isDead()){
          user.sendMessage(Text.literal("The Circlet cannot contain this creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;
@@ -188,6 +200,19 @@ public class ContainmentCirclet extends MagicItem {
    public class ContainmentCircletItem extends MagicPolymerItem {
       public ContainmentCircletItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT_EMPTY).value();
+         NbtCompound magicNbt = itemStack.getNbt().getCompound("arcananovum");
+         NbtCompound contents = magicNbt.getCompound("contents");
+         boolean confinement = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CONFINEMENT.id) >= 1;
+         if(confinement){
+            return contents.isEmpty() ? ArcanaRegistry.MODELS.get(TXT_CONFINEMENT_EMPTY).value() : ArcanaRegistry.MODELS.get(TXT_CONFINEMENT_FILLED).value();
+         }else{
+            return contents.isEmpty() ? ArcanaRegistry.MODELS.get(TXT_EMPTY).value() : ArcanaRegistry.MODELS.get(TXT_FILLED).value();
+         }
       }
       
       @Override

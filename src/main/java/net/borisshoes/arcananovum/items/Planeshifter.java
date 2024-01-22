@@ -31,6 +31,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -52,6 +53,10 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public class Planeshifter extends EnergyItem {
    
    public static final int[] cdReduction = {0,60,120,240,360,480};
+   private static final String TXT_NONE = "item/planeshifter_none";
+   private static final String TXT_OVERWORLD = "item/planeshifter_overworld";
+   private static final String TXT_NETHER = "item/planeshifter_nether";
+   private static final String TXT_END = "item/planeshifter_end";
    
    public Planeshifter(){
       id = "planeshifter";
@@ -62,6 +67,11 @@ public class Planeshifter extends EnergyItem {
       initEnergy = 600;
       vanillaItem = Items.RECOVERY_COMPASS;
       item = new PlaneshifterItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT_NONE));
+      models.add(new Pair<>(vanillaItem,TXT_OVERWORLD));
+      models.add(new Pair<>(vanillaItem,TXT_NETHER));
+      models.add(new Pair<>(vanillaItem,TXT_END));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -69,6 +79,7 @@ public class Planeshifter extends EnergyItem {
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Planeshifter\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
+      tag.put("Enchantments",enchants);
       tag.put("display",display);
       buildItemLore(stack, ArcanaNovum.SERVER);setBookLore(makeLore());
       
@@ -172,38 +183,24 @@ public class Planeshifter extends EnergyItem {
       if(inEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The End",true);
       if(inOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The Overworld",true);
       
-      if(inOverworld){
-         if(mode == 0){
-            world = world.getServer().getWorld(World.NETHER);
-            findPortalAndTeleport(player,world,true);
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Nether",true);
-         }else if(mode == 1){
-            player.moveToWorld(player.getServer().getWorld(World.END));
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The End",true);
-         }
-      }else if(inEnd){
-         if(mode == 1){
-            player.moveToWorld(player.getServer().getWorld(World.OVERWORLD));
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Overworld",true);
-         }else{
-            player.sendMessage(Text.translatable("The Planeshifter cannot take you to The Nether from here").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-            return;
-         }
-      }else if(inNether){
-         if(mode == 0){
+      if(mode == 0) { // nether mode
+         if(inNether){
             world = world.getServer().getWorld(World.OVERWORLD);
             findPortalAndTeleport(player,world,false);
             ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Overworld",true);
          }else{
-            player.sendMessage(Text.translatable("The Planeshifter cannot take you to The End from here").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-            return;
+            world = world.getServer().getWorld(World.NETHER);
+            findPortalAndTeleport(player,world,true);
+            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Nether",true);
          }
-      }else{
-         player.sendMessage(Text.translatable("The Planeshifter cannot remove you from this realm").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-         return;
+      }else if(mode == 1){ // end mode
+         if(inEnd){
+            player.moveToWorld(player.getServer().getWorld(World.OVERWORLD));
+            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Overworld",true);
+         }else{
+            player.moveToWorld(player.getServer().getWorld(World.END));
+            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The End",true);
+         }
       }
       
       PLAYER_DATA.get(player).addXP(1000); // Add xp
@@ -242,6 +239,28 @@ public class Planeshifter extends EnergyItem {
       }
       
       @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(player == null) return ArcanaRegistry.MODELS.get(TXT_NONE).value();
+         NbtCompound itemNbt = itemStack.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         int mode = magicNbt.getInt("mode"); // 0 nether - 1 end
+         ServerWorld world = player.getServerWorld();
+         String worldString = world.getRegistryKey().getValue().toString();
+         boolean inEnd = worldString.equals("minecraft:the_end");
+         boolean inNether = worldString.equals("minecraft:the_nether");
+         
+         if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
+            return ArcanaRegistry.MODELS.get(TXT_NONE).value();
+         }else if(mode == 0){
+            return inNether ? ArcanaRegistry.MODELS.get(TXT_OVERWORLD).value() : ArcanaRegistry.MODELS.get(TXT_NETHER).value();
+         }else if(mode == 1){
+            return inEnd ? ArcanaRegistry.MODELS.get(TXT_OVERWORLD).value() : ArcanaRegistry.MODELS.get(TXT_END).value();
+         }
+         
+         return ArcanaRegistry.MODELS.get(TXT_NONE).value();
+      }
+      
+      @Override
       public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
          if(!MagicItemUtils.isMagic(stack)) return TypedActionResult.pass(stack);
@@ -254,27 +273,27 @@ public class Planeshifter extends EnergyItem {
          
          if(playerEntity.isSneaking()){
             if(!end && !nether){
-               playerEntity.sendMessage(Text.translatable("The Planeshifter has not unlocked any dimensions").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               playerEntity.sendMessage(Text.literal("The Planeshifter has not unlocked any dimensions").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             }else if(!end){
-               playerEntity.sendMessage(Text.translatable("The Planeshifter only has Nether mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               playerEntity.sendMessage(Text.literal("The Planeshifter only has Nether mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             }else if(!nether){
-               playerEntity.sendMessage(Text.translatable("The Planeshifter only has End mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               playerEntity.sendMessage(Text.literal("The Planeshifter only has End mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             }else{
                if(mode != 0){
-                  playerEntity.sendMessage(Text.translatable("The Planeshifter set to Nether mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                  playerEntity.sendMessage(Text.literal("The Planeshifter set to Nether mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                   magicNbt.putInt("mode",0);
                }else{
-                  playerEntity.sendMessage(Text.translatable("The Planeshifter set to End mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                  playerEntity.sendMessage(Text.literal("The Planeshifter set to End mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                   magicNbt.putInt("mode",1);
                }
             }
          }else{
             int curEnergy = getEnergy(stack);
             if(mode == -1){
-               playerEntity.sendMessage(Text.translatable("The Planeshifter has not unlocked any dimensions").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               playerEntity.sendMessage(Text.literal("The Planeshifter has not unlocked any dimensions").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }else if(mode == 0 && !playerEntity.getServer().isNetherAllowed()){
-               playerEntity.sendMessage(Text.translatable("The Nether is not enabled on this Server").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               playerEntity.sendMessage(Text.literal("The Nether is not enabled on this Server").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }else if(curEnergy == getMaxEnergy(stack)){
                magicNbt.putInt("heat", 1); // Starts the heat up process
@@ -299,13 +318,13 @@ public class Planeshifter extends EnergyItem {
          if(!magicNbt.getBoolean("netherUnlocked") && player.getServerWorld().getRegistryKey().equals(World.NETHER)){
             magicNbt.putBoolean("netherUnlocked",true);
             magicNbt.putInt("mode",0);
-            player.sendMessage(Text.translatable("The Planeshifter has Unlocked The Nether").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("The Planeshifter has Unlocked The Nether").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
          }
          if(!magicNbt.getBoolean("endUnlocked") && player.getServerWorld().getRegistryKey().equals(World.END)){
             magicNbt.putBoolean("endUnlocked",true);
             magicNbt.putInt("mode",1);
-            player.sendMessage(Text.translatable("The Planeshifter has Unlocked The End").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("The Planeshifter has Unlocked The End").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
          }
          

@@ -20,10 +20,7 @@ import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TadpoleEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BoneMealItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -32,10 +29,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -51,15 +45,20 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public class WildGrowthCharm extends MagicItem {
    
    private static final int[] RATES = new int[]{10, 7, 5, 3, 2};
+   private static final String ON_TXT = "item/wild_growth_charm_on";
+   private static final String OFF_TXT = "item/wild_growth_charm_off";
    
    public WildGrowthCharm(){
       id = "wild_growth_charm";
       name = "Wild Growth Charm";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.CHARMS};
+      rarity = MagicRarity.EXOTIC;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.CHARMS};
       itemVersion = 0;
       vanillaItem = Items.DARK_OAK_SAPLING;
       item = new WildGrowthCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,OFF_TXT));
+      models.add(new Pair<>(vanillaItem,ON_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -87,8 +86,6 @@ public class WildGrowthCharm extends MagicItem {
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"charm\",\"color\":\"green\"},{\"text\":\" smells of a \"},{\"text\":\"cool\",\"color\":\"aqua\"},{\"text\":\" spring\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"breeze.\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Nearby \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"plants\",\"color\":\"green\"},{\"text\":\" and \"},{\"text\":\"animals\",\"color\":\"green\"},{\"text\":\" seem to be\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"invigorated\",\"color\":\"aqua\"},{\"text\":\" by its \"},{\"text\":\"proximity\",\"color\":\"green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" the \",\"color\":\"dark_green\"},{\"text\":\"charm \",\"color\":\"green\"},{\"text\":\"to toggle \",\"color\":\"dark_green\"},{\"text\":\"its \",\"color\":\"dark_green\"},{\"text\":\"effect\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Empowered\",\"italic\":false,\"color\":\"green\",\"bold\":true},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"Magic Item\",\"color\":\"dark_purple\",\"bold\":false}]"));
       return loreList;
    }
    
@@ -135,6 +132,13 @@ public class WildGrowthCharm extends MagicItem {
       }
       
       @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(OFF_TXT).value();
+         boolean active = itemStack.getNbt().getCompound("arcananovum").getBoolean("active");
+         return active ? ArcanaRegistry.MODELS.get(ON_TXT).value() : ArcanaRegistry.MODELS.get(OFF_TXT).value();
+      }
+      
+      @Override
       public ItemStack getDefaultStack(){
          return prefItem;
       }
@@ -149,6 +153,7 @@ public class WildGrowthCharm extends MagicItem {
          
          if(active && !world.isClient && player.getServer().getTicks() % tickTime == 0){
             boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING.id) >= 1;
+            int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
             
             int count = 0;
             for(BlockPos blockPos : BlockPos.iterateRandomly(player.getRandom(), 100, player.getBlockPos(), 4)){
@@ -157,7 +162,9 @@ public class WildGrowthCharm extends MagicItem {
                if(count >= 2) break;
                count++;
                
-               if(block instanceof SugarCaneBlock ||
+               if(block instanceof FernBlock){
+                  count--;
+               }else if(block instanceof SugarCaneBlock ||
                      block instanceof NetherWartBlock ||
                      block instanceof CactusBlock ||
                      block instanceof ChorusFlowerBlock ||
@@ -182,6 +189,20 @@ public class WildGrowthCharm extends MagicItem {
                   world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);
                }else{
                   count--;
+               }
+               
+               if(reaping >= 1){
+                  if(block instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
+                     world.breakBlock(blockPos,true,player);
+                     if(reaping >= 2 && crop.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
+                        world.setBlockState(blockPos,block.getDefaultState());
+                     }
+                  }else if(block instanceof NetherWartBlock wart && world.getBlockState(blockPos).get(NetherWartBlock.AGE) == 3){
+                     world.breakBlock(blockPos,true,player);
+                     if(reaping >= 2 && wart.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
+                        world.setBlockState(blockPos,block.getDefaultState());
+                     }
+                  }
                }
             }
             

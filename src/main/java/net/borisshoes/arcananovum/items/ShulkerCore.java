@@ -41,10 +41,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,6 +53,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class ShulkerCore extends EnergyItem {
    
+   private static final String TXT = "item/shulker_core";
+   
    public ShulkerCore(){
       id = "shulker_core";
       name = "Shulker Core";
@@ -65,6 +64,8 @@ public class ShulkerCore extends EnergyItem {
       vanillaItem = Items.SHULKER_BOX;
       item = new ShulkerCoreItem(new FabricItemSettings().maxCount(1).fireproof());
       itemVersion = 1;
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -341,6 +342,11 @@ public class ShulkerCore extends EnergyItem {
    public class ShulkerCoreItem extends MagicPolymerItem {
       public ShulkerCoreItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

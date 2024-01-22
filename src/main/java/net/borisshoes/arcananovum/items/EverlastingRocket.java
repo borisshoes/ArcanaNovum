@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -33,10 +34,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -49,6 +47,11 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class EverlastingRocket extends EnergyItem {
    
+   private static final String EMPTY_TXT = "item/everlasting_rocket_0";
+   private static final String DURATION_1_TXT = "item/everlasting_rocket_1";
+   private static final String DURATION_2_TXT = "item/everlasting_rocket_2";
+   private static final String DURATION_3_TXT = "item/everlasting_rocket_3";
+   
    public EverlastingRocket(){
       id = "everlasting_rocket";
       name = "Everlasting Rocket";
@@ -58,6 +61,11 @@ public class EverlastingRocket extends EnergyItem {
       vanillaItem = Items.FIREWORK_ROCKET;
       item = new EverlastingRocketItem(new FabricItemSettings().maxCount(1).fireproof());
       initEnergy = 16;
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,EMPTY_TXT));
+      models.add(new Pair<>(vanillaItem,DURATION_1_TXT));
+      models.add(new Pair<>(vanillaItem,DURATION_2_TXT));
+      models.add(new Pair<>(vanillaItem,DURATION_3_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -191,6 +199,25 @@ public class EverlastingRocket extends EnergyItem {
    public class EverlastingRocketItem extends MagicPolymerItem implements PolymerItem {
       public EverlastingRocketItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         int percentage = (int) Math.ceil(3.0 * getEnergy(itemStack) / getMaxEnergy(itemStack));
+         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.ADJUSTABLE_FUSE.id) >= 1){
+            if(percentage == 0) return ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
+            
+            NbtCompound magicTag = itemStack.getNbt().getCompound("arcananovum");
+            byte flight = magicTag.getCompound("Fireworks").getByte("Flight");
+            if(flight == 3) return ArcanaRegistry.MODELS.get(DURATION_3_TXT).value();
+            if(flight == 2) return ArcanaRegistry.MODELS.get(DURATION_2_TXT).value();
+            return ArcanaRegistry.MODELS.get(DURATION_1_TXT).value();
+         }else{
+            if(percentage == 3) return ArcanaRegistry.MODELS.get(DURATION_3_TXT).value();
+            if(percentage == 2) return ArcanaRegistry.MODELS.get(DURATION_2_TXT).value();
+            if(percentage == 1) return ArcanaRegistry.MODELS.get(DURATION_1_TXT).value();
+            return ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
+         }
       }
       
       @Override

@@ -5,15 +5,26 @@ import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.world.MobSpawnerEntry;
 import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import java.util.Optional;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
 @Mixin(MobSpawnerLogic.class)
@@ -40,5 +51,14 @@ public class MobSpawnerLogicMixin {
             }
          }
       }
+   }
+   
+   @Inject(method = "serverTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;syncWorldEvent(ILnet/minecraft/util/math/BlockPos;I)V"),locals = LocalCapture.CAPTURE_FAILHARD)
+   private void arcananovum_infuserMobCapSet(ServerWorld world, BlockPos pos, CallbackInfo ci, boolean bl, Random random, MobSpawnerEntry mobSpawnerEntry, int i, NbtCompound nbtCompound, Optional optional, NbtList nbtList, int j, double d, double e, double f, BlockPos blockPos, Entity entity){
+      if(!(entity instanceof MobEntity mob)) return;
+      BlockPos infuserPos = pos.add(0,-2,0);
+      BlockEntity be = world.getBlockEntity(infuserPos);
+      boolean infuserActive = (be instanceof SpawnerInfuserBlockEntity infuser) && infuser.isActive();
+      if(infuserActive) mob.addCommandTag("$arcananovum.infused_spawn");
    }
 }

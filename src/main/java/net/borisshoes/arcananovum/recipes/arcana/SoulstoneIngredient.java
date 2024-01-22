@@ -25,6 +25,11 @@ public class SoulstoneIngredient extends MagicItemIngredient{
    }
    
    @Override
+   public MagicItemIngredient copyWithCount(int newCount){
+      return new SoulstoneIngredient(souls,repeatable,consume,allowBosses,type);
+   }
+   
+   @Override
    public boolean validStack(ItemStack stack){
       if(MagicItemUtils.identifyItem(stack) instanceof Soulstone){
          if(type != null){

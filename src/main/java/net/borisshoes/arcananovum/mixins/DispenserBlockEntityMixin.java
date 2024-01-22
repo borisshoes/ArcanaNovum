@@ -19,22 +19,22 @@ public class DispenserBlockEntityMixin {
    
    @Inject(method = "chooseNonEmptySlot", at = @At("RETURN"), cancellable = true)
    private void arcananovum_disableDispenser(Random random, CallbackInfoReturnable<Integer> cir){
-      DispenserBlockEntity dispenser = (DispenserBlockEntity) (Object) this;
-      
-      int oldInd = cir.getReturnValue();
-      if(oldInd < 0 || oldInd >= inventory.size()) return;
-      ItemStack returnedStack = inventory.get(oldInd);
-      if(MagicItemUtils.isMagic(returnedStack)){
-         int i = -1;
-         int j = 1;
-   
-         for(int k = 0; k < inventory.size(); ++k) {
-            ItemStack testStack = inventory.get(k);
-            if (!testStack.isEmpty() && !MagicItemUtils.isMagic(testStack) && random.nextInt(j++) == 0) {
-               i = k;
-            }
-         }
-         cir.setReturnValue(i);
-      }
+//      DispenserBlockEntity dispenser = (DispenserBlockEntity) (Object) this;
+//
+//      int oldInd = cir.getReturnValue();
+//      if(oldInd < 0 || oldInd >= inventory.size()) return;
+//      ItemStack returnedStack = inventory.get(oldInd);
+//      if(MagicItemUtils.isMagic(returnedStack)){
+//         int i = -1;
+//         int j = 1;
+//
+//         for(int k = 0; k < inventory.size(); ++k) {
+//            ItemStack testStack = inventory.get(k);
+//            if (!testStack.isEmpty() && !MagicItemUtils.isMagic(testStack) && random.nextInt(j++) == 0) {
+//               i = k;
+//            }
+//         }
+//         cir.setReturnValue(i);
+//      }
    }
 }

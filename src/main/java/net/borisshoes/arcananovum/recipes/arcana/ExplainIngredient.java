@@ -23,6 +23,11 @@ public class ExplainIngredient extends MagicItemIngredient{
    }
    
    @Override
+   public MagicItemIngredient copyWithCount(int newCount){
+      return new ExplainIngredient(stack,name,show);
+   }
+   
+   @Override
    public boolean validStack(ItemStack stack){
       return false;
    }

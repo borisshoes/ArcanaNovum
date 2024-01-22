@@ -38,10 +38,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -55,6 +52,9 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class EssenceEgg extends MagicItem {
+   
+   private static final String TXT = "item/essence_egg";
+   
    public EssenceEgg(){
       id = "essence_egg";
       name = "Essence Egg";
@@ -62,6 +62,8 @@ public class EssenceEgg extends MagicItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
       vanillaItem = Items.GHAST_SPAWN_EGG;
       item = new EssenceEggItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -218,7 +220,10 @@ public class EssenceEgg extends MagicItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

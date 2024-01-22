@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -26,6 +27,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +37,8 @@ import java.util.List;
 
 public class ArcanistsBelt extends MagicItem implements MagicItemContainer.MagicItemContainerHaver {
    
+   private static final String TXT = "item/arcanists_belt";
+   
    public ArcanistsBelt(){
       id = "arcanists_belt";
       name = "Arcanist's Belt";
@@ -43,6 +47,8 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
       itemVersion = 0;
       vanillaItem = Items.LEAD;
       item = new ArcanistsBeltItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -187,6 +193,11 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
       }
       
       public static final int[] BELT_SLOT_COUNT = new int[]{3,4,5,7,9};
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

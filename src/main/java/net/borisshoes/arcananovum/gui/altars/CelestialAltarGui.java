@@ -30,8 +30,6 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class CelestialAltarGui extends SimpleGui implements WatchedGui {
    private final CelestialAltarBlockEntity blockEntity;
-   private int mode = 0; // 0 - time, 1 - phase
-   private int phase = 0;
    private final boolean control;
    private final int[] lightLvl = {15,11,7,3,0,3,7,11};
    private final int[] times = {6000,9000,12000,14000,18000,20000,23000,2000};
@@ -45,6 +43,8 @@ public class CelestialAltarGui extends SimpleGui implements WatchedGui {
    
    private void changeTime(){
       if(!(blockEntity.getWorld() instanceof ServerWorld serverWorld)) return;
+      int phase = blockEntity.getPhase();
+      int mode = blockEntity.getMode();
       long timeOfDay = serverWorld.getTimeOfDay();
       if(mode == 0){
          int curTime = (int) (timeOfDay % 24000L);
@@ -68,15 +68,17 @@ public class CelestialAltarGui extends SimpleGui implements WatchedGui {
    
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+      int phase = blockEntity.getPhase();
+      int mode = blockEntity.getMode();
       if(index == 2){
          if(!control){
-            phase = phase == 4 ? 0 : 4;
+            blockEntity.setPhase(phase == 4 ? 0 : 4);
          }else{
-            phase = (phase+1) % 8;
+            blockEntity.setPhase((phase+1) % 8);
          }
       }else if(index == 4){
          if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-            mode = (mode+1) % 2;
+            blockEntity.setMode((mode+1) % 2);
          }else{
             if(blockEntity.getCooldown() <= 0 && blockEntity.getWorld() instanceof ServerWorld serverWorld){
                if(MiscUtils.removeItems(player,Items.NETHER_STAR,1)){
@@ -108,6 +110,8 @@ public class CelestialAltarGui extends SimpleGui implements WatchedGui {
    }
    
    public void build(){
+      int phase = blockEntity.getPhase();
+      int mode = blockEntity.getMode();
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          setSlot(i,new GuiElementBuilder(Items.BLUE_STAINED_GLASS_PANE).setName(Text.literal("Celestial Altar").formatted(Formatting.YELLOW)));

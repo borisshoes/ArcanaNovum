@@ -3,6 +3,8 @@ package net.borisshoes.arcananovum.core.polymer;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.altars.StarpathAltar;
+import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -83,6 +85,9 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
             
             if(magicBlock instanceof ArcaneSingularityBlockEntity singularity){
                magicTag.put("books",singularity.writeBooks());
+            }
+            if(magicBlock instanceof StarpathAltarBlockEntity altar){
+               magicTag.put("targets",altar.writeTargets());
             }
             
             ItemScatterer.spawn(world, (double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D, drop);

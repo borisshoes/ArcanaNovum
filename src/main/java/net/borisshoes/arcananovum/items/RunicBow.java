@@ -42,6 +42,7 @@ import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +54,12 @@ import java.util.function.Predicate;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class RunicBow extends MagicItem {
+   private static final String ACCEL_0_TXT = "item/runic_bow_accel_0";
+   private static final String ACCEL_1_TXT = "item/runic_bow_accel_1";
+   private static final String ACCEL_2_TXT = "item/runic_bow_accel_2";
+   private static final String ACCEL_3_TXT = "item/runic_bow_accel_3";
+   private static final String ACCEL_4_TXT = "item/runic_bow_accel_4";
+   private static final String ACCEL_5_TXT = "item/runic_bow_accel_5";
    
    public RunicBow(){
       id = "runic_bow";
@@ -61,6 +68,13 @@ public class RunicBow extends MagicItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
       vanillaItem = Items.BOW;
       item = new RunicBowItem(new FabricItemSettings().maxCount(1).fireproof().maxDamage(384));
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,ACCEL_0_TXT));
+      models.add(new Pair<>(vanillaItem,ACCEL_1_TXT));
+      models.add(new Pair<>(vanillaItem,ACCEL_2_TXT));
+      models.add(new Pair<>(vanillaItem,ACCEL_3_TXT));
+      models.add(new Pair<>(vanillaItem,ACCEL_4_TXT));
+      models.add(new Pair<>(vanillaItem,ACCEL_5_TXT));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -157,7 +171,16 @@ public class RunicBow extends MagicItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         int tier = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.BOW_ACCELERATION.id);
+         if(tier == 1) return ArcanaRegistry.MODELS.get(ACCEL_1_TXT).value();
+         if(tier == 2) return ArcanaRegistry.MODELS.get(ACCEL_2_TXT).value();
+         if(tier == 3) return ArcanaRegistry.MODELS.get(ACCEL_3_TXT).value();
+         if(tier == 4) return ArcanaRegistry.MODELS.get(ACCEL_4_TXT).value();
+         if(tier == 5) return ArcanaRegistry.MODELS.get(ACCEL_5_TXT).value();
+         return ArcanaRegistry.MODELS.get(ACCEL_0_TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

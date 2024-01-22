@@ -92,6 +92,7 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
             }
          }else{
+            if(getSelected().isEmpty()) return true;
             if(player.experienceLevel >= xpCost || player.isCreative()){
                if(MiscUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
                   applyEnchants();
@@ -651,7 +652,7 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
    }
    
    private List<EnchantEntry> getEnchantsForItem(ItemStack stack){
-      if(stack.isEmpty()) return new ArrayList<>();
+      if(stack.isEmpty() || stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem()) || stack.isOf(ArcanaRegistry.NUL_MEMENTO.getItem())) return new ArrayList<>();
       Map<Enchantment,Integer> curEnchants = EnchantmentHelper.get(stack);
       List<EnchantEntry> possibleAdditions = new ArrayList<>();
       

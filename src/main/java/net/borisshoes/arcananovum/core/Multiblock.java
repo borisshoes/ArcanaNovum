@@ -9,6 +9,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.StairsBlock;
+import net.minecraft.block.enums.StairShape;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -16,6 +18,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.BlockRotation;
@@ -238,8 +241,35 @@ public class Multiblock {
             
             pred = state -> {
                if(!state.isOf(rawState.getBlock())) return false; // Check block type
+               boolean stairExempt = false;
+               if(rawState.getBlock() instanceof StairsBlock && blockProperties.containsKey(StairsBlock.FACING) && blockProperties.containsKey(StairsBlock.SHAPE)){
+                  Direction desiredDirection = rawState.get(StairsBlock.FACING);
+                  StairShape desiredShape = rawState.get(StairsBlock.SHAPE);
+                  Direction stateDirection = state.get(StairsBlock.FACING);
+                  StairShape stateShape = state.get(StairsBlock.SHAPE);
+                  
+                  if((desiredShape.equals(StairShape.INNER_LEFT) && stateShape.equals(StairShape.INNER_RIGHT)) || (desiredShape.equals(StairShape.OUTER_LEFT) && stateShape.equals(StairShape.OUTER_RIGHT))){
+                     stairExempt = switch(desiredDirection){
+                        case NORTH -> stateDirection.equals(Direction.WEST);
+                        case SOUTH -> stateDirection.equals(Direction.EAST);
+                        case EAST -> stateDirection.equals(Direction.NORTH);
+                        case WEST -> stateDirection.equals(Direction.SOUTH);
+                        default -> false;
+                     };
+                  }else if((desiredShape.equals(StairShape.INNER_RIGHT) && stateShape.equals(StairShape.INNER_LEFT)) || (desiredShape.equals(StairShape.OUTER_RIGHT) && stateShape.equals(StairShape.OUTER_LEFT))){
+                     stairExempt = switch(desiredDirection){
+                        case WEST -> stateDirection.equals(Direction.NORTH);
+                        case EAST -> stateDirection.equals(Direction.SOUTH);
+                        case NORTH -> stateDirection.equals(Direction.EAST);
+                        case SOUTH -> stateDirection.equals(Direction.WEST);
+                        default -> false;
+                     };
+                  }
+               }
+               
                for(Map.Entry<Property<? extends Comparable<?>>, Comparable<?>> entry : blockProperties.entrySet()){
                   //System.out.println("Testing "+entry.getKey()+": Found "+state.get(entry.getKey())+" expecting: "+entry.getValue()+" | Matches:"+state.get(entry.getKey()).equals(entry.getValue()));
+                  if((entry.getKey().equals(StairsBlock.FACING) || entry.getKey().equals(StairsBlock.SHAPE)) && stairExempt) continue;
                   if(!state.get(entry.getKey()).equals(entry.getValue())) return false; // Check all mapped properties
                }
                return true;

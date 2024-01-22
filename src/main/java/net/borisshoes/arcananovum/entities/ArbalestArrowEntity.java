@@ -98,15 +98,16 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
       
       int pCount = (int) (range*range*range*2);
       for(StatusEffectInstance effect : effects){
-         for(LivingEntity target : targets){
-            boolean applied = target.addStatusEffect(new StatusEffectInstance(effect),getOwner());
-            if(applied && effect.getEffectType() == ArcanaRegistry.DAMAGE_AMP_EFFECT && getOwner() instanceof LivingEntity applier){
-               DamageAmpEffect.AMP_TRACKER.put(target,applier);
+         if(calls % 10 == 0 || !effect.getEffectType().isInstant()){
+            for(LivingEntity target : targets){
+               boolean applied = target.addStatusEffect(new StatusEffectInstance(effect),getOwner());
+               if(applied && effect.getEffectType() == ArcanaRegistry.DAMAGE_AMP_EFFECT && getOwner() instanceof LivingEntity applier){
+                  DamageAmpEffect.AMP_TRACKER.put(target,applier);
+               }
             }
          }
-         
          ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb( effect.getEffectType().getColor()).toVector3f(),0.7f);
-         serverWorld.spawnParticles(dust,pos.getX(),pos.getY(),pos.getZ(),pCount,range*.5,range*.5,range*.5,0);
+         serverWorld.spawnParticles(dust,pos.getX(),pos.getY(),pos.getZ(),pCount / effects.size(),range*.5,range*.5,range*.5,0);
       }
       
       ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(5, () -> {

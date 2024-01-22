@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -28,6 +29,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -43,6 +45,13 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 
 public class MagnetismCharm extends MagicItem {
+   
+   private static final String ON_TXT = "item/magnetism_charm_on";
+   private static final String OFF_TXT = "item/magnetism_charm_off";
+   private static final String REVERSE_TXT = "item/magnetism_charm_reverse";
+   private static final String NEO_ON_TXT = "item/magnetism_charm_neo_on";
+   private static final String NEO_OFF_TXT = "item/magnetism_charm_neo_off";
+   private static final String NEO_REVERSE_TXT = "item/magnetism_charm_neo_reverse";
    
    private static final ArrayList<Item> NEODYMIUM_TARGETS = new ArrayList<>(Arrays.asList(
          Items.IRON_INGOT,
@@ -116,6 +125,13 @@ public class MagnetismCharm extends MagicItem {
       itemVersion = 2;
       vanillaItem = Items.IRON_INGOT;
       item = new MagnetismCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,OFF_TXT));
+      models.add(new Pair<>(vanillaItem,ON_TXT));
+      models.add(new Pair<>(vanillaItem,REVERSE_TXT));
+      models.add(new Pair<>(vanillaItem,NEO_ON_TXT));
+      models.add(new Pair<>(vanillaItem,NEO_OFF_TXT));
+      models.add(new Pair<>(vanillaItem,NEO_REVERSE_TXT));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -337,6 +353,16 @@ public class MagnetismCharm extends MagicItem {
    public class MagnetismCharmItem extends MagicPolymerItem {
       public MagnetismCharmItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(OFF_TXT).value();
+         int mode = itemStack.getNbt().getCompound("arcananovum").getInt("mode");
+         boolean neo = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.NEODYMIUM.id) >= 1;
+         if(mode == 1) return neo ? ArcanaRegistry.MODELS.get(NEO_ON_TXT).value() : ArcanaRegistry.MODELS.get(ON_TXT).value();
+         if(mode == 2) return neo ? ArcanaRegistry.MODELS.get(NEO_REVERSE_TXT).value() : ArcanaRegistry.MODELS.get(REVERSE_TXT).value();
+         return neo ? ArcanaRegistry.MODELS.get(NEO_OFF_TXT).value() : ArcanaRegistry.MODELS.get(OFF_TXT).value();
       }
       
       @Override

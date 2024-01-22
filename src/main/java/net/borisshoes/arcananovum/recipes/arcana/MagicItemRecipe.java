@@ -1,7 +1,8 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
-import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Pair;
@@ -11,20 +12,20 @@ import java.util.HashMap;
 
 public class MagicItemRecipe {
    
-   private final MagicItemIngredient[][] ingredients;
+   private final MagicItemIngredient[][] trueIngredients;
    private final ForgeRequirement forgeRequirement;
    
    public MagicItemRecipe(MagicItemIngredient[][] ingredients){
-      this.ingredients = ingredients;
-      this.forgeRequirement = new ForgeRequirement();
+      this(ingredients,new ForgeRequirement());
    }
    
    public MagicItemRecipe(MagicItemIngredient[][] ingredients, ForgeRequirement forgeRequirement){
-      this.ingredients = ingredients;
+      this.trueIngredients = ingredients;
       this.forgeRequirement = forgeRequirement;
    }
    
    public boolean satisfiesRecipe(ItemStack[][] items, StarlightForgeBlockEntity forge){
+      MagicItemIngredient[][] ingredients = getAlteredIngredients();
       if(ingredients.length != items.length || ingredients[0].length != items[0].length)
          return false;
       
@@ -42,6 +43,7 @@ public class MagicItemRecipe {
       if(!satisfiesRecipe(items,forge))
          return null;
       ItemStack[][] remainders = new ItemStack[items.length][items[0].length];
+      MagicItemIngredient[][] ingredients = getAlteredIngredients();
       for(int i = 0; i < ingredients.length; i++){
          for(int j = 0; j < ingredients[0].length; j++){
             remainders[i][j] = ingredients[i][j].getRemainder(items[i][j],resourceLvl);
@@ -51,7 +53,7 @@ public class MagicItemRecipe {
    }
    
    public MagicItemIngredient[][] getIngredients(){
-      return ingredients;
+      return getAlteredIngredients();
    }
    
    public ForgeRequirement getForgeRequirement(){
@@ -60,6 +62,7 @@ public class MagicItemRecipe {
    
    public HashMap<String, Pair<Integer,ItemStack>> getIngredientList(){
       HashMap<String, Pair<Integer,ItemStack>> map = new HashMap<>();
+      MagicItemIngredient[][] ingredients = getAlteredIngredients();
       for(int i = 0; i < ingredients.length; i++){
          for(int j = 0; j < ingredients[0].length; j++){
             ItemStack stack = ingredients[i][j].ingredientAsStack();
@@ -97,5 +100,19 @@ public class MagicItemRecipe {
          list.add(ArcanaRegistry.ARCANE_SINGULARITY);
       }
       return list;
+   }
+   
+   private MagicItemIngredient[][] getAlteredIngredients(){
+      int reduction = (int) ArcanaNovum.config.getValue("ingredientReduction");
+      
+      MagicItemIngredient[][] alteredIngredients = new MagicItemIngredient[trueIngredients.length][trueIngredients[0].length];
+      for(int i = 0; i < trueIngredients.length; i++){
+         for(int j = 0; j < trueIngredients[0].length; j++){
+            int newCount = (int) Math.ceil((double) trueIngredients[i][j].getCount() / reduction);
+            alteredIngredients[i][j] = trueIngredients[i][j].copyWithCount(newCount);
+         }
+      }
+      
+      return alteredIngredients;
    }
 }

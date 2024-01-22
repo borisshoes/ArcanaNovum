@@ -3,8 +3,10 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.achievements.TimedAchievement;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
@@ -34,6 +36,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -48,7 +51,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class PhotonicArrows extends RunicArrow {
+   
+   private static final String TXT = "item/runic_arrow";
    
    public PhotonicArrows(){
       id = "photonic_arrows";
@@ -57,6 +64,8 @@ public class PhotonicArrows extends RunicArrow {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new PhotonicArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -143,7 +152,7 @@ public class PhotonicArrows extends RunicArrow {
             }
          }
          if(!ignore){
-            hit.damage(ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
+            hit.damage(ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,entity,proj), finalDmg);
          }
          if(hit instanceof MobEntity mob && mob.isDead()){
             killCount++;
@@ -152,6 +161,10 @@ public class PhotonicArrows extends RunicArrow {
          if(ignore) break;
       }
       if(proj.getOwner() instanceof ServerPlayerEntity player && killCount >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.X.id);
+      
+      if(proj.getOwner() instanceof ServerPlayerEntity player && !hits.isEmpty() && proj instanceof RunicArrowEntity runicArrowEntity){
+         runicArrowEntity.incArrowForEveryFoe(player);
+      }
       
       if(world instanceof ServerWorld serverWorld){
          ParticleEffectUtils.photonArrowShot(serverWorld,entity,endPoint, MathHelper.clamp(damage/15,.4f,1f));
@@ -211,7 +224,10 @@ public class PhotonicArrows extends RunicArrow {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

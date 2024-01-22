@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
@@ -24,6 +25,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +37,7 @@ public class OverflowingQuiver extends QuiverItem{
    
    private static final int[] refillReduction = {0,300,600,900,1200,1800};
    private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
+   private static final String TXT = "item/overflowing_quiver";
    
    public OverflowingQuiver(){
       id = "overflowing_quiver";
@@ -44,6 +47,8 @@ public class OverflowingQuiver extends QuiverItem{
       color = Formatting.DARK_AQUA;
       vanillaItem = Items.RABBIT_HIDE;
       item = new OverflowingQuiverItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -129,7 +134,10 @@ public class OverflowingQuiver extends QuiverItem{
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

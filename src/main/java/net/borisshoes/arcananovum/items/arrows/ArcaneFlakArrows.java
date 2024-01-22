@@ -30,6 +30,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
@@ -41,6 +42,8 @@ import java.util.List;
 public class ArcaneFlakArrows extends RunicArrow {
    
    public static final int armTime = 5;
+   private static final String TXT = "item/runic_arrow";
+   
    
    public ArcaneFlakArrows(){
       id = "arcane_flak_arrows";
@@ -49,6 +52,8 @@ public class ArcaneFlakArrows extends RunicArrow {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new ArcaneFlakArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -143,6 +148,11 @@ public class ArcaneFlakArrows extends RunicArrow {
    public class ArcaneFlakArrowsItem extends MagicPolymerArrowItem {
       public ArcaneFlakArrowsItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

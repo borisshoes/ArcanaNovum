@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
+import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
@@ -34,7 +35,7 @@ import java.util.HashMap;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
-public class ArcanaNovum implements ModInitializer {
+public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
@@ -43,7 +44,7 @@ public class ArcanaNovum implements ModInitializer {
    public static final HashMap<ServerWorld,ArrayList<ChunkPos>> ANCHOR_CHUNKS = new HashMap<>();
    public static final ArrayList<Pair<BlockEntity,MagicBlockEntity>> ACTIVE_MAGIC_BLOCKS = new ArrayList<>();
    public static MinecraftServer SERVER = null;
-   public static final boolean devMode = false;
+   public static final boolean devMode = true;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static ConfigUtils config;
@@ -70,14 +71,21 @@ public class ArcanaNovum implements ModInitializer {
       
       ArcanaRegistry.initialize();
 
-      logger.info("Arcana Surges Through The Server!");
+      logger.info("Arcana Surges Through The World!");
       
       config = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, Arrays.asList(new ConfigUtils.IConfigValue[] {
             new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true,
                   new ConfigUtils.Command("Do Concentration Damage is %s", "Do Concentration Damage is now %s")),
             new ConfigUtils.BooleanConfigValue("announceAchievements", true,
                   new ConfigUtils.Command("Announce Achievements is %s", "Announce Achievements is now %s")),
+            new ConfigUtils.IntegerConfigValue("ingredientReduction", 1, new ConfigUtils.IntegerConfigValue.IntLimits(1,64),
+                  new ConfigUtils.Command("Recipe ingredient counts are divided by %s", "Recipe ingredient count will now be divided by %s")),
       }));
+   }
+   
+   @Override
+   public void onInitializeClient(){
+      logger.info("Arcana Surges Through Your Client!");
    }
    
    public static boolean addTickTimerCallback(TickTimerCallback callback){

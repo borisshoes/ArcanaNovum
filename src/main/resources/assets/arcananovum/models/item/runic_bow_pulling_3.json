@@ -1,0 +1,6 @@
+{
+    "parent": "arcananovum:item/runic_bow_accel_0",
+    "textures": {
+        "layer0": "arcananovum:item/runic_bow_3"
+    }
+}

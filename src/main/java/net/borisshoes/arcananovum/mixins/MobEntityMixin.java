@@ -31,7 +31,7 @@ public class MobEntityMixin {
             //log("Entity: "+entity.getEntityName()+" ("+entity.getPos().toString()+") distSq: "+distToPlayerSq+" imDespSq: "+imDespSq);
             
             if (distToPlayerSq > (double)imDespSq && mob.canImmediatelyDespawn(distToPlayerSq)) {
-               if (!(mob.getDespawnCounter() > 600 && ((int)(Math.random()*800)) != 0 && mob.canImmediatelyDespawn(distToPlayerSq))) {
+               if (mob.getDespawnCounter() < 600 || ((int)(Math.random()*800)) != 0 || !mob.canImmediatelyDespawn(distToPlayerSq)) {
                   ci.cancel();
                }
             }

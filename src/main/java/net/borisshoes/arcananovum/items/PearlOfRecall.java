@@ -29,6 +29,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -42,6 +43,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public class PearlOfRecall extends EnergyItem {
    
    public static final int[] cdReduction = {0,60,120,240,360,480};
+   private static final String CHARGED_TXT = "item/pearl_of_recall_charged";
+   private static final String COOLDOWN_TXT = "item/pearl_of_recall_cooldown";
    
    public PearlOfRecall(){
       id = "pearl_of_recall";
@@ -51,6 +54,9 @@ public class PearlOfRecall extends EnergyItem {
       initEnergy = 600;
       vanillaItem = Items.ENDER_EYE;
       item = new PearlOfRecallItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,CHARGED_TXT));
+      models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -207,7 +213,11 @@ public class PearlOfRecall extends EnergyItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(CHARGED_TXT).value();
+         return getEnergy(itemStack) == getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

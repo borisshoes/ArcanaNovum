@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -36,6 +37,8 @@ import java.util.Queue;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class PickaxeOfCeptyus extends MagicItem {
+   
+   private static final String TXT = "item/pickaxe_of_ceptyus";
    public static final ArrayList<Block> VEIN_ORES = new ArrayList<>(Arrays.asList(
          Blocks.COAL_ORE,
          Blocks.DEEPSLATE_COAL_ORE,
@@ -68,6 +71,8 @@ public class PickaxeOfCeptyus extends MagicItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_PICKAXE;
       item = new PickaxeOfCeptyusItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -197,7 +202,10 @@ public class PickaxeOfCeptyus extends MagicItem {
          super(getThis(),ToolMaterials.NETHERITE,1,-2.8f,settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

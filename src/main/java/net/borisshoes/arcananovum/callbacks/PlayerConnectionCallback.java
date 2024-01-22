@@ -14,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -44,28 +45,31 @@ public class PlayerConnectionCallback {
    
    
       // Linked Augments
-      int o1 = profile.getAugmentLevel(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
-      int r1 = profile.getAugmentLevel(ArcanaAugments.RUNIC_BOTTOMLESS.id);
-      if(o1 > r1){
-         profile.setAugmentLevel(ArcanaAugments.RUNIC_BOTTOMLESS.id,o1);
-      }else if(r1 > o1){
-         profile.setAugmentLevel(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,r1);
-      }
-   
-      int o2 = profile.getAugmentLevel(ArcanaAugments.ABUNDANT_AMMO.id);
-      int r2 = profile.getAugmentLevel(ArcanaAugments.QUIVER_DUPLICATION.id);
-      if(o2 > r2){
-         profile.setAugmentLevel(ArcanaAugments.QUIVER_DUPLICATION.id,o2);
-      }else if(r2 > o2){
-         profile.setAugmentLevel(ArcanaAugments.ABUNDANT_AMMO.id,r2);
+      HashMap<String,ArrayList<ArcanaAugment>> linkedAugments = new HashMap<>();
+      HashMap<String,Integer> highestValue = new HashMap<>();
+      for(Map.Entry<ArcanaAugment, String> entry : ArcanaAugments.linkedAugments.entrySet()){
+         String linkedId = entry.getValue();
+         ArcanaAugment augment = entry.getKey();
+         
+         if(linkedAugments.containsKey(linkedId)){
+            linkedAugments.get(linkedId).add(augment);
+            int lvl = profile.getAugmentLevel(augment.id);
+            if(lvl > highestValue.get(linkedId)){
+               highestValue.put(linkedId,lvl);
+            }
+         }else{
+            ArrayList<ArcanaAugment> augs = new ArrayList<>();
+            augs.add(augment);
+            highestValue.put(linkedId,profile.getAugmentLevel(augment.id));
+            linkedAugments.put(linkedId,augs);
+         }
       }
       
-      int o3 = profile.getAugmentLevel(ArcanaAugments.HARNESS_RECYCLER.id);
-      int r3 = profile.getAugmentLevel(ArcanaAugments.SHULKER_RECYCLER.id);
-      if(o3 > r3){
-         profile.setAugmentLevel(ArcanaAugments.SHULKER_RECYCLER.id,o3);
-      }else if(r3 > o3){
-         profile.setAugmentLevel(ArcanaAugments.HARNESS_RECYCLER.id,r3);
+      for(Map.Entry<String,ArrayList<ArcanaAugment>> entry : linkedAugments.entrySet()){
+         ArrayList<ArcanaAugment> augs = entry.getValue();
+         for(ArcanaAugment aug : augs){
+            profile.setAugmentLevel(aug.id,highestValue.get(entry.getKey()));
+         }
       }
    
       for(Map.Entry<ArcanaAugment, Integer> entry : profile.getAugments().entrySet()){

@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Multimap;
+import eu.pb4.polymer.core.mixin.client.item.packet.CreativeInventoryActionC2SPacketMixin;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -14,6 +16,8 @@ import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.client.gui.screen.ingame.CreativeInventoryListener;
+import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -34,6 +38,7 @@ import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -52,6 +57,9 @@ import java.util.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class SojournerBoots extends EnergyItem {
+   
+   private static final String TXT = "item/sojourner_boots";
+   
    public SojournerBoots(){
       id = "sojourner_boots";
       name = "Sojourner's Boots";
@@ -59,6 +67,8 @@ public class SojournerBoots extends EnergyItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
       vanillaItem = Items.LEATHER_BOOTS;
       item = new SojournerBootsItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -235,6 +245,11 @@ public class SojournerBoots extends EnergyItem {
       }
       
       @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
+      
+      @Override
       public ItemStack getDefaultStack(){
          return prefItem;
       }
@@ -249,10 +264,10 @@ public class SojournerBoots extends EnergyItem {
             magicNbt.putBoolean("active",active);
             
             if(active){
-               user.sendMessage(Text.translatable("The Boots become energized with Arcana").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
+               user.sendMessage(Text.literal("The Boots become energized with Arcana").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity)user, SoundEvents.BLOCK_BEACON_POWER_SELECT, 0.8f,2f);
             }else{
-               user.sendMessage(Text.translatable("The Boots' energy fades").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
+               user.sendMessage(Text.literal("The Boots' energy fades").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity)user, SoundEvents.BLOCK_BEACON_DEACTIVATE, 2,.8f);
             }
             

@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.PotatoesBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,15 +20,15 @@ public class ExplosionMixin {
       try{
          Explosion explosion = (Explosion) (Object) this;
          String explosionName = explosion.getDamageSource().getName();
-         if(explosionName.contains("arcananovum.detonationarrow_terrain")){
+         if(explosionName.contains("arcananovum.detonation_terrain")){
             return true;
-         }else if(explosionName.contains("arcananovum.detonationarrow_damage")){
+         }else if(explosionName.contains("arcananovum.detonation_damage")){
             if(entity instanceof ServerPlayerEntity hitPlayer){
                float newDmg = amount / 5;
                Entity attacker = explosion.getDamageSource().getAttacker();
                entity.damage(source,newDmg);
                
-               if(attacker != null && hitPlayer.getUuid().equals(source.getSource().getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f) ArcanaAchievements.grant(hitPlayer,ArcanaAchievements.SAFETY_THIRD.id);
+               if(attacker != null && hitPlayer.getUuid().equals(attacker.getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f) ArcanaAchievements.grant(hitPlayer,ArcanaAchievements.SAFETY_THIRD.id);
                return true;
             }
          }

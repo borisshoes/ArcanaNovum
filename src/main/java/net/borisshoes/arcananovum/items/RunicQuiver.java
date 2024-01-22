@@ -30,6 +30,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +43,7 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
    public static final int size = 9;
    private static final int[] refillReduction = {0,100,200,400,600,900};
    private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
+   private static final String TXT = "item/runic_quiver";
    
    public RunicQuiver(){
       id = "runic_quiver";
@@ -51,6 +53,8 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
       color = Formatting.LIGHT_PURPLE;
       vanillaItem = Items.LEATHER;
       item = new RunicQuiverItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -144,7 +148,7 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"      Runic Quiver\\n\\nRarity: Legendary\\n\\nMy improvments upon the overflowing quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within. I even managed to make the quiver take a set amount of Arcana\"}");
-      list.add("{\"text\":\"      Runic Quiver\\n\\nregardless of how demanding the Runic Arrows within are, so its best to load the quiver up all the way.\\n\\nThe quiver acts the same as its base counterpart just with this added expansion and a quiver restock time.\"}");
+      list.add("{\"text\":\"      Runic Quiver\\n\\nregardless of how demanding the Runic Arrows within are, so its best to load the quiver up all the way.\\n\\nThe quiver acts the same as its base counterpart just with this added expansion and a quicker restock time.\"}");
       return list;
    }
    
@@ -170,7 +174,10 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

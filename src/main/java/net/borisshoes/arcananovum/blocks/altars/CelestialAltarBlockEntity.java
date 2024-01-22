@@ -27,6 +27,8 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    private boolean synthetic;
    private String customName;
    private int cooldown;
+   private int mode = 0; // 0 - time, 1 - phase
+   private int phase = 0;
    
    public CelestialAltarBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.CELESTIAL_ALTAR_BLOCK_ENTITY, pos, state);
@@ -38,6 +40,8 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.uuid = uuid;
       this.synthetic = synthetic;
       this.customName = customName == null ? "" : customName;
+      this.mode = 0;
+      this.phase = 0;
       resetCooldown();
    }
    
@@ -59,6 +63,22 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    private void tick(){
       if(cooldown > 0) cooldown--;
       this.markDirty();
+   }
+   
+   public int getMode(){
+      return mode;
+   }
+   
+   public void setMode(int mode){
+      this.mode = mode;
+   }
+   
+   public int getPhase(){
+      return phase;
+   }
+   
+   public void setPhase(int phase){
+      this.phase = phase;
    }
    
    public int getCooldown(){
@@ -111,6 +131,12 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       if (nbt.contains("cooldown")) {
          this.cooldown = nbt.getInt("cooldown");
       }
+      if (nbt.contains("mode")) {
+         this.mode = nbt.getInt("mode");
+      }
+      if (nbt.contains("phase")) {
+         this.phase = nbt.getInt("phase");
+      }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
          NbtCompound augCompound = nbt.getCompound("arcanaAugments");
@@ -142,6 +168,8 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       }
       nbt.putBoolean("synthetic",this.synthetic);
       nbt.putInt("cooldown",this.cooldown);
+      nbt.putInt("mode",this.mode);
+      nbt.putInt("phase",this.phase);
    }
 }
 

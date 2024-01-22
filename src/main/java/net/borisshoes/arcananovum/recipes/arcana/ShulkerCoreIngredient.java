@@ -17,6 +17,11 @@ public class ShulkerCoreIngredient extends MagicItemIngredient{
    }
    
    @Override
+   public MagicItemIngredient copyWithCount(int newCount){
+      return new ShulkerCoreIngredient(needsStone,minSouls);
+   }
+   
+   @Override
    public boolean validStack(ItemStack stack){
       if(MagicItemUtils.identifyItem(stack) instanceof ShulkerCore core){
          if(needsStone){

@@ -117,5 +117,8 @@ run/
 # Remapped Src Files
 remappedSrc/
 
+# Model development files
+/model-dev/
+
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar

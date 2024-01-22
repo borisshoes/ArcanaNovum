@@ -27,17 +27,28 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class Soulstone extends MagicItem {
    public static int[] tiers = {25,100,250,500,1000,5000,10000};
+   private static final String UNATTUNED_TXT = "item/soulstone_unattuned";
+   private static final String T0_TXT = "item/soulstone_0";
+   private static final String T1_TXT = "item/soulstone_1";
+   private static final String T2_TXT = "item/soulstone_2";
+   private static final String T3_TXT = "item/soulstone_3";
+   private static final String T4_TXT = "item/soulstone_4";
+   private static final String T5_TXT = "item/soulstone_5";
+   private static final String T6_TXT = "item/soulstone_6";
+   private static final String T7_TXT = "item/soulstone_7";
    
    public Soulstone(){
       id = "soulstone";
@@ -47,6 +58,16 @@ public class Soulstone extends MagicItem {
       itemVersion = 1;
       vanillaItem = Items.FIRE_CHARGE;
       item = new SoulstoneItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,UNATTUNED_TXT));
+      models.add(new Pair<>(vanillaItem,T0_TXT));
+      models.add(new Pair<>(vanillaItem,T1_TXT));
+      models.add(new Pair<>(vanillaItem,T2_TXT));
+      models.add(new Pair<>(vanillaItem,T3_TXT));
+      models.add(new Pair<>(vanillaItem,T4_TXT));
+      models.add(new Pair<>(vanillaItem,T5_TXT));
+      models.add(new Pair<>(vanillaItem,T6_TXT));
+      models.add(new Pair<>(vanillaItem,T7_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -149,11 +170,7 @@ public class Soulstone extends MagicItem {
       NbtCompound itemNbt = item.getNbt();
       NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       String type = magicNbt.getString("type");
-      if(type == null){
-         return "unattuned";
-      }else{
-         return type;
-      }
+      return Objects.requireNonNullElse(type, "unattuned");
    }
    
    public static ItemStack setType(ItemStack stack, EntityType<?> type){
@@ -256,7 +273,19 @@ public class Soulstone extends MagicItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(getType(itemStack).equals("unattuned")) return ArcanaRegistry.MODELS.get(UNATTUNED_TXT).value();
+         int tier = soulsToTier(getSouls(itemStack));
+         if(tier == 0) return ArcanaRegistry.MODELS.get(T0_TXT).value();
+         if(tier == 1) return ArcanaRegistry.MODELS.get(T1_TXT).value();
+         if(tier == 2) return ArcanaRegistry.MODELS.get(T2_TXT).value();
+         if(tier == 3) return ArcanaRegistry.MODELS.get(T3_TXT).value();
+         if(tier == 4) return ArcanaRegistry.MODELS.get(T4_TXT).value();
+         if(tier == 5) return ArcanaRegistry.MODELS.get(T5_TXT).value();
+         if(tier == 6) return ArcanaRegistry.MODELS.get(T6_TXT).value();
+         return ArcanaRegistry.MODELS.get(T7_TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

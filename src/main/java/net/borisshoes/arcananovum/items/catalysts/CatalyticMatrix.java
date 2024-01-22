@@ -16,12 +16,16 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CatalyticMatrix extends MagicItem {
+   
+   private static final String TXT = "item/catalytic_matrix";
    
    public CatalyticMatrix(){
       id = "catalytic_matrix";
@@ -31,6 +35,8 @@ public class CatalyticMatrix extends MagicItem {
       itemVersion = 0;
       vanillaItem = Items.NETHER_STAR;
       item = new CatalyticMatrixItem(new FabricItemSettings().maxCount(4).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -86,6 +92,11 @@ public class CatalyticMatrix extends MagicItem {
    public class CatalyticMatrixItem extends MagicPolymerItem {
       public CatalyticMatrixItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

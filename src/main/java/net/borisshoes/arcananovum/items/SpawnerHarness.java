@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -8,7 +9,9 @@ import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
@@ -34,6 +37,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -45,6 +49,10 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class SpawnerHarness extends MagicItem {
+   
+   private static final String FULL_TXT = "item/spawner_harness";
+   private static final String EMPTY_TXT = "item/spawner_harness_empty";
+   
    public SpawnerHarness(){
       id = "spawner_harness";
       name = "Spawner Harness";
@@ -53,6 +61,9 @@ public class SpawnerHarness extends MagicItem {
       itemVersion = 1;
       vanillaItem = Items.SPAWNER;
       item = new SpawnerHarnessItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,FULL_TXT));
+      models.add(new Pair<>(vanillaItem,EMPTY_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -117,24 +128,10 @@ public class SpawnerHarness extends MagicItem {
    
    private void giveScrap(PlayerEntity player){
       ItemStack stack = new ItemStack(Items.NETHERITE_SCRAP);
-      stack.setCount(8);
-      if(!stack.isEmpty()){
-      
-         ItemEntity itemEntity;
-         boolean bl = player.getInventory().insertStack(stack);
-         if (!bl || !stack.isEmpty()) {
-            itemEntity = player.dropItem(stack, false);
-            if (itemEntity == null) return;
-            itemEntity.resetPickupDelay();
-            itemEntity.setOwner(player.getUuid());
-            return;
-         }
-         stack.setCount(1);
-         itemEntity = player.dropItem(stack, false);
-         if (itemEntity != null) {
-            itemEntity.setDespawnImmediately();
-         }
-      }
+      int reduction = (int) ArcanaNovum.config.getValue("ingredientReduction");
+      int scrapCost = (int) Math.ceil(4.0 / reduction) * 4;
+      stack.setCount(scrapCost/2);
+      MiscUtils.giveStacks(player,stack);
    }
    
    private List<String> makeLore(){
@@ -166,6 +163,14 @@ public class SpawnerHarness extends MagicItem {
    public class SpawnerHarnessItem extends MagicPolymerItem {
       public SpawnerHarnessItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(FULL_TXT).value();
+         NbtCompound spawnerData = itemStack.getNbt().getCompound("arcananovum").getCompound("spawner");
+         boolean hasSpawner = spawnerData.contains("SpawnData");
+         return hasSpawner ? ArcanaRegistry.MODELS.get(FULL_TXT).value() : ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
       }
       
       @Override

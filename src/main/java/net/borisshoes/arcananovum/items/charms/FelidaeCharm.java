@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -27,6 +29,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -38,6 +41,9 @@ import java.util.List;
 
 public class FelidaeCharm extends MagicItem {
    
+   private static final String TXT = "item/felidae_charm";
+   private static final String TXT_PANTHERA = "item/felidae_charm_panthera";
+   
    public FelidaeCharm(){
       id = "felidae_charm";
       name = "Charm of Felidae";
@@ -46,6 +52,9 @@ public class FelidaeCharm extends MagicItem {
       itemVersion = 1;
       vanillaItem = Items.STRING;
       item = new FelidaeCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
+      models.add(new Pair<>(vanillaItem,TXT_PANTHERA));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -105,6 +114,12 @@ public class FelidaeCharm extends MagicItem {
    public class FelidaeCharmItem extends MagicPolymerItem {
       public FelidaeCharmItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.PANTHERA.id) >= 1 ? ArcanaRegistry.MODELS.get(TXT_PANTHERA).value() : ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

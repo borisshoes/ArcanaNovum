@@ -34,6 +34,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -47,6 +48,8 @@ import java.util.List;
 
 public class SmokeArrows extends RunicArrow {
    
+   private static final String TXT = "item/runic_arrow";
+   
    public SmokeArrows(){
       id = "smoke_arrows";
       name = "Smoke Arrows";
@@ -54,6 +57,8 @@ public class SmokeArrows extends RunicArrow {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new SmokeArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -175,7 +180,10 @@ public class SmokeArrows extends RunicArrow {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

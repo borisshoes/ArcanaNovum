@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "arcananovum:item/sojourner_boots",
+	"layer1": "arcananovum:item/sojourner_boots_overlay"
+  }
+}

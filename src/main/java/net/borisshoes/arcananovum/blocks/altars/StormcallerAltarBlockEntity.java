@@ -27,6 +27,8 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    private boolean synthetic;
    private String customName;
    private int cooldown;
+   private int mode = 0; // 0 - clear sky, 1 - raining, 2 - thunder
+   private int duration = 0;
    
    public StormcallerAltarBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.STORMCALLER_ALTAR_BLOCK_ENTITY, pos, state);
@@ -38,6 +40,8 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       this.uuid = uuid;
       this.synthetic = synthetic;
       this.customName = customName == null ? "" : customName;
+      this.mode = 0;
+      this.duration = 0;
       resetCooldown();
    }
    
@@ -66,6 +70,22 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    
    public void resetCooldown(){
       this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CLOUD_SEEDING.id) * 6000;
+   }
+   
+   public int getMode(){
+      return mode;
+   }
+   
+   public void setMode(int mode){
+      this.mode = mode;
+   }
+   
+   public int getDuration(){
+      return duration;
+   }
+   
+   public void setDuration(int duration){
+      this.duration = duration;
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -110,6 +130,12 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       if (nbt.contains("cooldown")) {
          this.cooldown = nbt.getInt("cooldown");
       }
+      if (nbt.contains("mode")) {
+         this.mode = nbt.getInt("mode");
+      }
+      if (nbt.contains("duration")) {
+         this.duration = nbt.getInt("duration");
+      }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
          NbtCompound augCompound = nbt.getCompound("arcanaAugments");
@@ -141,5 +167,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       }
       nbt.putBoolean("synthetic",this.synthetic);
       nbt.putInt("cooldown",this.cooldown);
+      nbt.putInt("mode",this.mode);
+      nbt.putInt("duration",this.duration);
    }
 }

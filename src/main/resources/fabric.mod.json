@@ -12,9 +12,12 @@
   },
   "license": "MIT",
   "icon": "assets/arcananovum/icon.png",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
+      "net.borisshoes.arcananovum.ArcanaNovum"
+    ],
+    "client": [
       "net.borisshoes.arcananovum.ArcanaNovum"
     ],
     "cardinal-components-entity": [

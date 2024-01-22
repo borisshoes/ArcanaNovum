@@ -47,6 +47,7 @@ import static net.borisshoes.arcananovum.ArcanaRegistry.RECOMMENDED_LIST;
 
 public class ArcaneTome extends MagicItem {
    public static final int[] CRAFTING_SLOTS = {1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
+   private static final String TXT = "item/arcane_tome";
    
    public ArcaneTome(){
       id = "arcane_tome";
@@ -56,6 +57,8 @@ public class ArcaneTome extends MagicItem {
       itemVersion = 1;
       vanillaItem = Items.KNOWLEDGE_BOOK;
       item = new ArcaneTomeItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -1053,6 +1056,11 @@ public class ArcaneTome extends MagicItem {
    public class ArcaneTomeItem extends MagicPolymerItem {
       public ArcaneTomeItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

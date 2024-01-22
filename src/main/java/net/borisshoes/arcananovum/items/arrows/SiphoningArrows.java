@@ -27,6 +27,7 @@ import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
@@ -38,6 +39,7 @@ import java.util.List;
 public class SiphoningArrows extends RunicArrow {
    
    private static final int[] overhealCap = {0,2,4,10};
+   private static final String TXT = "item/runic_arrow";
    
    public SiphoningArrows(){
       id = "siphoning_arrows";
@@ -46,6 +48,8 @@ public class SiphoningArrows extends RunicArrow {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new SiphoningArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -138,7 +142,10 @@ public class SiphoningArrows extends RunicArrow {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

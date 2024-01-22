@@ -14,6 +14,11 @@ public class GenericMagicIngredient extends MagicItemIngredient{
    }
    
    @Override
+   public MagicItemIngredient copyWithCount(int newCount){
+      return new GenericMagicIngredient(item,newCount);
+   }
+   
+   @Override
    public boolean validStack(ItemStack stack){
       MagicItem stackItem = MagicItemUtils.identifyItem(stack);
       return stackItem != null && stackItem.getId().equals(item.getId());

@@ -1,0 +1,6 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "arcananovum:item/ancient_dowsing_rod_cooldown"
+  }
+}

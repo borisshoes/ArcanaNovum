@@ -41,6 +41,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +54,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public class LevitationHarness extends EnergyItem {
    
    private static final double[] efficiencyChance = {0,.1,.25,.5};
+   private static final String TXT = "item/levitation_harness";
    
    public LevitationHarness(){
       id = "levitation_harness";
@@ -63,6 +65,8 @@ public class LevitationHarness extends EnergyItem {
       itemVersion = 1;
       vanillaItem = Items.LEATHER_CHESTPLATE;
       item = new LevitationHarnessItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
    
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -265,7 +269,7 @@ public class LevitationHarness extends EnergyItem {
       }else{
          gui.notValidStone();
       }
-      gui.setTitle(Text.translatable("Levitation Harness"));
+      gui.setTitle(Text.literal("Levitation Harness"));
       listener.finishUpdate();
       
       gui.open();
@@ -321,6 +325,11 @@ public class LevitationHarness extends EnergyItem {
       }
       
       @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
+      
+      @Override
       public ItemStack getDefaultStack(){
          return prefItem;
       }
@@ -340,20 +349,22 @@ public class LevitationHarness extends EnergyItem {
          
          if(world.getServer().getTicks() % 20 == 0){
             if(chestItem && flying && survival){
-               if(Math.random() >= efficiencyChance[efficiency]) addEnergy(stack,-1);
+               if(Math.random() >= efficiencyChance[efficiency]){
+                  addEnergy(stack,-1);
+                  if(getEnergy(stack) % 60 == 0){
+                     int souls = magicTag.getInt("souls");
+                     int glowstone = magicTag.getInt("glowstone");
+                     magicTag.putInt("souls",souls-1);
+                     magicTag.putInt("glowstone",glowstone-16);
+                  }
+                  buildItemLore(stack,player.getServer());
+               }
                
                ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER.id,1);
                if(player.getY() >= 1000) ArcanaAchievements.grant(player,ArcanaAchievements.TO_THE_MOON.id);
                
-               if(getEnergy(stack) % 60 == 0){
-                  int souls = magicTag.getInt("souls");
-                  int glowstone = magicTag.getInt("glowstone");
-                  magicTag.putInt("souls",souls-1);
-                  magicTag.putInt("glowstone",glowstone-16);
-               }
                ParticleEffectUtils.harnessFly(serverWorld,player,10);
                PLAYER_DATA.get(player).addXP(25);
-               buildItemLore(stack,player.getServer());
                
                if(world.getServer().getTicks() % 120 == 0){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_AMBIENT,1f,0.8f);
@@ -363,7 +374,7 @@ public class LevitationHarness extends EnergyItem {
             if(stall > 0){
                if(stall == 1){
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_POWER_SELECT,0.5f,1.6f);
-                  player.sendMessage(Text.translatable("Your Harness Reboots").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+                  player.sendMessage(Text.literal("Your Harness Reboots").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                   magicTag.putInt("stall",-1);
                }else{
                   magicTag.putInt("stall",stall-1);

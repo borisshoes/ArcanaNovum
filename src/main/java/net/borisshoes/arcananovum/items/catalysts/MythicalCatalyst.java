@@ -26,6 +26,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -38,6 +39,8 @@ import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstruc
 
 public class MythicalCatalyst extends MagicItem {
    
+   private static final String TXT = "item/mythical_catalyst";
+   
    public MythicalCatalyst(){
       id = "mythical_catalyst";
       name = "Mythical Augment Catalyst";
@@ -46,6 +49,8 @@ public class MythicalCatalyst extends MagicItem {
       itemVersion = 1;
       vanillaItem = Items.AMETHYST_CLUSTER;
       item = new MythicalCatalystItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -141,7 +146,7 @@ public class MythicalCatalyst extends MagicItem {
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\" Mythical Augmentation\\n         Catalyst\\n\\nRarity: Mythical\\n\\nThe Mythical Artifacts are examples of divine Arcana, the Runic Matrix should be able to replicate that divine magic to some degree. But how? Perhaps I need to expose my strongest\"}");
-      list.add("{\"text\":\" Mythical Augmentation\\n         Catalyst\\n\\nCatalyst to some divine Arcana. I just need to get the attention of a got without risking too much of their wrath. The Wither is an interesting creature with some divine connection, perhaps that is my answer.\"}");
+      list.add("{\"text\":\" Mythical Augmentation\\n         Catalyst\\n\\nCatalyst to some divine Arcana. I just need to get the attention of a god without risking too much of their wrath. The Wither is an interesting creature with some divine connection, perhaps that is my answer.\"}");
       list.add("{\"text\":\" Mythical Augmentation\\n         Catalyst\\n\\nI know not what God is responsible for the Wither, but the God of Death would be a good guess. Reinforcing the construct pattern of the Wither and placing my Catalyst inside as it comes to life should give it the divine energy it requires.\"}");
       return list;
    }
@@ -149,6 +154,11 @@ public class MythicalCatalyst extends MagicItem {
    public class MythicalCatalystItem extends MagicPolymerItem {
       public MythicalCatalystItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

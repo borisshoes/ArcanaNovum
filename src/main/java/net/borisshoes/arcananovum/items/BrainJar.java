@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -19,10 +21,7 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.EnchantedBookItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -31,10 +30,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -46,6 +42,9 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class BrainJar extends EnergyItem {
    public static final int[] capacities = {1000000,2000000,4000000,6000000,8000000,10000000};
+   private static final String TXT_ON = "item/brain_jar_on";
+   private static final String TXT_OFF = "item/brain_jar_off";
+   private static final Item textureItem = Items.TINTED_GLASS;
    
    public BrainJar(){
       id = "brain_jar";
@@ -54,6 +53,9 @@ public class BrainJar extends EnergyItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
       vanillaItem = Items.ZOMBIE_HEAD;
       item = new BrainJarItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(textureItem,TXT_OFF));
+      models.add(new Pair<>(textureItem,TXT_ON));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -184,7 +186,7 @@ public class BrainJar extends EnergyItem {
       }
    
    
-      gui.setTitle(Text.translatable("Brain in a Jar"));
+      gui.setTitle(Text.literal("Brain in a Jar"));
       gui.open();
    }
    
@@ -259,8 +261,8 @@ public class BrainJar extends EnergyItem {
       tag.put("display",display);
       gui.setSlot(4,GuiElementBuilder.from(bottle));
       
-      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.literal(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
+      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.literal(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
       buildItemLore(item,player.getServer());
    }
    
@@ -336,7 +338,21 @@ public class BrainJar extends EnergyItem {
          super(getThis(),settings);
       }
       
+      @Override
+      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(PolymerResourcePackUtils.hasPack(player)){
+            return textureItem;
+         }
+         return super.getPolymerItem(itemStack, player);
+      }
       
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT_OFF).value();
+         NbtCompound magicNbt = itemStack.getNbt().getCompound("arcananovum");
+         int mode = magicNbt.getInt("mode");
+         return mode == 1 ? ArcanaRegistry.MODELS.get(TXT_ON).value() : ArcanaRegistry.MODELS.get(TXT_OFF).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

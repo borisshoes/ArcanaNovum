@@ -66,8 +66,10 @@ public class EntityKilledCallback {
                   ItemStack item = itemList.get(j);
                   
                   boolean isMagic = MagicItemUtils.isMagic(item);
-                  if(!isMagic)
+                  if(!isMagic){
+                     sinv.setStack(j,item);
                      continue; // Item not magic, skip
+                  }
                   MagicItem magicItem = MagicItemUtils.identifyItem(item);
                   
                   if(magicItem instanceof Soulstone stone && !procdStone){

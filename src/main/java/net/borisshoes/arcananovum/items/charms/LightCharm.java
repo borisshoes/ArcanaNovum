@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -33,10 +34,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -50,6 +48,10 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class LightCharm extends MagicItem {
+   
+   private static final String ON_TXT = "item/light_charm_on";
+   private static final String OFF_TXT = "item/light_charm_off";
+   
    public LightCharm(){
       id = "light_charm";
       name = "Charm of Light";
@@ -58,6 +60,9 @@ public class LightCharm extends MagicItem {
       itemVersion = 1;
       vanillaItem = Items.SUNFLOWER;
       item = new LightCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,OFF_TXT));
+      models.add(new Pair<>(vanillaItem,ON_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -262,7 +267,12 @@ public class LightCharm extends MagicItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(OFF_TXT).value();
+         boolean active = itemStack.getNbt().getCompound("arcananovum").getBoolean("active");
+         return active ? ArcanaRegistry.MODELS.get(ON_TXT).value() : ArcanaRegistry.MODELS.get(OFF_TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

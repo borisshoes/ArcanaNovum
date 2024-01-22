@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -46,6 +47,7 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
@@ -61,6 +63,11 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class CindersCharm extends EnergyItem implements LeftClickItem {
+   
+   private static final String TXT_ON = "item/cinders_charm_on";
+   private static final String TXT_OFF = "item/cinders_charm_off";
+   private static final String TXT_CREMATION_ON = "item/cinders_charm_cremation_on";
+   private static final String TXT_CREMATION_OFF = "item/cinders_charm_cremation_off";
    
    private final double range = 7.0;
    private final double closeW = 2.5;
@@ -80,6 +87,11 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       itemVersion = 1;
       vanillaItem = Items.BLAZE_POWDER;
       item = new CindersCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT_ON));
+      models.add(new Pair<>(vanillaItem,TXT_OFF));
+      models.add(new Pair<>(vanillaItem,TXT_CREMATION_ON));
+      models.add(new Pair<>(vanillaItem,TXT_CREMATION_OFF));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -526,7 +538,6 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             {b,g,h,g,b},
             {a,b,c,b,a}};
       return new MagicItemRecipe(ingredients);
-   
    }
    
    private List<String> makeLore(){
@@ -542,7 +553,18 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT_OFF).value();
+         NbtCompound magicNbt = itemStack.getNbt().getCompound("arcananovum");
+         boolean active = magicNbt.getBoolean("active");;
+         boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
+         if(cremation){
+            return active ? ArcanaRegistry.MODELS.get(TXT_CREMATION_ON).value() : ArcanaRegistry.MODELS.get(TXT_CREMATION_OFF).value();
+         }else{
+            return active ? ArcanaRegistry.MODELS.get(TXT_ON).value() : ArcanaRegistry.MODELS.get(TXT_OFF).value();
+         }
+      }
       
       @Override
       public ItemStack getDefaultStack(){
@@ -620,6 +642,9 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          if(world.getServer().getTicks() % 20 == 0 && !cremation){
             StatusEffectInstance fireRes = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 100, 0, false, false, false);
             player.addStatusEffect(fireRes);
+            if(player.isOnFire()){
+               player.extinguish();
+            }
          }
       }
    }

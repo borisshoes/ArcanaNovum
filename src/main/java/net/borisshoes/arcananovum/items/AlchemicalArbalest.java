@@ -145,7 +145,7 @@ public class AlchemicalArbalest extends MagicItem {
       MagicItemIngredient g = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,enchantedBook6.getNbt());
       MagicItemIngredient h = new MagicItemIngredient(Items.NETHERITE_INGOT,8,null);
       MagicItemIngredient l = new MagicItemIngredient(Items.NETHER_STAR,8,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.CROSSBOW,1,null);
+      MagicItemIngredient m = new MagicItemIngredient(Items.CROSSBOW,1,null,true);
       
       MagicItemIngredient[][] ingredients = {
             {a,b,c,b,a},

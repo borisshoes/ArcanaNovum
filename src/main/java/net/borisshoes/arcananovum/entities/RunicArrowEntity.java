@@ -53,6 +53,15 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
+   public void initFromStack(ItemStack stack){
+      super.initFromStack(stack);
+      
+      if(arrowType instanceof ArcaneFlakArrows){
+         data.putInt("armTime", 5);
+      }
+   }
+   
+   @Override
    public EntityType<?> getPolymerEntityType(ServerPlayerEntity player){
       return EntityType.ARROW;
    }
@@ -98,33 +107,35 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          
          if(this.getOwner() instanceof ServerPlayerEntity player){
             if(player.getPos().distanceTo(this.getPos()) >= 100) ArcanaAchievements.grant(player, ArcanaAchievements.AIMBOT.id);
-            
-            // Do this bit manually so extra data can be saved
-            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-            if(ArcanaAchievements.ARROW_FOR_EVERY_FOE instanceof TimedAchievement baseAch){
-               String itemId = baseAch.getMagicItem().getId();
-               TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
-               if(achievement == null){
-                  TimedAchievement newAch = baseAch.makeNew();
-                  NbtCompound comp = new NbtCompound();
-                  comp.putBoolean(arrowType.getId(),true);
-                  baseAch.setData(comp);
-                  profile.setAchievement(itemId, newAch);
-                  ArcanaAchievements.progress(player, "arrow_for_every_foe",1);
-               }else if(!achievement.isAcquired()){
-                  NbtCompound comp = achievement.getData();
-                  if(!comp.contains(arrowType.getId())){
-                     comp.putBoolean(arrowType.getId(), true);
-                     baseAch.setData(comp);
-                     profile.setAchievement(itemId, achievement);
-                     ArcanaAchievements.progress(player, "arrow_for_every_foe", 1);
-                  }
-               }
-            }
-            
+            incArrowForEveryFoe(player);
          }
       }
       super.onEntityHit(entityHitResult);
+   }
+   
+   public void incArrowForEveryFoe(ServerPlayerEntity player){
+      // Do this bit manually so extra data can be saved
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      if(ArcanaAchievements.ARROW_FOR_EVERY_FOE instanceof TimedAchievement baseAch){
+         String itemId = baseAch.getMagicItem().getId();
+         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
+         if(achievement == null){
+            TimedAchievement newAch = baseAch.makeNew();
+            NbtCompound comp = new NbtCompound();
+            comp.putBoolean(arrowType.getId(),true);
+            newAch.setData(comp);
+            profile.setAchievement(itemId, newAch);
+            ArcanaAchievements.progress(player, ArcanaAchievements.ARROW_FOR_EVERY_FOE.id,1);
+         }else if(!achievement.isAcquired()){
+            NbtCompound comp = achievement.getData();
+            if(!comp.contains(arrowType.getId())){
+               comp.putBoolean(arrowType.getId(), true);
+               achievement.setData(comp);
+               profile.setAchievement(itemId, achievement);
+               ArcanaAchievements.progress(player, ArcanaAchievements.ARROW_FOR_EVERY_FOE.id, 1);
+            }
+         }
+      }
    }
    
    public int getAugment(String id){

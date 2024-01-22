@@ -179,9 +179,14 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    @Override
    public int getSpentSkillPoints(){
       int spent = 0;
+      List<ArcanaAugment> counted = new ArrayList<>();
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
          ArcanaAugment augment = entry.getKey();
-         if(augment.getMagicItem() instanceof OverflowingQuiver) continue;
+         if(counted.contains(augment)) continue;
+         if(ArcanaAugments.linkedAugments.containsKey(augment)){
+            counted.addAll(ArcanaAugments.getLinkedAugments(augment.id));
+         }
+         
          MagicRarity[] tiers = augment.getTiers();
          for(int i = 0; i < entry.getValue(); i++){
             spent += tiers[i].rarity + 1;
@@ -399,14 +404,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(baseAugment == null) return false;
       if(level < 0 || baseAugment.getTiers().length < level) return false;
       
-      if(
-            id.equals(ArcanaAugments.HARNESS_RECYCLER.id) ||
-            id.equals(ArcanaAugments.SHULKER_RECYCLER.id) ||
-            id.equals(ArcanaAugments.QUIVER_DUPLICATION.id) ||
-            id.equals(ArcanaAugments.ABUNDANT_AMMO.id) ||
-            id.equals(ArcanaAugments.RUNIC_BOTTOMLESS.id) ||
-            id.equals(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id
-      )){
+      if(ArcanaAugments.linkedAugments.containsKey(baseAugment)){
          return setLinkedAugmentLevel(id,level);
       }
       
@@ -421,52 +419,29 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    private boolean setLinkedAugmentLevel(String id, int level){
-      ArcanaAugment baseAugment = ArcanaAugments.registry.get(id);
-      ArcanaAugment linkedAugment = null;
-      int oldLvl = getAugmentLevel(id);
+      List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(id);
+      if(linkedAugments.isEmpty()) return false;
       
-      if(id.equals(ArcanaAugments.QUIVER_DUPLICATION.id)){
-         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.ABUNDANT_AMMO.id);
-      }else if(id.equals(ArcanaAugments.ABUNDANT_AMMO.id)){
-         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.QUIVER_DUPLICATION.id);
-      }else if(id.equals(ArcanaAugments.RUNIC_BOTTOMLESS.id)){
-         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
-      }else if(id.equals(ArcanaAugments.OVERFLOWING_BOTTOMLESS.id)){
-         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.RUNIC_BOTTOMLESS.id);
-      }else if(id.equals(ArcanaAugments.SHULKER_RECYCLER.id)){
-         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.HARNESS_RECYCLER.id);
-      }else if(id.equals(ArcanaAugments.HARNESS_RECYCLER.id)){
-         linkedAugment = ArcanaAugments.registry.get(ArcanaAugments.SHULKER_RECYCLER.id);
-      }
-      
-      int otherOldLvl = 0;
-      if(linkedAugment != null){
-         otherOldLvl = getAugmentLevel(linkedAugment.id);
-      }
-   
-      if(oldLvl != 0){
-         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            if(entry.getKey().id.equals(baseAugment.id)){
-               entry.setValue(level);
-               break;
+      boolean had = false;
+      int[] levels = new int[linkedAugments.size()];
+      for(int i = 0; i < linkedAugments.size(); i++){
+         ArcanaAugment augment = linkedAugments.get(i);
+         levels[i] = getAugmentLevel(augment.id);
+         
+         if(levels[i] != 0){
+            had = true;
+            for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
+               if(entry.getKey().id.equals(augment.id)){
+                  entry.setValue(level);
+                  break;
+               }
             }
+         }else{
+            augments.put(augment,level);
          }
-      }else{
-         augments.put(baseAugment,level);
       }
       
-      if(otherOldLvl != 0){
-         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            if(entry.getKey().id.equals(linkedAugment.id)){
-               entry.setValue(level);
-               break;
-            }
-         }
-      }else{
-         augments.put(linkedAugment,level);
-      }
-      
-      return oldLvl > 0 || otherOldLvl > 0;
+      return had;
    }
    
    // Returns if the operation was successful or not

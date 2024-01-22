@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "arcananovum:item/runic_arrow_head",
+	"layer1": "arcananovum:item/runic_arrow_base"
+  }
+}

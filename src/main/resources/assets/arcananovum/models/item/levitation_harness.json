@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "arcananovum:item/levitation_harness",
+	"layer1": "arcananovum:item/levitation_harness_overlay"
+  }
+}

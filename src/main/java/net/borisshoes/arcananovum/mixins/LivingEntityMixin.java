@@ -199,25 +199,23 @@ public abstract class LivingEntityMixin {
             float absAmt = player.getAbsorptionAmount();
             for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
                TickTimerCallback t = SERVER_TIMER_CALLBACKS.get(i);
-               if(t instanceof ShieldTimerCallback st){
-                  if(st.getPlayer().getUuidAsString().equals(player.getUuidAsString())){
-                     shieldTotal += st.getHearts();
-                     toRemove.add(st);
-                  }
+               if(t instanceof ShieldTimerCallback st && st.getPlayer().getUuidAsString().equals(player.getUuidAsString())){
+                  shieldTotal += st.getHearts();
+                  toRemove.add(st);
                }
             }
             shieldTotal = Math.min(Math.min(absAmt,shieldTotal),50);
-            if(shieldTotal >= 10){
+            if(shieldTotal >= 20){
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, 60, 4, false, false, true);
-               StatusEffectInstance dmgAmp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, true, false);
+               StatusEffectInstance dmgAmp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, (int) (shieldTotal*5), (int) (shieldTotal/20), false, true, false);
                entity.addStatusEffect(slow);
                entity.addStatusEffect(dmgAmp);
                toRemove.forEach(ShieldTimerCallback::onTimer);
                SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains); // Remove all absorption callbacks
                int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
-               ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,10)); // Put 5 hearts back
-               player.setAbsorptionAmount(player.getAbsorptionAmount() + 10f);
-               player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(),60);
+               ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,20)); // Put 10 hearts back
+               player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
+               player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(),100);
                SoundUtils.playSound(player.getServerWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
             }
          }
@@ -264,8 +262,10 @@ public abstract class LivingEntityMixin {
                ItemStack item = itemList.get(j);
                
                boolean isMagic = MagicItemUtils.isMagic(item);
-               if(!isMagic)
+               if(!isMagic){
+                  sinv.setStack(j,item);
                   continue; // Item not magic, skip
+               }
                MagicItem magicItem = MagicItemUtils.identifyItem(item);
                
                if((magicItem instanceof FelidaeCharm) && source.isIn(DamageTypeTags.IS_FALL) && !procdFelidae){ // Felidae Charm
@@ -301,13 +301,14 @@ public abstract class LivingEntityMixin {
                      magicNbt.putInt("heat", -1);
                   }
                }else if(magicItem instanceof CindersCharm cinders && source.isIn(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
-                  boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,"cremation")) >= 1;
+                  boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CREMATION.id)) >= 1;
                   if(cremation){
+                     final double energyPerDamage = 15;
                      float oldReturn = newReturn;
                      int energy = cinders.getEnergy(item);
-                     float dmgReduction = (float) Math.min(energy / 4.0, oldReturn);
+                     float dmgReduction = (float) Math.min(energy / energyPerDamage, oldReturn);
                      newReturn = oldReturn - dmgReduction;
-                     cinders.addEnergy(item, (int) -dmgReduction * 4);
+                     cinders.addEnergy(item, (int) (-dmgReduction * energyPerDamage));
                      
                      energy = cinders.getEnergy(item);
                      StringBuilder message = new StringBuilder("Cinders: ");
@@ -470,6 +471,14 @@ public abstract class LivingEntityMixin {
       if(livingEntity instanceof EnderDragonEntity || livingEntity instanceof WitherEntity) return;
       if(target.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) || livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_BLINDNESS_EFFECT)){
          cir.setReturnValue(false);
+      }
+   }
+   
+   @Inject(method="onEquipStack", at=@At("HEAD"), cancellable = true)
+   private void arcananovum_sojournerEquipBug(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack, CallbackInfo ci){
+      String uuid1,uuid2;
+      if(oldStack.isOf(newStack.getItem()) && MagicItemUtils.isMagic(oldStack) && (uuid1 = MagicItem.getUUID(newStack)) != null && (uuid2 = MagicItem.getUUID(newStack)) != null && uuid1.equals(uuid2)){
+         ci.cancel();
       }
    }
 }

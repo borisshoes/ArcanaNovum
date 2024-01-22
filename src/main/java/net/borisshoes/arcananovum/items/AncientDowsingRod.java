@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -26,6 +27,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -38,6 +40,8 @@ import java.util.List;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AncientDowsingRod extends EnergyItem {
+   private static final String CHARGED_TXT = "item/ancient_dowsing_rod_charged";
+   private static final String COOLDOWN_TXT = "item/ancient_dowsing_rod_cooldown";
    
    public AncientDowsingRod(){
       id = "ancient_dowsing_rod";
@@ -46,6 +50,9 @@ public class AncientDowsingRod extends EnergyItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
       vanillaItem = Items.BLAZE_ROD;
       item = new AncientDowsingRodItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,CHARGED_TXT));
+      models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
    
       ItemStack itemStack = new ItemStack(item);
       NbtCompound tag = itemStack.getOrCreateNbt();
@@ -112,7 +119,10 @@ public class AncientDowsingRod extends EnergyItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return getEnergy(itemStack) == getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack() {

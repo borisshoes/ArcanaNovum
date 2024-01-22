@@ -16,12 +16,16 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmpoweredCatalyst extends MagicItem {
+   
+   private static final String TXT = "item/empowered_catalyst";
    
    public EmpoweredCatalyst(){
       id = "empowered_catalyst";
@@ -30,7 +34,8 @@ public class EmpoweredCatalyst extends MagicItem {
       rarity = MagicRarity.MUNDANE;
       vanillaItem = Items.EMERALD;
       item = new EmpoweredCatalystItem(new FabricItemSettings().maxCount(1).fireproof());
-      
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -86,6 +91,11 @@ public class EmpoweredCatalyst extends MagicItem {
    public class EmpoweredCatalystItem extends MagicPolymerItem {
       public EmpoweredCatalystItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

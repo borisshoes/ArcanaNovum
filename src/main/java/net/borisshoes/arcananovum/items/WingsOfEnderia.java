@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
@@ -14,12 +15,17 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WingsOfEnderia extends EnergyItem {
+   
+   private static final String TXT = "item/wings_of_enderia";
+   
    public WingsOfEnderia(){
       id = "wings_of_enderia";
       name = "Armored Wings of Enderia";
@@ -28,6 +34,8 @@ public class WingsOfEnderia extends EnergyItem {
       itemVersion = 1;
       vanillaItem = Items.ELYTRA;
       item = new WingsOfEnderiaItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -92,6 +100,11 @@ public class WingsOfEnderia extends EnergyItem {
    public class WingsOfEnderiaItem extends MagicPolymerArmorItem {
       public WingsOfEnderiaItem(Settings settings){
          super(getThis(),ArmorMaterials.NETHERITE,Type.CHESTPLATE,settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
       }
       
       @Override

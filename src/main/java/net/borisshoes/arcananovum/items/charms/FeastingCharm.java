@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -43,6 +44,7 @@ public class FeastingCharm extends MagicItem {
    
    private static final int[] gluttonyFoodBoost = {0,2,4,8};
    private static final float[] gluttonySatBoost = {0,0.5f,1f,2f};
+   private static final String TXT = "item/feasting_charm";
    
    public FeastingCharm(){
       id = "feasting_charm";
@@ -51,6 +53,8 @@ public class FeastingCharm extends MagicItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
       vanillaItem = Items.RABBIT_STEW;
       item = new FeastingCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new net.minecraft.util.Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -92,10 +96,10 @@ public class FeastingCharm extends MagicItem {
       itemNbt.put("arcananovum",magicNbt);
       item.setNbt(itemNbt);
       switch(mode){
-         case 0 -> player.sendMessage(Text.translatable("Feasting Mode: Optimal").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 1 -> player.sendMessage(Text.translatable("Feasting Mode: Regen").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 2 -> player.sendMessage(Text.translatable("Feasting Mode: Optimal + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
-         case 3 -> player.sendMessage(Text.translatable("Feasting Mode: Regen + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 0 -> player.sendMessage(Text.literal("Feasting Mode: Optimal").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 1 -> player.sendMessage(Text.literal("Feasting Mode: Regen").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 2 -> player.sendMessage(Text.literal("Feasting Mode: Optimal + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
+         case 3 -> player.sendMessage(Text.literal("Feasting Mode: Regen + Emergency").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
       }
    }
    
@@ -137,7 +141,10 @@ public class FeastingCharm extends MagicItem {
          super(getThis(),settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

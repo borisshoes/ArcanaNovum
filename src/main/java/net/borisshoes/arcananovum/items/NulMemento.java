@@ -24,6 +24,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,23 +34,28 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class NulMemento extends MagicItem {
    
+   private static final String TXT = "item/nul_memento";
+   
    public NulMemento(){
       id = "nul_memento";
       name = "Nul Memento";
       rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS};
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
       item = new NulMementoItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Nul Memento\",\"italic\":false,\"color\":\"black\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
+      tag.putInt("HideFlags", 255);
+      tag.putInt("Unbreakable",1);
       buildItemLore(stack, ArcanaNovum.SERVER);
 
       setBookLore(makeLore());
@@ -66,17 +72,20 @@ public class NulMemento extends MagicItem {
    @Override
    public NbtList getItemLore(@Nullable ItemStack itemStack){
       NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"skull \",\"color\":\"gray\"},{\"text\":\"forged out of the \"},{\"text\":\"discoveries \",\"color\":\"blue\"},{\"text\":\"you have made\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"You have \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"seen\",\"color\":\"blue\"},{\"text\":\" things that most \"},{\"text\":\"mortals \",\"color\":\"gray\"},{\"text\":\"never will\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"curse of knowledge\",\"color\":\"blue\"},{\"text\":\" binds \"},{\"text\":\"tighter \",\"color\":\"gray\"},{\"text\":\"than any other\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"What has been \",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"learned \",\"color\":\"blue\"},{\"text\":\"must now be \"},{\"text\":\"forgotten\",\"color\":\"gray\"},{\"text\":\"...\"},{\"text\":\"\",\"italic\":false}]"));
+      loreList.add(NbtString.of("[{\"text\":\"A strange, \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"withered skull\",\"color\":\"gray\"},{\"text\":\", unlike others you have encountered.\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Aspect of Death\",\"color\":\"blue\"},{\"text\":\" has granted you his \"},{\"text\":\"favor\",\"color\":\"gray\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"You have \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"seen \",\"color\":\"blue\"},{\"text\":\"things that most \"},{\"text\":\"mortals \",\"color\":\"gray\"},{\"text\":\"never will.\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"curse of knowledge\",\"color\":\"blue\"},{\"text\":\" binds \"},{\"text\":\"tighter \",\"color\":\"gray\"},{\"text\":\"than any other.\",\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"There are some \",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"Skills \",\"color\":\"blue\"},{\"text\":\"that are better left \"},{\"text\":\"forgotten\",\"color\":\"gray\"},{\"text\":\"...\"},{\"text\":\"\",\"italic\":false}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"It \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"calls \",\"color\":\"gray\"},{\"text\":\"to your \"},{\"text\":\"mind \",\"color\":\"blue\"},{\"text\":\"with a familiar \"},{\"text\":\"burn of concentration\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It yearns to be worn...\",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"It \",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"yearns \",\"color\":\"blue\"},{\"text\":\"to be worn...\"},{\"text\":\"\",\"italic\":false}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"When \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"activated\",\"color\":\"gray\"},{\"text\":\", all \"},{\"text\":\"Skill Points\",\"color\":\"blue\"},{\"text\":\" will be \"},{\"text\":\"deallocated\",\"color\":\"gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"When \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"activated\",\"color\":\"gray\"},{\"text\":\", all \"},{\"text\":\"Skill Points\",\"color\":\"blue\"},{\"text\":\" will be \"},{\"text\":\"deallocated\",\"color\":\"gray\"},{\"text\":\".\"}]"));
       return loreList;
    }
+   
    
    public boolean isActive(ItemStack item){
       return item.getNbt().getCompound("arcananovum").getBoolean("active");
@@ -266,7 +275,10 @@ public class NulMemento extends MagicItem {
          super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL,Type.HELMET,settings);
       }
       
-      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         return ArcanaRegistry.MODELS.get(TXT).value();
+      }
       
       @Override
       public ItemStack getDefaultStack(){

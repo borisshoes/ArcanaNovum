@@ -6,12 +6,17 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import java.util.Map;
 
 public class MiscUtils {
+   public static void giveStacks(PlayerEntity player, ItemStack... stacks){
+      returnItems(new SimpleInventory(stacks),player);
+   }
+   
    public static void returnItems(Inventory inv, PlayerEntity player){
       if(inv == null) return;
       for(int i=0; i<inv.size();i++){

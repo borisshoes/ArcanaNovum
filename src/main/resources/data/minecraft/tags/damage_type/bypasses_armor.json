@@ -1,6 +1,7 @@
 {
   "values": [
     "arcananovum:concentration",
-    "arcananovum:photonic"
+    "arcananovum:photonic",
+    "arcananovum:nul_damage"
   ]
 }

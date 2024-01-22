@@ -26,6 +26,7 @@ import static net.borisshoes.arcananovum.utils.MagicRarity.*;
 
 public class ArcanaAugments {
    public static final HashMap<String, ArcanaAugment> registry = new HashMap<>();
+   public static final HashMap<ArcanaAugment,String> linkedAugments = new HashMap<>();
    
    // Arcane Flak Arrows
    public static final ArcanaAugment AIRBURST = ArcanaAugments.register(
@@ -476,9 +477,11 @@ public class ArcanaAugments {
          new ArcanaAugment("Shield Bash", "shield_bash", new ItemStack(Items.IRON_AXE), ArcanaRegistry.SHIELD_OF_FORTITUDE,
          new String[]{"Any attack made with more than 10 hearts of",
                " absorption slows the target and causes them",
-               " to take increased damage for 3 seconds.",
-               "This consumes all but 5 absorption hearts",
-               " and places the Shield on a brief cooldown"},
+               " to take increased damage for 5 seconds.",
+               "This consumes all but 10 absorption hearts",
+               " and places the Shield on a brief cooldown.",
+               "More absorption causes more damage amplification",
+               " and a longer amplification duration."},
          new MagicRarity[]{MYTHICAL}
    ));
    
@@ -612,6 +615,11 @@ public class ArcanaAugments {
          new String[]{"Increases rate of The Charm's effect","Rate per level: 1.5x/2x/3x/5x"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY}
    ));
+   public static final ArcanaAugment REAPING = ArcanaAugments.register(
+         new ArcanaAugment("Reaping", "reaping", new ItemStack(Items.DIAMOND_HOE), ArcanaRegistry.WILD_GROWTH_CHARM,
+         new String[]{"Fully grown crops get auto-harvested", "Second level replants harvested crops"},
+         new MagicRarity[]{LEGENDARY,MYTHICAL}
+   ));
    
    // Arcanist's Belt
    public static final ArcanaAugment POUCHES = ArcanaAugments.register(
@@ -725,6 +733,11 @@ public class ArcanaAugments {
          new String[]{"Decreases Altar cooldown by 5 minutes per level"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
+   public static final ArcanaAugment STAR_CHARTS = ArcanaAugments.register(
+         new ArcanaAugment("Star Charts", "star_charts", new ItemStack(Items.FILLED_MAP), ArcanaRegistry.STARPATH_ALTAR,
+         new String[]{"Target locations can be saved and loaded"," using the Target Input menu buttons"},
+         new MagicRarity[]{EMPOWERED}
+   ));
    
    // Starlight Forge
    public static final ArcanaAugment RESOURCEFUL = ArcanaAugments.register(
@@ -744,8 +757,13 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment MYSTIC_COLLECTION = ArcanaAugments.register(
          new ArcanaAugment("Mystic Collection", "mystic_collection", new ItemStack(Items.CHEST), ArcanaRegistry.STARLIGHT_FORGE,
-         new String[]{"The Forge can grab ingredients from nearby chests,"," trapped chests, and barrels for crafting Magic Items."},
+         new String[]{"The Forge can grab ingredients from nearby chests,"," barrels, and shulker boxes for crafting Magic Items"},
          new MagicRarity[]{EMPOWERED}
+   ));
+   public static final ArcanaAugment STELLAR_RANGE = ArcanaAugments.register(
+         new ArcanaAugment("Stellar Range", "stellar_range", new ItemStack(Items.NETHER_STAR), ArcanaRegistry.STARLIGHT_FORGE,
+         new String[]{"Doubles the horizontal range of the Forge","Also increases the vertical range by 3 blocks"},
+         new MagicRarity[]{EXOTIC}
    ));
    
    // Twilight Anvil
@@ -763,7 +781,7 @@ public class ArcanaAugments {
    // Midnight Enchanter
    public static final ArcanaAugment PRECISION_DISENCHANTING = ArcanaAugments.register(
          new ArcanaAugment("Precision Disenchanting", "precision_disenchanting", new ItemStack(Items.ENCHANTED_BOOK), ArcanaRegistry.MIDNIGHT_ENCHANTER,
-         new String[]{"Unlocks the ability to disenchant items and put the","enchant on a book or save the it to a singularity"},
+         new String[]{"Unlocks the ability to disenchant items and put the","enchant on a book or save it to a singularity"},
          new MagicRarity[]{LEGENDARY}
    ));
    public static final ArcanaAugment ESSENCE_SUPERNOVA = ArcanaAugments.register(
@@ -807,12 +825,43 @@ public class ArcanaAugments {
          new String[]{"The Fletchery makes additional arrows per potion","Extra arrows per level: 8/16/24/32/40"},
          new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED,EMPOWERED,EXOTIC}
    ));
-
+   
+   
+   
+   // Linked augments:
+   static{
+      linkedAugments.put(ArcanaAugments.HARNESS_RECYCLER,"harness_shulker_recycler");
+      linkedAugments.put(ArcanaAugments.SHULKER_RECYCLER,"harness_shulker_recycler");
+      
+      linkedAugments.put(ArcanaAugments.OVERFLOWING_BOTTOMLESS,"quiver_efficiency");
+      linkedAugments.put(ArcanaAugments.RUNIC_BOTTOMLESS,"quiver_efficiency");
+      
+      linkedAugments.put(ArcanaAugments.ABUNDANT_AMMO,"quiver_restock");
+      linkedAugments.put(ArcanaAugments.QUIVER_DUPLICATION,"quiver_restock");
+   }
    
    private static ArcanaAugment register(ArcanaAugment augment){
       registry.put(augment.id,augment);
       return augment;
    }
+   
+   public static List<ArcanaAugment> getLinkedAugments(String id){
+      if(!registry.containsKey(id)) return new ArrayList<>();
+      ArcanaAugment augment = registry.get(id);
+      ArrayList<ArcanaAugment> linked = new ArrayList<>();
+      if(!linkedAugments.containsKey(augment)){
+         linked.add(augment);
+      }else{
+         String linkedId = linkedAugments.get(augment);
+         for(Map.Entry<ArcanaAugment, String> entry : linkedAugments.entrySet()){
+            if(entry.getValue().equals(linkedId)){
+               linked.add(entry.getKey());
+            }
+         }
+      }
+      return linked;
+   }
+   
    
    public static List<ArcanaAugment> getAugmentsForItem(MagicItem item){
       ArrayList<ArcanaAugment> augments = new ArrayList<>();
@@ -838,7 +887,7 @@ public class ArcanaAugments {
       return map;
    }
    
-   public static boolean isIncompatible(ItemStack item, String id){
+   public static boolean isIncompatible(ItemStack item, String id){ // TODO: Better incompat check for mutually exclusive augments
       TreeMap<ArcanaAugment,Integer> curAugments = getAugmentsOnItem(item);
       if(curAugments == null) return true;
       if(!registry.containsKey(id)) return true;

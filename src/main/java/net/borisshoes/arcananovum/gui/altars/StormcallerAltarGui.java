@@ -29,8 +29,6 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class StormcallerAltarGui  extends SimpleGui implements WatchedGui {
    private final StormcallerAltarBlockEntity blockEntity;
-   private int mode = 0; // 0 - clear sky, 1 - raining, 2 - thunder
-   private int duration = 0;
    private final int[] durations = {-1,2,4,6,8,10,15,20,25,30,35,40,45,50,55,60};
    private final boolean tempest;
    
@@ -43,6 +41,8 @@ public class StormcallerAltarGui  extends SimpleGui implements WatchedGui {
    
    private void changeWeather(){
       if(!(blockEntity.getWorld() instanceof ServerWorld serverWorld)) return;
+      int duration = blockEntity.getDuration();
+      int mode = blockEntity.getMode();
       SoundUtils.playSound(serverWorld, blockEntity.getPos(), SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.BLOCKS, 1, 0.5f);
       int dur = durations[duration];
       
@@ -61,11 +61,13 @@ public class StormcallerAltarGui  extends SimpleGui implements WatchedGui {
    
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action){
+      int duration = blockEntity.getDuration();
+      int mode = blockEntity.getMode();
       if(index == 2 && tempest){
-         duration = (duration+1) % 16;
+         blockEntity.setDuration((duration+1) % 16);
       }else if(index == 4){
          if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-            mode = (mode+1) % 3;
+            blockEntity.setMode((mode+1) % 3);
          }else{
             if(blockEntity.getCooldown() <= 0){
                if(MiscUtils.removeItems(player,Items.DIAMOND_BLOCK,1)){
@@ -97,6 +99,8 @@ public class StormcallerAltarGui  extends SimpleGui implements WatchedGui {
    }
    
    public void build(){
+      int duration = blockEntity.getDuration();
+      int mode = blockEntity.getMode();
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          setSlot(i,new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).setName(Text.literal("Altar of the Stormcaller").formatted(Formatting.DARK_GRAY)));

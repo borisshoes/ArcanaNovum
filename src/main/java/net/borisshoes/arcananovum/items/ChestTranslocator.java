@@ -1,9 +1,12 @@
 package net.borisshoes.arcananovum.items;
 
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
+import net.borisshoes.arcananovum.core.MagicItemContainer;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
@@ -20,11 +23,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.*;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
@@ -37,6 +38,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Clearable;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -48,7 +50,11 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ChestTranslocator extends EnergyItem {
+public class ChestTranslocator extends EnergyItem implements MagicItemContainer.MagicItemContainerHaver{
+   
+   private static final String CHEST_TXT = "item/chest_translocator_chest";
+   private static final String BARREL_TXT = "item/chest_translocator_barrel";
+   private static final String EMPTY_TXT = "item/chest_translocator_empty";
    
    public ChestTranslocator(){
       id = "chest_translocator";
@@ -58,6 +64,10 @@ public class ChestTranslocator extends EnergyItem {
       itemVersion = 0;
       vanillaItem = Items.SPRUCE_BOAT;
       item = new ChestTranslocatorItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(Items.SPRUCE_CHEST_BOAT,BARREL_TXT));
+      models.add(new Pair<>(Items.SPRUCE_CHEST_BOAT,CHEST_TXT));
+      models.add(new Pair<>(vanillaItem,EMPTY_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -95,6 +105,29 @@ public class ChestTranslocator extends EnergyItem {
    public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
       int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION.id));
       return 30 - 8*cdLvl;
+   }
+   
+   @Override
+   public MagicItemContainer getMagicItemContainer(ItemStack item){
+      NbtCompound itemNbt = item.getNbt();
+      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+      NbtCompound contents = magicNbt.getCompound("contents");
+      SimpleInventory inv = new SimpleInventory(27);
+      for(int i = 0; i < inv.size(); i++){
+         inv.setStack(i,ItemStack.EMPTY.copy());
+      }
+      
+      if(!contents.isEmpty()){
+         NbtList items = contents.getList("Items", NbtElement.COMPOUND_TYPE);
+         
+         for(int i = 0; i < items.size(); i++){
+            NbtCompound stack = items.getCompound(i);
+            ItemStack itemStack = ItemStack.fromNbt(stack);
+            inv.setStack(stack.getByte("Slot"),itemStack);
+         }
+      }
+      
+      return new MagicItemContainer(inv, 27,4, "CT", "Chest Translocator", 0.5);
    }
    
    @Override
@@ -138,6 +171,24 @@ public class ChestTranslocator extends EnergyItem {
    public class ChestTranslocatorItem extends MagicPolymerItem {
       public ChestTranslocatorItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
+         NbtCompound itemNbt = itemStack.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         NbtCompound contents = magicNbt.getCompound("contents");
+         NbtCompound stateTag = magicNbt.getCompound("state");
+         if(!contents.isEmpty()){
+            BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),stateTag);
+            if(blockState.isOf(Blocks.CHEST) || blockState.isOf(Blocks.TRAPPED_CHEST)){
+               return ArcanaRegistry.MODELS.get(CHEST_TXT).value();
+            }else if(blockState.isOf(Blocks.BARREL)){
+               return ArcanaRegistry.MODELS.get(BARREL_TXT).value();
+            }
+         }
+         return ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
       }
       
       @Override

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.BeaconMiningLaserCallback;
@@ -9,6 +10,7 @@ import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
@@ -48,6 +50,9 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class TelescopingBeacon extends MagicItem {
    
+   private static final String FULL_TXT = "item/telescoping_beacon";
+   private static final String EMPTY_TXT = "item/telescoping_beacon_empty";
+   
    public TelescopingBeacon(){
       id = "telescoping_beacon";
       name = "Telescoping Beacon";
@@ -55,6 +60,9 @@ public class TelescopingBeacon extends MagicItem {
       categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.BLOCKS};
       vanillaItem = Items.BEACON;
       item = new TelescopingBeaconItem(new FabricItemSettings().maxCount(1).fireproof());
+      models = new ArrayList<>();
+      models.add(new Pair<>(vanillaItem,FULL_TXT));
+      models.add(new Pair<>(vanillaItem,EMPTY_TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -196,6 +204,8 @@ public class TelescopingBeacon extends MagicItem {
    private void placeBeacon(ServerPlayerEntity player, World world, BlockPos pos, int tier, NbtList blockTypes, NbtCompound data, boolean mining){
       try{
          ArrayList<BlockState> blocks = new ArrayList<>();
+         HashMap<Block,Integer> blockTotals = new HashMap<>();
+         Block blockKey = null;
          
          for(int i = 0; i < blockTypes.size(); i++){
             NbtCompound blockType = blockTypes.getCompound(i);
@@ -208,6 +218,12 @@ public class TelescopingBeacon extends MagicItem {
             }
             for(int j = 0; j < count; j++){
                blocks.add(block.getDefaultState());
+            }
+            if(blockTotals.containsKey(block)){
+               blockTotals.put(block,blockTotals.get(block)+count);
+            }else{
+               blockKey = block;
+               blockTotals.put(block,count);
             }
          }
    
@@ -253,7 +269,7 @@ public class TelescopingBeacon extends MagicItem {
          }
          PLAYER_DATA.get(player).addXP(10); // Add xp
    
-         if(blockTypes.size() == 1 && blockTypes.getCompound(0).getInt("count") >= 164){
+         if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){
             BlockState blockType = blocks.get(0);
             if(blockType.isOf(Blocks.DIAMOND_BLOCK)){
                ArcanaAchievements.grant(player,ArcanaAchievements.BEJEWELED.id);
@@ -308,6 +324,13 @@ public class TelescopingBeacon extends MagicItem {
    public class TelescopingBeaconItem extends MagicPolymerItem {
       public TelescopingBeaconItem(Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(FULL_TXT).value();
+         boolean hasBeacon = itemStack.getNbt().getCompound("arcananovum").getBoolean("beacon");
+         return hasBeacon ? ArcanaRegistry.MODELS.get(FULL_TXT).value() : ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
       }
       
       @Override
