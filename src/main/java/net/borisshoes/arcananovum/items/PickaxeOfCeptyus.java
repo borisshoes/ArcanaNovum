@@ -61,7 +61,8 @@ public class PickaxeOfCeptyus extends MagicItem {
          Blocks.ANCIENT_DEBRIS,
          Blocks.RAW_COPPER_BLOCK,
          Blocks.RAW_GOLD_BLOCK,
-         Blocks.RAW_IRON_BLOCK
+         Blocks.RAW_IRON_BLOCK,
+         Blocks.AMETHYST_CLUSTER
    ));
    
    public PickaxeOfCeptyus(){

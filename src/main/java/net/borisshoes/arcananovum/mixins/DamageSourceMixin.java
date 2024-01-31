@@ -34,7 +34,7 @@ public class DamageSourceMixin {
                " couldn't channel enough Arcana to their items"
          };
          final Text deathMsg = Text.literal("")
-               .append(Text.literal(killed.getEntityName()).formatted(playerColor).formatted())
+               .append(Text.literal(killed.getNameForScoreboard()).formatted(playerColor).formatted())
                .append(Text.literal(deathStrings[(int)(Math.random()*deathStrings.length)]).formatted(Formatting.WHITE));
          cir.setReturnValue(deathMsg);
       }

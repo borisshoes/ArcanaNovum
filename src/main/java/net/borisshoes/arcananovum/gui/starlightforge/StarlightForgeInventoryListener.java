@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.recipe.CraftingRecipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -68,9 +69,9 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
          craftingStacks.add(inv.getStack(i));
       }
       CraftingInventory craftingInventory = new CraftingInventory(null,3,3,craftingStacks);
-      Optional<CraftingRecipe> optional = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,craftingInventory,world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().getOutput(world.getRegistryManager()))){
-         return stardustCount > 0 ? optional.get().getOutput(world.getRegistryManager()).copy() : ItemStack.EMPTY;
+      Optional<RecipeEntry<CraftingRecipe>> optional = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,craftingInventory,world);
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().getResult(world.getRegistryManager()))){
+         return stardustCount > 0 ? optional.get().value().getResult(world.getRegistryManager()).copy() : ItemStack.EMPTY;
       }
       return ItemStack.EMPTY;
    }
@@ -83,9 +84,9 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
          craftingStacks.add(inv.getStack(i));
       }
       CraftingInventory craftingInventory = new CraftingInventory(null,3,3,craftingStacks);
-      Optional<CraftingRecipe> optional = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,craftingInventory,world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().getOutput(world.getRegistryManager()))){
-         return stardustCount > 0 ? optional.get().getRemainder(craftingInventory) : DefaultedList.of();
+      Optional<RecipeEntry<CraftingRecipe>> optional = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,craftingInventory,world);
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().getResult(world.getRegistryManager()))){
+         return stardustCount > 0 ? optional.get().value().getRemainder(craftingInventory) : DefaultedList.of();
       }
       return remainders;
    }

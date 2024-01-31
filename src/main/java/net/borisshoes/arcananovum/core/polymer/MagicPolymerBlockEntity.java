@@ -1,11 +1,12 @@
 package net.borisshoes.arcananovum.core.polymer;
 
+import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.altars.StarpathAltar;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
+import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.minecraft.block.Block;
@@ -14,14 +15,18 @@ import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
 import net.minecraft.world.event.listener.GameEventListener;
@@ -53,46 +58,59 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
       magicBlock.initialize(augments,crafterId,uuid,synthetic,customName);
    }
    
-   protected void dropBlockItem(World world, BlockPos pos, BlockState state, PlayerEntity player, MagicBlockEntity magicBlock){
-      if ((player.isCreative() || player.canHarvest(world.getBlockState(pos))) && world instanceof ServerWorld serverWorld) {
-         if (!world.isClient) {
-            String uuid = magicBlock.getUuid();
-            if(uuid == null) uuid = UUID.randomUUID().toString();
-            NbtCompound augmentsTag = new NbtCompound();
-            if(magicBlock.getAugments() != null){
-               for(Map.Entry<ArcanaAugment, Integer> entry : magicBlock.getAugments().entrySet()){
-                  augmentsTag.putInt(entry.getKey().id, entry.getValue());
-               }
-            }else{
-               augmentsTag = null;
-            }
-            
-            MagicItem magicItem = magicBlock.getMagicItem();
-            ItemStack newItem = new ItemStack(magicItem.getItem());
-            newItem.setNbt(magicItem.getNewItem().getNbt());
-            ItemStack drop = magicItem.addCrafter(newItem, magicBlock.getCrafterId(), magicBlock.isSynthetic(),world.getServer());
-            NbtCompound dropNbt = drop.getNbt();
-            NbtCompound magicTag = dropNbt.getCompound("arcananovum");
-            if(augmentsTag != null) {
-               magicTag.put("augments",augmentsTag);
-               magicItem.buildItemLore(drop,serverWorld.getServer());
-            }
-            magicTag.putString("UUID",uuid);
-            
-            if(magicBlock.getCustomArcanaName() != null && !magicBlock.getCustomArcanaName().isEmpty()){
-               dropNbt.getCompound("display").putString("Name",magicBlock.getCustomArcanaName());
-            }
-            
-            if(magicBlock instanceof ArcaneSingularityBlockEntity singularity){
-               magicTag.put("books",singularity.writeBooks());
-            }
-            if(magicBlock instanceof StarpathAltarBlockEntity altar){
-               magicTag.put("targets",altar.writeTargets());
-            }
-            
-            ItemScatterer.spawn(world, (double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D, drop);
-         }
+   protected ItemStack getDroppedBlockItem(BlockState state, LootContextParameterSet.Builder builder){
+      ServerWorld world = builder.getWorld();
+      BlockPos pos = BlockPos.ofFloored(builder.get(LootContextParameters.ORIGIN));
+      Entity entity = builder.getOptional(LootContextParameters.THIS_ENTITY);
+      BlockEntity be = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
+      return getDroppedBlockItem(state,world,entity,be);
+   }
+   
+   protected ItemStack getDroppedBlockItem(BlockState state, World world, Entity entity, BlockEntity be){
+      boolean harvest = true;
+      if(entity instanceof PlayerEntity player){
+         harvest = player.canHarvest(state) || player.isCreative();
       }
+
+      if(!(be instanceof MagicBlockEntity magicBlock) || !harvest){
+         return ItemStack.EMPTY;
+      }
+      
+      String uuid = magicBlock.getUuid();
+      if(uuid == null) uuid = UUID.randomUUID().toString();
+      NbtCompound augmentsTag = new NbtCompound();
+      if(magicBlock.getAugments() != null){
+         for(Map.Entry<ArcanaAugment, Integer> entry : magicBlock.getAugments().entrySet()){
+            augmentsTag.putInt(entry.getKey().id, entry.getValue());
+         }
+      }else{
+         augmentsTag = null;
+      }
+      
+      MagicItem magicItem = magicBlock.getMagicItem();
+      ItemStack newItem = new ItemStack(magicItem.getItem());
+      newItem.setNbt(magicItem.getNewItem().getNbt());
+      ItemStack drop = magicItem.addCrafter(newItem, magicBlock.getCrafterId(), magicBlock.isSynthetic(),world.getServer());
+      NbtCompound dropNbt = drop.getNbt();
+      NbtCompound magicTag = dropNbt.getCompound("arcananovum");
+      if(augmentsTag != null) {
+         magicTag.put("augments",augmentsTag);
+         magicItem.buildItemLore(drop,world.getServer());
+      }
+      magicTag.putString("UUID",uuid);
+      
+      if(magicBlock.getCustomArcanaName() != null && !magicBlock.getCustomArcanaName().isEmpty()){
+         dropNbt.getCompound("display").putString("Name",magicBlock.getCustomArcanaName());
+      }
+      
+      if(magicBlock instanceof ArcaneSingularityBlockEntity singularity){
+         magicTag.put("books",singularity.writeBooks());
+      }
+      if(magicBlock instanceof StarpathAltarBlockEntity altar){
+         magicTag.put("targets",altar.writeTargets());
+      }
+      
+      return drop;
    }
    
    @Override
@@ -169,5 +187,10 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
    @Override
    public BlockState getAppearance(BlockState state, BlockRenderView renderView, BlockPos pos, Direction side, @Nullable BlockState sourceState, @Nullable BlockPos sourcePos){
       return super.getAppearance(state, renderView, pos, side, sourceState, sourcePos);
+   }
+   
+   @Override
+   protected MapCodec<? extends BlockWithEntity> getCodec(){
+      return null;
    }
 }

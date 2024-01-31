@@ -64,13 +64,6 @@ public class TickCallback {
                   }
                }
                
-               // Guidebook Craft Check
-               if(item.hasNbt() && item.getNbt().contains("ArcanaGuideBook")){
-                  ItemStack newArcanaTome = ArcanaRegistry.ARCANE_TOME.addCrafter(ArcanaRegistry.ARCANE_TOME.getNewItem(),player.getUuidAsString(),false,server);
-                  inv.setStack(i,newArcanaTome);
-                  arcaneProfile.addCrafted(newArcanaTome);
-               }
-               
                // Detect un-formatted item
                Identifier id = Registries.ITEM.getId(item.getItem());
                if(id.getNamespace().equals(ArcanaNovum.MOD_ID)){

@@ -222,7 +222,7 @@ public class SpawnerHarness extends MagicItem {
             }else if(world.getBlockState(context.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(context.getBlockPos()) instanceof MobSpawnerBlockEntity){
                MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(context.getBlockPos());
                NbtCompound spawnerNbt = spawner.createNbt();
-               Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,world.getRandom(),context.getBlockPos());
+               Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,context.getBlockPos());
                if(renderedEntity == null){
                   player.sendMessage(Text.literal("This spawner is empty, and cannot be transported").formatted(Formatting.RED,Formatting.ITALIC),true);
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);

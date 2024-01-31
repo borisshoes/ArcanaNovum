@@ -160,7 +160,7 @@ public class StasisPearl extends EnergyItem {
          String pearlID = magicNbt.getString("pearlID");
          
          if(pearlID.isEmpty()){
-            return getEnergy(itemStack) == getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+            return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
          }else{
             return active ? ArcanaRegistry.MODELS.get(STASIS_TXT).value() : ArcanaRegistry.MODELS.get(FLIGHT_TXT).value();
          }
@@ -221,7 +221,7 @@ public class StasisPearl extends EnergyItem {
          
          try{
             if(pearlID.isEmpty()){ // Throw new pearl
-               if(getEnergy(item) == getMaxEnergy(item)){
+               if(getEnergy(item) >= getMaxEnergy(item)){
                   SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.ENTITY_ENDER_PEARL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F);
                   playerEntity.getItemCooldownManager().set(this, 0);
                   if (!world.isClient) {

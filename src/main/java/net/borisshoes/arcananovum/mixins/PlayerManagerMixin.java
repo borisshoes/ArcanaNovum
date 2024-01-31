@@ -17,7 +17,7 @@ import java.util.Optional;
 public class PlayerManagerMixin {
    
    @Inject(method="respawnPlayer",at=@At(value="INVOKE",target="Lnet/minecraft/server/PlayerManager;sendWorldInfo(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/server/world/ServerWorld;)V", shift= At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD)
-   private void respawnPlayer(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir, BlockPos blockPos, float f, boolean bl, ServerWorld serverWorld, Optional optional, ServerWorld serverWorld2, ServerPlayerEntity newPlayer, boolean bl2, byte b, WorldProperties worldProperties) {
+   private void respawnPlayer(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir, BlockPos blockPos, float f, boolean bl, ServerWorld serverWorld, Optional optional, ServerWorld serverWorld2, ServerPlayerEntity newPlayer, boolean bl2, byte b, ServerWorld serverWorld3, WorldProperties worldProperties) {
       if (alive) {
          newPlayer.getEquipmentChanges();
          newPlayer.setHealth(oldPlayer.getHealth());

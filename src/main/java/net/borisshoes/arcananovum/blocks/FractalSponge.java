@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicBlock;
+import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -22,6 +23,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -30,7 +33,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -106,7 +111,7 @@ public class FractalSponge extends MagicBlock {
             BlockState blockState = world.getBlockState(blockPos2);
             FluidState fluidState = world.getFluidState(blockPos2);
             if (fluidState.isIn(FluidTags.WATER)) {
-               if (blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(world, blockPos2, blockState).isEmpty()) {
+               if (blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(null,world, blockPos2, blockState).isEmpty()) {
                   ++blocksAbsorbed;
                   if (depth < maxDepth) {
                      queue.add(new Pair(blockPos2, depth + 1));
@@ -127,7 +132,7 @@ public class FractalSponge extends MagicBlock {
                   }
                }
             }else if(fluidState.isIn(FluidTags.LAVA)){
-               if (blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(world, blockPos2, blockState).isEmpty()) {
+               if (blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(null,world, blockPos2, blockState).isEmpty()) {
                   ++blocksAbsorbed;
                   if (depth < maxDepth) {
                      queue.add(new Pair(blockPos2, depth + 1));
@@ -221,15 +226,16 @@ public class FractalSponge extends MagicBlock {
       }
       
       @Override
-      public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-         if (world.getBlockEntity(pos) instanceof FractalSpongeBlockEntity sponge) {
-            dropBlockItem(world, pos, state, player, sponge);
-            world.removeBlockEntity(pos);
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+         if (state.isOf(newState.getBlock())) {
+            return;
          }
-         
-         world.removeBlock(pos, false);
-         
-         super.onBreak(world, pos, state, player);
+         BlockEntity blockEntity = world.getBlockEntity(pos);
+         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
+         DefaultedList<ItemStack> drops = DefaultedList.of();
+         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
+         ItemScatterer.spawn(world, pos, drops);
+         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

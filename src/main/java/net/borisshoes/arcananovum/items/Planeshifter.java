@@ -295,7 +295,7 @@ public class Planeshifter extends EnergyItem {
             }else if(mode == 0 && !playerEntity.getServer().isNetherAllowed()){
                playerEntity.sendMessage(Text.literal("The Nether is not enabled on this Server").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-            }else if(curEnergy == getMaxEnergy(stack)){
+            }else if(curEnergy >= getMaxEnergy(stack)){
                magicNbt.putInt("heat", 1); // Starts the heat up process
                SoundUtils.playSound(playerEntity.getWorld(), playerEntity.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
             }else{

@@ -74,6 +74,7 @@ public class WildGrowthCharm extends MagicItem {
       setRecipe(makeRecipe());
       tag = this.addMagicNbt(tag);
       tag.getCompound("arcananovum").putBoolean("active",false);
+      tag.getCompound("arcananovum").putBoolean("harvest",false);
       prefNBT = tag;
       
       stack.setNbt(prefNBT);
@@ -148,6 +149,7 @@ public class WildGrowthCharm extends MagicItem {
          if(!MagicItemUtils.isMagic(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean active = stack.getNbt().getCompound("arcananovum").getBoolean("active");
+         boolean harvest = stack.getNbt().getCompound("arcananovum").getBoolean("harvest");
          int fertLvl = Math.max(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION.id),0);
          int tickTime = RATES[fertLvl];
          
@@ -162,7 +164,7 @@ public class WildGrowthCharm extends MagicItem {
                if(count >= 2) break;
                count++;
                
-               if(block instanceof FernBlock){
+               if(block instanceof ShortPlantBlock){
                   count--;
                }else if(block instanceof SugarCaneBlock ||
                      block instanceof NetherWartBlock ||
@@ -191,7 +193,7 @@ public class WildGrowthCharm extends MagicItem {
                   count--;
                }
                
-               if(reaping >= 1){
+               if(reaping >= 1 && harvest){
                   if(block instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
                      world.breakBlock(blockPos,true,player);
                      if(reaping >= 2 && crop.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
@@ -245,17 +247,30 @@ public class WildGrowthCharm extends MagicItem {
          NbtCompound itemNbt = stack.getNbt();
          NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
          boolean active = magicNbt.getBoolean("active");
+         boolean harvest = magicNbt.getBoolean("harvest");
+         int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
          
          if(playerEntity.isSneaking()){
-            active = !active;
-            magicNbt.putBoolean("active",active);
-            itemNbt.put("arcananovum",magicNbt);
-            if(active){
-               player.sendMessage(Text.translatable("The Charm Begins to Bloom").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_GRASS_PLACE, .7f,.7f);
+            if(reaping > 0 && hand == Hand.OFF_HAND){
+               harvest = !harvest;
+               magicNbt.putBoolean("harvest",harvest);
+               if(harvest){
+                  player.sendMessage(Text.literal("The Charm Begins to Reap").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_GRASS_PLACE, .7f,.7f);
+               }else{
+                  player.sendMessage(Text.literal("The Charm Ceases Reaping").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
+               }
             }else{
-               player.sendMessage(Text.translatable("The Charm Recedes").formatted(Formatting.GREEN,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
+               active = !active;
+               magicNbt.putBoolean("active",active);
+               if(active){
+                  player.sendMessage(Text.literal("The Charm Begins to Bloom").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_GRASS_PLACE, .7f,.7f);
+               }else{
+                  player.sendMessage(Text.literal("The Charm Recedes").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
+               }
             }
             return TypedActionResult.success(stack);
          }

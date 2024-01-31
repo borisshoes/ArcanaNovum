@@ -102,7 +102,7 @@ public class ChestTranslocator extends EnergyItem implements MagicItemContainer.
    }
    
    @Override
-   public int getMaxEnergy(ItemStack item){ // 10 minute recharge time
+   public int getMaxEnergy(ItemStack item){
       int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION.id));
       return 30 - 8*cdLvl;
    }

@@ -216,7 +216,7 @@ public class PearlOfRecall extends EnergyItem {
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
          if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(CHARGED_TXT).value();
-         return getEnergy(itemStack) == getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+         return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
       }
       
       @Override
@@ -288,7 +288,7 @@ public class PearlOfRecall extends EnergyItem {
                   buildItemLore(item,playerEntity.getServer());
                }else{
                   int curEnergy = getEnergy(item);
-                  if(curEnergy == getMaxEnergy(item)){
+                  if(curEnergy >= getMaxEnergy(item)){
                      magicNbt.putInt("heat", 1); // Starts the heat up process
                      SoundUtils.playSound(player.getServerWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
                   }else{

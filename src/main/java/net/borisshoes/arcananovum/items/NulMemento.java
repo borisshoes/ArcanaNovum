@@ -6,10 +6,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.*;
 import net.borisshoes.arcananovum.utils.*;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.EquipmentSlot;
@@ -39,8 +36,8 @@ public class NulMemento extends MagicItem {
    public NulMemento(){
       id = "nul_memento";
       name = "Nul Memento";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.EQUIPMENT};
+      rarity = MagicRarity.MYTHICAL;
+      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
       item = new NulMementoItem(new FabricItemSettings().maxCount(1).fireproof());
       models = new ArrayList<>();
@@ -241,32 +238,60 @@ public class NulMemento extends MagicItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      GenericMagicIngredient a = new GenericMagicIngredient(ArcanaRegistry.EMPOWERED_CATALYST,1);
-      GenericMagicIngredient b = new GenericMagicIngredient(ArcanaRegistry.EXOTIC_CATALYST,1);
-      GenericMagicIngredient r = new GenericMagicIngredient(ArcanaRegistry.ARCANE_TOME,1);
-      GenericMagicIngredient c = new GenericMagicIngredient(ArcanaRegistry.LEGENDARY_CATALYST,1);
-      GenericMagicIngredient d = new GenericMagicIngredient(ArcanaRegistry.MUNDANE_CATALYST,1);
-      GenericMagicIngredient g = new GenericMagicIngredient(ArcanaRegistry.MYTHICAL_CATALYST,1);
-      GenericMagicIngredient h = new GenericMagicIngredient(ArcanaRegistry.EXOTIC_MATTER,1);
-      GenericMagicIngredient l = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      MagicItemIngredient m = new MagicItemIngredient(Items.WITHER_SKELETON_SKULL,64,null,true);
-      GenericMagicIngredient n = new GenericMagicIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
-   
-      MagicItemIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {d,g,h,g,b},
-            {c,l,m,n,c},
-            {b,g,r,g,d},
-            {a,d,c,b,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withSingularity());
+      ItemStack pane = new ItemStack(Items.GRAY_STAINED_GLASS_PANE).setCustomName(Text.literal("In World Recipe").formatted(Formatting.BLUE,Formatting.BOLD));
+      MiscUtils.addLoreLine(pane,Text.literal("Build this in the World").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack soulSand = new ItemStack(Items.SOUL_SAND).setCustomName(Text.literal("Soul Sand or Soil").formatted(Formatting.GRAY,Formatting.BOLD));
+      MiscUtils.addLoreLine(soulSand,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack skull = new ItemStack(Items.WITHER_SKELETON_SKULL).setCustomName(Text.literal("Eye of Ender").formatted(Formatting.DARK_GRAY,Formatting.BOLD));
+      MiscUtils.addLoreLine(skull,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack netherite = new ItemStack(Items.NETHERITE_BLOCK).setCustomName(Text.literal("Block of Netherite").formatted(Formatting.DARK_RED,Formatting.BOLD));
+      MiscUtils.addLoreLine(netherite,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack catalyst = ArcanaRegistry.MYTHICAL_CATALYST.getItem().getDefaultStack().copy();
+      MiscUtils.addLoreLine(catalyst,Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.BLUE))
+            .append(Text.literal(" the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Catalyst").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" on the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Netherite Heart").formatted(Formatting.DARK_RED)));
+      MiscUtils.addLoreLine(catalyst,Text.literal("")
+            .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" will flow into the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Mythical Construct").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" empowering it").formatted(Formatting.DARK_PURPLE)));
+      MiscUtils.addLoreLine(catalyst,Text.literal("")
+            .append(Text.literal("Defeat the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Mythical Construct").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" without dying to have a chance at receiving a ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Nul Memento").formatted(Formatting.BLACK)));
+      MiscUtils.addLoreLine(catalyst,Text.literal("").formatted(Formatting.DARK_PURPLE));
+      MiscUtils.addLoreLine(catalyst,Text.literal("WARNING!!! This fight is considerably harder than a Nul Construct. Attempt at your own peril.").formatted(Formatting.RED));
+      
+      ExplainIngredient a = new ExplainIngredient(pane,"",false);
+      ExplainIngredient s = new ExplainIngredient(soulSand,"Soul Sand or Soil");
+      ExplainIngredient k = new ExplainIngredient(skull,"Wither Skeleton Skull");
+      ExplainIngredient n = new ExplainIngredient(netherite,"Netherite Block");
+      ExplainIngredient c = new ExplainIngredient(catalyst,"Mythical Augment Catalyst");
+      
+      ExplainIngredient[][] ingredients = {
+            {a,a,a,a,a},
+            {a,k,k,k,a},
+            {a,s,n,s,c},
+            {a,a,s,a,a},
+            {a,a,a,a,a}};
+      return new ExplainRecipe(ingredients);
    }
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"      Nul Memento\\n\\nRarity: Legendary\\n\\nMy mind feels so full of the knowledge I've uncovered. I feel like I can't learn any more, I need a way to free my head so that I can continue my studies... Was that wither skull on my desk always glowing?\\n\"}");
-      list.add("{\"text\":\"      Nul Memento\\n\\nThe skull whispers to me, it says it can help me, but I need to prove my knowledge.\\n\\nI know not what entity speaks to me, but my curiosity is piqued.\\nI shall show it all I have mastered in the world of Arcana...\\n\"}");
-      list.add("{\"text\":\"      Nul Memento\\n\\nThe Skull has accepted my offering.\\nIt calls itself 'Nul' and it hungers for knowledge to fill the void in its soul. Nul says that I have made a Memento of his, it will take the knowledge I no longer wish to have, but the process is demanding.\"}");
-      list.add("{\"text\":\"      Nul Memento\\n\\nThe Nul Memento must be activated when worn by flooding my mind with Arcana. The only way I know how to do that is the painful process of overexerting my concentration. The process takes a while, so I better have some healing on hand.\"}");
+      list.add("\"      Nul Memento\\n\\nRarity: Mythical\\n\\nThis entity of death that I have acquired a passing familiarity with is most intriguing.\\n\\nHe wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded.\"");
+      list.add("\"      Nul Memento\\n\\nAs I was gifted this strange skull, the entity informed me that I have become one of his 'chosen'.\\nI'm not sure what to think of this. What machinations could a deity of death be planning such that he needs to choose mortals like me?\"");
+      list.add("\"      Nul Memento\\n\\nThe Memento whispers to me every so often. I have come to learn the entity calls himself Nul, the God of Death.\\n\\nHe speaks of Arcana, and secrets that I have yet to learn.\\n\\nHe warns that one mind can only hold so\"");
+      list.add("\"      Nul Memento\\n\\nmuch knowledge at one time. However, he offers his aid in circumventing this mortal limitation.\\n\\nThis Memento reacts to an overburdened mind when worn, and will make me forget some of the skills I have learned.\"");
+      list.add("\"      Nul Memento\\n\\nAs long as I use those skills before forgetting them. I should be able to take advantage of new knowledge with a new limit to what I can learn.\"");
       return list;
    }
    

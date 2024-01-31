@@ -11,18 +11,28 @@ import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.items.arrows.TetherArrows;
+import net.borisshoes.arcananovum.items.arrows.TrackingArrows;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -94,6 +104,48 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
             if(!triggerTargets.isEmpty()){
                double radius = 4 + 1.25*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.AIRBURST.id);
                ArcaneFlakArrows.detonate(this,radius);
+            }
+         }
+      }else if(arrowType instanceof TrackingArrows){
+         Vec3d velocityUnit = getVelocity().normalize();
+         if(!data.contains("initYaw")){
+            data.putFloat("initYaw",MathHelper.wrapDegrees((float)(MathHelper.atan2(velocityUnit.z, velocityUnit.x) * 57.2957763671875) - 90.0f));
+         }
+         if(!data.contains("initPos")){
+            data.put("initPos", this.toNbtList(this.getX(), this.getY(), this.getZ()));
+         }
+         
+         double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE.id))+5;
+         double distance = 15;
+         List<LivingEntity> possibleTargets = getEntityWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e -> !e.isSpectator() && MiscUtils.inCone(this.getPos(),velocityUnit,distance,1,viewWidth,e.getPos().add(0,e.getHeight()/2,0)));
+         LivingEntity closestTarget = null;
+         double distFromLine = distance;
+         for(LivingEntity possibleTarget : possibleTargets){
+            double dist = MiscUtils.distToLine(possibleTarget.getPos().add(0,possibleTarget.getHeight()/2,0),this.getPos(),this.getPos().add(velocityUnit.multiply(distance)));
+            if(dist < distFromLine){
+               distFromLine = dist;
+               closestTarget = possibleTarget;
+            }
+         }
+         
+         if(closestTarget != null){
+            Vec3d newVelocity = closestTarget.getPos().add(0,closestTarget.getHeight()/2,0).subtract(this.getPos()).normalize().multiply(this.getVelocity().length());
+            this.setVelocity(newVelocity);
+            
+            if(this.getOwner() instanceof ServerPlayerEntity player){
+               if(closestTarget.getUuid().equals(this.getOwner().getUuid())){
+                  ArcanaAchievements.grant(player,ArcanaAchievements.TARGET_ACQUIRED.id);
+               }
+               float curYaw = MathHelper.wrapDegrees((float)(MathHelper.atan2(newVelocity.z, newVelocity.x) * 57.2957763671875) - 90.0f);
+               float yawDiff = curYaw-data.getFloat("initYaw");
+               yawDiff += (yawDiff>180) ? -360 : (yawDiff<-180) ? 360 : 0;
+               if(Math.abs(yawDiff) >= 90){
+                  ArcanaAchievements.grant(player,ArcanaAchievements.THE_ARROW_KNOWS_WHERE_IT_IS.id);
+               }
+            }
+            
+            if(getEntityWorld() instanceof ServerWorld serverWorld){
+               ParticleEffectUtils.spawnLongParticle(serverWorld, ParticleTypes.END_ROD,getX(),getY(),getZ(),0,0,0,0,1);
             }
          }
       }

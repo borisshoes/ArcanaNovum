@@ -2,7 +2,9 @@ package net.borisshoes.arcananovum.blocks;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.MagicBlock;
+import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -25,6 +27,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -42,6 +46,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -215,7 +220,7 @@ public class ContinuumAnchor extends MagicBlock {
       @Nullable
       @Override
       public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-         return checkType(type, ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, ContinuumAnchorBlockEntity::ticker);
+         return validateTicker(type, ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, ContinuumAnchorBlockEntity::ticker);
       }
       
       @Nullable
@@ -237,34 +242,36 @@ public class ContinuumAnchor extends MagicBlock {
          return ActionResult.PASS;
       }
       
+      
       @Override
-      public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-         if (world.getBlockEntity(pos) instanceof ContinuumAnchorBlockEntity anchor) {
-            if (world instanceof ServerWorld serverWorld) {
-               if (!world.isClient) {
-                  dropBlockItem(world,pos,state,player,anchor);
-                  
-                  int fuel = anchor.getFuel();
-                  if(fuel > 0){
-                     ItemScatterer.spawn(world, (double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D, anchor.getFuelStack());
-                  }
-                  
-                  ChunkPos chunkPos = new ChunkPos(pos);
-                  for(int i = -ContinuumAnchorBlockEntity.RANGE; i <= ContinuumAnchorBlockEntity.RANGE; i++){
-                     for(int j = -ContinuumAnchorBlockEntity.RANGE; j <= ContinuumAnchorBlockEntity.RANGE; j++){
-                        ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
-                     }
-                  }
-               }
-               ArcanaNovum.removeActiveAnchor(serverWorld, pos);
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+         if (state.isOf(newState.getBlock())) {
+            return;
+         }
+         BlockEntity blockEntity = world.getBlockEntity(pos);
+         if (blockEntity instanceof ContinuumAnchorBlockEntity anchor && world instanceof ServerWorld serverWorld) {
+            DefaultedList<ItemStack> drops = DefaultedList.of();
+            int fuel = anchor.getFuel();
+            if(fuel > 0){
+               drops.add(anchor.getFuelStack());
             }
             
-            world.removeBlockEntity(pos);
+            ChunkPos chunkPos = new ChunkPos(pos);
+            for(int i = -ContinuumAnchorBlockEntity.RANGE; i <= ContinuumAnchorBlockEntity.RANGE; i++){
+               for(int j = -ContinuumAnchorBlockEntity.RANGE; j <= ContinuumAnchorBlockEntity.RANGE; j++){
+                  ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
+               }
+            }
+            
+            ArcanaNovum.removeActiveAnchor(serverWorld, pos);
+            
+            
+            drops.add(getDroppedBlockItem(state,world,null,blockEntity));
+            ItemScatterer.spawn(world, pos, drops);
+            
+            world.updateComparators(pos, state.getBlock());
          }
-         
-         world.removeBlock(pos, false);
-         
-         super.onBreak(world, pos, state, player);
+         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

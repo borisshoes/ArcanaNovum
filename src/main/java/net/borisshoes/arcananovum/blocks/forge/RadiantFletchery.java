@@ -2,7 +2,9 @@ package net.borisshoes.arcananovum.blocks.forge;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
 import net.borisshoes.arcananovum.core.MagicBlock;
+import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
@@ -24,6 +26,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -157,7 +161,7 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
       @Nullable
       @Override
       public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-         return checkType(type, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY, RadiantFletcheryBlockEntity::ticker);
+         return validateTicker(type, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY, RadiantFletcheryBlockEntity::ticker);
       }
       
       @Override
@@ -183,23 +187,17 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
       }
       
       @Override
-      public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-         if (world.getBlockEntity(pos) instanceof RadiantFletcheryBlockEntity fletchery) {
-            dropBlockItem(world, pos, state, player, fletchery);
-            
-            DefaultedList<ItemStack> drops = DefaultedList.of();
-            for(ItemStack stack : fletchery.getInventory()){
-               drops.add(stack.copy());
-            }
-            
-            ItemScatterer.spawn(world, pos.up(), drops);
-            
-            world.removeBlockEntity(pos);
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+         if (state.isOf(newState.getBlock())) {
+            return;
          }
-         
-         world.removeBlock(pos, false);
-         
-         super.onBreak(world, pos, state, player);
+         BlockEntity blockEntity = world.getBlockEntity(pos);
+         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
+         DefaultedList<ItemStack> drops = DefaultedList.of();
+         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
+         ItemScatterer.spawn(world, pos, drops);
+         ItemScatterer.onStateReplaced(state, newState, world, pos);
+         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

@@ -36,6 +36,7 @@ import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.recipe.AbstractCookingRecipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.server.MinecraftServer;
@@ -215,9 +216,11 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             // Smelting registry and auto smelt
             RecipeManager.MatchGetter<Inventory, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
             SimpleInventory sInv = new SimpleInventory(stack);
-            AbstractCookingRecipe recipe = (matchGetter.getFirstMatch(sInv,player.getEntityWorld()).orElse(null));
+            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(sInv,player.getEntityWorld()).orElse(null);
+            if(recipeEntry == null) return null;
+            AbstractCookingRecipe recipe = recipeEntry.value();
             if(recipe == null) return null;
-            ItemStack recipeOutput = recipe.getOutput(player.getWorld().getRegistryManager());
+            ItemStack recipeOutput = recipe.getResult(player.getWorld().getRegistryManager());
             if(recipeOutput.isEmpty()) return null;
             PlayerInventory inv = player.getInventory();
             ItemStack result = recipeOutput.copy();

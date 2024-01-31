@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
+import net.borisshoes.arcananovum.effects.GreaterInvisibilityEffect;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
@@ -18,6 +19,7 @@ import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
@@ -26,7 +28,9 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -52,6 +56,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +71,8 @@ public abstract class LivingEntityMixin {
    @Shadow protected abstract void playBlockFallSound();
    
    @Shadow protected abstract void playHurtSound(DamageSource source);
+   
+   @Shadow public abstract void enterCombat();
    
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
@@ -386,68 +393,95 @@ public abstract class LivingEntityMixin {
          }
       }
       
+      // Death Ward
+      if(entity.hasStatusEffect(ArcanaRegistry.DEATH_WARD_EFFECT) && !source.isIn(DamageTypeTags.BYPASSES_RESISTANCE)){
+         StatusEffectInstance effect = entity.getStatusEffect(ArcanaRegistry.DEATH_WARD_EFFECT);
+         if(entity.getHealth() < newReturn){
+            float damageWarded = newReturn;
+            newReturn = entity.getHealth() - 0.01f;
+            damageWarded -= newReturn;
+            
+            if(entity instanceof ServerPlayerEntity player && ArcanaAchievements.isTimerActive(player, ArcanaAchievements.TOO_ANGRY_TO_DIE.id)){
+               ArcanaAchievements.progress(player,ArcanaAchievements.TOO_ANGRY_TO_DIE.id, Math.round(damageWarded));
+            }
+         }
+      }
+      
       cir.setReturnValue(newReturn);
    }
    
-   @Inject(method = "tryUseTotem", at = @At("HEAD"), cancellable = true)
+   @Inject(method = "tryUseTotem", at = @At("RETURN"), cancellable = true)
    public void arcananovum_useTotem(DamageSource source, CallbackInfoReturnable<Boolean> cir){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
+      if(cir.getReturnValueZ()) return;
    
-      if(source.getName().contains("arcananovum.concentration")){ // Allow totem usage on Concentration damage
-         ItemStack itemStack = null;
-         Hand[] var4 = Hand.values();
-         int var5 = var4.length;
-   
-         for(int var6 = 0; var6 < var5; ++var6) {
-            Hand hand = var4[var6];
-            ItemStack itemStack2 = livingEntity.getStackInHand(hand);
-            if (itemStack2.isOf(Items.TOTEM_OF_UNDYING)) {
-               itemStack = itemStack2.copy();
-               itemStack2.decrement(1);
-               break;
-            }
+      ItemStack totemStack = null;
+      ItemStack vengeanceStack = null;
+      TotemOfVengeance magicTotem = null;
+      for (Hand hand : Hand.values()) {
+         ItemStack handStack = livingEntity.getStackInHand(hand);
+         if(handStack.isOf(Items.TOTEM_OF_UNDYING)){
+            totemStack = handStack;
+            break;
+         }else if(handStack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && MagicItemUtils.identifyItem(handStack) instanceof TotemOfVengeance vtotem){
+            vengeanceStack = handStack;
+            magicTotem = vtotem;
          }
-   
-         if (itemStack != null) {
-            if (livingEntity instanceof ServerPlayerEntity serverPlayerEntity) {
-               serverPlayerEntity.incrementStat(Stats.USED.getOrCreateStat(Items.TOTEM_OF_UNDYING));
-               Criteria.USED_TOTEM.trigger(serverPlayerEntity, itemStack);
-   
-               PlayerInventory inv = serverPlayerEntity.getInventory();
-               for(int i=0; i<inv.size();i++){
-                  ItemStack item = inv.getStack(i);
-                  if(item.isEmpty()){
-                     continue;
-                  }
-   
-                  boolean isMagic = MagicItemUtils.isMagic(item);
-                  if(!isMagic)
-                     continue; // Item not magic, skip
-                  MagicItem magicItem = MagicItemUtils.identifyItem(item);
-   
-                  if(magicItem instanceof NulMemento nulMemento){ // Nul Memento Totem Death's Door
-                     if(nulMemento.isActive(item)){
-                        ArcanaAchievements.grant(serverPlayerEntity,ArcanaAchievements.DEATHS_DOOR.id);
-                     }
+      }
+      
+      if(totemStack != null && source.getName().contains("arcananovum.concentration")){ // Allow totem usage on Concentration damage
+         if (livingEntity instanceof ServerPlayerEntity serverPlayerEntity) {
+            serverPlayerEntity.incrementStat(Stats.USED.getOrCreateStat(Items.TOTEM_OF_UNDYING));
+            Criteria.USED_TOTEM.trigger(serverPlayerEntity, totemStack);
+            totemStack.decrement(1);
+            
+            PlayerInventory inv = serverPlayerEntity.getInventory();
+            for(int i=0; i<inv.size();i++){
+               ItemStack item = inv.getStack(i);
+               if(item.isEmpty()){
+                  continue;
+               }
+               
+               boolean isMagic = MagicItemUtils.isMagic(item);
+               if(!isMagic)
+                  continue; // Item not magic, skip
+               MagicItem magicItem = MagicItemUtils.identifyItem(item);
+               
+               if(magicItem instanceof NulMemento nulMemento){ // Nul Memento Totem Death's Door
+                  if(nulMemento.isActive(item)){
+                     ArcanaAchievements.grant(serverPlayerEntity,ArcanaAchievements.DEATHS_DOOR.id);
                   }
                }
             }
-      
-            livingEntity.setHealth(1.0F);
-            livingEntity.clearStatusEffects();
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 900, 1));
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 100, 1));
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 800, 0));
-            livingEntity.getWorld().sendEntityStatus(livingEntity, (byte)35);
          }
+         
+         livingEntity.setHealth(1.0F);
+         livingEntity.clearStatusEffects();
+         livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 900, 1));
+         livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 100, 1));
+         livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 800, 0));
+         livingEntity.getWorld().sendEntityStatus(livingEntity, EntityStatuses.USE_TOTEM_OF_UNDYING);
    
-         cir.setReturnValue(itemStack != null);
+         cir.setReturnValue(true);
+         return;
+      }
+      
+      if(vengeanceStack != null && magicTotem.tryUseTotem(vengeanceStack, livingEntity,source)){
+         cir.setReturnValue(true);
       }
    }
    
    @Redirect(method="tickFallFlying", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
    private boolean arcananovum_elytraTick(ItemStack stack, Item item){
       return stack.isOf(item) || MagicItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
+   }
+   
+   @Inject(method="onStatusEffectRemoved",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onRemoved(Lnet/minecraft/entity/attribute/AttributeContainer;)V"))
+   private void arcananovum_effectRemoved(StatusEffectInstance effect, CallbackInfo ci){
+      LivingEntity livingEntity = (LivingEntity) (Object) this;
+      if(effect.getEffectType() == ArcanaRegistry.GREATER_INVISIBILITY_EFFECT && livingEntity.getServer() != null){
+         GreaterInvisibilityEffect.removeInvis(livingEntity.getServer(),livingEntity);
+      }
    }
    
    @Inject(method="updatePotionVisibility", at=@At(value="INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setInvisible(Z)V", ordinal = 1, shift = At.Shift.AFTER))

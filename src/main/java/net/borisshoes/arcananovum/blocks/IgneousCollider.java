@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.blocks;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicBlock;
+import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -23,12 +24,16 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -140,20 +145,20 @@ public class IgneousCollider extends MagicBlock {
       @Nullable
       @Override
       public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-         return checkType(type, ArcanaRegistry.IGNEOUS_COLLIDER_BLOCK_ENTITY, IgneousColliderBlockEntity::ticker);
+         return validateTicker(type, ArcanaRegistry.IGNEOUS_COLLIDER_BLOCK_ENTITY, IgneousColliderBlockEntity::ticker);
       }
       
       @Override
-      public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-         if (world.getBlockEntity(pos) instanceof IgneousColliderBlockEntity collider) {
-            dropBlockItem(world,pos,state,player,collider);
-
-            world.removeBlockEntity(pos);
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+         if (state.isOf(newState.getBlock())) {
+            return;
          }
-         
-         world.removeBlock(pos, false);
-         
-         super.onBreak(world, pos, state, player);
+         BlockEntity blockEntity = world.getBlockEntity(pos);
+         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
+         DefaultedList<ItemStack> drops = DefaultedList.of();
+         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
+         ItemScatterer.spawn(world, pos, drops);
+         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

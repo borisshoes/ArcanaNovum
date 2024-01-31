@@ -8,6 +8,8 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -20,6 +22,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -96,6 +99,7 @@ public class ArcaneSingularityGui extends SimpleGui implements WatchedGui {
                      for(int j = 0; j < blockEntity.getBooks().size(); j++){
                         if(ItemStack.canCombine(selected, blockEntity.getBooks().get(j))){
                            if(tryMergeBooks(i,j)){
+                              MiscUtils.returnItems(new SimpleInventory(new ItemStack(Items.BOOK)),player);
                               selected = ItemStack.EMPTY;
                            }else{
                               player.sendMessage(Text.literal("Those books are incompatible").formatted(Formatting.RED),false);
@@ -107,8 +111,13 @@ public class ArcaneSingularityGui extends SimpleGui implements WatchedGui {
                      selected = blockEntity.getBooks().get(i);
                   }
                }else if(accretion && type == ClickType.MOUSE_RIGHT){ // split book
-                  if(!trySplitBook(i)){
-                     player.sendMessage(Text.literal("That book cannot be split, or the singularity is full").formatted(Formatting.RED),false);
+                  if(MiscUtils.removeItems(player,Items.BOOK,1)){
+                     if(!trySplitBook(i)){
+                        player.sendMessage(Text.literal("That book cannot be split, or the singularity is full").formatted(Formatting.RED),false);
+                     }
+                  }else{
+                     player.sendMessage(Text.literal("You need a book to split the enchants to").formatted(Formatting.RED,Formatting.ITALIC),true);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
                   }
                }else{
                   if(ItemStack.canCombine(blockEntity.getBooks().get(i),selected)) selected = ItemStack.EMPTY;

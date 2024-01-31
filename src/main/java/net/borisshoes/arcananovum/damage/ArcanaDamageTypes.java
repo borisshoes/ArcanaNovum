@@ -14,6 +14,7 @@ public class ArcanaDamageTypes {
    public static final RegistryKey<DamageType> DETONATION_TERRAIN = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("arcananovum","detonation_arrows_terrain"));
    public static final RegistryKey<DamageType> DETONATION_DAMAGE = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("arcananovum","detonation_arrows_damage"));
    public static final RegistryKey<DamageType> NUL = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("arcananovum","nul_damage"));
+   public static final RegistryKey<DamageType> VENGEANCE_TOTEM = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("arcananovum","vengeance_totem"));
    
    public static DamageSource of(World world, RegistryKey<DamageType> key){
       return new DamageSource((world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(key)));

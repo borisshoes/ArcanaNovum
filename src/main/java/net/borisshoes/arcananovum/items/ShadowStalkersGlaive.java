@@ -108,11 +108,6 @@ public class ShadowStalkersGlaive extends EnergyItem {
       int tether = magicTag.getInt("tether");
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
-      if(itemNbt.contains("ArcanaStats")){
-         double percentile = itemNbt.getDouble("ArcanaStats");
-         newTag.putDouble("ArcanaStats",percentile);
-         EnhancedStatUtils.enhanceItem(stack,percentile);
-      }
       newTag.getCompound("arcananovum").putInt("tether",tether);
       newTag.getCompound("arcananovum").putString("lastAttacked",lastAttacked);
       stack.setNbt(newTag);

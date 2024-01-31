@@ -191,7 +191,7 @@ public class Multiblock {
          }
          Path path = pathOptional.get().get();
          InputStream in = Files.newInputStream(path);
-         NbtCompound compound = NbtIo.readCompressed(in);
+         NbtCompound compound = NbtIo.readCompressed(in,NbtSizeTracker.ofUnlimitedBytes());
          if(compound == null) return null;
          
          NbtList size = compound.getList("size", NbtElement.INT_TYPE);

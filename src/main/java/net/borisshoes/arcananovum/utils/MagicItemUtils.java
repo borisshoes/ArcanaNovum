@@ -333,7 +333,7 @@ public class MagicItemUtils {
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
             ArcanaAugment aug = entry.getKey();
             int itemLvl = entry.getValue();
-            ArcanaAugments.applyAugment(stack,aug.id,itemLvl);
+            ArcanaAugments.applyAugment(stack,aug.id,itemLvl,false);
          }
          NbtCompound itemNbt = stack.getNbt();
          NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);

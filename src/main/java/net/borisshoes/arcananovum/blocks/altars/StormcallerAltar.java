@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.blocks.altars;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicBlock;
+import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
@@ -21,6 +22,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -29,6 +32,8 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -151,7 +156,7 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
       @Nullable
       @Override
       public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-         return checkType(type, ArcanaRegistry.STORMCALLER_ALTAR_BLOCK_ENTITY, StormcallerAltarBlockEntity::ticker);
+         return validateTicker(type, ArcanaRegistry.STORMCALLER_ALTAR_BLOCK_ENTITY, StormcallerAltarBlockEntity::ticker);
       }
       
       @Override
@@ -174,15 +179,16 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
       }
       
       @Override
-      public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-         if (world.getBlockEntity(pos) instanceof StormcallerAltarBlockEntity altar) {
-            dropBlockItem(world, pos, state, player, altar);
-            world.removeBlockEntity(pos);
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+         if (state.isOf(newState.getBlock())) {
+            return;
          }
-         
-         world.removeBlock(pos, false);
-         
-         super.onBreak(world, pos, state, player);
+         BlockEntity blockEntity = world.getBlockEntity(pos);
+         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
+         DefaultedList<ItemStack> drops = DefaultedList.of();
+         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
+         ItemScatterer.spawn(world, pos, drops);
+         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

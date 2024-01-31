@@ -271,13 +271,13 @@ public class MagnetismCharm extends MagicItem {
       magicNbt.putInt("mode",mode);
       itemNbt.put("arcananovum",magicNbt);
       if(mode == 1){
-         player.sendMessage(Text.translatable("The Charm's Pull Strengthens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("The Charm's Pull Strengthens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,2f);
       }else if(mode == 2){
-         player.sendMessage(Text.translatable("The Charm's Pull Reverses").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("The Charm's Pull Reverses").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,1f);
       }else{
-         player.sendMessage(Text.translatable("The Charm's Pull Weakens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("The Charm's Pull Weakens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, .3f,.5f);
       }
    }
@@ -418,7 +418,7 @@ public class MagnetismCharm extends MagicItem {
             NbtCompound itemNbt = stack.getNbt();
             NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
             magicNbt.put("filter",new NbtCompound());
-            player.sendMessage(Text.translatable("Filter Cleared").formatted(Formatting.GRAY,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Filter Cleared").formatted(Formatting.GRAY,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 0.5f,1f);
          }else if(canFilter && hand == Hand.MAIN_HAND && !offHand.isEmpty() && playerEntity.isSneaking()){
             toggleFilterItem(player,stack,offHand.getItem());

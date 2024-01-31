@@ -13,8 +13,8 @@ import net.minecraft.world.World;
 
 public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
    
-   public ArcanaShieldDecoratorRecipe(Identifier identifier, CraftingRecipeCategory craftingRecipeCategory) {
-      super(identifier, CraftingRecipeCategory.EQUIPMENT);
+   public ArcanaShieldDecoratorRecipe(CraftingRecipeCategory craftingRecipeCategory) {
+      super(CraftingRecipeCategory.EQUIPMENT);
    }
    
    @Override

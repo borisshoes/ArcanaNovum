@@ -14,11 +14,14 @@ import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -137,9 +140,9 @@ public class ArcaneTome extends MagicItem {
          gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
       }
       
-      GameProfile gameProfile = new GameProfile(player.getUuid(),null);
+      GameProfile gameProfile = player.getGameProfile();
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
-      head.setName((Text.literal("").append(Text.literal(player.getEntityName()+"'s ").formatted(Formatting.AQUA)).append(Text.literal("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
+      head.setName((Text.literal("").append(Text.literal(player.getNameForScoreboard()+"'s ").formatted(Formatting.AQUA)).append(Text.literal("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
       head.addLoreLine((Text.literal("").append(Text.literal("Click").formatted(Formatting.YELLOW)).append(Text.literal(" for a brief overview of Arcana Novum!").formatted(Formatting.LIGHT_PURPLE))));
       gui.setSlot(4,head);
       
@@ -374,7 +377,7 @@ public class ArcaneTome extends MagicItem {
          gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
       }
    
-      GameProfile gameProfile = new GameProfile(player.getUuid(),null);
+      GameProfile gameProfile = player.getGameProfile();
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
       head.setName((Text.literal("").append(Text.literal("Magic Items").formatted(Formatting.DARK_PURPLE))));
       if(gui instanceof TomeGui){
@@ -464,7 +467,7 @@ public class ArcaneTome extends MagicItem {
          gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
       }
       
-      GameProfile gameProfile = new GameProfile(player.getUuid(),null);
+      GameProfile gameProfile = player.getGameProfile();
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
       head.setName((Text.literal("").append(Text.literal("Magic Items").formatted(Formatting.DARK_PURPLE))));
       head.addLoreLine((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE))));
@@ -838,17 +841,30 @@ public class ArcaneTome extends MagicItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.AIR,1,null);
-      MagicItemIngredient t = new MagicItemIngredient(Items.ENCHANTING_TABLE,1,null, true);
-      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,1,null, true);
+      ItemStack pane = new ItemStack(Items.BLACK_STAINED_GLASS_PANE).setCustomName(Text.literal("In World Recipe").formatted(Formatting.BLUE,Formatting.BOLD));
+      MiscUtils.addLoreLine(pane,Text.literal("Do this in the World").formatted(Formatting.DARK_PURPLE));
       
-      MagicItemIngredient[][] ingredients = {
+      ItemStack table = new ItemStack(Items.ENCHANTING_TABLE).setCustomName(Text.literal("Enchanting Table").formatted(Formatting.DARK_AQUA,Formatting.BOLD));
+      MiscUtils.addLoreLine(table,Text.literal("Place an Enchanting Table in the World").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack eye = new ItemStack(Items.ENDER_EYE).setCustomName(Text.literal("Eye of Ender").formatted(Formatting.GREEN,Formatting.BOLD));
+      MiscUtils.addLoreLine(eye,Text.literal("Place an Eye of Ender onto the Enchanting Table").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack book = new ItemStack(Items.BOOK).setCustomName(Text.literal("Book").formatted(Formatting.AQUA,Formatting.BOLD));
+      MiscUtils.addLoreLine(book,Text.literal("Place a Book onto the Enchanting Table").formatted(Formatting.DARK_PURPLE));
+      
+      ExplainIngredient a = new ExplainIngredient(pane,"",false);
+      ExplainIngredient t = new ExplainIngredient(table,"Enchanting Table");
+      ExplainIngredient b = new ExplainIngredient(book,"Book");
+      ExplainIngredient e = new ExplainIngredient(eye,"Eye of Ender");
+      
+      ExplainIngredient[][] ingredients = {
             {a,a,a,a,a},
             {a,a,e,a,a},
+            {a,a,b,a,a},
             {a,a,t,a,a},
-            {a,a,a,a,a},
             {a,a,a,a,a}};
-      return new MagicItemRecipe(ingredients);
+      return new ExplainRecipe(ingredients);
    }
    
    public enum TomeMode{

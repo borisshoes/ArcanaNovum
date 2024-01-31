@@ -163,7 +163,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
             if(player != null){
                double dist = player.getPos().distanceTo(this.getPos());
                if(dist <= 15 && summonTick == summonCD){
-                  List<SkeletonEntity> skeles = getWorld().getEntitiesByType(EntityType.SKELETON, new Box(BlockPos.ofFloored(getX()-15,40,getZ()-15), BlockPos.ofFloored(getX()+15,160,getZ()+15)), e -> true);
+                  List<SkeletonEntity> skeles = getWorld().getEntitiesByType(EntityType.SKELETON, new Box(getX()-15,40,getZ()-15, getX()+15,160,getZ()+15), e -> true);
                   if(skeles.size() < 8)
                      summonTick = 0;
                }else if(dist <= 7 && pulseTick == pulseCD){

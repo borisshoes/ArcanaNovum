@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.entity.Entity;
@@ -8,6 +10,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.particle.DustParticleEffect;
@@ -21,6 +24,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +35,149 @@ import java.util.List;
 
 public class ParticleEffectUtils {
    
+   public static void ensnaredEffect(LivingEntity living, int amplifier, int tick){
+      if(!living.isAlive() || living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) == null || !(living.getEntityWorld() instanceof ServerWorld world)){
+         return;
+      }
+      double eHeight = living.getHeight();
+      double eWidth = living.getWidth();
+      double circleHeight = eHeight*0.6;
+      double circleRadius = eWidth / 1.6;
+      Vec3d circleCenter = living.getPos().add(0,eHeight/1.8,0);
+      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
+      
+      int intervals = (int) (15 * Math.sqrt(circleRadius*circleRadius+circleHeight*circleHeight));
+      double dA = Math.PI * 2 / intervals;
+      for(int i = 0; i < intervals; i++){
+         double angle = dA * i + (tick / Math.PI);
+         double xOff = circleRadius * Math.cos(angle);
+         double zOff = circleRadius * Math.sin(angle);
+         double yOff = (xOff+zOff) * 0.3536 * circleHeight/circleRadius;
+         
+         world.spawnParticles(purple,xOff+circleCenter.x,yOff+circleCenter.y,zOff+circleCenter.z,1,0,0,0,0);
+         world.spawnParticles(purple,xOff+circleCenter.x,-yOff+circleCenter.y,zOff+circleCenter.z,1,0,0,0,0);
+      }
+      
+      if(amplifier > 0 && tick % 5 == 0){
+         circle(world,null,circleCenter,ParticleTypes.WITCH,circleRadius*1.2,intervals/2,1,0,0);
+         circle(world,null,circleCenter.add(0,-circleHeight,0),ParticleTypes.WITCH,circleRadius*1.2,intervals/2,1,0,0);
+      }
+      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> ensnaredEffect(living, amplifier,tick < 40 ? tick+1 : 0)));
+   }
+   
+   public static void transmutationAltarAnim(ServerWorld world, Vec3d center, int tick, Direction direction){
+      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
+      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
+      ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.7f);
+      Vec3d effectCenter = center.add(0,0.6,0);
+      
+      double theta = Math.PI*tick / 20.0;
+      int intBonus = tick % 3;
+      int itemCI = 20; double itemCR = 0.7; double itemOutset = 3;
+      int nodeCI = 8; double nodeCR = 0.25; double nodeOutset = 2.2;
+      double outerRadius = 4.4; double innerRadius = 4.0;
+      
+      //MathHelper.clamp((tick-20.0) / (40.0-20.0),0,1)
+      circle(world,null,effectCenter,pink,innerRadius*MathHelper.clamp(tick/60.0,0,1),125,1,0,0, theta);
+      circle(world,null,effectCenter,pink,outerRadius*MathHelper.clamp(tick/60.0,0,1),125,1,0,0, theta);
+      circle(world,null,effectCenter,purple,itemCR*MathHelper.clamp(tick/20.0,0,1),itemCI,1,0,0, theta);
+      
+      if(tick > 260){
+         circle(world,null,effectCenter,ParticleTypes.WITCH,(outerRadius+innerRadius)/2,50,1,0.1,0, theta);
+      }
+      
+      for(float i = 0; i < Math.PI*2; i+= (float) (Math.PI/2.0f)){
+         if(tick < 70) continue;
+         
+         Vec3d itemCenter = effectCenter.add(new Vec3d(itemOutset,0,0).rotateY(i));
+         circle(world,null,itemCenter,purple,itemCR*MathHelper.clamp((tick-70.0) / 40.0,0,1),itemCI,1,0,0, theta);
+         
+         if(tick < 90) continue;
+         Vec3d centerLine1P1 = effectCenter.add(new Vec3d((itemCR+0.1)*.71,0,itemCR*.71).rotateY(i));
+         Vec3d centerLine1P2 = effectCenter.add(new Vec3d(nodeOutset-nodeCR*.71,0,nodeOutset-nodeCR*.71).rotateY(i));
+         line(world,null,centerLine1P1,centerLine1P2,blue,15+intBonus,1,0,0,MathHelper.clamp((tick-90.0) / 50.0,0,1));
+         
+         Vec3d centerLine2P1 = effectCenter.add(new Vec3d(itemCR+0.1,0,0).rotateY(i));
+         Vec3d centerLine2P2 = effectCenter.add(new Vec3d(itemOutset-itemCR,0,0).rotateY(i));
+         line(world,null,centerLine2P1,centerLine2P2,blue,10+intBonus,1,0,0,MathHelper.clamp((tick-90.0) / 30.0,0,1));
+         
+         if(tick < 110) continue;
+         
+         Vec3d crossLine1aP1 = effectCenter.add(new Vec3d(itemOutset-(itemCR*.71+0.1),0,itemCR*.71+0.1).rotateY(i));
+         Vec3d crossLine1bP1 = effectCenter.add(new Vec3d(itemCR*.71,0,itemOutset-itemCR*.71).rotateY(i));
+         Vec3d crossLine1P2 = effectCenter.add(new Vec3d(itemOutset*.5,0,itemOutset*.5).rotateY(i));
+         line(world,null,crossLine1aP1,crossLine1P2,blue,7+intBonus,1,0,0,MathHelper.clamp((tick-110.0) / 50.0,0,1));
+         line(world,null,crossLine1bP1,crossLine1P2,blue,7+intBonus,1,0,0,MathHelper.clamp((tick-110.0) / 50.0,0,1));
+         
+         Vec3d crossLine2P1 = effectCenter.add(new Vec3d(itemOutset,0,itemCR+0.1).rotateY(i));
+         Vec3d crossLine2P2 = effectCenter.add(new Vec3d(nodeOutset+nodeCR*.71,0,nodeOutset-nodeCR*.71).rotateY(i));
+         line(world,null,crossLine2P1,crossLine2P2,blue,7+intBonus,1,0,0,MathHelper.clamp((tick-110.0) / 40.0,0,1));
+         
+         Vec3d crossLine3P1 = effectCenter.add(new Vec3d(itemCR+0.1,0,itemOutset).rotateY(i));
+         Vec3d crossLine3P2 = effectCenter.add(new Vec3d(nodeOutset-nodeCR*.71,0,nodeOutset+nodeCR*.71).rotateY(i));
+         line(world,null,crossLine3P1,crossLine3P2,blue,7+intBonus,1,0,0,MathHelper.clamp((tick-110.0) / 40.0,0,1));
+         
+         if(tick < 150) continue;
+         
+         Vec3d nodeCenter = effectCenter.add(new Vec3d(nodeOutset,0,nodeOutset).rotateY(i));
+         circle(world,null,nodeCenter,purple,nodeCR*MathHelper.clamp((tick-150.0) / 20.0,0,1),nodeCI,1,0,0, theta);
+         
+         Vec3d outerLine1P1 = effectCenter.add(new Vec3d(itemOutset+itemCR+0.1,0,0).rotateY(i));
+         Vec3d outerLine1P2 = effectCenter.add(new Vec3d(outerRadius-0.02,0,0).rotateY(i));
+         line(world,null,outerLine1P1,outerLine1P2,blue,3+intBonus,1,0,0,MathHelper.clamp((tick-150.0) / 40.0,0,1));
+         
+         double outerIZ = 0.5*(-itemOutset+Math.sqrt(2*outerRadius*outerRadius-itemOutset*itemOutset));
+         double outerIX = outerIZ + itemOutset;
+         Vec3d outerLine2P1 = effectCenter.add(new Vec3d(itemOutset+itemCR*.71+0.1,0,itemCR*.71+0.1).rotateY(i));
+         Vec3d outerLine2P2 = effectCenter.add(new Vec3d(outerIX-0.02,0,outerIZ-0.02).rotateY(i));
+         line(world,null,outerLine2P1,outerLine2P2,blue,5+intBonus,1,0,0,MathHelper.clamp((tick-150.0) / 40.0,0,1));
+         
+         Vec3d outerLine3P1 = effectCenter.add(new Vec3d(itemOutset+itemCR*.71+0.1,0,-(itemCR*.71+0.1)).rotateY(i));
+         Vec3d outerLine3P2 = effectCenter.add(new Vec3d(outerIX-0.02,0,-(outerIZ-0.02)).rotateY(i));
+         line(world,null,outerLine3P1,outerLine3P2,blue,5+intBonus,1,0,0,MathHelper.clamp((tick-150.0) / 40.0,0,1));
+         
+         if(tick < 160) continue;
+         
+         Vec3d outerLine4P1 = effectCenter.add(new Vec3d(nodeOutset+nodeCR*.71+0.1,0,nodeOutset+nodeCR*.71+0.1).rotateY(i));
+         Vec3d outerLine4P2 = effectCenter.add(new Vec3d(innerRadius*.71-0.02,0,innerRadius*.71-0.02).rotateY(i));
+         line(world,null,outerLine4P1,outerLine4P2,blue,3+intBonus,1,0,0,MathHelper.clamp((tick-150.0) / 30.0,0,1));
+         
+         if(tick < 450) continue;
+         Vec3d itemSpot = effectCenter.add(new Vec3d(itemOutset,0,0).rotateY(i));
+         world.spawnParticles(ParticleTypes.WITCH,itemSpot.x,itemSpot.y,itemSpot.z,1,0.15,0.15,0.15,0);
+         world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,itemSpot.x,itemSpot.y,itemSpot.z,3,0.25,0.25,0.25,0);
+         world.spawnParticles(ParticleTypes.END_ROD,itemSpot.x,itemSpot.y,itemSpot.z,1,0.25,0.25,0.25,0.02);
+         
+         if(tick == 500){
+            world.spawnParticles(ParticleTypes.FLASH,itemSpot.x,itemSpot.y+0.25,itemSpot.z,3,0.25,0.25,0.25,0);
+         }
+      }
+      
+      if(tick > 180){
+         double dA = Math.PI * 2 / 50;
+         double angle = dA * tick;
+         double x = (outerRadius+innerRadius)/2 * Math.cos(angle) + effectCenter.x;
+         double z = (outerRadius+innerRadius)/2 * Math.sin(angle) + effectCenter.z;
+         double y = tick > 280 ? effectCenter.y + 1: effectCenter.y;
+         
+         world.spawnParticles(ParticleTypes.WITCH,x,y,z,12,0.25,0.25,0.25,0);
+      }
+      
+      if(tick == 0){
+         SoundUtils.playSound(world, BlockPos.ofFloored(center),SoundEvents.BLOCK_BEACON_POWER_SELECT,SoundCategory.BLOCKS,1,1.5f);
+      }
+      if(tick % 70 == 20){
+         SoundUtils.playSound(world, BlockPos.ofFloored(center),SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,SoundCategory.BLOCKS,1,((float)Math.random())*.5f + 0.7f);
+      }
+      if(tick % 100 == 35){
+         SoundUtils.playSound(world, BlockPos.ofFloored(center),SoundEvents.BLOCK_PORTAL_AMBIENT,SoundCategory.BLOCKS,0.5f,((float)Math.random())*.4f + 1.2f);
+      }
+      
+      if(tick < 500){
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> transmutationAltarAnim(world,center,tick+1, direction)));
+      }
+   }
+   
    public static void craftForge(ServerWorld world, BlockPos pos, int tick){
       Vec3d center = pos.toCenterPos();
       if(tick == 100){
@@ -40,6 +187,18 @@ public class ParticleEffectUtils {
       }else{
          world.spawnParticles(ParticleTypes.END_ROD,center.x,center.y,center.z,1,0.6,0.8,0.6,0);
          world.spawnParticles(ParticleTypes.WITCH,center.x,center.y,center.z,1,0.6,0.8,0.6,0);
+      }
+   }
+   
+   public static void craftTome(ServerWorld world, BlockPos pos, int tick){
+      Vec3d center = pos.toCenterPos();
+      if(tick == 100){
+         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y,center.z,3,0.4,0.4,0.4,0);
+         world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,center.x,center.y,center.z,25,0.6,0.8,0.6,0);
+         SoundUtils.playSound(world,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.BLOCKS, 2, 0.8f);
+      }else{
+         world.spawnParticles(ParticleTypes.ENCHANT,center.x,center.y+1,center.z,10,0.3,0.3,0.3,1);
+         world.spawnParticles(ParticleTypes.WITCH,center.x,center.y,center.z,2,0.6,0.8,0.6,0);
       }
    }
    
@@ -838,10 +997,16 @@ public class ParticleEffectUtils {
    }
    
    public static void line(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d p1, Vec3d p2, ParticleEffect type, int intervals, int count, double delta, double speed){
+      line(world, player, p1, p2, type, intervals, count, delta, speed,1);
+   }
+   
+   public static void line(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d p1, Vec3d p2, ParticleEffect type, int intervals, int count, double delta, double speed, double percent){
+      percent = MathHelper.clamp(percent,0,1);
       double dx = (p2.x-p1.x)/intervals;
       double dy = (p2.y-p1.y)/intervals;
       double dz = (p2.z-p1.z)/intervals;
       for(int i = 0; i < intervals; i++){
+         if((double)i/intervals > percent && percent != 1) continue;
          double x = p1.x + dx*i;
          double y = p1.y + dy*i;
          double z = p1.z + dz*i;
@@ -867,9 +1032,13 @@ public class ParticleEffectUtils {
    }
    
    public static void circle(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int intervals, int count, double delta, double speed){
+      circle(world,player,center,type,radius,intervals,count,delta,speed,0);
+   }
+   
+   public static void circle(ServerWorld world, @Nullable ServerPlayerEntity player, Vec3d center, ParticleEffect type, double radius, int intervals, int count, double delta, double speed, double theta){
       double dA = Math.PI * 2 / intervals;
       for(int i = 0; i < intervals; i++){
-         double angle = dA * i;
+         double angle = dA * i + theta;
          double x = radius * Math.cos(angle) + center.x;
          double z = radius * Math.sin(angle) + center.z;
          double y = center.y;
@@ -931,4 +1100,6 @@ public class ParticleEffectUtils {
          player.networkHandler.sendPacket(new ParticleS2CPacket(type,true,x,y,z,(float)dx,(float)dy,(float)dz,(float)speed,count));
       }
    }
+   
+   
 }

@@ -19,13 +19,13 @@ public class ExplosionMixin {
    private boolean arcananovum_redirectDamage(Entity entity, DamageSource source, float amount){
       try{
          Explosion explosion = (Explosion) (Object) this;
-         String explosionName = explosion.getDamageSource().getName();
+         String explosionName = source.getName();
          if(explosionName.contains("arcananovum.detonation_terrain")){
             return true;
          }else if(explosionName.contains("arcananovum.detonation_damage")){
             if(entity instanceof ServerPlayerEntity hitPlayer){
                float newDmg = amount / 5;
-               Entity attacker = explosion.getDamageSource().getAttacker();
+               Entity attacker = source.getAttacker();
                entity.damage(source,newDmg);
                
                if(attacker != null && hitPlayer.getUuid().equals(attacker.getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f) ArcanaAchievements.grant(hitPlayer,ArcanaAchievements.SAFETY_THIRD.id);

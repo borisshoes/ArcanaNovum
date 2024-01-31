@@ -328,7 +328,7 @@ public class DragonAbilities {
             endWorld.spawnEntityAndPassengers(goons[i]);
          }
          
-         List<EndermanEntity> endermen = endWorld.getEntitiesByType(EntityType.ENDERMAN, new Box(new BlockPos(-300,25,-300), new BlockPos(300,115,300)), e -> true);
+         List<EndermanEntity> endermen = endWorld.getEntitiesByType(EntityType.ENDERMAN, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,115,300).toCenterPos()), e -> true);
    
          for(EndermanEntity enderman : endermen){
             PlayerEntity closestPlayer = endWorld.getClosestPlayer(enderman,30);

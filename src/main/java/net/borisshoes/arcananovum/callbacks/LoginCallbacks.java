@@ -11,6 +11,7 @@ public class LoginCallbacks {
    public static final LoginCallback XP_LOGIN_CALLBACK = LoginCallbacks.register("xp_login_callback",new XPLoginCallback());
    public static final LoginCallback ACHIEVEMENT_LOGIN_CALLBACK = LoginCallbacks.register("achievement_login_callback",new AchievementLoginCallback());
    public static final LoginCallback MAX_HEALTH_LOGIN_CALLBACK = LoginCallbacks.register("max_health_login_callback",new MaxHealthLoginCallback());
+   public static final LoginCallback TOTEM_OF_VENGEANCE_LOGIN_CALLBACK = LoginCallbacks.register("totem_of_vengeance_login_callback", new VengeanceTotemLoginCallback());
    
    private static LoginCallback register(String id, LoginCallback callback){
       registry.put(id,callback);

@@ -444,6 +444,11 @@ public class ArcanaAugments {
          new String[]{"Grants a chance to not consume an arrow","Chance per level: 5%/10%/15%/20%/30%","Linked with Overflowing Quiver's Bottomless Quiver"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EXOTIC,LEGENDARY,MYTHICAL}
    ));
+   public static final ArcanaAugment SHUNT_RUNES = ArcanaAugments.register(
+         new ArcanaAugment("Shunt Runes", "shunt_runes", new ItemStack(Items.NETHER_STAR), ArcanaRegistry.RUNIC_QUIVER,
+         new String[]{"Arrows in the Quiver take 1/4 concentration"},
+         new MagicRarity[]{MYTHICAL}
+   ));
    
    // Shadow Stalker's Glaive
    public static final ArcanaAugment SHADOW_STRIDE = ArcanaAugments.register(
@@ -617,7 +622,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment REAPING = ArcanaAugments.register(
          new ArcanaAugment("Reaping", "reaping", new ItemStack(Items.DIAMOND_HOE), ArcanaRegistry.WILD_GROWTH_CHARM,
-         new String[]{"Fully grown crops get auto-harvested", "Second level replants harvested crops"},
+         new String[]{"Fully grown crops get auto-harvested", "Second level replants harvested crops", "Sneak Right Click in off-hand to toggle"},
          new MagicRarity[]{LEGENDARY,MYTHICAL}
    ));
    
@@ -826,6 +831,79 @@ public class ArcanaAugments {
          new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED,EMPOWERED,EXOTIC}
    ));
    
+   // Totem of Vengeance
+   public static final ArcanaAugment RETALIATIVE_FURY = ArcanaAugments.register(
+         new ArcanaAugment("Retaliative Fury", "retaliative_fury", new ItemStack(Items.BLAZE_POWDER), ArcanaRegistry.TOTEM_OF_VENGEANCE,
+         new String[]{"Increases the Totem's duration and effect strength","Increases effect strength by 1 per level","Duration increase per level: 15/30/45"},
+         new MagicRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+   ));
+   
+   // Aquatic Eversource
+   public static final ArcanaAugment FLOODGATE = ArcanaAugments.register(
+         new ArcanaAugment("Floodgate", "floodgate", new ItemStack(Items.WARPED_FENCE_GATE), ArcanaRegistry.AQUATIC_EVERSOURCE,
+         new String[]{"Unlocks a mode that places water in a flat 3x3 area","Sneak Right Click to toggle modes"},
+         new MagicRarity[]{EXOTIC}
+   ));
+   
+   // Magmatic Eversource
+   public static final ArcanaAugment VOLCANIC_CHAMBER = ArcanaAugments.register(
+         new ArcanaAugment("Volcanic Chamber", "volcanic_chamber", new ItemStack(Items.MAGMA_BLOCK), ArcanaRegistry.MAGMATIC_EVERSOURCE,
+         new String[]{"Adds charges to the Eversource","Charges per level: 3/5/10/25"},
+         new MagicRarity[]{EMPOWERED,EMPOWERED,EXOTIC,LEGENDARY}
+   ));
+   public static final ArcanaAugment ERUPTION = ArcanaAugments.register(
+         new ArcanaAugment("Eruption", "eruption", new ItemStack(Items.MAGMA_CREAM), ArcanaRegistry.MAGMATIC_EVERSOURCE,
+         new String[]{"Decreases Eversource cooldown by 8 seconds per level"},
+         new MagicRarity[]{EMPOWERED,EMPOWERED,EXOTIC}
+   ));
+   
+   // Transmutation Altar
+   public static final ArcanaAugment TRADE_AGREEMENT = ArcanaAugments.register(
+         new ArcanaAugment("Trade Agreement", "trade_agreement", new ItemStack(Items.DIAMOND), ArcanaRegistry.TRANSMUTATION_ALTAR,
+         new String[]{"The Altar will reactivate automatically"," after a successful transmutation"},
+         new MagicRarity[]{MYTHICAL}
+   ));
+   public static final ArcanaAugment HASTY_BARGAIN = ArcanaAugments.register(
+         new ArcanaAugment("Hasty Bargain", "hasty_bargain", new ItemStack(Items.CLOCK), ArcanaRegistry.TRANSMUTATION_ALTAR,
+         new String[]{"Decreases Altar cooldown by 5 minutes per level","Increases reagent consumption by 10% per level"},
+         new MagicRarity[]{MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC}
+   ));
+   
+   // Aequalis Scientia
+   public static final ArcanaAugment EQUIVALENT_EXCHANGE = ArcanaAugments.register(
+         new ArcanaAugment("Equivalent Exchange", "equivalent_exchange", new ItemStack(ArcanaRegistry.CATALYTIC_MATRIX.getItem()), ArcanaRegistry.AEQUALIS_SCIENTIA,
+         new String[]{"Unlocks a transmutation recipe that lets"," you reclaim catalysts from augmented items"},
+         new MagicRarity[]{MYTHICAL}
+   ));
+   public static final ArcanaAugment TIMELESS_WISDOM = ArcanaAugments.register(
+         new ArcanaAugment("Timeless Wisdom", "timeless_wisdom", new ItemStack(ArcanaRegistry.MYTHICAL_CATALYST.getItem()), ArcanaRegistry.AEQUALIS_SCIENTIA,
+         new String[]{"Gives a 20% chance to not consume the Aequalis Scientia"},
+         new MagicRarity[]{MYTHICAL,MYTHICAL,MYTHICAL,MYTHICAL,MYTHICAL}
+   ));
+   
+   // Ensnarement Arrows
+   public static final ArcanaAugment ETHEREAL_ANCHOR = ArcanaAugments.register(
+         new ArcanaAugment("Ethereal Anchor", "ethereal_anchor", new ItemStack(Items.ENDER_PEARL), ArcanaRegistry.ENSNAREMENT_ARROWS,
+         new String[]{"Ensnared players become unable to teleport"},
+         new MagicRarity[]{MYTHICAL}
+   ));
+   public static final ArcanaAugment ENTRAPMENT = ArcanaAugments.register(
+         new ArcanaAugment("Entrapment", "entrapment", new ItemStack(Items.COBWEB), ArcanaRegistry.ENSNAREMENT_ARROWS,
+         new String[]{"Increases effect duration by 5 seconds per level"},
+         new MagicRarity[]{EMPOWERED,EXOTIC,EXOTIC,LEGENDARY,LEGENDARY}
+   ));
+   
+   // Tracking Arrows
+   public static final ArcanaAugment RUNIC_GUIDANCE = ArcanaAugments.register(
+         new ArcanaAugment("Runic Guidance", "runic_guidance", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.TRACKING_ARROWS,
+         new String[]{"Increases the tracking angle of the arrows per level"},
+         new MagicRarity[]{EMPOWERED,EXOTIC,LEGENDARY}
+   ));
+   public static final ArcanaAugment BROADHEADS = ArcanaAugments.register(
+         new ArcanaAugment("Broadheads", "broadheads", new ItemStack(Items.SPECTRAL_ARROW), ArcanaRegistry.TRACKING_ARROWS,
+         new String[]{"Hit entities receive 50% extra damage","Duration per level: 5/10/15 seconds"},
+         new MagicRarity[]{EMPOWERED,EXOTIC,LEGENDARY}
+   ));
    
    
    // Linked augments:
@@ -885,6 +963,22 @@ public class ArcanaAugments {
          }
       }
       return map;
+   }
+   
+   public static void setAugmentsOnItem(ItemStack item, TreeMap<ArcanaAugment,Integer> augments){
+      MagicItem magicItem = MagicItemUtils.identifyItem(item);
+      if(magicItem == null) return;
+      NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
+      NbtCompound augsTag = new NbtCompound();
+      
+      augments.forEach((augKey,augValue) -> {
+         if(registry.containsKey(augKey.id)){
+            augsTag.putInt(augKey.id,augValue);
+         }
+      });
+      
+      magicTag.put("augments",augsTag);
+      magicItem.buildItemLore(item,ArcanaNovum.SERVER);
    }
    
    public static boolean isIncompatible(ItemStack item, String id){ // TODO: Better incompat check for mutually exclusive augments
@@ -949,7 +1043,7 @@ public class ArcanaAugments {
    }
    
    // Applies Augment to Item, cannot down-level existing augments
-   public static boolean applyAugment(ItemStack item, String id, int level){
+   public static boolean applyAugment(ItemStack item, String id, int level, boolean withCatalyst){
       int curLevel = getAugmentOnItem(item,id);
       if(curLevel == -2) return false;
       if(!registry.containsKey(id)) return false;
@@ -966,6 +1060,20 @@ public class ArcanaAugments {
       }
       NbtCompound augmentTag = magicTag.getCompound("augments");
       augmentTag.putInt(id,level);
+      
+      if(withCatalyst){
+         int clampedCurLevel = Math.max(0,curLevel);
+         NbtList catalystsList = magicTag.contains("catalysts") ? magicTag.getList("catalysts",NbtElement.COMPOUND_TYPE) : new NbtList();
+         for(int lvl = clampedCurLevel+1; lvl <= level; lvl++){
+            NbtCompound cata = new NbtCompound();
+            MagicRarity rarity = augment.getTiers()[lvl-1];
+            cata.putString("augment", augment.id);
+            cata.putInt("level",lvl);
+            cata.putInt("rarity",rarity.rarity);
+            catalystsList.add(cata);
+         }
+         magicTag.put("catalysts",catalystsList);
+      }
    
       if(magicItem instanceof ExoticMatter matter && id.equals(TIME_IN_A_BOTTLE.id)){
          matter.setFuel(item,matter.getMaxEnergy(item));
@@ -990,5 +1098,29 @@ public class ArcanaAugments {
       
       magicItem.buildItemLore(item, ArcanaNovum.SERVER);
       return true;
+   }
+   
+   public static void copyAugment(ItemStack sourceStack, ItemStack destinationStack, String sourceAugment, String destinationAugment){
+      NbtCompound sourceMagicTag = sourceStack.getNbt().getCompound("arcananovum");
+      
+      NbtList sourceCatas = sourceMagicTag.contains("catalysts") ? sourceMagicTag.getList("catalysts",NbtElement.COMPOUND_TYPE) : new NbtList();
+      
+      int sourceLvl = ArcanaAugments.getAugmentOnItem(sourceStack, sourceAugment);
+      if(sourceLvl <= 0) return;
+      
+      for(int lvl = 0; lvl <= sourceLvl; lvl++){
+         boolean foundCata = false;
+         for(NbtElement sourceCata : sourceCatas){
+            NbtCompound cata = (NbtCompound) sourceCata;
+            if(cata.getString("augment").equals(sourceAugment) && cata.getInt("level") == lvl){
+               ArcanaAugments.applyAugment(destinationStack,destinationAugment,lvl,true);
+               foundCata = true;
+               break;
+            }
+         }
+         if(!foundCata){
+            ArcanaAugments.applyAugment(destinationStack,destinationAugment,lvl,false);
+         }
+      }
    }
 }

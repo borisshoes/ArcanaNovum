@@ -331,7 +331,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
       if(catalystSlot == -1 && !creative){
          player.sendMessage(Text.literal("No Augment Catalyst Found").formatted(Formatting.RED),false);
       }else{
-         if(ArcanaAugments.applyAugment(item,augment.id,level)){
+         if(ArcanaAugments.applyAugment(item,augment.id,level,true)){
             if(!creative) playerInv.removeStack(catalystSlot);
             return true;
          }else{

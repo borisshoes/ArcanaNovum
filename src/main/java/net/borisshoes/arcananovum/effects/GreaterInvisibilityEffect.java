@@ -39,19 +39,11 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    }
    
    @Override
-   public void onRemoved(LivingEntity entity, AttributeContainer attributes, int amplifier) {
-      if(entity.getServer() != null){
-         removeInvis(entity.getServer(),entity);
-      }
-      super.onRemoved(entity, attributes, amplifier);
-   }
-   
-   @Override
-   public void onApplied(LivingEntity entity, AttributeContainer attributes, int amplifier) {
+   public void onApplied(LivingEntity entity, int amplifier) {
       if(entity.getServer() != null){
          addInvis(entity.getServer(),entity);
       }
-      super.onApplied(entity, attributes, amplifier);
+      super.onApplied(entity, amplifier);
    }
    
    private static void addInvis(MinecraftServer server, LivingEntity invisEntity){
@@ -69,7 +61,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
       });
    }
    
-   private static void removeInvis(MinecraftServer server, LivingEntity invisEntity){
+   public static void removeInvis(MinecraftServer server, LivingEntity invisEntity){
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
          if (!playerEntity.equals(invisEntity)) {
             
@@ -78,11 +70,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
                return;
             }
             
-            if(invisEntity instanceof ServerPlayerEntity invisPlayer){
-               playerEntity.networkHandler.sendPacket(new PlayerSpawnS2CPacket(invisPlayer));
-            }else{
-               playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(invisEntity));
-            }
+            playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(invisEntity));
             updateEquipment(invisEntity, playerEntity);
          }
       });

@@ -15,10 +15,7 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -140,6 +137,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       newTag.getCompound("arcananovum").putString("UUID",magicTag.getString("UUID"));
       newTag.getCompound("arcananovum").putInt("Version",MagicItem.version + getItemVersion());
       if(magicTag.contains("augments")) newTag.getCompound("arcananovum").put("augments",magicTag.getCompound("augments"));
+      if(magicTag.contains("catalysts")) newTag.getCompound("arcananovum").put("catalysts",magicTag.getList("catalysts",NbtElement.COMPOUND_TYPE));
       if(itemNbt.contains("display")){
          NbtCompound display = itemNbt.getCompound("display");
          if(display.contains("color")) newTag.getCompound("display").putInt("color",display.getInt("color"));
@@ -161,6 +159,8 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       magic.putInt("Rarity",MagicRarity.getRarityInt(rarity));
       magic.putInt("Version",MagicItem.version + getItemVersion());
       magic.putString("UUID", "-");
+      NbtList catalysts = new NbtList();
+      magic.put("catalysts",catalysts);
       compound.put("arcananovum",magic);
       return compound;
    }

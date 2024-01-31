@@ -53,7 +53,7 @@ public class ServerWorldMixin {
       }
    }
    
-   @Redirect(method = "method_31420(Lnet/minecraft/util/profiler/Profiler;Lnet/minecraft/entity/Entity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager;shouldTickEntities(J)Z"))
+   @Redirect(method = "shouldTickEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager;shouldTickEntities(J)Z"))
    private boolean arcananovum_injectedChunkManagerCall(ChunkTicketManager chunkTicketManager, long chunkPos) {
       ServerWorld serverWorld = (ServerWorld)(Object)this;
       if(ContinuumAnchor.isChunkLoaded(serverWorld,new ChunkPos(chunkPos))) return true;

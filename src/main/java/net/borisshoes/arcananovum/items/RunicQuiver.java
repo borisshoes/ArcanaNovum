@@ -83,7 +83,7 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
       NbtList loreList = new NbtList();
       loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"runes \",\"color\":\"light_purple\"},{\"text\":\"engraved \",\"color\":\"dark_aqua\"},{\"text\":\"upon the \"},{\"text\":\"quiver \",\"color\":\"light_purple\"},{\"text\":\"hum in the presence of \"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Runic Arrows\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" placed within the \",\"color\":\"dark_purple\"},{\"text\":\"quiver \"},{\"text\":\"regenerate \",\"color\":\"dark_aqua\"},{\"text\":\"over \",\"color\":\"dark_purple\"},{\"text\":\"time\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Arrows \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"do not take \",\"color\":\"dark_purple\"},{\"text\":\"concentration \",\"color\":\"dark_aqua\"},{\"text\":\"when in the \",\"color\":\"dark_purple\"},{\"text\":\"quiver\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Arrows \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"take reduced \",\"color\":\"dark_purple\"},{\"text\":\"concentration \",\"color\":\"dark_aqua\"},{\"text\":\"when in the \",\"color\":\"dark_purple\"},{\"text\":\"quiver\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to put \",\"color\":\"dark_purple\"},{\"text\":\"Arrows \",\"color\":\"light_purple\"},{\"text\":\"in the \",\"color\":\"dark_purple\"},{\"text\":\"quiver\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Left Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" with a \",\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\",\"color\":\"light_purple\"},{\"text\":\" to swap which \",\"color\":\"dark_purple\"},{\"text\":\"Runic Arrow\",\"color\":\"light_purple\"},{\"text\":\" will be shot.\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       return loreList;
@@ -110,15 +110,8 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
          NbtList arrows = nbt.getCompound("arcananovum").getList("arrows", NbtElement.COMPOUND_TYPE);
          newMagicItem.getOrCreateNbt().getCompound("arcananovum").put("arrows",arrows);
       }
-      int o = ArcanaAugments.getAugmentOnItem(quiverStack, ArcanaAugments.OVERFLOWING_BOTTOMLESS.id);
-      int r = ArcanaAugments.getAugmentOnItem(quiverStack, ArcanaAugments.ABUNDANT_AMMO.id);
-      if(o > 0){
-         ArcanaAugments.applyAugment(newMagicItem, ArcanaAugments.RUNIC_BOTTOMLESS.id, o);
-      }
-      if(r > 0){
-         ArcanaAugments.applyAugment(newMagicItem, ArcanaAugments.QUIVER_DUPLICATION.id, r);
-      }
-      
+      ArcanaAugments.copyAugment(quiverStack,newMagicItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
+      ArcanaAugments.copyAugment(quiverStack,newMagicItem,ArcanaAugments.RUNIC_BOTTOMLESS.id,ArcanaAugments.QUIVER_DUPLICATION.id);
       return newMagicItem;
    }
    
@@ -147,8 +140,8 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
    
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"      Runic Quiver\\n\\nRarity: Legendary\\n\\nMy improvments upon the overflowing quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within. I even managed to make the quiver take a set amount of Arcana\"}");
-      list.add("{\"text\":\"      Runic Quiver\\n\\nregardless of how demanding the Runic Arrows within are, so its best to load the quiver up all the way.\\n\\nThe quiver acts the same as its base counterpart just with this added expansion and a quicker restock time.\"}");
+      list.add("\"      Runic Quiver\\n\\nRarity: Legendary\\n\\nMy improvements upon the overflowing quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within. \\nI even managed to make the quiver take a reduced amount of\"");
+      list.add("\"      Runic Quiver\\n\\nconcentration, allowing for more Runic Arrows to be stored without overburdening my mind.\\n\\nThe quiver acts the same as its base counterpart just with this added expansion and a quiver restock time.\"");
       return list;
    }
    
@@ -165,8 +158,9 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
          ItemStack itemStack = ItemStack.fromNbt(stack);
          inv.setStack(i,itemStack);
       }
+      double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES.id) > 0 ? 0.25 : 0.5;
       
-      return new MagicItemContainer(inv, size,3, "RQ", "Runic Quiver", 0);
+      return new MagicItemContainer(inv, size,3, "RQ", "Runic Quiver", concMod);
    }
    
    public class RunicQuiverItem extends MagicPolymerItem {

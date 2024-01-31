@@ -69,6 +69,9 @@ public class SoulstoneIngredient extends MagicItemIngredient{
    @Override
    public String getName(){
       String name = ArcanaRegistry.SOULSTONE.getNameString();
+      if(!consume){
+         name += " (Not Consumed)";
+      }
       if(type != null){
          name += " ("+souls+"+ "+EntityType.get(type).get().getName().getString()+")";
       }

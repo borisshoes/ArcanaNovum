@@ -4,6 +4,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
@@ -51,7 +53,6 @@ public class AequalisScientia extends MagicItem {
       buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
-//setRecipe(makeRecipe());
       prefNBT = addMagicNbt(tag);
       
       stack.setNbt(prefNBT);
@@ -76,16 +77,13 @@ public class AequalisScientia extends MagicItem {
       return loreList;
    }
    
-   
-   //TODO: Make Recipe
-   private MagicItemRecipe makeRecipe(){
-      return null;
-   }
-   
-   //TODO: Make Lore
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"TODO\"}");
+      list.add("\"   Aequalis Scientia\\n\\nRarity: Mythical\\n\\nI believe I have solved two mysteries in one!\\nThe entity that powers my Transmutation Altar was, in fact, divine. They call themself Equayus, God of Balance. The transmutations that\"");
+      list.add("\"   Aequalis Scientia\\n\\noccur are actually an implicit barter with Equayus for items of equal value.\\nThey were kind enough to trade a few of my Legendary Catalysts for some divine energy to use in another Catalyst. From there I was able to transmute a stone\"");
+      list.add("\"   Aequalis Scientia\\n\\nwith the divine energy. Equayus was impressed with my understanding and has imbued the stone with their rune.\\nThis stone is the final piece to the Altar and is used in the keystone position to conduct advanced transmutations.\"");
+      list.add("\"   Aequalis Scientia\\n\\nEquayus told me that I have a solid grasp on the value of materials, but need to learn the value of knowledge.\\n\\nThe Aequalis Scientia is supposed to guide me to that realization by letting me exchange some of the skills I have learned\"");
+      list.add("\"   Aequalis Scientia\\n\\nfor others.\\n\\nI can use the Aequalis in conjunction with two of my own Arcane Items and some reagents to transfer the skills I have learned from one item into skills I can learn for the other. \"");
       return list;
    }
    

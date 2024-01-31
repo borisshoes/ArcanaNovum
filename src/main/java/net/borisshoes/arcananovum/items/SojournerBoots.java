@@ -116,11 +116,6 @@ public class SojournerBoots extends EnergyItem {
       NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
       NbtCompound newTag = super.updateItem(stack,server).getNbt();
       if(enchants != null) newTag.put("Enchantments", enchants);
-      if(itemNbt.contains("ArcanaStats")){
-         double percentile = itemNbt.getDouble("ArcanaStats");
-         newTag.putDouble("ArcanaStats",percentile);
-         EnhancedStatUtils.enhanceItem(stack,percentile);
-      }
       stack.setNbt(newTag);
       return buildItemLore(stack,server);
    }
@@ -293,7 +288,7 @@ public class SojournerBoots extends EnergyItem {
                         player.sendMessage(Text.translatable("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                      PLAYER_DATA.get(player).addXP(1); // Add xp
                   }
-                  if(getEnergy(stack) == getMaxEnergy(stack)){
+                  if(getEnergy(stack) >= getMaxEnergy(stack)){
                      ArcanaAchievements.progress(player,ArcanaAchievements.RUNNING.id, 1);
                   }
                }else{
@@ -303,7 +298,7 @@ public class SojournerBoots extends EnergyItem {
                ArrayList<Pair<EntityAttribute, EntityAttributeModifier>> newAttrs = new ArrayList<>();
                Multimap<EntityAttribute, EntityAttributeModifier> attributes = (nbt != null && nbt.contains("AttributeModifiers", NbtElement.LIST_TYPE)) ? stack.getAttributeModifiers(EquipmentSlot.FEET) : getAttributeModifiers(stack,EquipmentSlot.FEET);
                for(Map.Entry<EntityAttribute, EntityAttributeModifier> entry : attributes.entries()){
-                  if(entry.getValue().getName().equals("Sojourner Speed")) continue;
+                  if(entry.getValue().toNbt().getString("Name").equals("Sojourner Speed")) continue;
                   newAttrs.add(new Pair<>(entry.getKey(),entry.getValue()));
                   //System.out.println(entry.getValue().getName()+" "+entry.getValue().getValue());
                }

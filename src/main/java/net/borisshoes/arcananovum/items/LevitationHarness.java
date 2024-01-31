@@ -285,10 +285,7 @@ public class LevitationHarness extends EnergyItem {
          setStone(newMagicItem,core.getStone(coreStack));
          buildItemLore(newMagicItem,ArcanaNovum.SERVER);
          
-         int o = ArcanaAugments.getAugmentOnItem(coreStack, ArcanaAugments.SHULKER_RECYCLER.id);
-         if(o > 0){
-            ArcanaAugments.applyAugment(newMagicItem, ArcanaAugments.HARNESS_RECYCLER.id, o);
-         }
+         ArcanaAugments.copyAugment(coreStack,newMagicItem,ArcanaAugments.SHULKER_RECYCLER.id,ArcanaAugments.HARNESS_RECYCLER.id);
       }
       
       return newMagicItem;

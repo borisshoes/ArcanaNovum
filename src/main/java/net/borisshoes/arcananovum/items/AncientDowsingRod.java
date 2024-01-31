@@ -53,6 +53,7 @@ public class AncientDowsingRod extends EnergyItem {
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,CHARGED_TXT));
       models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
+      initEnergy = 100;
    
       ItemStack itemStack = new ItemStack(item);
       NbtCompound tag = itemStack.getOrCreateNbt();
@@ -121,7 +122,7 @@ public class AncientDowsingRod extends EnergyItem {
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return getEnergy(itemStack) == getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+         return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
       }
       
       @Override
@@ -148,7 +149,7 @@ public class AncientDowsingRod extends EnergyItem {
          ItemStack item = playerEntity.getStackInHand(hand);
          if (playerEntity instanceof ServerPlayerEntity player){
             int curEnergy = getEnergy(item);
-            if(curEnergy == getMaxEnergy(item)){
+            if(curEnergy >= getMaxEnergy(item)){
                setEnergy(item,0);
                final int scanRange = 25 + 5*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.ENHANCED_RESONANCE.id));
                BlockPos curBlock = playerEntity.getBlockPos();

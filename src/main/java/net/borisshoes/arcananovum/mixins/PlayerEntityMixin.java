@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -29,20 +30,6 @@ import java.util.function.Predicate;
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
    
-   @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/entity/player/PlayerEntity;isSprinting()Z",shift = At.Shift.BEFORE))
-   private void arcananovum_onGroundMove(double dx, double dy, double dz, CallbackInfo ci){
-      PlayerEntity playerEntity = (PlayerEntity) (Object) this;
-      if(playerEntity instanceof ServerPlayerEntity player){
-         ItemStack bootsItem = player.getEquippedStack(EquipmentSlot.FEET);
-         if(MagicItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
-            boots.attemptStepAssist(bootsItem,player, new Vec3d(dx,dy,dz));
-            if(player.isSprinting()){
-               int i = Math.round((float)Math.sqrt(dx * dx + dz * dz) * 100.0f);
-               ArcanaAchievements.progress(player, ArcanaAchievements.PHEIDIPPIDES.id, i);
-            }
-         }
-      }
-   }
    
    @Inject(method = "getProjectileType", at = @At(value="INVOKE",target="Lnet/minecraft/item/RangedWeaponItem;getProjectiles()Ljava/util/function/Predicate;", shift = At.Shift.BEFORE), cancellable = true)
    private void arcananovum_quiverCheck(ItemStack bow, CallbackInfoReturnable<ItemStack> cir){

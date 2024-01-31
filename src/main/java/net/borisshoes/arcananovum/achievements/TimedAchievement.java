@@ -72,8 +72,10 @@ public class TimedAchievement extends ArcanaAchievement{
          ArcanaNovum.addTickTimerCallback(new GenericTimer(timeFrame, this::reset));
       }
       
-      this.progress = MathHelper.clamp(this.progress+progress,0,goal);
-      setAcquired(this.progress >= goal);
+      if(active){
+         this.progress = MathHelper.clamp(this.progress+progress,0,goal);
+         setAcquired(this.progress >= goal);
+      }
       return isAcquired() && !had;
    }
    

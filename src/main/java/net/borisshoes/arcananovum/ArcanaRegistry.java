@@ -11,9 +11,7 @@ import net.borisshoes.arcananovum.core.MagicBlock;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.NonMagicPolymerItem;
-import net.borisshoes.arcananovum.effects.DamageAmpEffect;
-import net.borisshoes.arcananovum.effects.GreaterBlindnessEffect;
-import net.borisshoes.arcananovum.effects.GreaterInvisibilityEffect;
+import net.borisshoes.arcananovum.effects.*;
 import net.borisshoes.arcananovum.entities.*;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.arrows.*;
@@ -96,6 +94,8 @@ public class ArcanaRegistry {
    public static final StatusEffect DAMAGE_AMP_EFFECT = registerStatusEffect("damage_amp",new DamageAmpEffect());
    public static final StatusEffect GREATER_INVISIBILITY_EFFECT = registerStatusEffect("greater_invisibility",new GreaterInvisibilityEffect());
    public static final StatusEffect GREATER_BLINDNESS_EFFECT = registerStatusEffect("greater_blindness",new GreaterBlindnessEffect());
+   public static final StatusEffect DEATH_WARD_EFFECT = registerStatusEffect("death_ward",new DeathWardEffect());
+   public static final StatusEffect ENSNAREMENT_EFFECT = registerStatusEffect("ensnarement",new EnsnarementEffect());
    
    // Non-magic Items
    public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence",new NebulousEssenceItem(new FabricItemSettings().maxCount(64).fireproof()));
@@ -199,6 +199,8 @@ public class ArcanaRegistry {
    public static final BlockEntityType<? extends BlockEntity> STARLIGHT_FORGE_BLOCK_ENTITY = registerBlockEntity(STARLIGHT_FORGE.getId(), FabricBlockEntityTypeBuilder.create(StarlightForgeBlockEntity::new,((MagicBlock) STARLIGHT_FORGE).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> STELLAR_CORE_BLOCK_ENTITY = registerBlockEntity(STELLAR_CORE.getId(), FabricBlockEntityTypeBuilder.create(StellarCoreBlockEntity::new,((MagicBlock) STELLAR_CORE).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> TWILIGHT_ANVIL_BLOCK_ENTITY = registerBlockEntity(TWILIGHT_ANVIL.getId(), FabricBlockEntityTypeBuilder.create(TwilightAnvilBlockEntity::new,((MagicBlock) TWILIGHT_ANVIL).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(TransmutationAltarBlockEntity::new,((MagicBlock) TRANSMUTATION_ALTAR).getBlock()).build());
+   
    
    public static void initialize(){
       PolymerResourcePackUtils.addModAssets(MOD_ID);

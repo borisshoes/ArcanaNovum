@@ -277,7 +277,7 @@ public class BrainJar extends EnergyItem {
       }
       addEnergy(item,xpToStore);
       player.addExperience(-xpToStore);
-      if(xpToStore > 0 && getEnergy(item) == getMaxEnergy(item)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
+      if(xpToStore > 0 && getEnergy(item) >= getMaxEnergy(item)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
    
       ItemStack echest = new ItemStack(Items.ENDER_CHEST);
       NbtCompound tag = echest.getOrCreateNbt();
@@ -340,7 +340,7 @@ public class BrainJar extends EnergyItem {
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(PolymerResourcePackUtils.hasPack(player)){
+         if(PolymerResourcePackUtils.hasMainPack(player)){
             return textureItem;
          }
          return super.getPolymerItem(itemStack, player);

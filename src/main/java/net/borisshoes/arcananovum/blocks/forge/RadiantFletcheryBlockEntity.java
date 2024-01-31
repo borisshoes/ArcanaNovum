@@ -137,7 +137,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
          this.synthetic = nbt.getBoolean("synthetic");
       }
       this.inventory = DefaultedList.ofSize(this.size(), ItemStack.EMPTY);
-      if (!this.deserializeLootTable(nbt)) {
+      if (!this.readLootTable(nbt)) {
          Inventories.readNbt(nbt, this.inventory);
       }
       augments = new TreeMap<>();
@@ -170,13 +170,18 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
          nbt.putString("customName",this.customName);
       }
       nbt.putBoolean("synthetic",this.synthetic);
-      if (!this.serializeLootTable(nbt)) {
+      if (!this.writeLootTable(nbt)) {
          Inventories.writeNbt(nbt, this.inventory);
       }
    }
    
    
-   protected DefaultedList<ItemStack> getInvStackList() {
+   protected DefaultedList<ItemStack> getHeldStacks() {
+      return this.inventory;
+   }
+   
+   @Override
+   protected DefaultedList<ItemStack> method_11282(){
       return this.inventory;
    }
    

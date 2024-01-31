@@ -18,6 +18,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -29,6 +30,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -108,7 +110,7 @@ public class ItemEntityMixin {
                   ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(playerId));
                   if(player != null){
                      if(!PLAYER_DATA.get(player).addCrafted(newForgeStack)){
-                        PLAYER_DATA.get(player).addXP(MagicRarity.getCraftXp(magicItem.getRarity()));
+                        PLAYER_DATA.get(player).addXP(MagicRarity.getCraftXp(forgeItem.getRarity()));
                      }
                   }
                   
@@ -127,6 +129,79 @@ public class ItemEntityMixin {
             ParticleEffectUtils.craftForge(serverWorld,smithPos,craftTick);
          }else{
             magicTag.remove("forgeCraftTick");
+         }
+         itemEntity.setStack(stack);
+      }
+      
+      
+      if(!MagicItemUtils.isMagic(stack) && stack.isOf(Items.BOOK)){ // Crafting an Arcane Tome
+         boolean proceed = false;
+         ItemEntity eyeEntity = null;
+         
+         BlockPos enchantPos = BlockPos.ofFloored(itemEntity.getPos().add(0,-0.25,0));
+         BlockState state = world.getBlockState(enchantPos);
+         if(state.isOf(Blocks.ENCHANTING_TABLE)){
+            List<ItemEntity> otherEntities = world.getEntitiesByType(EntityType.ITEM,itemEntity.getBoundingBox().expand(1.25),e -> (!e.getUuid().equals(itemEntity.getUuid()) && !MagicItemUtils.isMagic(e.getStack())));
+            for(ItemEntity other : otherEntities){
+               ItemStack otherStack = other.getStack();
+               if(otherStack.isOf(Items.ENDER_EYE)){
+                  proceed = true;
+                  eyeEntity = other;
+                  break;
+               }
+            }
+         }
+         
+         
+         if(proceed){
+            NbtCompound itemNbt = stack.getOrCreateNbt();
+            int craftTick = 0;
+            
+            if(itemNbt.contains("tomeCraftTick")){
+               craftTick = itemNbt.getInt("tomeCraftTick");
+            }
+            craftTick++;
+            if(craftTick == 100){
+               ItemStack tomeStack = ArcanaRegistry.ARCANE_TOME.getNewItem();
+               PlayerEntity nearestPlayer = serverWorld.getClosestPlayer(itemEntity.getX(),itemEntity.getY(),itemEntity.getZ(),50,false);
+               if(nearestPlayer != null){
+                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,nearestPlayer.getUuidAsString(),false,itemEntity.getServer());
+                  if(!PLAYER_DATA.get(nearestPlayer).addCrafted(tomeStack)){
+                     PLAYER_DATA.get(nearestPlayer).addXP(MagicRarity.getCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));
+                  }
+               }
+               
+               ItemStack eyeStack = eyeEntity.getStack();
+               if(eyeStack.getCount() == 1){
+                  eyeEntity.discard();
+               }else{
+                  eyeStack.decrement(1);
+                  eyeEntity.setStack(eyeStack);
+               }
+               
+               if(stack.getCount() == 1){
+                  itemEntity.discard();
+               }else{
+                  stack.decrement(1);
+                  itemEntity.setStack(stack);
+               }
+               
+               ItemEntity tomeEntity = new ItemEntity(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), tomeStack);
+               tomeEntity.setPickupDelay(40);
+               
+               float f = world.random.nextFloat() * 0.1F;
+               float g = world.random.nextFloat() * 6.2831855F;
+               tomeEntity.setVelocity((double)(-MathHelper.sin(g) * f), 0.20000000298023224, (double)(MathHelper.cos(g) * f));
+               world.spawnEntity(tomeEntity);
+               
+               itemNbt.remove("tomeCraftTick");
+            }else{
+               itemNbt.putInt("tomeCraftTick",craftTick);
+            }
+            ParticleEffectUtils.craftTome(serverWorld,enchantPos,craftTick);
+         }else{
+            NbtCompound itemNbt = stack.getNbt();
+            if(itemNbt != null) itemNbt.remove("tomeCraftTick");
          }
          itemEntity.setStack(stack);
       }

@@ -191,19 +191,23 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
             if(!WatchedGui.guiInUse(singularity.getPos())){
                ArrayList<ItemStack> books = singularity.getBooks();
                if(books != null && books.size() < singularity.getCapacity()){
-                  ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
-                  if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-                     Map<Enchantment,Integer> map = EnchantmentHelper.get(stack);
-                     EnchantmentHelper.set(map,book);
-                     disenchantItem();
+                  if(MiscUtils.removeItems(player,Items.BOOK,1)){
+                     ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+                     if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
+                        Map<Enchantment,Integer> map = EnchantmentHelper.get(stack);
+                        EnchantmentHelper.set(map,book);
+                        disenchantItem();
+                     }else{
+                        Map<Enchantment,Integer> map = new HashMap<>();
+                        Pair<Enchantment,Integer> entry = removeTopEnchant();
+                        map.put(entry.getLeft(),entry.getRight());
+                        EnchantmentHelper.set(map,book);
+                     }
+                     singularity.getBooks().add(book);
                   }else{
-                     Map<Enchantment,Integer> map = new HashMap<>();
-                     Pair<Enchantment,Integer> entry = removeTopEnchant();
-                     map.put(entry.getLeft(),entry.getRight());
-                     EnchantmentHelper.set(map,book);
+                     player.sendMessage(Text.literal("You need a book to put the enchants on").formatted(Formatting.RED,Formatting.ITALIC),true);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
                   }
-                  singularity.getBooks().add(book);
-                  
                }else{
                   player.sendMessage(Text.literal("The Singularity does not have enough space").formatted(Formatting.RED,Formatting.ITALIC),true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);

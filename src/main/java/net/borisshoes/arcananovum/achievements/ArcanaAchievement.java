@@ -161,18 +161,17 @@ public abstract class ArcanaAchievement {
       profile.addXP(xpReward); // Add xp
    
       boolean abyssCheck = true;
-      for(ArcanaAchievement achievement : ArcanaAchievements.allNonMythical){
+      for(ArcanaAchievement achievement : ArcanaAchievements.registry.values()){
+         if(ArcanaAchievements.excludedAchievements.contains(achievement)) continue;
          if(!profile.hasAcheivement(achievement.getMagicItem().getId(),achievement.id)){
             abyssCheck = false;
             break;
          }
       }
       if(abyssCheck){
-         for(ArcanaAchievement achievement : ArcanaAchievements.allMythical){
+         for(ArcanaAchievement achievement : ArcanaAchievements.excludedAchievements){
             ArcanaAchievements.grant(player,achievement.id);
          }
-         
-         ArcanaNovum.addTickTimerCallback(new GenericTimer(5, () -> ArcanaAchievements.grant(player,ArcanaAchievements.ALL_ACHIEVEMENTS.id) ));
       }
    }
 }

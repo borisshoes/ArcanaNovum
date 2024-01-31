@@ -14,6 +14,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
+import net.minecraft.block.spawner.MobSpawnerLogic;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
@@ -25,7 +26,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -226,7 +226,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          }
       }
       this.inventory = DefaultedList.ofSize(this.size(), ItemStack.EMPTY);
-      if (!this.deserializeLootTable(nbt)) {
+      if (!this.readLootTable(nbt)) {
          Inventories.readNbt(nbt, this.inventory);
       }
       if (nbt.contains("active")) {
@@ -268,7 +268,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          nbt.putString("customName",this.customName);
       }
       nbt.putBoolean("synthetic",this.synthetic);
-      if (!this.serializeLootTable(nbt)) {
+      if (!this.writeLootTable(nbt)) {
          Inventories.writeNbt(nbt, this.inventory);
       }
       
@@ -314,7 +314,12 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       }
    }
    
-   protected DefaultedList<ItemStack> getInvStackList() {
+   protected DefaultedList<ItemStack> getHeldStacks() {
+      return this.inventory;
+   }
+   
+   @Override
+   protected DefaultedList<ItemStack> method_11282() {
       return this.inventory;
    }
    

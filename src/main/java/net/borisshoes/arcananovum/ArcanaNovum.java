@@ -19,6 +19,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.network.MultiplayerServerListPinger;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -44,7 +45,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<ServerWorld,ArrayList<ChunkPos>> ANCHOR_CHUNKS = new HashMap<>();
    public static final ArrayList<Pair<BlockEntity,MagicBlockEntity>> ACTIVE_MAGIC_BLOCKS = new ArrayList<>();
    public static MinecraftServer SERVER = null;
-   public static final boolean devMode = true;
+   public static final boolean devMode = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static ConfigUtils config;

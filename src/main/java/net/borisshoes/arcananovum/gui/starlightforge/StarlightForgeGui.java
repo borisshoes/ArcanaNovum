@@ -118,7 +118,7 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
                      ArcanaAugment aug = allAugs.get(ind);
                      int existingLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(newMagicItem,aug.id));
                      skillPoints -= aug.getTiers()[existingLvl].rarity + 1;
-                     ArcanaAugments.applyAugment(newMagicItem, aug.id, existingLvl+1);
+                     ArcanaAugments.applyAugment(newMagicItem, aug.id, existingLvl+1,false);
                   }
                   
                   magicItem.buildItemLore(newMagicItem,player.getServer());

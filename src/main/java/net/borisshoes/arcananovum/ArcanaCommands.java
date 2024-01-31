@@ -21,6 +21,7 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -548,7 +549,7 @@ public class ArcanaCommands {
                }
                lines.add(line);
             }
-            lines.add("return new MagicItemRecipe(ingredients);");
+            lines.add("return new MagicItemRecipe(ingredients,new ForgeRequirement());");
             
             /*
             MagicItemIngredient[][] ingredients = {
@@ -577,7 +578,6 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         
          System.out.println(DEBUG_VALUE);
          
       } catch (Exception e) {
@@ -708,7 +708,7 @@ public class ArcanaCommands {
             src.sendError(Text.literal("This augment is incompatible with existing augments"));
             return -1;
          }
-         if(ArcanaAugments.applyAugment(handItem,id,level)){
+         if(ArcanaAugments.applyAugment(handItem,id,level,false)){
             src.sendMessage(Text.literal("Successfully applied "+augment.name+" at level "+level+" for ").append(player.getDisplayName()));
             return 1;
          }else{

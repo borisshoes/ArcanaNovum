@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -25,7 +26,9 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -80,60 +83,44 @@ public class MythicalCatalyst extends MagicItem {
    }
    
    private MagicItemRecipe makeRecipe(){
-      ItemStack soulSand = new ItemStack(Items.SOUL_SAND);
-      NbtCompound tag = soulSand.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Soul Sand or Soil\",\"italic\":false,\"color\":\"gray\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Construct a Wither Base with a heart of Netherite.\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-   
-      ItemStack skull = new ItemStack(Items.WITHER_SKELETON_SKULL);
-      tag = skull.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Wither Skeleton Skull\",\"italic\":false,\"color\":\"dark_gray\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Construct a Wither Base with a heart of Netherite.\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
+      ItemStack pane = new ItemStack(Items.GRAY_STAINED_GLASS_PANE).setCustomName(Text.literal("In World Recipe").formatted(Formatting.BLUE,Formatting.BOLD));
+      MiscUtils.addLoreLine(pane,Text.literal("Build this in the World").formatted(Formatting.DARK_PURPLE));
       
-      ItemStack netherite = new ItemStack(Items.NETHERITE_BLOCK);
-      tag = netherite.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Block of Netherite\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true}]");
-      loreList.add(NbtString.of("[{\"text\":\"Construct a Wither Base with a heart of Netherite.\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-   
+      ItemStack soulSand = new ItemStack(Items.SOUL_SAND).setCustomName(Text.literal("Soul Sand or Soil").formatted(Formatting.GRAY,Formatting.BOLD));
+      MiscUtils.addLoreLine(soulSand,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack skull = new ItemStack(Items.WITHER_SKELETON_SKULL).setCustomName(Text.literal("Eye of Ender").formatted(Formatting.DARK_GRAY,Formatting.BOLD));
+      MiscUtils.addLoreLine(skull,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
+      
+      ItemStack netherite = new ItemStack(Items.NETHERITE_BLOCK).setCustomName(Text.literal("Block of Netherite").formatted(Formatting.DARK_RED,Formatting.BOLD));
+      MiscUtils.addLoreLine(netherite,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
+      
       ItemStack catalyst = ArcanaRegistry.LEGENDARY_CATALYST.getItem().getDefaultStack().copy();
-      tag = catalyst.getOrCreateNbt();
-      display = tag.getCompound("display");
-      loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" the \",\"color\":\"dark_purple\"},{\"text\":\"Catalyst \"},{\"text\":\"on the \",\"color\":\"dark_purple\"},{\"text\":\"Netherite Heart\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Divine Energy\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" will flow into the \",\"color\":\"dark_purple\"},{\"text\":\"Construct\",\"color\":\"gray\"},{\"text\":\", empowering it.\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Defeat the \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Construct \",\"color\":\"gray\"},{\"text\":\"without dying to receive a \"},{\"text\":\"Mythical Catalyst\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Warning! This fight is difficult, preparation is necessary.\",\"italic\":false,\"color\":\"red\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-   
-      ItemStack pane = new ItemStack(Items.GRAY_STAINED_GLASS_PANE);
-      tag = pane.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"In World Construct\",\"italic\":false,\"color\":\"gray\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Build this in the World\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
+      MiscUtils.addLoreLine(catalyst,Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.BLUE))
+            .append(Text.literal(" the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Catalyst").formatted(Formatting.GOLD))
+            .append(Text.literal(" on the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Netherite Heart").formatted(Formatting.DARK_RED)));
+      MiscUtils.addLoreLine(catalyst,Text.literal("")
+            .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" will flow into the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Nul Construct").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" empowering it").formatted(Formatting.DARK_PURPLE)));
+      MiscUtils.addLoreLine(catalyst,Text.literal("")
+            .append(Text.literal("Defeat the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Nul Construct").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" without dying to receive a ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Mythical Catalyst").formatted(Formatting.LIGHT_PURPLE)));
+      MiscUtils.addLoreLine(catalyst,Text.literal("").formatted(Formatting.DARK_PURPLE));
+      MiscUtils.addLoreLine(catalyst,Text.literal("Warning! This fight is difficult, preparation is necessary.").formatted(Formatting.RED));
       
       ExplainIngredient a = new ExplainIngredient(pane,"",false);
       ExplainIngredient s = new ExplainIngredient(soulSand,"Soul Sand or Soil");
       ExplainIngredient k = new ExplainIngredient(skull,"Wither Skeleton Skull");
       ExplainIngredient n = new ExplainIngredient(netherite,"Netherite Block");
       ExplainIngredient c = new ExplainIngredient(catalyst,"Legendary Augment Catalyst");
-   
+      
       ExplainIngredient[][] ingredients = {
             {a,a,a,a,a},
             {a,k,k,k,a},

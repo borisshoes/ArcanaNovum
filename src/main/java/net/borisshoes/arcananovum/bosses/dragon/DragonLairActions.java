@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -420,7 +421,7 @@ public class DragonLairActions {
                BlockState state = endWorld.getBlockState(blockPos);
                if(!state.isAir()) continue;
                
-               double dist = distToLine(new Vec3d(blockPos.getX(),blockPos.getY(), blockPos.getZ()),start,segEnd);
+               double dist = MiscUtils.distToLine(new Vec3d(blockPos.getX(),blockPos.getY(), blockPos.getZ()),start,segEnd);
                if(dist <= segR){
                   BlockPos copy = new BlockPos(blockPos.getX(),blockPos.getY(),blockPos.getZ());
                   blocks.add(copy);
@@ -430,16 +431,6 @@ public class DragonLairActions {
          
          //log("Returning "+blocks.size()+" blocks");
          return blocks;
-      }
-      
-      private double distToLine(Vec3d pos, Vec3d start, Vec3d end){
-         final Vec3d line = end.subtract(start);
-         final Vec3d distStart = pos.subtract(start);
-         final Vec3d distEnd = pos.subtract(end);
-         
-         if(distStart.dotProduct(line) <= 0) return distStart.length(); // Start is closest
-         if(distEnd.dotProduct(line) >= 0) return distEnd.length(); // End is closest
-         return (line.crossProduct(distStart)).length() / line.length(); // Infinite line case
       }
    }
    

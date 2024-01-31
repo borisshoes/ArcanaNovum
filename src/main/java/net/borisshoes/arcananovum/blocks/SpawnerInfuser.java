@@ -16,10 +16,7 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.MapColor;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -30,6 +27,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -174,7 +173,7 @@ public class SpawnerInfuser extends MagicBlock {
       @Nullable
       @Override
       public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-         return checkType(type, ArcanaRegistry.SPAWNER_INFUSER_BLOCK_ENTITY, SpawnerInfuserBlockEntity::ticker);
+         return validateTicker(type, ArcanaRegistry.SPAWNER_INFUSER_BLOCK_ENTITY, SpawnerInfuserBlockEntity::ticker);
       }
       
       @Nullable
@@ -205,40 +204,45 @@ public class SpawnerInfuser extends MagicBlock {
       }
       
       @Override
-      public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-         if (world.getBlockEntity(pos) instanceof SpawnerInfuserBlockEntity infuser) {
-            if (!player.isCreative() && player.canHarvest(world.getBlockState(pos)) && world instanceof ServerWorld serverWorld) {
-               if (!world.isClient) {
-                  dropBlockItem(world,pos,state,player,infuser);
-                  
-                  DefaultedList<ItemStack> drops = DefaultedList.of();
-                  int ratio = (int) Math.pow(2,ArcanaAugments.getAugmentFromMap(infuser.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
-                  int points = infuser.getPoints();
-                  if(points > 0){
-                     while(points/ratio > 64){
-                        ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
-                        dropItem.setCount(64);
-                        drops.add(dropItem.copy());
-                        points -= 64*ratio;
-                     }
-                     ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
-                     dropItem.setCount(points/ratio);
-                     drops.add(dropItem.copy());
-                  }
-                  
-                  ItemStack stone = infuser.getSoulstone();
-                  if(!stone.isEmpty()) drops.add(stone.copy());
-                  
-                  ItemScatterer.spawn(world, pos.up(), drops);
+      public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder){
+         List<ItemStack> drops = new ArrayList<>();
+         ItemStack tool = builder.get(LootContextParameters.TOOL);
+         if(tool.isSuitableFor(state)){
+            drops.add(getDroppedBlockItem(state,builder));
+         }
+         return drops;
+      }
+      
+      @Override
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+         if (state.isOf(newState.getBlock())) {
+            return;
+         }
+         BlockEntity blockEntity = world.getBlockEntity(pos);
+         if (blockEntity instanceof SpawnerInfuserBlockEntity infuser) {
+            DefaultedList<ItemStack> drops = DefaultedList.of();
+            int ratio = (int) Math.pow(2,ArcanaAugments.getAugmentFromMap(infuser.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
+            int points = infuser.getPoints();
+            if(points > 0){
+               while(points/ratio > 64){
+                  ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+                  dropItem.setCount(64);
+                  drops.add(dropItem.copy());
+                  points -= 64*ratio;
                }
+               ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+               dropItem.setCount(points/ratio);
+               drops.add(dropItem.copy());
             }
             
-            world.removeBlockEntity(pos);
+            ItemStack stone = infuser.getSoulstone();
+            if(!stone.isEmpty()) drops.add(stone.copy());
+            
+            drops.add(getDroppedBlockItem(state,world,null,infuser));
+            ItemScatterer.spawn(world, pos, drops);
+            world.updateComparators(pos, state.getBlock());
          }
-         
-         world.removeBlock(pos, false);
-         
-         super.onBreak(world, pos, state, player);
+         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override
