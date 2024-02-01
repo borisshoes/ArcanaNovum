@@ -288,15 +288,23 @@ public class TransmutationRecipes {
       
       
       // Infusion Recipes
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Obsidian",new ItemStack(Items.MAGMA_BLOCK,4),new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.ICE,12),new ItemStack(Items.REDSTONE,16)));
+      
       transmutationRecipes.add(new InfusionTransmutationRecipe("Crying Obsidian",new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.CRYING_OBSIDIAN,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Coal Diamond",new ItemStack(Items.COAL,12),new ItemStack(Items.DIAMOND,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GUNPOWDER,16)));
       
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Refined Netherite",new ItemStack(Items.NETHERITE_SCRAP,3),new ItemStack(Items.NETHERITE_INGOT,1),new ItemStack(Items.GOLD_INGOT,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
+      
       transmutationRecipes.add(new InfusionTransmutationRecipe("Blaze Powder",new ItemStack(Items.BLAZE_ROD,1),new ItemStack(Items.BLAZE_POWDER,6),new ItemStack(Items.GUNPOWDER,24),new ItemStack(ArcanaRegistry.STARDUST,8)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Liquid Experience",new ItemStack(Items.SCULK,64),new ItemStack(Items.EXPERIENCE_BOTTLE,16),new ItemStack(Items.GLASS_BOTTLE,16),new ItemStack(Items.LAPIS_LAZULI,32)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Sculk",new ItemStack(Items.SCULK_VEIN,4),new ItemStack(Items.SCULK,1),new ItemStack(Items.GUNPOWDER,16),new ItemStack(Items.DIAMOND,4)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Sculk Shard",new ItemStack(Items.SCULK,4),new ItemStack(Items.ECHO_SHARD,1),new ItemStack(Items.AMETHYST_SHARD,36),new ItemStack(Items.DIAMOND,12)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Enchanted Golden Apple",new ItemStack(Items.TOTEM_OF_UNDYING,1),new ItemStack(Items.ENCHANTED_GOLDEN_APPLE,1),new ItemStack(Items.GOLD_BLOCK,32),new ItemStack(Items.GOLDEN_APPLE,32)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Dragon Egg",new ItemStack(Items.DRAGON_EGG,1),new ItemStack(Items.DRAGON_EGG,2),new ItemStack(Items.DRAGON_BREATH,64),new ItemStack(Items.DIAMOND,64)));
       

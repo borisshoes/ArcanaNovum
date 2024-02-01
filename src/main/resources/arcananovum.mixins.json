@@ -30,6 +30,7 @@
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
     "PlayerManagerMixin",
+    "ServerPlayerInteractionManagerMixin",
     "ServerPlayerMixin",
     "ServerPlayNetworkHandlerMixin",
     "ServerWorldMixin",

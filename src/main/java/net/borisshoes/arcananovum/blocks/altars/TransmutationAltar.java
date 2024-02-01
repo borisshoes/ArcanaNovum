@@ -114,7 +114,7 @@ public class TransmutationAltar extends MagicBlock implements MultiblockCore {
             {c,h,m,h,c},
             {d,g,h,g,a},
             {d,d,c,a,a}};
-      return new MagicItemRecipe(ingredients,new ForgeRequirement().withEnchanter().withCore());
+      return new MagicItemRecipe(ingredients,new ForgeRequirement());
    }
    
    private List<String> makeLore(){

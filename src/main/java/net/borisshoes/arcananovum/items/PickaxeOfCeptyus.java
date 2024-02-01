@@ -189,6 +189,21 @@ public class PickaxeOfCeptyus extends MagicItem {
       if(toMine.size() >= 12 && (type == Blocks.DIAMOND_ORE || type == Blocks.DEEPSLATE_DIAMOND_ORE) && player instanceof ServerPlayerEntity serverPlayer) ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.MINE_DIAMONDS.id);
    }
    
+   public void mining(ServerPlayerEntity player, ItemStack stack){
+      int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
+      int energyGain = Math.random() < new double[]{0.2,0.4,0.5,0.6,0.8,1}[wHaste] ? 1+(wHaste/2) : 0;
+      int maxEnergy = 1000 + 100 * wHaste;
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      
+      profile.addMiscData("ceptyusPickTick", NbtInt.of(0));
+      NbtInt energy = (NbtInt) profile.getMiscData("ceptyusPickEnergy");
+      if(energy == null){
+         profile.addMiscData("ceptyusPickEnergy", NbtInt.of(0));
+      }else{
+         profile.addMiscData("ceptyusPickEnergy", NbtInt.of(Math.min(energy.intValue() + energyGain, maxEnergy)));
+      }
+   }
+   
    private List<String> makeLore(){
       ArrayList<String> list = new ArrayList<>();
       list.add("{\"text\":\"   Ancient Pickaxe\\n       Of Ceptyus\\n\\nRarity: Mythical\\n\\nThe third discovered Mythical Artifact left by the Gods.\\n\\nFound in the deepest parts of the world amongst the rubble of the ancients' dwellings from a calamity long \"}");
@@ -228,7 +243,7 @@ public class PickaxeOfCeptyus extends MagicItem {
             int speed = energy / 100;
             
             //System.out.println("Last Tick: "+lastTick + " | Cur energy: "+energy+" | Haste Amp: "+speed);
-            StatusEffectInstance haste = new StatusEffectInstance(StatusEffects.HASTE, 20, speed, false, false, false);
+            StatusEffectInstance haste = new StatusEffectInstance(StatusEffects.HASTE, 100, speed, false, false, false);
             player.addStatusEffect(haste);
             if(speed == 10) ArcanaAchievements.progress(player,ArcanaAchievements.BACK_IN_THE_MINE.id,1);
          }
@@ -237,7 +252,7 @@ public class PickaxeOfCeptyus extends MagicItem {
       @Override
       public boolean postMine(ItemStack stack, World world, BlockState state, BlockPos pos, LivingEntity miner){
          if(miner instanceof ServerPlayerEntity player){
-            int energyGain = 16 + 5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
+            int energyGain = 6 + 2 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             IArcanaProfileComponent profile = PLAYER_DATA.get(player);
             

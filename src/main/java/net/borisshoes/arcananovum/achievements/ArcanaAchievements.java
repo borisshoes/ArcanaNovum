@@ -660,6 +660,7 @@ public class ArcanaAchievements {
    
    static{
       excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.PICKAXE_OF_CEPTYUS));
+      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.WINGS_OF_ENDERIA));
       excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.LEADERSHIP_CHARM));
       excludedAchievements.add(ALL_ACHIEVEMENTS);
    }
