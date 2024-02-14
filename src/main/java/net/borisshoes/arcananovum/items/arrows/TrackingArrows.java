@@ -65,14 +65,11 @@ public class TrackingArrows extends RunicArrow {
       tag.putInt("CustomPotionColor",16777063);
       tag.putInt("HideFlags",255);
       stack.setCount(64);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override

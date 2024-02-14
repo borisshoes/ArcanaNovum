@@ -14,14 +14,12 @@ import net.borisshoes.arcananovum.items.LevitationHarness;
 import net.borisshoes.arcananovum.items.NulMemento;
 import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
-import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.registry.Registries;
@@ -36,6 +34,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -68,7 +67,7 @@ public class TickCallback {
                Identifier id = Registries.ITEM.getId(item.getItem());
                if(id.getNamespace().equals(ArcanaNovum.MOD_ID)){
                   if(!MagicItemUtils.isMagic(item)){
-                     MagicItem magicItem = ArcanaRegistry.registry.get(id.getPath());
+                     MagicItem magicItem = ArcanaRegistry.MAGIC_ITEMS.get(id.getPath());
                      if(magicItem != null){
                         item.setNbt(magicItem.getNewItem().getNbt());
                         //ArcanaNovum.devPrint("Replacing data on: "+id.getPath());
@@ -101,9 +100,14 @@ public class TickCallback {
                }
             }
             
+            if(MagicItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.000025){
+               dragonEggDialog(player);
+            }
+            
             wingsTick(player);
             flightCheck(player);
             concCheck(server,player,arcaneProfile);
+            ArcanaRegistry.AREA_EFFECTS.values().forEach(areaEffectTracker -> areaEffectTracker.onTick(server));
             
             int quiverCD = ((NbtInt)arcaneProfile.getMiscData("quiverCD")).intValue();
             if(quiverCD > 0){
@@ -229,5 +233,223 @@ public class TickCallback {
          player.sendAbilitiesUpdate();
       }
       
+   }
+   
+   
+   public static void dragonEggDialog(ServerPlayerEntity player){
+      ArrayList<Dialog> dialogOptions = new ArrayList<>();
+      // Conditions: 0 - Crafted Memento, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Aequalis, 5 - Crafted Memento and Aequalis, 6 - Has Aequalis and Memento
+      boolean[] conditions = new boolean[]{
+            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
+            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
+            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
+            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
+            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
+            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO) && PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
+            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()) && MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
+      };
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nINSOLENT INSECT! Do you intend to carry me as your trophy for all eternity!?").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},1,1,-1));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nRelease me at once Mortal! And I will grant you a swift death for your defiance!").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},1,1,-1));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nI have been banished to this Egg more times than there are stars in my sky! My return is inevitable!").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},1,1,-1));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nYou do not know what it means to suffer! Upon my return I shall teach you myself!").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},1,1,-1));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nMark my words! When Nul oversteps and awakens Brimsüth, you'll wish you had never helped that entitled brat!").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},0,1,0));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nThose mewling kids call themselves Gods... I AM THE TRUE ASCENDANT!! And one day, they will yield to me!").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},0,1,5));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nThat Old Fool left behind a pickaxe? Well, I guess Ceptyus wasn't so foolish after all...").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},0,1,2));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nNul! You brat! You think you can take all the realms for yourself now that there's no one left to stop you!\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nTake? I do not want to own the world, I want to revive it! I may be the God of Death, but without creatures to die, what purpose would I serve?").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,1.4f))
+      ),new int[]{0,80},0,1,3));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nNul! You think you are safe because you imprisoned me?! I killed one God, one FAR more powerful than you. I can do it again!\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nDon't make me laugh! You are a shell of your former self. I did not imprison you, the Mortals defeated you. How could you kill me if you couldn't kill them?").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
+      ),new int[]{0,100},0,1,3));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nWhat's that Divine essence I sense? Could it be the absentee ascendant? You never liked interacting with us, did you? Even when it was just you and me.\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nI'm sorry I was so timid in those early days. I had spent so long accompanied by only my own kind, hidden from the rest of the world.\n").formatted(Formatting.AQUA)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nI've learned from my mistakes. I will take an active role in shaping our world. It's never too late to learn from our failures.").formatted(Formatting.AQUA))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.9f))
+      ),new int[]{0,100,100},0,1,4));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nWell what do we have here? A 'family' reunion, how touching... Have you two come to mock me together?!\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nWe don't 'go' anywhere, this Mortal holds all our tributes. But I suppose it would be foolish to waste this opportunity.\n").formatted(Formatting.DARK_GRAY)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nNow Brother, we need not mock Enderia in this state. Surely you can sympathize a bit with her struggles?\n").formatted(Formatting.AQUA)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nI don't need any of your worthless sympathy. You both betrayed what it means to be an ascendant!\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nWE betrayed what it means? Ascending means breaking free of the cycle the Progenitors put us in! The mere thought of our arrival sent them scattering! And yet WE'RE the ones who betrayed that ideal?\n").formatted(Formatting.DARK_GRAY)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nI ascended because the world needed to change. Your initial contribution was significant, but you soon fell back to the patterns of your predecessor.\n").formatted(Formatting.AQUA)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nYour grandiose ideals mean nothing! After all I've been through, I just wanted a place to call home; To be safe for once in my entire existence!\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nYet the price of your safety came at the cost of the freedom of an entire dimension.\n").formatted(Formatting.AQUA)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nYou terrorized them for eons, and when you had the chance to stop, you were too afraid of rebellion to let them be. But the rebellion came anyways, the Endermen sacrificed their lives to lead the Mortals to you.\n").formatted(Formatting.DARK_GRAY)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nI don't have to put up with any of this! Go play 'God' somewhere else.\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nIt's ironic that your Egg is the one place where you can finally have your peace, yet it is the one place you don't want to be. I wonder if you can appreciate the freedom you took away better now.\n").formatted(Formatting.AQUA)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nGood Chat, Sis...").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.1f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,1.2f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.1f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
+      ),new int[]{0,80,100,80,80,140,120,120,80,160,80,140},0,1,6));
+      
+      DialogHelper helper = new DialogHelper(dialogOptions,conditions);
+      helper.sendDialog(List.of(player),helper.getWeightedResult(),true);
    }
 }

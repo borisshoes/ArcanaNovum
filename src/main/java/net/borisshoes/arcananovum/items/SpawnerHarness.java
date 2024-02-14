@@ -74,16 +74,13 @@ public class SpawnerHarness extends MagicItem {
       tag.put("display",display);
       tag.put("Enchantments",enchants);
       tag.putInt("HideFlags", 255);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.put("spawner",new NbtCompound());
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").put("spawner",new NbtCompound());
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

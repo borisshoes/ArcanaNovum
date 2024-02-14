@@ -64,7 +64,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
       }
       
       List<Pair<ItemStack,String>> outputs = new ArrayList<>();
-      outputs.add(new Pair<>(outputStack,"positive"));
+      outputs.add(new Pair<>(outputStack,"negative"));
       return outputs;
    }
    

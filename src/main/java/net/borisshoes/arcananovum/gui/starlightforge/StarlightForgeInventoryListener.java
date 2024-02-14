@@ -100,7 +100,7 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
             }
          }
          MagicItem matchedItem = null;
-         for(MagicItem item : ArcanaRegistry.registry.values()){
+         for(MagicItem item : ArcanaRegistry.MAGIC_ITEMS.values()){
             MagicItemRecipe recipe = item.getRecipe();
             if(recipe == null)
                continue;

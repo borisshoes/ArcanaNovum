@@ -54,12 +54,10 @@ public class LeadershipCharm extends MagicItem {
       display.putString("Name","[{\"text\":\"Charm of Leadership\",\"italic\":false,\"bold\":true,\"color\":\"light_purple\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
-      prefNBT = addMagicNbt(tag);
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override

@@ -69,18 +69,14 @@ public class ShadowStalkersGlaive extends EnergyItem {
       tag.put("Enchantments",enchants);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.putString("lastAttacked","");
-      magicTag.putInt("tether",-1);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").putString("lastAttacked","");
+      tag.getCompound("arcananovum").putInt("tether",-1);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.block.CropBlock;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -65,16 +66,13 @@ public class BrainJar extends EnergyItem {
       display.putString("Name","[{\"text\":\"Brain in a Jar\",\"italic\":false,\"color\":\"green\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.putInt("mode",0);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").putInt("mode",0);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -306,6 +304,11 @@ public class BrainJar extends EnergyItem {
       gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
       gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
       buildItemLore(item,player.getServer());
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    private List<String> makeLore(){

@@ -69,14 +69,11 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       display.putString("Name","[{\"text\":\"Celestial Altar\",\"italic\":false,\"color\":\"blue\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override

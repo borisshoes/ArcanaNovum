@@ -67,19 +67,16 @@ public class PearlOfRecall extends EnergyItem {
       display.putString("Name","[{\"text\":\"Pearl of Recall\",\"italic\":false,\"bold\":true,\"color\":\"dark_aqua\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
+      stack.setNbt(addMagicNbt(tag));
       NbtCompound locTag = new NbtCompound();
       locTag.putString("dim","unattuned");
-      magicTag.putInt("heat",0);
-      magicTag.put("location",locTag);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      tag.getCompound("arcananovum").putInt("heat",0);
+      tag.getCompound("arcananovum").put("location",locTag);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -136,6 +133,11 @@ public class PearlOfRecall extends EnergyItem {
       }
       
       return loreList;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

@@ -72,14 +72,11 @@ public class AlchemicalArbalest extends MagicItem {
       tag.put("Enchantments",enchants);
       tag.putInt("Unbreakable",1);
       tag.putInt("HideFlags", 255);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override
@@ -388,7 +385,7 @@ public class AlchemicalArbalest extends MagicItem {
          if(arrow.isOf(Items.TIPPED_ARROW) || arrow.isOf(Items.SPECTRAL_ARROW)){
             int spectralLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(crossbow,ArcanaAugments.SPECTRAL_AMPLIFICATION.id));
             int prolificLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(crossbow,ArcanaAugments.PROLIFIC_POTIONS.id));
-            ArbalestArrowEntity arrowEntity = new ArbalestArrowEntity(world, entity, spectralLvl,prolificLvl);
+            ArbalestArrowEntity arrowEntity = new ArbalestArrowEntity(world, entity, spectralLvl,prolificLvl, arrow);
             arrowEntity.initFromStack(arrow);
             persistentProjectileEntity = arrowEntity;
          }else{

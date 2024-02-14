@@ -380,10 +380,6 @@ public class DragonDialog {
             subMessage14.add(Text.literal(""));
             
             ItemStack wings = ArcanaRegistry.WINGS_OF_ENDERIA.getPrefItem();
-            MutableText wingText = Text.literal("["+ArcanaRegistry.WINGS_OF_ENDERIA.getNameString()+"]").styled(s ->
-                  s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(wings)))
-                        .withColor(Formatting.GRAY).withBold(true).withUnderline(true)
-            );
             
             subMessage15.add(Text.literal(""));
             subMessage15.add(Text.literal("")
@@ -394,12 +390,12 @@ public class DragonDialog {
                   .append(Text.literal("   Nevertheless, your efforts will be rewarded. You will receive a portion of my Sister's Divine power.").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage15.add(Text.literal("")
                   .append(Text.literal("   Take these ").formatted(Formatting.GRAY,Formatting.ITALIC))
-                  .append(wingText)
+                  .append(wings.toHoverableText())
                   .append(Text.literal(" and let them guide you to new heights!").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage15.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage14); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () ->{ announceHelper(server,subMessage15); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () -> announceHelper(server,subMessage14)));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () -> announceHelper(server,subMessage15)));
             
             break;
          case PHASE_ONE_GOONS:

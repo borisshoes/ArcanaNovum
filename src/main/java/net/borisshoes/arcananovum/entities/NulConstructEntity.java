@@ -245,19 +245,18 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          if(attacker != null){
             attacker.damage(getDamageSources().thorns(this), amount * 0.5f);
             if(spells.get("dark_conversion").isActive()){
-               heal(amount*0.5f);
+               heal(amount*0.33f);
             }
          }
       }
       if(source.isIn(DamageTypeTags.IS_EXPLOSION)){
-         if(isMythical){
-            modified = 0;
-         }else{
-            modified *= 0.25f;
-         }
+         return isMythical ? 0 : modified * 0.25f;
+      }
+      if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)){
+         return isMythical ? modified * 0.3f : modified * 0.5f;
       }
       
-      return isMythical ? modified * 0.3f : modified * 0.5f;
+      return isMythical ? modified * 0.5f : modified * 0.75f;
    }
    
    private void mythicalAura(){
@@ -377,8 +376,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             List<Entity> entities = world.getOtherEntities(this,getBoundingBox().expand(50), e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && (e instanceof LivingEntity));
             for(Entity entity1 : entities){
                if(!(entity1 instanceof LivingEntity living)) continue;;
-               float dmg = living.getMaxHealth() / 10.0f;
-               float mod = living instanceof ServerPlayerEntity ? 1.0f : 0.33f;
+               float dmg = living.getMaxHealth() / 7.0f;
+               float mod = living instanceof ServerPlayerEntity ? 0.8f : 0.33f;
                living.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),dmg);
                
                if(conversionActive) heal(dmg*mod);
@@ -408,7 +407,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                   living.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this), damage);
                   StatusEffectInstance wither = new StatusEffectInstance(StatusEffects.WITHER, 40, 1, false, true, true);
                   living.addStatusEffect(wither);
-                  if(conversionActive) heal(damage);
+                  if(conversionActive) heal(damage*0.8f);
                }
             }
             
@@ -443,8 +442,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,3);
             Vec3d motion = diff.multiply(1,0,1).add(0,1,0).normalize().multiply(multiplier);
             entity1.setVelocity(motion.x,motion.y,motion.z);
-            entity1.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),10f);
-            if(conversionActive) heal(10f);
+            entity1.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),4f);
+            if(conversionActive) heal(4f);
             if(entity1 instanceof ServerPlayerEntity player) player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          }
          
@@ -530,6 +529,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       if(dropped){
          ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),false,server);
+         PLAYER_DATA.get(summoner).addCraftedSilent(stack);
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
@@ -746,7 +746,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Dark Presence").formatted(Formatting.DARK_GRAY, Formatting.ITALIC, Formatting.BOLD))
                      .append(Text.literal(" Looms...").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC)),
                Text.literal("")
-         )),1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,-1));
          
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -756,7 +756,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal("? They know not what they are toying with...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Those unworthy of ").formatted(Formatting.DARK_GRAY))
@@ -765,14 +765,14 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("nothing").formatted(Formatting.GRAY))
                      .append(Text.literal("...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Mortals").formatted(Formatting.GOLD))
                      .append(Text.literal(" grow bolder by the minute. Perhaps they need to be put in their place.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
@@ -781,7 +781,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal("? Let them try...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Of all the ").formatted(Formatting.DARK_GRAY))
@@ -794,7 +794,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Death").formatted(Formatting.GRAY))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I am the ").formatted(Formatting.DARK_GRAY))
@@ -811,7 +811,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("latter").formatted(Formatting.BLUE))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("So you have defeated ").formatted(Formatting.DARK_GRAY))
@@ -822,7 +822,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Death").formatted(Formatting.GRAY, Formatting.BOLD))
                      .append(Text.literal("!?").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I watched as you defeated ").formatted(Formatting.DARK_GRAY))
@@ -833,7 +833,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("indolent").formatted(Formatting.DARK_RED))
                      .append(Text.literal(" as her.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You have tasted the ").formatted(Formatting.DARK_GRAY))
@@ -842,7 +842,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("greed").formatted(Formatting.GOLD))
                      .append(Text.literal(" is not your downfall.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,0));
+         )),new ArrayList<>(),new int[]{},0,10,0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Just because you already carry the ").formatted(Formatting.DARK_GRAY))
@@ -851,7 +851,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("entitled").formatted(Formatting.GOLD))
                      .append(Text.literal(" to more.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,0));
+         )),new ArrayList<>(),new int[]{},0,10,0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("So you would sacrifice my ").formatted(Formatting.DARK_GRAY))
@@ -860,7 +860,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("favor").formatted(Formatting.GOLD))
                      .append(Text.literal("? Let's see if you're worth it...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,3));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You reject my ").formatted(Formatting.DARK_GRAY))
@@ -869,7 +869,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("worthy").formatted(Formatting.GOLD))
                      .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,3));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("If you want my ").formatted(Formatting.DARK_GRAY))
@@ -878,7 +878,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("real").formatted(Formatting.GOLD, Formatting.ITALIC))
                      .append(Text.literal(" challenge!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,3));
          
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -888,7 +888,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" power.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Impressive, I have imbued your ").formatted(Formatting.DARK_GRAY))
@@ -897,7 +897,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(", I'm curious as to how you'll use it.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You have defeated my ").formatted(Formatting.DARK_GRAY))
@@ -907,13 +907,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal(" remains for your ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Catalyst").formatted(Formatting.GOLD)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Death").formatted(Formatting.GRAY))
                      .append(Text.literal(" does not come for you today, I shall grant you what you have sought.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
@@ -922,14 +922,14 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("true power").formatted(Formatting.LIGHT_PURPLE))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A valiant fight! ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" must be getting nervous. Perhaps she will finally learn her lesson...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),1,0,1));
+         )),new ArrayList<>(),new int[]{},1,0,1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I can see how you defeated ").formatted(Formatting.DARK_GRAY))
@@ -940,7 +940,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Construct").formatted(Formatting.GRAY))
                      .append(Text.literal(" to greet you.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You helped my ").formatted(Formatting.DARK_GRAY))
@@ -949,7 +949,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Boon").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" and may we meet again.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You have earned your ").formatted(Formatting.DARK_GRAY))
@@ -960,14 +960,14 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("personally").formatted(Formatting.DARK_RED, Formatting.ITALIC))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("It seems you are worthy enough to add another piece of the ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" to your collection.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,10,0));
+         )),new ArrayList<>(),new int[]{},0,10,0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You are unlike any I have seen before. Perhaps you are worthy of my ").formatted(Formatting.DARK_GRAY))
@@ -976,7 +976,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Memento").formatted(Formatting.BLACK, Formatting.BOLD))
                      .append(Text.literal(" shall be my gift to you.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,-1,2));
+         )),new ArrayList<>(),new int[]{},0,-1,2));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You did well to survive my ").formatted(Formatting.DARK_GRAY))
@@ -985,7 +985,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("impress").formatted(Formatting.GOLD))
                      .append(Text.literal(" me.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,5));
+         )),new ArrayList<>(),new int[]{},0,200,5));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You may have survived, but your performance showed ").formatted(Formatting.DARK_GRAY))
@@ -994,7 +994,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("tolerate").formatted(Formatting.GOLD))
                      .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,5));
+         )),new ArrayList<>(),new int[]{},0,200,5));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("So your").formatted(Formatting.DARK_GRAY))
@@ -1007,7 +1007,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("wisdom").formatted(Formatting.BLUE))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,4));
+         )),new ArrayList<>(),new int[]{},0,200,4));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
@@ -1020,7 +1020,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("guide").formatted(Formatting.BLUE))
                      .append(Text.literal(" you well.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,4));
+         )),new ArrayList<>(),new int[]{},0,200,4));
          
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -1028,7 +1028,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Mortal").formatted(Formatting.GOLD))
                      .append(Text.literal(", not worthy of my time.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),5,5,-1));
+         )),new ArrayList<>(),new int[]{},5,5,-1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Such a simple ").formatted(Formatting.DARK_GRAY))
@@ -1037,7 +1037,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Such a small sample of ").formatted(Formatting.DARK_GRAY))
@@ -1046,7 +1046,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("harnessing").formatted(Formatting.BLUE))
                      .append(Text.literal(" it in the first place?").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("An expected result from calling upon the ").formatted(Formatting.GRAY))
@@ -1054,14 +1054,14 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal(" of Death").formatted(Formatting.GRAY, Formatting.BOLD))
                      .append(Text.literal(". Do not waste my time again.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Arrogant enough to tempt ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Death").formatted(Formatting.GRAY))
                      .append(Text.literal("... I can't fathom how you expected to win.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("There is ").formatted(Formatting.DARK_GRAY))
@@ -1070,7 +1070,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("wisdom").formatted(Formatting.AQUA))
                      .append(Text.literal(" to find it.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,-1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
@@ -1079,7 +1079,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("foolish").formatted(Formatting.DARK_RED))
                      .append(Text.literal(" enough to find out why.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,-1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
@@ -1090,7 +1090,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("her").formatted(Formatting.DARK_PURPLE))
                      .append(Text.literal(" couldn't get any lower.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,20,1));
+         )),new ArrayList<>(),new int[]{},0,20,1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Whatever petty tricks got you the ").formatted(Formatting.DARK_GRAY))
@@ -1099,7 +1099,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("Knowledge").formatted(Formatting.BLUE))
                      .append(Text.literal(" must be earned!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,20,0));
+         )),new ArrayList<>(),new int[]{},0,20,0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I always knew you were too ").formatted(Formatting.DARK_GRAY))
@@ -1108,7 +1108,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("power").formatted(Formatting.LIGHT_PURPLE))
                      .append(Text.literal("...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,150,3));
+         )),new ArrayList<>(),new int[]{},0,150,3));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("An interesting ").formatted(Formatting.DARK_GRAY))
@@ -1117,7 +1117,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("skilled").formatted(Formatting.BLUE))
                      .append(Text.literal(" enough to execute it.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,3));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Your ").formatted(Formatting.DARK_GRAY))
@@ -1130,7 +1130,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal("forfeit").formatted(Formatting.GOLD))
                      .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,3));
       }
       
       public static void abilityText(PlayerEntity summoner, WitherEntity wither, String text){
@@ -1147,7 +1147,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       // hasMythical, hasWings, droppedMemento & !isMythical, isMythical, droppedMemento & isMythical, !droppedMemento & isMythical
       public static void announce(MinecraftServer server, PlayerEntity summoner, WitherEntity wither, Announcements type, boolean[] args){
-         ArrayList<MutableText> message = getWeightedResult(DIALOG.get(type),args);
+         DialogHelper dialogHelper = new DialogHelper(DIALOG.get(type),args);
+         ArrayList<MutableText> message = dialogHelper.getWeightedResult().message();
          List<ServerPlayerEntity> playersInRange = wither.getWorld().getNonSpectatingEntities(ServerPlayerEntity.class, wither.getBoundingBox().expand(50.0));
          if(summoner instanceof ServerPlayerEntity player && !playersInRange.contains(player)) playersInRange.add(player);
          
@@ -1164,23 +1165,6 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             }
          }
       }
-      
-      private static ArrayList<MutableText> getWeightedResult(ArrayList<Dialog> dialogs, boolean[] args){
-         ArrayList<Integer> pool = new ArrayList<>();
-         int[] weights = new int[dialogs.size()];
-         for(int i = 0; i < dialogs.size(); i++){
-            weights[i] = dialogs.get(i).getWeight(args);
-         }
-         
-         for(int i = 0; i < weights.length; i++){
-            if(weights[i] == -1) return dialogs.get(i).message;
-            for(int j = 0; j < weights[i]; j++){
-               pool.add(i);
-            }
-         }
-         
-         return dialogs.get(pool.get((int) (Math.random()*pool.size()))).message;
-      }
    }
    
    public enum Announcements{
@@ -1188,13 +1172,6 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       SUMMON_DIALOG,
       SUCCESS,
       FAILURE
-   }
-   
-   private record Dialog(ArrayList<MutableText> message, int weightNoCond, int weightWithCond, int condInd){
-      public int getWeight(boolean[] args){
-         if(condInd == -1) return weightWithCond;
-         return (args.length > condInd && args[condInd]) ? weightWithCond : weightNoCond;
-      }
    }
    
    public static BlockPattern getConstructPattern() {

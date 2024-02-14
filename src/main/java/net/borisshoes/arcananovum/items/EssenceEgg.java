@@ -73,17 +73,14 @@ public class EssenceEgg extends MagicItem {
       display.putString("Name","[{\"text\":\"Essence Egg\",\"italic\":false,\"bold\":true,\"color\":\"aqua\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.putString("type","unattuned");
-      magicTag.putInt("uses",0);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").putString("type","unattuned");
+      tag.getCompound("arcananovum").putInt("uses",0);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -128,6 +125,11 @@ public class EssenceEgg extends MagicItem {
       setType(stack,type);
       setUses(stack,uses);
       return buildItemLore(stack,server);
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    public static void setType(ItemStack item, String entityId){

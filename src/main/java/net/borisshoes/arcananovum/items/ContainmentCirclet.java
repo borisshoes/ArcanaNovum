@@ -78,18 +78,15 @@ public class ContainmentCirclet extends MagicItem {
       display.putString("Name","[{\"text\":\"Containment Circlet\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.put("contents",new NbtCompound());
-      magicTag.putFloat("hp",-1);
-      magicTag.putFloat("maxHp",-1);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").put("contents",new NbtCompound());
+      tag.getCompound("arcananovum").putFloat("hp",-1);
+      tag.getCompound("arcananovum").putFloat("maxHp",-1);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

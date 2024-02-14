@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -18,6 +19,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
 
 import java.util.*;
+
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
@@ -157,6 +160,9 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
             reagent2Stack.decrement(reagentCount);
             reagent2Entity.setStack(reagent2Stack);
          }
+      }
+      if(player != null){
+         PLAYER_DATA.get(player).addXP(1000);
       }
       return outputs;
    }

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.core;
 
 import com.mojang.authlib.GameProfile;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -43,6 +44,10 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    
    public ArrayList<Pair<Item,String>> getModels(){
       return models;
+   }
+   
+   public boolean blocksHandInteractions(ItemStack item){
+      return false;
    }
    
    public int getItemVersion() { return itemVersion; }
@@ -127,6 +132,16 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    
    public NbtCompound getPrefNBT(){
       return prefNBT.copy();
+   }
+   
+   protected void setPrefStack(ItemStack stack){
+      prefItem = stack.copy();
+      prefNBT = prefItem.getOrCreateNbt();
+   }
+   
+   public void finalizePrefItem(){
+      prefItem = buildItemLore(prefItem, ArcanaNovum.SERVER);
+      prefNBT = prefItem.getOrCreateNbt();
    }
    
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
@@ -215,8 +230,15 @@ public abstract class MagicItem implements Comparable<MagicItem>{
    }
    
    public ItemStack buildItemLore(ItemStack item, @Nullable MinecraftServer server){
-      if(!MagicItemUtils.isMagic(item)) return item;
+      return buildItemLore(item,server,null);
+   }
+   
+   protected ItemStack buildItemLore(ItemStack item, @Nullable MinecraftServer server, @Nullable MagicItem override){
+      if(!MagicItemUtils.isMagic(item) && override == null){
+         return item;
+      }
       NbtCompound itemNbt = item.getNbt();
+      if(itemNbt == null || !itemNbt.contains("arcananovum")) return item;
       NbtCompound magicTag = itemNbt.getCompound("arcananovum");
       
       // Item Lore / Info (From Item's class)
@@ -228,7 +250,7 @@ public abstract class MagicItem implements Comparable<MagicItem>{
       String player = magicTag.getString("crafter");
       player = player == null ? "" : player;
       boolean synthetic = magicTag.getBoolean("synthetic");
-      MagicItem magicItem = MagicItemUtils.identifyItem(item);
+      MagicItem magicItem = override != null ? override : MagicItemUtils.identifyItem(item);
       MagicRarity rarity = magicItem == null ? MagicRarity.MUNDANE : magicItem.getRarity();
       
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));

@@ -77,17 +77,14 @@ public class ChestTranslocator extends EnergyItem implements MagicItemContainer.
       display.putString("Name","[{\"text\":\"Chest Translocator\",\"italic\":false,\"bold\":true,\"color\":\"gold\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.put("contents",new NbtCompound());
-      magicTag.put("state",new NbtCompound());
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").put("contents",new NbtCompound());
+      tag.getCompound("arcananovum").put("state",new NbtCompound());
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -105,6 +102,11 @@ public class ChestTranslocator extends EnergyItem implements MagicItemContainer.
    public int getMaxEnergy(ItemStack item){
       int cdLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.RAPID_TRANSLOCATION.id));
       return 30 - 8*cdLvl;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

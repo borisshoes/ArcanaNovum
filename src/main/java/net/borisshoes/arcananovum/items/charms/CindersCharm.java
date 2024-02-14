@@ -102,16 +102,13 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       display.putString("Name","[{\"text\":\"Charm of Cinders\",\"italic\":false,\"color\":\"gold\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = this.addMagicNbt(tag);
+      addMagicNbt(tag);
       tag.getCompound("arcananovum").putBoolean("active",false);
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -123,6 +120,11 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       loreList.add(NbtString.of("[{\"text\":\"Hold Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to \",\"color\":\"red\"},{\"text\":\"breathe \",\"color\":\"gold\"},{\"text\":\"a \",\"color\":\"red\"},{\"text\":\"cone of fire\",\"color\":\"gold\"},{\"text\":\" in front of you.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to toggle \",\"color\":\"red\"},{\"text\":\"auto-smelting\",\"color\":\"gold\"},{\"text\":\" of picked up items.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       return loreList;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

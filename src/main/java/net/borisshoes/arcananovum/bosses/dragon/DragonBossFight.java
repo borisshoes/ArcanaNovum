@@ -387,7 +387,7 @@ public class DragonBossFight {
                   }
                }
             }
-            if(age % 600 == 0){
+            if(age % 300 == 0){
                for(EndermanEntity enderman : endermen){
                   PlayerEntity closestPlayer = endWorld.getClosestPlayer(enderman,30);
                   if(closestPlayer != null){
@@ -434,6 +434,10 @@ public class DragonBossFight {
                endNotif = true;
             }
          }
+         
+         if(fightData.getInt("numPlayers") != numPlayers){
+            fightData.putInt("numPlayers",numPlayers);
+         }
    
          // Handle lair actions, dragon actions, goon spawning, crystal effects
          if(state == States.PHASE_ONE || state == States.PHASE_TWO || state == States.PHASE_THREE){
@@ -470,16 +474,17 @@ public class DragonBossFight {
       if(phase == 1){ // Endermite Goons
          // Count existing goons
          List<EndermiteEntity> curGoons = endWorld.getEntitiesByType(EntityType.ENDERMITE, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
-         if(curGoons.size() > 25) return;
+         if(curGoons.size() > 35) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EndermiteEntity[] goons = new EndermiteEntity[MathHelper.clamp((int)(Math.random()*3*numPlayers+2+numPlayers),10,25)];
+         EndermiteEntity[] goons = new EndermiteEntity[MathHelper.clamp((int)(Math.random()*3*numPlayers+2+numPlayers),10,35)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
+         float endermiteHP = MathHelper.clamp(10 + 3*numPlayers,10,40);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermiteEntity(EntityType.ENDERMITE, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(10 + 4*numPlayers,40,100));
-            goons[i].setHealth(MathHelper.clamp(10 + 4*numPlayers,40,100));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(endermiteHP);
+            goons[i].setHealth(endermiteHP);
             goons[i].setPersistent();
             goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
@@ -492,16 +497,17 @@ public class DragonBossFight {
       }else if(phase == 2){ // Shulker Goons
          // Count existing goons
          List<ShulkerEntity> curGoons = endWorld.getEntitiesByType(EntityType.SHULKER, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
-         if(curGoons.size() > 25) return;
+         if(curGoons.size() > 35) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         ShulkerEntity[] goons = new ShulkerEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+2+numPlayers),10,25)];
+         ShulkerEntity[] goons = new ShulkerEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+2+numPlayers),10,35)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
+         float shulkerHP = MathHelper.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
             goons[i] = new ShulkerEntity(EntityType.SHULKER, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*numPlayers,40,100));
-            goons[i].setHealth(MathHelper.clamp(20 + 4*numPlayers,40,100));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(shulkerHP);
+            goons[i].setHealth(shulkerHP);
             goons[i].setPersistent();
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
@@ -513,16 +519,17 @@ public class DragonBossFight {
       }else if(phase == 3){ // Enderman Goons
          // Count existing goons
          List<EndermanEntity> curGoons = endWorld.getEntitiesByType(EntityType.ENDERMAN, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
-         if(curGoons.size() > 25) return;
+         if(curGoons.size() > 50) return;
          double chance = curGoons.size() < 5 ? 0.005 : 0.002;
          if(Math.random() > chance) return; // Average 25+minTime seconds before goon spawn
    
-         EndermanEntity[] goons = new EndermanEntity[MathHelper.clamp((int)(Math.random()*2*numPlayers+2+numPlayers*2),10,25)];
+         EndermanEntity[] goons = new EndermanEntity[MathHelper.clamp((int)(Math.random()*3*numPlayers+2+numPlayers*2),20,50)];
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
+         float endermanHP = MathHelper.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*numPlayers,40,100));
-            goons[i].setHealth(MathHelper.clamp(20 + 4*numPlayers,40,100));
+            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(endermanHP);
+            goons[i].setHealth(endermanHP);
             goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
@@ -1032,18 +1039,9 @@ public class DragonBossFight {
       }
    }
    
-   public static void test(){
-//      if(lairActions != null){
-//         lairActions.startAction(DragonLairActions.DragonLairActionTypes.TERRAIN_SHIFT);
-//      }
-      //System.out.println(Math.max(1,calcPlayers(dragon.getServer(),false)));
-      if(forcedPlayerCount == -1){
-         forcedPlayerCount = 20;
-         numPlayers = forcedPlayerCount;
-      }else{
-         forcedPlayerCount = -1;
-      }
-      devPrint(forcedPlayerCount + " " + numPlayers);
+   public static void setForcedPlayerCount(MinecraftServer server, int pc){
+      forcedPlayerCount = pc;
+      numPlayers = calcPlayers(server,false);
    }
    
    public static List<ReclaimState> getReclaimStates(){
@@ -1327,10 +1325,7 @@ public class DragonBossFight {
             }
          }
          if(MiscUtils.distToLine(dragon.getPos(),player.getPos(),hit) < 10){
-            float damage = 10f+dragon.getMaxHealth()/100;
-            if(dragon.getStatusEffect(StatusEffects.RESISTANCE) != null){
-               damage *= 0.1f;
-            }
+            float damage = Math.min(100,20f+numPlayers*4);
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));
             dragon.damage(endWorld.getDamageSources().playerAttack(player),damage);

@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
@@ -71,14 +72,11 @@ public class SmokeArrows extends RunicArrow {
       tag.putInt("CustomPotionColor",6908265);
       tag.putInt("HideFlags", 255);
       stack.setCount(64);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override
@@ -97,8 +95,7 @@ public class SmokeArrows extends RunicArrow {
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
-         ParticleEffectUtils.smokeArrowEmit(serverWorld,null,entityHitResult.getEntity(),range,0);
-         smokeEffects(arrow,serverWorld,null,entityHitResult.getEntity(),range,gasLvl,0);
+         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getType()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
       }
    }
    
@@ -107,46 +104,7 @@ public class SmokeArrows extends RunicArrow {
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
-         ParticleEffectUtils.smokeArrowEmit(serverWorld,blockHitResult.getPos(),null,range,0);
-         smokeEffects(arrow,serverWorld,blockHitResult.getPos(),null,range,gasLvl,0);
-      }
-   }
-   
-   private void smokeEffects(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range, int gasLvl, int calls){
-      if(start == null && entity == null) return;
-      Vec3d pos = entity == null ? start : entity.getPos();
-      
-      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-      List<Entity> entities = world.getOtherEntities(null,rangeBox,e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 4*range*range && e instanceof LivingEntity);
-      int mobCount = 0;
-      boolean withOwner = false;
-      for(Entity entity1 : entities){
-         if(entity1 instanceof LivingEntity e){
-            int amp = e instanceof MobEntity ? 5 : 0;
-            StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60*(gasLvl+1), 7, false, false, true);
-            StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 60*(gasLvl+1), amp+gasLvl, false, false, true);
-            StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, 60*(gasLvl+1), 0, false, false, true);
-            e.addStatusEffect(blind);
-            e.addStatusEffect(weakness);
-            if(e instanceof ServerPlayerEntity){
-               e.addStatusEffect(invis);
-            }
-            
-            if(e instanceof HostileEntity mob){
-               mob.setAttacking(false);
-               mob.setAttacking(null);
-               mobCount++;
-            }
-            if(arrow.getOwner() instanceof ServerPlayerEntity player && player.getUuid().equals(e.getUuid())) withOwner = true;
-         }
-      }
-      
-      if(arrow.getOwner() instanceof ServerPlayerEntity player && withOwner && mobCount >= 3) ArcanaAchievements.grant(player,ArcanaAchievements.SMOKE_SCREEN.id);
-   
-      SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.PLAYERS,.5f,1);
-   
-      if(calls < 20){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(5, () -> smokeEffects(arrow,world, pos, entity,range,gasLvl,calls + 1)));
+         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getType()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
       }
    }
    

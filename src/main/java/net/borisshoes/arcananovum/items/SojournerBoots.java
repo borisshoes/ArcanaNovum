@@ -81,16 +81,13 @@ public class SojournerBoots extends EnergyItem {
       tag.put("Enchantments",enchants);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = this.addMagicNbt(tag);
-      tag.getCompound("arcananovum").putBoolean("active",true);
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").putBoolean("active",false);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

@@ -77,18 +77,14 @@ public class Soulstone extends MagicItem {
       display.putString("Name","[{\"text\":\"Soulstone\",\"italic\":false,\"color\":\"dark_red\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.putString("type","unattuned");
-      magicTag.putInt("souls",0);
-      magicTag.putInt("maxTier",0);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").putString("type","unattuned");
+      tag.getCompound("arcananovum").putInt("souls",0);
+      tag.getCompound("arcananovum").putInt("maxTier",0);
+      setPrefStack(stack);
    }
    
    @Override

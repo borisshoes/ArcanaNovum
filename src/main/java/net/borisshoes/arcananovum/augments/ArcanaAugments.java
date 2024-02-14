@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.AlchemicalArbalest;
 import net.borisshoes.arcananovum.items.ExoticMatter;
+import net.borisshoes.arcananovum.items.NulMemento;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
@@ -218,7 +219,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment FARADAY_CAGE = ArcanaAugments.register(
          new ArcanaAugment("Faraday Cage", "faraday_cage", new ItemStack(Items.HOPPER), ArcanaRegistry.MAGNETISM_CHARM,
-         new String[]{"Allows you to filter items attracted","Sneak Right Click with an item in"," your offhand to add it to the filter", "Sneak Right Click with the Charm in", " your main hand to reset the filter"},
+         new String[]{"Allows you to filter items attracted","Sneak Right Click with an item in"," your offhand to add it to the filter", "Sneak Right Click with the Charm in", " your offhand to reset the filter"},
          new MagicRarity[]{LEGENDARY}
    ));
    public static final ArcanaAugment POLARITY_REVERSAL = ArcanaAugments.register(
@@ -368,6 +369,13 @@ public class ArcanaAugments {
          new ArcanaAugment("Soul Recycler", "harness_recycler", new ItemStack(Items.FIRE_CHARGE), ArcanaRegistry.LEVITATION_HARNESS,
          new String[]{"Grants a chance to not consume fuel","Chance per level: 10%/25%/50%","Linked with the Shulker Core's Soul Recycler"},
          new MagicRarity[]{EMPOWERED,EXOTIC,LEGENDARY}
+   ));
+   
+   // Nul Memento
+   public static final ArcanaAugment DEATHS_CHAMPION = ArcanaAugments.register(
+         new ArcanaAugment("Death's Champion", "deaths_champion", new ItemStack(Items.NETHERITE_HELMET), ArcanaRegistry.NUL_MEMENTO,
+         new String[]{"Gives the Nul Memento max enhanced stats"},
+         new MagicRarity[]{MYTHICAL}
    ));
    
    // Overflowing Quiver
@@ -1091,7 +1099,12 @@ public class ArcanaAugments {
             item.getNbt().put("Enchantments",enchants);
          }
       }
-      if(magicItem instanceof WingsOfEnderia && id.equals(SCALES_OF_THE_CHAMPION.id) && level == 1){
+      if(magicItem instanceof WingsOfEnderia && id.equals(SCALES_OF_THE_CHAMPION.id) && level >= 1){
+         item.removeSubNbt("AttributeModifiers");
+         EnhancedStatUtils.enhanceItem(item,1);
+      }
+      
+      if(magicItem instanceof NulMemento && id.equals(DEATHS_CHAMPION.id) && level >= 1){
          item.removeSubNbt("AttributeModifiers");
          EnhancedStatUtils.enhanceItem(item,1);
       }

@@ -81,19 +81,17 @@ public class Planeshifter extends EnergyItem {
       display.putString("Name","[{\"text\":\"Planeshifter\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
       tag.put("Enchantments",enchants);
       tag.put("display",display);
-      buildItemLore(stack, ArcanaNovum.SERVER);setBookLore(makeLore());
       
+      setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
+      stack.setNbt(addMagicNbt(tag));
       NbtCompound magicTag = tag.getCompound("arcananovum");
       magicTag.putBoolean("netherUnlocked",false);
       magicTag.putBoolean("endUnlocked",false);
       magicTag.putInt("mode",-1); // -1 disabled, 0 nether, 1 end
       magicTag.putInt("heat",0);
-      
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -134,6 +132,11 @@ public class Planeshifter extends EnergyItem {
       newTag.getCompound("arcananovum").putBoolean("endUnlocked",hasEnd);
       stack.setNbt(newTag);
       return buildItemLore(stack,server);
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

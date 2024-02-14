@@ -384,9 +384,6 @@ public class DragonAbilities {
          obliterateTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_OBLITERATE_TOWER,server,null);
       }else if(ability == DragonAbilityTypes.DRACONIC_RESILIENCE){
-         StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 20*90, 2, false, false, true);
-         dragon.addStatusEffect(res);
-   
          resilienceTicks = 0;
          DragonDialog.announce(DragonDialog.Announcements.ABILITY_DRACONIC_RESILIENCE,server,null);
       }

@@ -717,21 +717,12 @@ public class ParticleEffectUtils {
       }
    }
    
-   public static void smokeArrowEmit(ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, double range, int calls){
-      if(start == null && entity == null) return;
-      Vec3d pos = entity == null ? start : entity.getPos();
-      int count = (int)(40*range*range);
-      
-      List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(pos) < 15000);
-      for(ServerPlayerEntity player : players){
-         world.spawnParticles(player,ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,true,pos.x,pos.y,pos.z,count/2,range,range,range,.01);
-         world.spawnParticles(player,ParticleTypes.LARGE_SMOKE,true,pos.x,pos.y,pos.z,count/3,range,range,range,.01);
-         world.spawnParticles(player,ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,false,pos.x,pos.y,pos.z,count/2,range,range,range,.01);
-         world.spawnParticles(player,ParticleTypes.LARGE_SMOKE,false,pos.x,pos.y,pos.z,2*count/3,range,range,range,.01);
+   public static void smokeArrowEmit(ServerWorld world, Vec3d pos){
+      if(Math.random() < 0.1){
+         spawnLongParticle(world,ParticleTypes.LARGE_SMOKE,pos.x,pos.y,pos.z,0.5,0.5,0.5,.01,1);
       }
-      
-      if(calls < 20){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(5, () -> smokeArrowEmit(world, pos, entity,range,calls + 1)));
+      if(Math.random() < 0.05){
+         spawnLongParticle(world,ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,pos.x,pos.y,pos.z,0.5,0.5,0.5,.01,1);
       }
    }
    

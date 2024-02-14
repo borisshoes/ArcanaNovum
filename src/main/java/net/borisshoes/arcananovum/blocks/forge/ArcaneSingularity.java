@@ -72,17 +72,14 @@ public class ArcaneSingularity extends MagicBlock implements MultiblockCore {
       display.putString("Name","[{\"text\":\"Arcane Singularity\",\"italic\":false,\"bold\":true,\"color\":\"light_purple\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
+      addMagicNbt(tag);
       NbtList booksList = new NbtList();
-      magicTag.put("books",booksList);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      tag.getCompound("arcananovum").put("books",booksList);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

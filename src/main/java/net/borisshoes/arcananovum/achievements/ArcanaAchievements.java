@@ -147,7 +147,7 @@ public class ArcanaAchievements {
    // Charm of Magnetism
    public static final ArcanaAchievement MAGNETS = ArcanaAchievements.register(
          new EventAchievement("That's Not How Magnets Work", "magnets", new ItemStack(Items.IRON_ORE), ArcanaRegistry.MAGNETISM_CHARM, 1000, 1,
-               new String[]{"Put at least 25 different items with", "the Charm of Magnetism's active ability"}
+               new String[]{"Pull at least 25 different items with", "the Charm of Magnetism's active ability"}
          ));
    
    // Ancient Dowsing Rod
@@ -241,7 +241,7 @@ public class ArcanaAchievements {
          ));
    public static final ArcanaAchievement DEATHS_DOOR = ArcanaAchievements.register(
          new EventAchievement("Death's Door", "deaths_door", new ItemStack(Items.TOTEM_OF_UNDYING), ArcanaRegistry.NUL_MEMENTO, 2500, 1,
-               new String[]{"Use a Totem of Undying while activating a Nul Memento"}
+               new String[]{"'Die' while activating a Nul Memento"}
          ));
    public static final ArcanaAchievement LOST_KNOWLEDGE = ArcanaAchievements.register(
          new EventAchievement("Lost Knowledge", "lost_knowledge", new ItemStack(Items.KNOWLEDGE_BOOK), ArcanaRegistry.NUL_MEMENTO, 2500, 1,

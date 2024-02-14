@@ -36,6 +36,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -124,6 +125,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    @Override
    protected float modifyAppliedDamage(DamageSource source, float amount) {
       float scale = numPlayers > 0 ? 2f/numPlayers : 1;
+      scale = Math.max(scale,0.1f);
       if(source.getAttacker() instanceof EnderDragonEntity) amount = 0;
       if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)) amount *= 0.25f; // Reduce damage from magic sources and immune to the dragon
       amount *= scale;
@@ -245,8 +247,9 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    
    private SkeletonEntity makeSkeleton(ServerWorld endWorld, int numPlayers){
       SkeletonEntity skeleton = new SkeletonEntity(EntityType.SKELETON, endWorld);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(Math.max(40,15+numPlayers * 2));
-      skeleton.setHealth(Math.max(40,15+numPlayers * 2));
+      float skeletonHP = MathHelper.clamp(20+numPlayers * 2,20,80);
+      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(skeletonHP);
+      skeleton.setHealth(skeletonHP);
       skeleton.setPersistent();
       ItemStack bow = new ItemStack(Items.BOW);
       bow.addEnchantment(Enchantments.PUNCH,2);

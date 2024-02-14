@@ -4,6 +4,10 @@ import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
+import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
+import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
+import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.blocks.*;
 import net.borisshoes.arcananovum.blocks.altars.*;
 import net.borisshoes.arcananovum.blocks.forge.*;
@@ -43,18 +47,16 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcanaRegistry {
-   public static final HashMap<String, MagicItem> registry = new HashMap<>();
+   public static final HashMap<String, MagicItem> MAGIC_ITEMS = new HashMap<>();
    public static final HashMap<String, Item> ITEMS = new HashMap<>();
    public static final HashMap<String, Block> BLOCKS = new HashMap<>();
-   public static final HashMap<String,PolymerModelData> MODELS = new HashMap<>();
+   public static final HashMap<String, PolymerModelData> MODELS = new HashMap<>();
+   public static final HashMap<String, AreaEffectTracker> AREA_EFFECTS = new HashMap<>();
    
    //Armor Materials
    public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new NonProtectiveArmorMaterial();
@@ -96,6 +98,11 @@ public class ArcanaRegistry {
    public static final StatusEffect GREATER_BLINDNESS_EFFECT = registerStatusEffect("greater_blindness",new GreaterBlindnessEffect());
    public static final StatusEffect DEATH_WARD_EFFECT = registerStatusEffect("death_ward",new DeathWardEffect());
    public static final StatusEffect ENSNAREMENT_EFFECT = registerStatusEffect("ensnarement",new EnsnarementEffect());
+   
+   // Area Effect Trackers
+   public static final AreaEffectTracker SMOKE_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new SmokeArrowAreaEffectTracker());
+   public static final AreaEffectTracker AFTERSHOCK_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AftershockAreaEffectTracker());
+   public static final AreaEffectTracker ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AlchemicalArrowAreaEffectTracker());
    
    // Non-magic Items
    public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence",new NebulousEssenceItem(new FabricItemSettings().maxCount(64).fireproof()));
@@ -205,9 +212,10 @@ public class ArcanaRegistry {
    public static void initialize(){
       PolymerResourcePackUtils.addModAssets(MOD_ID);
       
-      for(Map.Entry<String, MagicItem> entry : registry.entrySet()){
+      for(Map.Entry<String, MagicItem> entry : MAGIC_ITEMS.entrySet()){
          String id = entry.getKey();
          MagicItem magicItem = entry.getValue();
+         magicItem.finalizePrefItem();
          registerItem(id, magicItem.getItem());
          //System.out.println("  \"item.arcananovum."+id+"\": \"\",");
          
@@ -222,7 +230,7 @@ public class ArcanaRegistry {
             }
          }
       }
-      for(Map.Entry<String, MagicItem> entry : registry.entrySet()){
+      for(Map.Entry<String, MagicItem> entry : MAGIC_ITEMS.entrySet()){
          if(entry.getValue() instanceof MultiblockCore mc){
             mc.loadMultiblock(); // Must be done after all blocks are registered
          }
@@ -234,7 +242,7 @@ public class ArcanaRegistry {
    }
    
    private static MagicItem register(MagicItem magicItem){
-      registry.put(magicItem.getId(),magicItem);
+      MAGIC_ITEMS.put(magicItem.getId(),magicItem);
       return magicItem;
    }
    
@@ -274,6 +282,11 @@ public class ArcanaRegistry {
       Registry.register(Registries.STATUS_EFFECT, new Identifier(MOD_ID,id), effect);
       //System.out.println("  \""+effect.getTranslationKey()+"\": \"\",");
       return effect;
+   }
+   
+   private static AreaEffectTracker registerAreaEffectTracker(AreaEffectTracker tracker){
+      AREA_EFFECTS.put(tracker.getType(),tracker);
+      return tracker;
    }
    
    public static Item getItem(String id) {

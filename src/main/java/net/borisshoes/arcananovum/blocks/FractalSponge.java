@@ -67,14 +67,11 @@ public class FractalSponge extends MagicBlock {
       display.putString("Name","[{\"text\":\"Fractal Sponge\",\"italic\":false,\"bold\":true,\"color\":\"yellow\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-   
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override

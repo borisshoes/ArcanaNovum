@@ -69,18 +69,14 @@ public class StasisPearl extends EnergyItem {
       display.putString("Name","[{\"text\":\"Stasis Pearl\",\"italic\":false,\"color\":\"blue\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      magicTag.putString("pearlID","");
-      magicTag.putBoolean("active",false);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").putString("pearlID","");
+      tag.getCompound("arcananovum").putBoolean("active",false);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -103,6 +99,11 @@ public class StasisPearl extends EnergyItem {
       }
       
       return loreList;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

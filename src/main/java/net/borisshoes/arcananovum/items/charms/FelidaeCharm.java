@@ -64,14 +64,11 @@ public class FelidaeCharm extends MagicItem {
       display.putString("Name","[{\"text\":\"Charm of Felidae\",\"italic\":false,\"bold\":true,\"color\":\"yellow\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-   
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override

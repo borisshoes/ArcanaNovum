@@ -55,22 +55,19 @@ public class AncientDowsingRod extends EnergyItem {
       models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
       initEnergy = 100;
    
-      ItemStack itemStack = new ItemStack(item);
-      NbtCompound tag = itemStack.getOrCreateNbt();
+      ItemStack stack = new ItemStack(item);
+      NbtCompound tag = stack.getOrCreateNbt();
       NbtCompound display = new NbtCompound();
       NbtList enchants = new NbtList();
       enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
       display.putString("Name","[{\"text\":\"Ancient Dowsing Rod\",\"italic\":false,\"bold\":true,\"color\":\"dark_red\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(itemStack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-   
-      itemStack.setNbt(prefNBT);
-      prefItem = itemStack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override
@@ -87,6 +84,11 @@ public class AncientDowsingRod extends EnergyItem {
       // 30 second base recharge
       int lvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SONIC_REABSORPTION.id));
       return 30 - 5*lvl;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    private MagicItemRecipe makeRecipe(){

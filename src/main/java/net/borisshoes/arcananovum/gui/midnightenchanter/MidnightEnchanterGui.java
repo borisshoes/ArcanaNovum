@@ -656,7 +656,7 @@ public class MidnightEnchanterGui extends SimpleGui implements WatchedGui {
    }
    
    private List<EnchantEntry> getEnchantsForItem(ItemStack stack){
-      if(stack.isEmpty() || stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem()) || stack.isOf(ArcanaRegistry.NUL_MEMENTO.getItem())) return new ArrayList<>();
+      if(stack.isEmpty() || stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())) return new ArrayList<>();
       Map<Enchantment,Integer> curEnchants = EnchantmentHelper.get(stack);
       List<EnchantEntry> possibleAdditions = new ArrayList<>();
       

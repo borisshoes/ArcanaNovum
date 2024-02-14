@@ -79,10 +79,14 @@ public class TransmutationAltarGui extends SimpleGui implements WatchedGui {
                ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_TRANSMUTATION.id);
             }
             if(output.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())){
+               PLAYER_DATA.get(player).addCraftedSilent(output);
                ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE.id);
             }
             
             blockEntity.getWorld().spawnEntity(new ItemEntity(blockEntity.getWorld(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
+         }
+         if(transmuteCount > 0){
+            PLAYER_DATA.get(player).addXP(transmuteCount*10+100);
          }
          
          boolean canRecurse = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.TRADE_AGREEMENT.id) > 0;

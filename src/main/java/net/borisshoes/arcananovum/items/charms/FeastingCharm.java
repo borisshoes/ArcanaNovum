@@ -64,15 +64,13 @@ public class FeastingCharm extends MagicItem {
       display.putString("Name","[{\"text\":\"Charm of Feasting\",\"italic\":false,\"bold\":true,\"color\":\"gold\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      prefNBT.getCompound("arcananovum").putInt("mode",0);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").putInt("mode",0);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

@@ -68,17 +68,14 @@ public class WildGrowthCharm extends MagicItem {
       display.putString("Name","[{\"text\":\"Charm of Wild Growth\",\"italic\":false,\"bold\":true,\"color\":\"green\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = this.addMagicNbt(tag);
-      tag.getCompound("arcananovum").putBoolean("active",false);
+      addMagicNbt(tag);
       tag.getCompound("arcananovum").putBoolean("harvest",false);
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      tag.getCompound("arcananovum").putBoolean("active",false);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

@@ -32,22 +32,16 @@ public class TransmutationRecipes {
       transmutationRecipes.add(new CommutativeTransmutationRecipe("Logs",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.ACACIA_LOG),new ItemStack(Items.BAMBOO_BLOCK),new ItemStack(Items.BIRCH_LOG),new ItemStack(Items.CHERRY_LOG),
             new ItemStack(Items.CRIMSON_STEM),new ItemStack(Items.DARK_OAK_LOG),new ItemStack(Items.JUNGLE_LOG),new ItemStack(Items.MANGROVE_LOG),
-            new ItemStack(Items.OAK_LOG),new ItemStack(Items.SPRUCE_LOG),new ItemStack(Items.WARPED_STEM)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
-      
-      transmutationRecipes.add(new CommutativeTransmutationRecipe("Wood",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_WOOD),new ItemStack(Items.BAMBOO_BLOCK),new ItemStack(Items.BIRCH_WOOD),new ItemStack(Items.CHERRY_WOOD),
-            new ItemStack(Items.CRIMSON_HYPHAE),new ItemStack(Items.DARK_OAK_WOOD),new ItemStack(Items.JUNGLE_WOOD),new ItemStack(Items.MANGROVE_WOOD),
-            new ItemStack(Items.OAK_WOOD),new ItemStack(Items.SPRUCE_WOOD),new ItemStack(Items.WARPED_HYPHAE)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
-      
-      transmutationRecipes.add(new CommutativeTransmutationRecipe("Stripped Logs",new ArrayList<>(Arrays.asList(
+            new ItemStack(Items.OAK_LOG),new ItemStack(Items.SPRUCE_LOG),new ItemStack(Items.WARPED_STEM),
             new ItemStack(Items.STRIPPED_ACACIA_LOG),new ItemStack(Items.STRIPPED_BAMBOO_BLOCK),new ItemStack(Items.STRIPPED_BIRCH_LOG),new ItemStack(Items.STRIPPED_CHERRY_LOG),
             new ItemStack(Items.STRIPPED_CRIMSON_STEM),new ItemStack(Items.STRIPPED_DARK_OAK_LOG),new ItemStack(Items.STRIPPED_JUNGLE_LOG),new ItemStack(Items.STRIPPED_MANGROVE_LOG),
             new ItemStack(Items.STRIPPED_OAK_LOG),new ItemStack(Items.STRIPPED_SPRUCE_LOG),new ItemStack(Items.STRIPPED_WARPED_STEM)
       )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      transmutationRecipes.add(new CommutativeTransmutationRecipe("Stripped Wood",new ArrayList<>(Arrays.asList(
+      transmutationRecipes.add(new CommutativeTransmutationRecipe("Wood",new ArrayList<>(Arrays.asList(
+            new ItemStack(Items.ACACIA_WOOD),new ItemStack(Items.BAMBOO_BLOCK),new ItemStack(Items.BIRCH_WOOD),new ItemStack(Items.CHERRY_WOOD),
+            new ItemStack(Items.CRIMSON_HYPHAE),new ItemStack(Items.DARK_OAK_WOOD),new ItemStack(Items.JUNGLE_WOOD),new ItemStack(Items.MANGROVE_WOOD),
+            new ItemStack(Items.OAK_WOOD),new ItemStack(Items.SPRUCE_WOOD),new ItemStack(Items.WARPED_HYPHAE),
             new ItemStack(Items.STRIPPED_ACACIA_WOOD),new ItemStack(Items.STRIPPED_BAMBOO_BLOCK),new ItemStack(Items.STRIPPED_BIRCH_WOOD),new ItemStack(Items.STRIPPED_CHERRY_WOOD),
             new ItemStack(Items.STRIPPED_CRIMSON_HYPHAE),new ItemStack(Items.STRIPPED_DARK_OAK_WOOD),new ItemStack(Items.STRIPPED_JUNGLE_WOOD),new ItemStack(Items.STRIPPED_MANGROVE_WOOD),
             new ItemStack(Items.STRIPPED_OAK_WOOD),new ItemStack(Items.STRIPPED_SPRUCE_WOOD),new ItemStack(Items.STRIPPED_WARPED_HYPHAE)
@@ -294,9 +288,11 @@ public class TransmutationRecipes {
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Coal Diamond",new ItemStack(Items.COAL,12),new ItemStack(Items.DIAMOND,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GUNPOWDER,16)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Refined Netherite",new ItemStack(Items.NETHERITE_SCRAP,3),new ItemStack(Items.NETHERITE_INGOT,1),new ItemStack(Items.GOLD_INGOT,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Refined Netherite",new ItemStack(Items.ANCIENT_DEBRIS,3),new ItemStack(Items.NETHERITE_INGOT,1),new ItemStack(Items.GOLD_INGOT,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Blaze Powder",new ItemStack(Items.BLAZE_ROD,1),new ItemStack(Items.BLAZE_POWDER,6),new ItemStack(Items.GUNPOWDER,24),new ItemStack(ArcanaRegistry.STARDUST,8)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Condensed String",new ItemStack(Items.STRING,16),new ItemStack(Items.COBWEB,1),new ItemStack(Items.SLIME_BLOCK,4),new ItemStack(Items.HONEY_BLOCK,4)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Liquid Experience",new ItemStack(Items.SCULK,64),new ItemStack(Items.EXPERIENCE_BOTTLE,16),new ItemStack(Items.GLASS_BOTTLE,16),new ItemStack(Items.LAPIS_LAZULI,32)));
       

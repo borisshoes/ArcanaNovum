@@ -70,6 +70,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    @Override
    protected float modifyAppliedDamage(DamageSource source, float amount) {
       float scale = numPlayers > 0 ? 2f/numPlayers : 1;
+      scale = Math.max(scale,0.1f);
       if(source.getAttacker() instanceof EnderDragonEntity) amount = 0;
       if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)) amount *= 0.25f; // Reduce damage from magic sources and immune to the dragon
       amount *= scale;

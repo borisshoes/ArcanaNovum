@@ -76,41 +76,7 @@ public abstract class MagicPolymerBlockEntity extends BlockWithEntity implements
          return ItemStack.EMPTY;
       }
       
-      String uuid = magicBlock.getUuid();
-      if(uuid == null) uuid = UUID.randomUUID().toString();
-      NbtCompound augmentsTag = new NbtCompound();
-      if(magicBlock.getAugments() != null){
-         for(Map.Entry<ArcanaAugment, Integer> entry : magicBlock.getAugments().entrySet()){
-            augmentsTag.putInt(entry.getKey().id, entry.getValue());
-         }
-      }else{
-         augmentsTag = null;
-      }
-      
-      MagicItem magicItem = magicBlock.getMagicItem();
-      ItemStack newItem = new ItemStack(magicItem.getItem());
-      newItem.setNbt(magicItem.getNewItem().getNbt());
-      ItemStack drop = magicItem.addCrafter(newItem, magicBlock.getCrafterId(), magicBlock.isSynthetic(),world.getServer());
-      NbtCompound dropNbt = drop.getNbt();
-      NbtCompound magicTag = dropNbt.getCompound("arcananovum");
-      if(augmentsTag != null) {
-         magicTag.put("augments",augmentsTag);
-         magicItem.buildItemLore(drop,world.getServer());
-      }
-      magicTag.putString("UUID",uuid);
-      
-      if(magicBlock.getCustomArcanaName() != null && !magicBlock.getCustomArcanaName().isEmpty()){
-         dropNbt.getCompound("display").putString("Name",magicBlock.getCustomArcanaName());
-      }
-      
-      if(magicBlock instanceof ArcaneSingularityBlockEntity singularity){
-         magicTag.put("books",singularity.writeBooks());
-      }
-      if(magicBlock instanceof StarpathAltarBlockEntity altar){
-         magicTag.put("targets",altar.writeTargets());
-      }
-      
-      return drop;
+      return magicBlock.getBlockEntityAsItem(be,world);
    }
    
    @Override

@@ -38,8 +38,9 @@ public class MiscUtils {
    public static void returnItems(Inventory inv, PlayerEntity player){
       if(inv == null) return;
       for(int i=0; i<inv.size();i++){
-         ItemStack stack = inv.getStack(i);
+         ItemStack stack = inv.getStack(i).copy();
          if(!stack.isEmpty()){
+            inv.setStack(0,ItemStack.EMPTY);
             
             ItemEntity itemEntity;
             boolean bl = player.getInventory().insertStack(stack);

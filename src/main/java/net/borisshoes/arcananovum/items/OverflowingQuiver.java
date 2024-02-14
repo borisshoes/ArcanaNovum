@@ -59,18 +59,13 @@ public class OverflowingQuiver extends QuiverItem{
       display.putString("Name","[{\"text\":\"Overflowing Quiver\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      NbtList storedArrows = new NbtList();
-      magicTag.put("arrows",storedArrows);
-      prefNBT = tag;
-   
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").put("arrows",new NbtList());
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

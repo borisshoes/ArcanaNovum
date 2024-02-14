@@ -72,11 +72,10 @@ public class TelescopingBeacon extends MagicItem {
       display.putString("Name","[{\"text\":\"Telescoping Beacon\",\"italic\":false,\"color\":\"aqua\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
+      stack.setNbt(addMagicNbt(tag));
       NbtCompound magicTag = tag.getCompound("arcananovum");
       NbtList blocks = new NbtList();
       NbtCompound initBlocks = new NbtCompound();
@@ -85,10 +84,8 @@ public class TelescopingBeacon extends MagicItem {
       blocks.add(initBlocks);
       magicTag.put("blocks",blocks);
       magicTag.putBoolean("beacon",true);
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -121,6 +118,11 @@ public class TelescopingBeacon extends MagicItem {
       }
       
       return loreList;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

@@ -58,18 +58,13 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
       display.putString("Name","[{\"text\":\"Arcanist's Belt\",\"italic\":false,\"color\":\"#996633\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      NbtList storedItems = new NbtList();
-      magicTag.put("items",storedItems);
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").put("items",new NbtList());
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -80,6 +75,11 @@ public class ArcanistsBelt extends MagicItem implements MagicItemContainer.Magic
       loreList.add(NbtString.of("[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\" consume a \",\"color\":\"yellow\"},{\"text\":\"reduced\",\"color\":\"dark_aqua\"},{\"text\":\" amount of \",\"color\":\"yellow\"},{\"text\":\"concentration\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to access the \",\"color\":\"yellow\"},{\"text\":\"Belt's\",\"color\":\"#996633\"},{\"text\":\" slots\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"yellow\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       return loreList;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

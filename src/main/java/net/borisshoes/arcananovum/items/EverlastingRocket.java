@@ -75,14 +75,11 @@ public class EverlastingRocket extends EnergyItem {
       display.putString("Name","[{\"text\":\"Everlasting Rocket\",\"italic\":false,\"bold\":true,\"color\":\"yellow\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override
@@ -127,6 +124,11 @@ public class EverlastingRocket extends EnergyItem {
       newTag.getCompound("arcananovum").put("Fireworks",firework);
       stack.setNbt(newTag);
       return buildItemLore(stack,server);
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum;
 
+import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
 import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.gui.WatchedGui;
@@ -19,7 +20,6 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.network.MultiplayerServerListPinger;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;

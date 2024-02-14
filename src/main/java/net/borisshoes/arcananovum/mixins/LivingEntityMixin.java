@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
 import net.borisshoes.arcananovum.effects.GreaterInvisibilityEffect;
 import net.borisshoes.arcananovum.items.*;
@@ -386,7 +387,7 @@ public abstract class LivingEntityMixin {
          numPlayers = bossFight.getRight().getInt("numPlayers");
       }
       if(numPlayers != 0){
-         float scale = 2f/numPlayers;
+         float scale = Math.max(2f/numPlayers, 0.1f);
          if(entity instanceof EnderDragonEntity){
             newReturn *= scale; //Effective Health Scale to bypass 1024 hp cap
             if(source.isIn(DamageTypeTags.BYPASSES_ARMOR) || source.isIn(DamageTypeTags.IS_EXPLOSION)) newReturn *= 0.25f; // Reduce damage from magic and explosive sources
@@ -394,7 +395,7 @@ public abstract class LivingEntityMixin {
       }
       
       // Death Ward
-      if(entity.hasStatusEffect(ArcanaRegistry.DEATH_WARD_EFFECT) && !source.isIn(DamageTypeTags.BYPASSES_RESISTANCE)){
+      if(entity.hasStatusEffect(ArcanaRegistry.DEATH_WARD_EFFECT) && (!source.isIn(DamageTypeTags.BYPASSES_RESISTANCE) || source.isOf(ArcanaDamageTypes.CONCENTRATION))){
          StatusEffectInstance effect = entity.getStatusEffect(ArcanaRegistry.DEATH_WARD_EFFECT);
          if(entity.getHealth() < newReturn){
             float damageWarded = newReturn;
@@ -434,25 +435,6 @@ public abstract class LivingEntityMixin {
             serverPlayerEntity.incrementStat(Stats.USED.getOrCreateStat(Items.TOTEM_OF_UNDYING));
             Criteria.USED_TOTEM.trigger(serverPlayerEntity, totemStack);
             totemStack.decrement(1);
-            
-            PlayerInventory inv = serverPlayerEntity.getInventory();
-            for(int i=0; i<inv.size();i++){
-               ItemStack item = inv.getStack(i);
-               if(item.isEmpty()){
-                  continue;
-               }
-               
-               boolean isMagic = MagicItemUtils.isMagic(item);
-               if(!isMagic)
-                  continue; // Item not magic, skip
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               
-               if(magicItem instanceof NulMemento nulMemento){ // Nul Memento Totem Death's Door
-                  if(nulMemento.isActive(item)){
-                     ArcanaAchievements.grant(serverPlayerEntity,ArcanaAchievements.DEATHS_DOOR.id);
-                  }
-               }
-            }
          }
          
          livingEntity.setHealth(1.0F);
@@ -468,6 +450,13 @@ public abstract class LivingEntityMixin {
       
       if(vengeanceStack != null && magicTotem.tryUseTotem(vengeanceStack, livingEntity,source)){
          cir.setReturnValue(true);
+         return;
+      }
+      
+      ItemStack headStack = livingEntity.getEquippedStack(EquipmentSlot.HEAD);
+      if(MagicItemUtils.identifyItem(headStack) instanceof NulMemento memento && memento.protectFromDeath(headStack,livingEntity,source)){
+         cir.setReturnValue(true);
+         return;
       }
    }
    

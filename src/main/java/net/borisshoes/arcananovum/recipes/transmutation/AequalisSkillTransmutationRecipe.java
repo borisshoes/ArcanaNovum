@@ -179,6 +179,8 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
             reagent2Entity.setStack(reagent2Stack);
          }
       }
+      
+      PLAYER_DATA.get(player).addXP(1000);
       return new ArrayList<>();
    }
    

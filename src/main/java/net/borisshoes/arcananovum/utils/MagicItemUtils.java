@@ -5,12 +5,15 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -41,7 +44,7 @@ public class MagicItemUtils {
             if(id==null)
                return false;
             //System.out.println("Found magic id: "+id);
-            MagicItem magicItem = ArcanaRegistry.registry.get(id);
+            MagicItem magicItem = ArcanaRegistry.MAGIC_ITEMS.get(id);
             if(magicItem == null)
                return false;
             //System.out.println("Magic Item Name: "+magicItem.getNameString());
@@ -98,7 +101,7 @@ public class MagicItemUtils {
             if(id==null)
                return false;
             //System.out.println("Found magic id: "+id);
-            MagicItem magicItem = ArcanaRegistry.registry.get(id);
+            MagicItem magicItem = ArcanaRegistry.MAGIC_ITEMS.get(id);
             //System.out.println("Magic Item Name: "+magicItem.getName());
             return (magicItem instanceof LeftClickItem);
          }
@@ -114,7 +117,7 @@ public class MagicItemUtils {
       if(isLeftClickItem(item)){
          NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          String id = magicTag.getString("id");
-         return (LeftClickItem) ArcanaRegistry.registry.get(id);
+         return (LeftClickItem) ArcanaRegistry.MAGIC_ITEMS.get(id);
       }
       return null;
    }
@@ -123,7 +126,7 @@ public class MagicItemUtils {
       if(isMagic(item)){
          NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
          String id = magicTag.getString("id");
-         return ArcanaRegistry.registry.get(id);
+         return ArcanaRegistry.MAGIC_ITEMS.get(id);
       }
       return null;
    }
@@ -278,17 +281,52 @@ public class MagicItemUtils {
       return itemsTakingConc;
    }
    
+   public static boolean hasItemInInventory(PlayerEntity player, Item itemType){
+      List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
+      PlayerInventory playerInv = player.getInventory();
+      
+      List<ItemStack> invItems = new ArrayList<>();
+      for(int i=0; i<playerInv.size();i++){
+         ItemStack item = playerInv.getStack(i);
+         if(item.isEmpty()){
+            continue;
+         }
+         
+         invItems.add(item);
+         MagicItem mitem = MagicItemUtils.identifyItem(item);
+         if(mitem instanceof ArcanistsBelt belt){
+            SimpleInventory beltInv = belt.deserialize(item);
+            ArrayList<ItemStack> beltList = new ArrayList<>();
+            for(int j = 0; j < beltInv.size(); j++){
+               beltList.add(beltInv.getStack(j));
+            }
+            allItems.add(new Pair<>(beltList,item));
+         }
+      }
+      allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
+      
+      for(Pair<List<ItemStack>, ItemStack> allItem : allItems){
+         List<ItemStack> itemList = allItem.getLeft();
+         
+         for(ItemStack item : itemList){
+            if(item.isOf(itemType)) return true;
+         }
+         
+      }
+      return false;
+   }
+   
    public static int countRarityInList(List<String> ids, MagicRarity rarity, boolean exclude){
       int count = 0;
       for(String id : ids){
-         if(!ArcanaRegistry.registry.containsKey("id")) continue;
+         if(!ArcanaRegistry.MAGIC_ITEMS.containsKey("id")) continue;
          if(getItemFromId(id).getRarity() == rarity ^ exclude) count++;
       }
       return count;
    }
    
    public static MagicItem getItemFromId(String id){
-      return ArcanaRegistry.registry.get(id);
+      return ArcanaRegistry.MAGIC_ITEMS.get(id);
    }
    
    public static class MagicInvItem {

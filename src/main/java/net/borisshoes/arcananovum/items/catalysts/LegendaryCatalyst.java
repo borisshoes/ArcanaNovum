@@ -60,14 +60,11 @@ public class LegendaryCatalyst extends MagicItem {
       display.putString("Name","[{\"text\":\"Legendary Augment Catalyst\",\"italic\":false,\"color\":\"gold\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override

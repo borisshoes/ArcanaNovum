@@ -15,14 +15,12 @@ import net.borisshoes.arcananovum.items.arrows.TrackingArrows;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -31,7 +29,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -244,7 +241,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          }
       }
       if(nbt.contains("runicArrowType")){
-         MagicItem magicItem = ArcanaRegistry.registry.get(nbt.getString("runicArrowType"));
+         MagicItem magicItem = ArcanaRegistry.MAGIC_ITEMS.get(nbt.getString("runicArrowType"));
          if(magicItem instanceof RunicArrow ra) arrowType = ra;
       }
       if(nbt.contains("runicArrowData")){

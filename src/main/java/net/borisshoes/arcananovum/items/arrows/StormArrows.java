@@ -2,9 +2,12 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
+import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -74,14 +77,11 @@ public class StormArrows extends RunicArrow {
       tag.putInt("CustomPotionColor",12040354);
       tag.putInt("HideFlags", 255);
       stack.setCount(64);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override
@@ -124,7 +124,7 @@ public class StormArrows extends RunicArrow {
          }
    
          if(shockLvl > 0 && world instanceof ServerWorld serverWorld){
-            aftershockPulse(arrow,serverWorld,pos,shockLvl,0);
+            ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.AFTERSHOCK_AREA_EFFECT_TRACKER.getType()).addSource(AftershockAreaEffectTracker.source(arrow.getOwner(), BlockPos.ofFloored(pos),serverWorld,shockLvl));
             SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.2f,1f);
          }
       }
@@ -141,47 +141,23 @@ public class StormArrows extends RunicArrow {
       List<LivingEntity> hits = new ArrayList<>();
       if(hitEntity instanceof LivingEntity le) hits.add(le);
       for(Entity entity : entities){
-         if(entity instanceof LivingEntity e && !entity.getUuidAsString().equals(hitEntity.getUuidAsString())){
+         if(entity instanceof LivingEntity e){
             if(hits.size() < lvl+1){
-               if(hits.size() > 0){
+               if(!hits.isEmpty()){
                   LivingEntity lastHit = hits.get(hits.size() - 1);
                   double dist = lastHit.getPos().distanceTo(e.getPos());
                   
                   if(world instanceof ServerWorld serverWorld)
                      ParticleEffectUtils.line(serverWorld,null,lastHit.getPos().add(0,lastHit.getHeight()/2,0),e.getPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
                }
-               DamageSource source = new DamageSource(entity.getDamageSources().lightningBolt().getTypeRegistryEntry(), arrow.getOwner(),arrow.getOwner());
+               
+               DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow.getOwner(),arrow.getOwner());
                e.damage(source,6);
                hits.add(e);
             }
          }
       }
       SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
-   }
-   
-   private void aftershockPulse(PersistentProjectileEntity arrow, ServerWorld world, Vec3d pos, int level, int calls){
-      double range = level >= 4 ? 4 : 2.5;
-      float dmg = level >= 4 ? 4 : 2;
-      int duration = 30 + 20*level;
-      
-      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
-      List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.25*range*range && !(e instanceof PersistentProjectileEntity));
-      for(Entity entity : entities){
-         if(entity instanceof LivingEntity e){
-            DamageSource source = new DamageSource(entity.getDamageSources().lightningBolt().getTypeRegistryEntry(), arrow.getOwner(),arrow.getOwner());
-            e.damage(source,dmg);
-         }
-      }
-      
-      world.spawnParticles(ParticleTypes.WAX_OFF,pos.x,pos.y,pos.z,30,range,1,range,.1);
-      
-      if(calls % 2 == 0){
-         SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.PLAYERS,.07f,2f);
-      }
-      
-      if(calls < duration/3){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(3, () -> aftershockPulse(arrow, world, pos, level,calls + 1)));
-      }
    }
    
    private MagicItemRecipe makeRecipe(){

@@ -88,19 +88,17 @@ public class LevitationHarness extends EnergyItem {
       tag.put("AttributeModifiers",attributes);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
+      stack.setNbt(addMagicNbt(tag));
       NbtCompound magicTag = tag.getCompound("arcananovum");
       magicTag.putInt("souls",500);
       magicTag.putInt("glowstone",960);
       magicTag.putInt("stall",-1);
       magicTag.putBoolean("wasFlying",false);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

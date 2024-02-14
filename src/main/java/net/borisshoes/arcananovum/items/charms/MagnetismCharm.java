@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.EggItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -141,18 +142,15 @@ public class MagnetismCharm extends MagicItem {
       display.putString("Name","[{\"text\":\"Charm of Magnetism\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = this.addMagicNbt(tag);
+      addMagicNbt(tag);
       tag.getCompound("arcananovum").putInt("mode",0); // 0 off, 1 attract, 2 repel
       tag.getCompound("arcananovum").putInt("cooldown",0);
       tag.getCompound("arcananovum").put("filter",new NbtCompound());
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -324,6 +322,11 @@ public class MagnetismCharm extends MagicItem {
                .append(Text.translatable(filterItem.getTranslationKey()).formatted(Formatting.DARK_GRAY,Formatting.ITALIC))
                .append(Text.literal(" from the filter").formatted(Formatting.GRAY,Formatting.ITALIC)),true);
       }
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    private MagicItemRecipe makeRecipe(){

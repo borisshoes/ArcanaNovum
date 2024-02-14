@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EnchantmentMixin {
    @Inject(method="isAcceptableItem",at=@At("HEAD"), cancellable = true)
    private void arcananovum_makeUnenchantable(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
-      if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem()) || stack.isOf(ArcanaRegistry.NUL_MEMENTO.getItem())){
+      if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())){
          Enchantment enchant = (Enchantment) (Object) this;
          cir.setReturnValue(false);
       }

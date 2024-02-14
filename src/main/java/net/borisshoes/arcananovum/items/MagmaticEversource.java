@@ -87,17 +87,14 @@ public class MagmaticEversource extends EnergyItem {
       display.putString("Name","[{\"text\":\"Magmatic Eversource\",\"italic\":false,\"bold\":true,\"color\":\"gold\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = this.addMagicNbt(tag);
+      addMagicNbt(tag);
       tag.getCompound("arcananovum").putInt("mode",0); // 0 place, 1 remove
       tag.getCompound("arcananovum").putInt("charges",1);
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override
@@ -128,6 +125,11 @@ public class MagmaticEversource extends EnergyItem {
          loreList.add(NbtString.of("[{\"text\":\"Charges \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"- \",\"color\":\"dark_red\"},{\"text\":\""+charges+"\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_red\"}]"));
       }
       return loreList;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    @Override

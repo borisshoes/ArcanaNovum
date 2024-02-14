@@ -58,7 +58,7 @@ public class VengeanceTotemLoginCallback extends LoginCallback{
          if(!survives){
             player.damage(ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,foundAttacker), player.getMaxHealth()*10);
          }else{
-            PLAYER_DATA.get(player).addXP(5000); // Give XP
+            PLAYER_DATA.get(player).addXP(4000); // Give XP
          }
       }
    }

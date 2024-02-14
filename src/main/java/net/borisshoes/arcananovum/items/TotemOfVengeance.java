@@ -46,6 +46,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 public class TotemOfVengeance extends MagicItem {
    
    private static final String TXT = "item/totem_of_vengeance";
@@ -68,14 +70,11 @@ public class TotemOfVengeance extends MagicItem {
       display.putString("Name","[{\"text\":\"Totem of Vengeance\",\"italic\":false,\"bold\":true,\"color\":\"dark_red\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override
@@ -109,6 +108,7 @@ public class TotemOfVengeance extends MagicItem {
          }
          
          ArcanaAchievements.progress(player,ArcanaAchievements.TOO_ANGRY_TO_DIE.id,0); // Start the timer
+         PLAYER_DATA.get(player).addXP(1000);
       }
       stack.decrement(1);
       living.setHealth(1.0f);

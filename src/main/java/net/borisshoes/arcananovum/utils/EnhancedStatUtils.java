@@ -26,7 +26,7 @@ public class EnhancedStatUtils {
    }
    
    public static void enhanceItem(ItemStack stack, double percentile){
-      if((stack.isIn(ItemTags.TRIMMABLE_ARMOR) || stack.isOf(ArcanaRegistry.WINGS_OF_ENDERIA.getItem())) && stack.getItem() instanceof ArmorItem armorItem){
+      if((stack.isIn(ItemTags.TRIMMABLE_ARMOR) || stack.isOf(ArcanaRegistry.WINGS_OF_ENDERIA.getItem()) || stack.isOf(ArcanaRegistry.NUL_MEMENTO.getItem())) && stack.getItem() instanceof ArmorItem armorItem){
          double armor = armorItem.getProtection();
          double toughness = armorItem.getToughness();
          double kbRes = armorItem.getMaterial().getKnockbackResistance();
@@ -52,9 +52,9 @@ public class EnhancedStatUtils {
                attackSpeed = entry.getValue().getValue();
             }
          }
-         // linear boost, up to 50% in each category
+         // linear boost, up to 50% in atk speed and 100% in damage
          double newAttackSpeed = attackSpeed + 0.5*Math.abs(attackSpeed)*percentile; // Attack speed is usually negative for weapons
-         double newAttackDamage = attackDamage + 0.5*attackDamage*percentile - 1;
+         double newAttackDamage = attackDamage + attackDamage*percentile - 1;
          stack.addAttributeModifier(EntityAttributes.GENERIC_ATTACK_DAMAGE, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Damage", newAttackDamage, EntityAttributeModifier.Operation.ADDITION),EquipmentSlot.MAINHAND);
          stack.addAttributeModifier(EntityAttributes.GENERIC_ATTACK_SPEED, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Attack Speed", newAttackSpeed, EntityAttributeModifier.Operation.ADDITION),EquipmentSlot.MAINHAND);
          stack.getOrCreateNbt().putDouble("ArcanaStats",percentile);

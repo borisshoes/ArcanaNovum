@@ -73,17 +73,14 @@ public class StarpathAltar extends MagicBlock implements MultiblockCore {
       display.putString("Name","[{\"text\":\"Starpath Altar\",\"italic\":false,\"color\":\"white\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
+      addMagicNbt(tag);
       NbtList targetsList = new NbtList();
-      magicTag.put("targets",targetsList);
-      prefNBT = tag;
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      tag.getCompound("arcananovum").put("targets",targetsList);
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

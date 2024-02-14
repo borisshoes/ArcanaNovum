@@ -12,16 +12,18 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.callbacks.TickCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.gui.cache.CacheGui;
+import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.NulMemento;
 import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -98,13 +100,13 @@ public class ArcanaCommands {
          }
       
          if(targets.size() == 1 && set){
-            source.sendFeedback(()->Text.translatable("Set Bonus Skill Points to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(()->Text.literal("Set Bonus Skill Points to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set){
-            source.sendFeedback(()->Text.translatable("Gave "+amount+" Bonus Skill Points to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(()->Text.literal("Gave "+amount+" Bonus Skill Points to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() != 1 && set){
-            source.sendFeedback(()->Text.translatable("Set Bonus Skill Points to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(()->Text.literal("Set Bonus Skill Points to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set){
-            source.sendFeedback(()->Text.translatable("Gave "+amount+" Bonus Skill Points to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(()->Text.literal("Gave "+amount+" Bonus Skill Points to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }
       
          return targets.size();
@@ -120,11 +122,11 @@ public class ArcanaCommands {
          IArcanaProfileComponent profile = PLAYER_DATA.get(target);
          NbtInt pointsEle = (NbtInt) profile.getMiscData("adminSkillPoints");
          int adminPoints = pointsEle == null ? 0 : pointsEle.intValue();
-         MutableText feedback = Text.translatable("")
+         MutableText feedback = Text.literal("")
                .append(target.getDisplayName())
-               .append(Text.translatable(" has ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
                .append(Text.translatable(Integer.toString(adminPoints)).formatted(Formatting.AQUA,Formatting.BOLD))
-               .append(Text.translatable(" Bonus Skill Points").formatted(Formatting.LIGHT_PURPLE));
+               .append(Text.literal(" Bonus Skill Points").formatted(Formatting.LIGHT_PURPLE));
          source.sendFeedback(()->feedback, false);
          return 1;
       }catch(Exception e){
@@ -150,21 +152,21 @@ public class ArcanaCommands {
          }
          
          if(targets.size() == 1 && set && points){
-            source.sendFeedback(()->Text.translatable("Set Arcana XP to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(()->Text.literal("Set Arcana XP to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && set && !points){
-            source.sendFeedback(()->Text.translatable("Set Arcana Level to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(()->Text.literal("Set Arcana Level to "+amount+" for ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && points){
-            source.sendFeedback(()->Text.translatable("Gave "+amount+" Arcana XP to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana XP to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() == 1 && !set && !points){
-            source.sendFeedback(()->Text.translatable("Gave "+amount+" Arcana Levels to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
+            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana Levels to ").formatted(Formatting.LIGHT_PURPLE).append(targets.iterator().next().getDisplayName()), true);
          }else if(targets.size() != 1 && set && points){
-            source.sendFeedback(()->Text.translatable("Set Arcana XP to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(()->Text.literal("Set Arcana XP to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && set && !points){
-            source.sendFeedback(()->Text.translatable("Set Arcana Level to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(()->Text.literal("Set Arcana Level to "+amount+" for " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && points){
-            source.sendFeedback(()->Text.translatable("Gave "+amount+" Arcana XP to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana XP to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }else if(targets.size() != 1 && !set && !points){
-            source.sendFeedback(()->Text.translatable("Gave "+amount+" Arcana Levels to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
+            source.sendFeedback(()->Text.literal("Gave "+amount+" Arcana Levels to " + targets.size() + " players").formatted(Formatting.LIGHT_PURPLE), true);
          }
          
          return targets.size();
@@ -249,7 +251,7 @@ public class ArcanaCommands {
             }
             out.close();
          }else{
-            player.sendMessage(Text.translatable("Hold a book to get data"),true);
+            player.sendMessage(Text.literal("Hold a book to get data"),true);
          }
       } catch (Exception e) {
          e.printStackTrace();
@@ -578,7 +580,16 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         System.out.println(DEBUG_VALUE);
+         
+         if(MagicItemUtils.identifyItem(player.getMainHandStack()) instanceof NulMemento memento){
+            memento.inventoryDialog(player);
+         }
+         if(MagicItemUtils.identifyItem(player.getMainHandStack()) instanceof AequalisScientia aequalis){
+            aequalis.inventoryDialog(player);
+         }
+         if(player.getMainHandStack().isOf(Items.DRAGON_EGG)){
+            TickCallback.dragonEggDialog(player);
+         }
          
       } catch (Exception e) {
          e.printStackTrace();
@@ -617,7 +628,7 @@ public class ArcanaCommands {
    
    public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
       String start = builder.getRemaining().toLowerCase();
-      Set<String> items = ArcanaRegistry.registry.keySet();
+      Set<String> items = ArcanaRegistry.MAGIC_ITEMS.keySet();
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
@@ -799,7 +810,7 @@ public class ArcanaCommands {
       try{
          MagicItem magicItem = MagicItemUtils.getItemFromId(id);
          if(magicItem == null){
-            source.sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendMessage(Text.literal("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }
    
@@ -807,12 +818,12 @@ public class ArcanaCommands {
             ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),target.getUuidAsString(),true,source.getServer());
    
             if(item == null){
-               source.sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
+               source.sendMessage(Text.literal("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
                return 0;
             }else{
                NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
                String uuid = magicTag.getString("UUID");
-               source.sendFeedback(() -> Text.translatable("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
+               source.sendFeedback(() -> Text.literal("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
                target.giveItemStack(item);
             }
          }
@@ -827,18 +838,18 @@ public class ArcanaCommands {
       try{
          MagicItem magicItem = MagicItemUtils.getItemFromId(id);
          if(magicItem == null){
-            source.sendMessage(Text.translatable("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendMessage(Text.literal("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }
          ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),true,source.getServer());
          
          if(item == null){
-            source.sendMessage(Text.translatable("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendMessage(Text.literal("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }else{
             NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
             String uuid = magicTag.getString("UUID");
-            source.sendMessage(Text.translatable("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN));
+            source.sendMessage(Text.literal("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN));
             source.getPlayerOrThrow().giveItemStack(item);
             return 1;
          }
@@ -848,15 +859,39 @@ public class ArcanaCommands {
       }
    }
    
+   public static int showItem(CommandContext<ServerCommandSource> context){
+      ServerCommandSource source = context.getSource();
+      if(!source.isExecutedByPlayer() || source.getPlayer() == null){
+         source.sendFeedback(()->Text.literal("Command must be executed by a player"), false);
+         return -1;
+      }
+      ServerPlayerEntity player = source.getPlayer();
+      if(!MagicItemUtils.isMagic(player.getMainHandStack())){
+         source.sendFeedback(()->Text.literal("You can only show off Magic Items"), false);
+         return -1;
+      }
+      
+      MutableText message = Text.literal("")
+            .append(player.getStyledDisplayName())
+            .append(Text.literal(" is showing off their ").formatted(Formatting.LIGHT_PURPLE))
+            .append(player.getMainHandStack().toHoverableText());
+      
+      for(ServerPlayerEntity other : context.getSource().getServer().getPlayerManager().getPlayerList()){
+         other.sendMessage(message);
+      }
+      
+      return 0;
+   }
+   
    public static int startDragonBoss(CommandContext<ServerCommandSource> context){
       ServerCommandSource source = context.getSource();
       if(!source.isExecutedByPlayer()){
-         source.sendFeedback(()->Text.translatable("Command must be executed by a player"), false);
+         source.sendFeedback(()->Text.literal("Command must be executed by a player"), false);
          return -1;
       }
       for(ServerWorld world : source.getServer().getWorlds()){
          if(BOSS_FIGHT.get(world).getBossFight() != null){
-            source.sendFeedback(()->Text.translatable("A Boss Fight is Currently Active"), false);
+            source.sendFeedback(()->Text.literal("A Boss Fight is Currently Active"), false);
             return -1;
          }
       }
@@ -867,7 +902,7 @@ public class ArcanaCommands {
    public static int abortBoss(CommandContext<ServerCommandSource> context){
       MinecraftServer server = context.getSource().getServer();
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
-      context.getSource().sendFeedback(()->Text.translatable("Aborting Boss Fight"),true);
+      context.getSource().sendFeedback(()->Text.literal("Aborting Boss Fight"),true);
       if(bossFight == null){
          return BossFight.cleanBoss(server);
       }
@@ -879,7 +914,7 @@ public class ArcanaCommands {
    
    public static int cleanBoss(CommandContext<ServerCommandSource> context){
       ServerCommandSource source = context.getSource();
-      source.sendFeedback(()->Text.translatable("Cleaned Boss Data"),true);
+      source.sendFeedback(()->Text.literal("Cleaned Boss Data"),true);
       return BossFight.cleanBoss(source.getServer());
    }
    
@@ -887,7 +922,7 @@ public class ArcanaCommands {
       ServerCommandSource source = context.getSource();
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.translatable("No Boss Fight Active"),false);
+         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
          return -1;
       }
       if(bossFight.getLeft() == BossFights.DRAGON){
@@ -900,7 +935,7 @@ public class ArcanaCommands {
       ServerCommandSource source = context.getSource();
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.translatable("No Boss Fight Active"),false);
+         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
          return -1;
       }
       if(bossFight.getLeft() == BossFights.DRAGON){
@@ -913,11 +948,25 @@ public class ArcanaCommands {
       ServerCommandSource source = context.getSource();
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.translatable("No Boss Fight Active"),false);
+         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
          return -1;
       }
       if(bossFight.getLeft() == BossFights.DRAGON){
          return DragonBossFight.forceLairAction(source.getServer(),context.getSource());
+      }
+      return -1;
+   }
+   
+   public static int bossForcePlayerCount(CommandContext<ServerCommandSource> context, int playerCount){
+      ServerCommandSource source = context.getSource();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
+      if(bossFight == null){
+         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
+         return -1;
+      }
+      if(bossFight.getLeft() == BossFights.DRAGON){
+         DragonBossFight.setForcedPlayerCount(context.getSource().getServer(),playerCount);
+         return 1;
       }
       return -1;
    }
@@ -932,7 +981,7 @@ public class ArcanaCommands {
       ServerCommandSource source = context.getSource();
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.translatable("No Boss Fight Active"),false);
+         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
          return -1;
       }
       if(bossFight.getLeft() == BossFights.DRAGON){
@@ -952,7 +1001,7 @@ public class ArcanaCommands {
    public static int announceBoss(ServerCommandSource source, String time){
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(source.getServer().getWorld(World.END)).getBossFight();
       if(bossFight == null){
-         source.sendFeedback(()->Text.translatable("No Boss Fight Active"),false);
+         source.sendFeedback(()->Text.literal("No Boss Fight Active"),false);
          return -1;
       }
       if(bossFight.getLeft() == BossFights.DRAGON){
@@ -964,7 +1013,7 @@ public class ArcanaCommands {
    public static int beginBoss(CommandContext<ServerCommandSource> context){
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(context.getSource().getServer().getWorld(World.END)).getBossFight();
       if(bossFight == null){
-         context.getSource().sendFeedback(()->Text.translatable("No Boss Fight Active"),false);
+         context.getSource().sendFeedback(()->Text.literal("No Boss Fight Active"),false);
          return -1;
       }
       if(bossFight.getLeft() == BossFights.DRAGON){
@@ -972,4 +1021,6 @@ public class ArcanaCommands {
       }
       return -1;
    }
+   
+   
 }

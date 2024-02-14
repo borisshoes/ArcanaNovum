@@ -50,13 +50,11 @@ public class ShieldOfFortitude extends MagicItem {
       tag.put("Enchantments",enchants);
       tag.putInt("HideFlags", 255);
       tag.putInt("Unbreakable",1);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-   
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override

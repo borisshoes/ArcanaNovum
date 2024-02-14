@@ -64,18 +64,13 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
       display.putString("Name","[{\"text\":\"Runic Quiver\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
-
+      
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      tag = addMagicNbt(tag);
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      NbtList storedArrows = new NbtList();
-      magicTag.put("arrows",storedArrows);
-      prefNBT = tag;
-      
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      addMagicNbt(tag);
+      tag.getCompound("arcananovum").put("arrows",new NbtList());
+      stack.setNbt(tag);
+      setPrefStack(stack);
    }
    
    @Override

@@ -71,13 +71,11 @@ public class ArcaneTome extends MagicItem {
       display.putString("Name","[{\"text\":\"Tome of Arcana Novum\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
       tag.put("display",display);
       tag.put("Enchantments",enchants);
-      buildItemLore(stack, ArcanaNovum.SERVER);
       
       setBookLore(makeLore());
       setRecipe(makeRecipe());
-      prefNBT = addMagicNbt(tag);
-      stack.setNbt(prefNBT);
-      prefItem = stack;
+      stack.setNbt(addMagicNbt(tag));
+      setPrefStack(stack);
    }
    
    @Override
@@ -87,6 +85,11 @@ public class ArcaneTome extends MagicItem {
       loreList.add(NbtString.of("[{\"text\":\"There is so much \",\"italic\":false,\"color\":\"green\"},{\"text\":\"new magic\",\"color\":\"light_purple\"},{\"text\":\" to explore...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"yellow\"},{\"text\":\" to open the tome.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
       return loreList;
+   }
+   
+   @Override
+   public boolean blocksHandInteractions(ItemStack item){
+      return true;
    }
    
    public void openGui(PlayerEntity playerEntity, TomeMode mode, TomeGui.CompendiumSettings settings){
@@ -274,13 +277,13 @@ public class ArcaneTome extends MagicItem {
       List<MagicItem> items;
       if(filterType != null){
          items = new ArrayList<>();
-         for(MagicItem magicItem : ArcanaRegistry.registry.values().stream().toList()){
+         for(MagicItem magicItem : ArcanaRegistry.MAGIC_ITEMS.values().stream().toList()){
             if(TomeFilter.matchesFilter(filterType,magicItem)){
                items.add(magicItem);
             }
          }
       }else{
-         items = new ArrayList<>(ArcanaRegistry.registry.values().stream().toList());
+         items = new ArrayList<>(ArcanaRegistry.MAGIC_ITEMS.values().stream().toList());
       }
       
       switch(sortType){
