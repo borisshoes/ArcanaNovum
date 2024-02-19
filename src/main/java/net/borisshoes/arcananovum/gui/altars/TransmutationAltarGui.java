@@ -90,10 +90,13 @@ public class TransmutationAltarGui extends SimpleGui implements WatchedGui {
          }
          
          boolean canRecurse = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.TRADE_AGREEMENT.id) > 0;
-         if(canRecurse){
+         if(canRecurse && checkTransmute() != null){
             blockEntity.resetCooldown();
-            ParticleEffectUtils.transmutationAltarAnim(player.getServerWorld(),blockEntity.getPos().toCenterPos(), 0, blockEntity.getWorld().getBlockState(blockEntity.getPos()).get(HORIZONTAL_FACING));
-            ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(500, () -> transmute(true)));
+            boolean hastyBargain = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id) > 0;
+            double speedMod = hastyBargain ? 2 : 1;
+            int castTime = (int) (500.0 / speedMod);
+            ParticleEffectUtils.transmutationAltarAnim(player.getServerWorld(),blockEntity.getPos().toCenterPos(), 0, blockEntity.getWorld().getBlockState(blockEntity.getPos()).get(HORIZONTAL_FACING), speedMod);
+            ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(castTime, () -> transmute(true)));
          }
          
          ArcanaAchievements.progress(player,ArcanaAchievements.STATE_ALCHEMIST.id,transmuteCount);
@@ -131,8 +134,11 @@ public class TransmutationAltarGui extends SimpleGui implements WatchedGui {
             if(blockEntity.getCooldown() <= 0){
                if(checkTransmute() != null){
                   blockEntity.resetCooldown();
-                  ParticleEffectUtils.transmutationAltarAnim(player.getServerWorld(),blockEntity.getPos().toCenterPos(), 0, serverWorld.getBlockState(blockEntity.getPos()).get(HORIZONTAL_FACING));
-                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(500, () -> transmute(false)));
+                  boolean hastyBargain = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id) > 0;
+                  double speedMod = hastyBargain ? 2 : 1;
+                  int castTime = (int) (500.0 / speedMod);
+                  ParticleEffectUtils.transmutationAltarAnim(player.getServerWorld(),blockEntity.getPos().toCenterPos(), 0, serverWorld.getBlockState(blockEntity.getPos()).get(HORIZONTAL_FACING), speedMod);
+                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(castTime, () -> transmute(false)));
                }else{
                   player.sendMessage(Text.literal("No Transmutation Items Found").formatted(Formatting.RED,Formatting.ITALIC));
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);

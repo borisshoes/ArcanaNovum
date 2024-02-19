@@ -284,7 +284,7 @@ public class MagmaticEversource extends EnergyItem {
       
       public boolean placeFluid(Fluid fluid, @Nullable PlayerEntity player, World world, BlockPos pos, @Nullable BlockHitResult hitResult) {
          boolean bl2;
-         if (!(fluid instanceof FlowableFluid)) {
+         if (!(fluid instanceof FlowableFluid flowableFluid)) {
             return false;
          }
          BlockState blockState = world.getBlockState(pos);
@@ -294,12 +294,19 @@ public class MagmaticEversource extends EnergyItem {
          if (!bl2) {
             return hitResult != null && placeFluid(fluid,player, world, hitResult.getBlockPos().offset(hitResult.getSide()), null);
          }
+         if (block instanceof FluidFillable fluidFillable) {
+            if (fluid == Fluids.LAVA) {
+               fluidFillable.tryFillWithFluid(world, pos, blockState, flowableFluid.getStill(false));
+               world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY_LAVA, SoundCategory.BLOCKS, 1.0f, 1.0f);
+               world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
+               return true;
+            }
+         }
          if (!world.isClient && bl && !blockState.isLiquid()) {
             world.breakBlock(pos, true);
          }
          if (world.setBlockState(pos, fluid.getDefaultState().getBlockState(), Block.NOTIFY_ALL_AND_REDRAW) || blockState.getFluidState().isStill()) {
-            SoundEvent soundEvent = fluid.isIn(FluidTags.LAVA) ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_EMPTY;
-            world.playSound(player, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, 1.0f);
+            world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY_LAVA, SoundCategory.BLOCKS, 1.0f, 1.0f);
             world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
             return true;
          }

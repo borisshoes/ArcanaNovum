@@ -180,7 +180,7 @@ public class WildGrowthCharm extends MagicItem {
                   
                   if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
                      ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
-                     PLAYER_DATA.get(player).addXP(25); // Add xp
+                     PLAYER_DATA.get(player).addXP(reaping >= 2 && harvest ? 1 : 25); // Add xp
                   }
                }else if (bloom && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)) {
                   world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 0);

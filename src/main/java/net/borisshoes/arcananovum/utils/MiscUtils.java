@@ -4,6 +4,9 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.*;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -19,6 +22,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class MiscUtils {
    
@@ -153,5 +157,49 @@ public class MiscUtils {
          }
       }
       return closest;
+   }
+   
+   public static ItemEntity getLargestItemEntity(List<ItemEntity> list){
+      ItemEntity largest = null;
+      double largestNumber = 0;
+      for(ItemEntity itemEntity : list){
+         ItemStack itemStack = itemEntity.getStack();
+         if(itemStack.getCount() > largestNumber){
+            largestNumber = itemStack.getCount();
+            largest = itemEntity;
+         }
+      }
+      return largest;
+   }
+   
+   
+   public static void removeMaxAbsorption(LivingEntity entity, UUID uuid, float amount) {
+      AttributeContainer attributeContainer = entity.getAttributes();
+      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
+      if (entityAttributeInstance == null) return;
+      EntityAttributeModifier existing = entityAttributeInstance.getModifier(uuid);
+      if(existing != null){
+         double current = existing.getValue();
+         double newAmount = current-amount;
+         entityAttributeInstance.removeModifier(uuid);
+         if(newAmount > 0.01){
+            EntityAttributeModifier modifier = new EntityAttributeModifier(uuid, existing.toNbt().getString("Name"), newAmount, EntityAttributeModifier.Operation.ADDITION);
+            entityAttributeInstance.addPersistentModifier(modifier);
+         }
+      }
+   }
+   
+   public static void addMaxAbsorption(LivingEntity entity, UUID uuid, String name, double amount) {
+      AttributeContainer attributeContainer = entity.getAttributes();
+      EntityAttributeModifier modifier = new EntityAttributeModifier(uuid, name, amount, EntityAttributeModifier.Operation.ADDITION);
+      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
+      if (entityAttributeInstance == null) return;
+      EntityAttributeModifier existing = entityAttributeInstance.getModifier(uuid);
+      if(existing != null){
+         double current = existing.getValue();
+         entityAttributeInstance.removeModifier(uuid);
+         modifier = new EntityAttributeModifier(uuid, name, amount+current, EntityAttributeModifier.Operation.ADDITION);
+      }
+      entityAttributeInstance.addPersistentModifier(modifier);
    }
 }

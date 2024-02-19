@@ -14,10 +14,7 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FluidDrainable;
-import net.minecraft.block.FluidFillable;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FlowableFluid;
@@ -267,8 +264,7 @@ public class AquaticEversource extends MagicItem {
             fluidFillable = (FluidFillable) block;
             if (fluid == Fluids.WATER) {
                fluidFillable.tryFillWithFluid(world, pos, blockState, flowableFluid.getStill(false));
-               SoundEvent soundEvent = fluid.isIn(FluidTags.LAVA) ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_EMPTY;
-               world.playSound(player, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, 1.0f);
+               world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0f, 1.0f);
                world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
                return 1;
             }
@@ -278,8 +274,7 @@ public class AquaticEversource extends MagicItem {
          }
          if (world.setBlockState(pos, fluid.getDefaultState().getBlockState(), Block.NOTIFY_ALL_AND_REDRAW) || blockState.getFluidState().isStill()) {
             if(!flood){
-               SoundEvent soundEvent = fluid.isIn(FluidTags.LAVA) ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_EMPTY;
-               world.playSound(player, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, 1.0f);
+               world.playSound(player, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0f, 1.0f);
             }
             world.emitGameEvent(player, GameEvent.FLUID_PLACE, pos);
             return 2;

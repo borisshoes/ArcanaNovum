@@ -282,31 +282,64 @@ public class TransmutationRecipes {
       
       
       // Infusion Recipes
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Obsidian",new ItemStack(Items.MAGMA_BLOCK,4),new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.ICE,12),new ItemStack(Items.REDSTONE,16)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Crying Obsidian",new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.CRYING_OBSIDIAN,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Cream Reduction",new ItemStack(Items.MAGMA_CREAM,1),new ItemStack(Items.SLIME_BALL,1),new ItemStack(Items.CHARCOAL,16),new ItemStack(Items.SUGAR,16)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Coal Diamond",new ItemStack(Items.COAL,12),new ItemStack(Items.DIAMOND,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GUNPOWDER,16)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Honeycomb Decomposition",new ItemStack(Items.HONEYCOMB_BLOCK,1),new ItemStack(Items.HONEYCOMB,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Amethyst Decomposition",new ItemStack(Items.AMETHYST_BLOCK,1),new ItemStack(Items.AMETHYST_SHARD,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Prismarine Decomposition",new ItemStack(Items.PRISMARINE,1),new ItemStack(Items.PRISMARINE_SHARD,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Prismarine Brick Decomposition",new ItemStack(Items.PRISMARINE_BRICKS,1),new ItemStack(Items.PRISMARINE_SHARD,9),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Quartz Decomposition",new ItemStack(Items.QUARTZ_BLOCK,1),new ItemStack(Items.QUARTZ,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Glowstone Decomposition",new ItemStack(Items.GLOWSTONE,1),new ItemStack(Items.GLOWSTONE_DUST,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Magma Decomposition",new ItemStack(Items.MAGMA_BLOCK,1),new ItemStack(Items.MAGMA_CREAM,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Nether Wart Decomposition",new ItemStack(Items.NETHER_WART_BLOCK,1),new ItemStack(Items.NETHER_WART,9),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Blaze Rod Decomposition",new ItemStack(Items.BLAZE_ROD,1),new ItemStack(Items.BLAZE_POWDER,6),new ItemStack(Items.GUNPOWDER,24),new ItemStack(ArcanaRegistry.STARDUST,8)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Obsidian Infusion",new ItemStack(Items.MAGMA_BLOCK,4),new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.ICE,12),new ItemStack(Items.REDSTONE,16)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Crying Obsidian Infusion",new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.CRYING_OBSIDIAN,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Glowstone Infusion",new ItemStack(Items.REDSTONE,4),new ItemStack(Items.GLOWSTONE_DUST,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.QUARTZ,16)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Ender Infusion",new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.GLOWSTONE_DUST,8),new ItemStack(Items.BLAZE_POWDER,8)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Refined Flesh",new ItemStack(Items.ROTTEN_FLESH,4),new ItemStack(Items.LEATHER,1),new ItemStack(Items.REDSTONE,8),new ItemStack(Items.SUGAR,16)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Carbon Compression",new ItemStack(Items.COAL,12),new ItemStack(Items.DIAMOND,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GUNPOWDER,16)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Refined Netherite",new ItemStack(Items.ANCIENT_DEBRIS,3),new ItemStack(Items.NETHERITE_INGOT,1),new ItemStack(Items.GOLD_INGOT,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
-      
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Blaze Powder",new ItemStack(Items.BLAZE_ROD,1),new ItemStack(Items.BLAZE_POWDER,6),new ItemStack(Items.GUNPOWDER,24),new ItemStack(ArcanaRegistry.STARDUST,8)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Condensed String",new ItemStack(Items.STRING,16),new ItemStack(Items.COBWEB,1),new ItemStack(Items.SLIME_BLOCK,4),new ItemStack(Items.HONEY_BLOCK,4)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Liquid Experience",new ItemStack(Items.SCULK,64),new ItemStack(Items.EXPERIENCE_BOTTLE,16),new ItemStack(Items.GLASS_BOTTLE,16),new ItemStack(Items.LAPIS_LAZULI,32)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Sculk",new ItemStack(Items.SCULK_VEIN,4),new ItemStack(Items.SCULK,1),new ItemStack(Items.GUNPOWDER,16),new ItemStack(Items.DIAMOND,4)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Sculk Infusion",new ItemStack(Items.SCULK_VEIN,4),new ItemStack(Items.SCULK,1),new ItemStack(Items.GUNPOWDER,16),new ItemStack(Items.DIAMOND,4)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Sculk Shard",new ItemStack(Items.SCULK,4),new ItemStack(Items.ECHO_SHARD,1),new ItemStack(Items.AMETHYST_SHARD,36),new ItemStack(Items.DIAMOND,12)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Sculk Shard Infusion",new ItemStack(Items.SCULK,4),new ItemStack(Items.ECHO_SHARD,1),new ItemStack(Items.AMETHYST_SHARD,36),new ItemStack(Items.DIAMOND,12)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Enchanted Golden Apple",new ItemStack(Items.TOTEM_OF_UNDYING,1),new ItemStack(Items.ENCHANTED_GOLDEN_APPLE,1),new ItemStack(Items.GOLD_BLOCK,32),new ItemStack(Items.GOLDEN_APPLE,32)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Nautilus Synthesis",new ItemStack(Items.SCUTE,4),new ItemStack(Items.NAUTILUS_SHELL,1),new ItemStack(Items.PRISMARINE_CRYSTALS,32),new ItemStack(Items.QUARTZ,16)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Dragon Egg",new ItemStack(Items.DRAGON_EGG,1),new ItemStack(Items.DRAGON_EGG,2),new ItemStack(Items.DRAGON_BREATH,64),new ItemStack(Items.DIAMOND,64)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Oceanic Heart Synthesis",new ItemStack(Items.NAUTILUS_SHELL,8),new ItemStack(Items.HEART_OF_THE_SEA,1),new ItemStack(Items.PRISMARINE_CRYSTALS,64),new ItemStack(Items.QUARTZ,32)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Mythical Catalyst",ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem(),ArcanaRegistry.MYTHICAL_CATALYST.getPrefItem(),ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem(),ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem()));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Trident Synthesis",new ItemStack(Items.DIAMOND_SWORD,1),new ItemStack(Items.TRIDENT,1),new ItemStack(Items.PRISMARINE_CRYSTALS,64),new ItemStack(Items.HEART_OF_THE_SEA,1)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Aequalis Scientia",ArcanaRegistry.MYTHICAL_CATALYST.getPrefItem(),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItem(),new ItemStack(Items.AMETHYST_BLOCK,64),new ItemStack(Items.DIAMOND_BLOCK,16)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Resonator Synthesis",new ItemStack(Items.GOLD_BLOCK,1),new ItemStack(Items.BELL,1),new ItemStack(Items.QUARTZ,64),new ItemStack(Items.AMETHYST_SHARD,64)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Enchanted Golden Apple Synthesis",new ItemStack(Items.TOTEM_OF_UNDYING,1),new ItemStack(Items.ENCHANTED_GOLDEN_APPLE,1),new ItemStack(Items.GOLD_BLOCK,32),new ItemStack(Items.GOLDEN_APPLE,32)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Dragon Egg Synthesis",new ItemStack(Items.DRAGON_EGG,1),new ItemStack(Items.DRAGON_EGG,2),new ItemStack(Items.DRAGON_BREATH,64),new ItemStack(Items.DIAMOND,64)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Mythical Catalyst Synthesis",ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem(),ArcanaRegistry.MYTHICAL_CATALYST.getPrefItem(),ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem(),ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem()));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Aequalis Scientia Synthesis",ArcanaRegistry.MYTHICAL_CATALYST.getPrefItem(),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItem(),new ItemStack(Items.AMETHYST_BLOCK,64),new ItemStack(Items.DIAMOND_BLOCK,16)));
       
       
       // Aequalis Scientia Recipes

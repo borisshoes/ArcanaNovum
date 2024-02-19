@@ -224,9 +224,23 @@ public class ArcanaRegistry {
          }
          
          if(magicItem.getModels() != null){
+            List<String> reused = new ArrayList<>();
+            List<String> found = new ArrayList<>();
+            for(Pair<Item,String> model: magicItem.getModels()){
+               String str = model.getRight();
+               if(found.contains(str)){
+                  reused.add(str);
+               }
+               found.add(str);
+            }
+            
             for(Pair<Item,String> model: magicItem.getModels()){
                String modelStr = model.getRight();
-               MODELS.put(modelStr,PolymerResourcePackUtils.requestModel(model.getLeft(), new Identifier(MOD_ID, modelStr)));
+               if(reused.contains(modelStr)){
+                  MODELS.put(modelStr+"@"+model.getLeft().getTranslationKey(),PolymerResourcePackUtils.requestModel(model.getLeft(), new Identifier(MOD_ID, modelStr)));
+               }else{
+                  MODELS.put(modelStr,PolymerResourcePackUtils.requestModel(model.getLeft(), new Identifier(MOD_ID, modelStr)));
+               }
             }
          }
       }

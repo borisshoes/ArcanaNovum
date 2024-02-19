@@ -309,7 +309,7 @@ public class ArcanaAchievements {
          ));
    public static final ArcanaAchievement SHADOW_FURY = ArcanaAchievements.register(
          new TimedAchievement("Shadow Fury", "shadow_fury", new ItemStack(Items.WITHER_ROSE), ArcanaRegistry.SHADOW_STALKERS_GLAIVE, 5000, 2,
-               new String[]{"Stalk behind, and then kill", "8 mobs within 10 seconds"}, 8, 200
+               new String[]{"Stalk behind, and then kill", "8 mobs within 30 seconds"}, 15, 600
          ));
    
    // Shield of Fortitude
@@ -650,12 +650,12 @@ public class ArcanaAchievements {
                new String[]{"Have a Tracking Arrow lock on to its firer"}
          ));
    public static final ArcanaAchievement ACTUAL_AIMBOT = ArcanaAchievements.register(
-         new EventAchievement("Actual Aimbot", "actual_aimbot", new ItemStack(Items.BOW), ArcanaRegistry.TRACKING_ARROWS, 2500, 2,
+         new EventAchievement("Actual Aimbot", "actual_aimbot", new ItemStack(Items.BOW), ArcanaRegistry.TRACKING_ARROWS, 5000, 2,
                new String[]{"Have a Tracking Arrow hit its mark", " from over 250 horizontal blocks away"}
          ));
    public static final ArcanaAchievement THE_ARROW_KNOWS_WHERE_IT_IS = ArcanaAchievements.register(
-         new EventAchievement("The Arrow Knows Where It Is", "the_arrow_knows_where_it_is", new ItemStack(Items.COMPASS), ArcanaRegistry.TRACKING_ARROWS, 5000, 2,
-               new String[]{"Have a Tracking Arrow turn at least", " 90 degrees from its initial heading"}
+         new EventAchievement("The Arrow Knows Where It Is", "the_arrow_knows_where_it_is", new ItemStack(Items.COMPASS), ArcanaRegistry.TRACKING_ARROWS, 2500, 2,
+               new String[]{"Have a Tracking Arrow turn at least", " 90 degrees from its initial heading", " and stray 10 blocks from its initial course"}
          ));
    
    static{
@@ -797,6 +797,28 @@ public class ArcanaAchievements {
             baseAch.announceAcquired(player);
          }
       }
+   }
+   
+   public static int getProgress(ServerPlayerEntity player, String id){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      if(registry.get(id) instanceof ProgressAchievement baseAch){
+         String itemId = baseAch.getMagicItem().getId();
+         ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
+         if(achievement == null){
+            return 0;
+         }else{
+            return achievement.getProgress();
+         }
+      }else if(registry.get(id) instanceof TimedAchievement baseAch){
+         String itemId = baseAch.getMagicItem().getId();
+         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
+         if(achievement == null){
+            return 0;
+         }else{
+            return achievement.getProgress();
+         }
+      }
+      return -1;
    }
    
    public static void revoke(ServerPlayerEntity player, String id){

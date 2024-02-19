@@ -163,11 +163,14 @@ public class ItemEntityMixin {
             craftTick++;
             if(craftTick == 100){
                ItemStack tomeStack = ArcanaRegistry.ARCANE_TOME.getNewItem();
-               PlayerEntity nearestPlayer = serverWorld.getClosestPlayer(itemEntity.getX(),itemEntity.getY(),itemEntity.getZ(),50,false);
-               if(nearestPlayer != null){
-                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,nearestPlayer.getUuidAsString(),false,itemEntity.getServer());
-                  if(!PLAYER_DATA.get(nearestPlayer).addCrafted(tomeStack)){
-                     PLAYER_DATA.get(nearestPlayer).addXP(MagicRarity.getCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));
+               PlayerEntity tomeCrafter = serverWorld.getClosestPlayer(itemEntity.getX(),itemEntity.getY(),itemEntity.getZ(),50,false);
+               if(itemEntity.getOwner() instanceof PlayerEntity stackOwner){
+                  tomeCrafter = stackOwner;
+               }
+               if(tomeCrafter != null){
+                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getUuidAsString(),false,itemEntity.getServer());
+                  if(!PLAYER_DATA.get(tomeCrafter).addCrafted(tomeStack)){
+                     PLAYER_DATA.get(tomeCrafter).addXP(MagicRarity.getCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));
                   }
                }
                

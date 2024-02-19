@@ -84,11 +84,11 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
       Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
       
-      ItemEntity aequalisEntity = MiscUtils.getClosestEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(aequalisPos)), e -> true),aequalisPos);
-      ItemEntity positiveEntity = MiscUtils.getClosestEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(positivePos)), e -> true),positivePos);
-      ItemEntity negativeEntity = MiscUtils.getClosestEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(negativePos)), e -> true),negativePos);
-      ItemEntity reagent1Entity = MiscUtils.getClosestEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent1Pos)), e -> true),reagent1Pos);
-      ItemEntity reagent2Entity = MiscUtils.getClosestEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent2Pos)), e -> true),reagent2Pos);
+      ItemEntity aequalisEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(aequalisPos)), e -> true));
+      ItemEntity positiveEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(positivePos)), e -> true));
+      ItemEntity negativeEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(negativePos)), e -> true));
+      ItemEntity reagent1Entity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent1Pos)), e -> true));
+      ItemEntity reagent2Entity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent2Pos)), e -> true));
       
       stacks.put("aequalis",aequalisEntity);
       stacks.put("positive",positiveEntity);

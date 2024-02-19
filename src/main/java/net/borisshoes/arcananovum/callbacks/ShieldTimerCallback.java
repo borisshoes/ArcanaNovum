@@ -1,10 +1,14 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.items.ShieldOfFortitude;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+
+import java.util.UUID;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -36,6 +40,7 @@ public class ShieldTimerCallback extends TickTimerCallback{
             if(player1.getAbsorptionAmount() != 0){
                SoundUtils.playSongToPlayer(player1,SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
             }
+            MiscUtils.removeMaxAbsorption(player1, ShieldOfFortitude.EFFECT_UUID,hearts);
             player1.setAbsorptionAmount(removed);
          }
       }catch(Exception e){

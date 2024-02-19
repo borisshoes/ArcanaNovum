@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -18,6 +19,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ArmorMaterials;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -44,6 +46,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public class NulMemento extends MagicItem {
    
    private static final String TXT = "item/nul_memento";
+   private static final Item textureItem = Items.BLACK_STAINED_GLASS;
    
    public NulMemento(){
       id = "nul_memento";
@@ -54,6 +57,7 @@ public class NulMemento extends MagicItem {
       item = new NulMementoItem(new FabricItemSettings().maxCount(1).fireproof());
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      models.add(new Pair<>(textureItem,TXT));
       
       ItemStack stack = new ItemStack(item);
       NbtCompound tag = stack.getOrCreateNbt();
@@ -73,6 +77,7 @@ public class NulMemento extends MagicItem {
       setRecipe(makeRecipe());
       addMagicNbt(tag);
       tag.getCompound("arcananovum").putBoolean("active",false);
+      tag.getCompound("arcananovum").putBoolean("onHead",false);
       stack.setNbt(tag);
       setPrefStack(stack);
    }
@@ -559,14 +564,33 @@ public class NulMemento extends MagicItem {
       }
       
       @Override
+      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(MagicItemUtils.isMagic(itemStack)){
+            NbtCompound itemNbt = itemStack.getNbt();
+            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+            boolean onHead = magicNbt.getBoolean("onHead");
+            if(onHead && PolymerResourcePackUtils.hasMainPack(player)) return textureItem;
+         }
+         return super.getPolymerItem(itemStack, player);
+      }
+      
+      @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.MODELS.get(TXT+"@"+getPolymerItem(itemStack,player).getTranslationKey()).value();
       }
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
          if(!MagicItemUtils.isMagic(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         
+         NbtCompound itemNbt = stack.getNbt();
+         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+         boolean nowOnHead = player.getEquippedStack(EquipmentSlot.HEAD).equals(stack);
+         boolean wasOnHead = magicNbt.getBoolean("onHead");
+         if(nowOnHead != wasOnHead){
+            magicNbt.putBoolean("onHead",nowOnHead);
+         }
          
          // 0.000025 ~ 30 minutes between voice lines
          if(Math.random() < 0.000025){

@@ -88,9 +88,9 @@ public class EntityKilledCallback {
             }
    
             ItemStack heldItem = player.getStackInHand(Hand.MAIN_HAND);
-            if(MagicItemUtils.identifyItem(heldItem) instanceof ShadowStalkersGlaive glaive){ // Return 3 charges
+            if(MagicItemUtils.identifyItem(heldItem) instanceof ShadowStalkersGlaive glaive){ // Return 4 charges
                int oldEnergy = glaive.getEnergy(heldItem);
-               glaive.addEnergy(heldItem, 60);
+               glaive.addEnergy(heldItem, 80);
                int newEnergy = glaive.getEnergy(heldItem);
                if(oldEnergy/20 != newEnergy/20){
                   String message = "Glaive Charges: ";
@@ -100,10 +100,10 @@ public class EntityKilledCallback {
                   player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
                }
    
-               if(livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
+               if((livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
                   ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,1);
                }
-               if(livingEntity instanceof MobEntity && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id)){
+               if(livingEntity instanceof MobEntity && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id) && ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY.id) % 2 == 0){
                   ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
                }
             }

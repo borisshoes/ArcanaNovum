@@ -106,7 +106,7 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
          newMagicItem.getOrCreateNbt().getCompound("arcananovum").put("arrows",arrows);
       }
       ArcanaAugments.copyAugment(quiverStack,newMagicItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
-      ArcanaAugments.copyAugment(quiverStack,newMagicItem,ArcanaAugments.RUNIC_BOTTOMLESS.id,ArcanaAugments.QUIVER_DUPLICATION.id);
+      ArcanaAugments.copyAugment(quiverStack,newMagicItem,ArcanaAugments.ABUNDANT_AMMO.id,ArcanaAugments.QUIVER_DUPLICATION.id);
       return newMagicItem;
    }
    

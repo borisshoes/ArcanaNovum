@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.items.arrows.SiphoningArrows;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
@@ -7,6 +9,8 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+
+import java.util.UUID;
 
 public class OverhealLoginCallback extends LoginCallback{
    
@@ -34,6 +38,7 @@ public class OverhealLoginCallback extends LoginCallback{
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
          }
+         MiscUtils.removeMaxAbsorption(player, SiphoningArrows.EFFECT_UUID,hearts);
          player.setAbsorptionAmount(removed);
       }
    }

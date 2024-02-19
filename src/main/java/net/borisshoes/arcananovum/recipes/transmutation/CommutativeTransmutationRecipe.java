@@ -78,6 +78,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
       if(!reagent1Check || !reagent2Check) return false;
       if(!validCommunalInput(sourceInput)) return false;
       if(!validCommunalInput(focusInput)) return false;
+      if(sourceInput.isOf(focusInput.getItem())) return false;
       return true;
    }
    

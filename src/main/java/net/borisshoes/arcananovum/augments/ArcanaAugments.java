@@ -873,7 +873,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment HASTY_BARGAIN = ArcanaAugments.register(
          new ArcanaAugment("Hasty Bargain", "hasty_bargain", new ItemStack(Items.CLOCK), ArcanaRegistry.TRANSMUTATION_ALTAR,
-         new String[]{"Decreases Altar cooldown by 5 minutes per level","Increases reagent consumption by 10% per level"},
+         new String[]{"Decreases Altar cooldown by 5 minutes per level","First Level decreases transmutation time by 50%","First Level increases reagent consumption by 50%,"," decreased by 10% per additional level"," Reagent consumption cannot go beyond 1 stack"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC}
    ));
    

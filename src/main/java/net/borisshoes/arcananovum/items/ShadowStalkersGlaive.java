@@ -257,8 +257,16 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
                   PLAYER_DATA.get(player).addXP(500); // Add xp
                   
-                  if(target instanceof ServerPlayerEntity || target instanceof WardenEntity) ArcanaAchievements.progress(player,"omae_wa",0);
-                  if(target instanceof MobEntity) ArcanaAchievements.progress(player,"shadow_fury",0);
+                  if(target instanceof ServerPlayerEntity || target instanceof WardenEntity) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
+                  if(target instanceof MobEntity){
+                     if(ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id)){
+                        if(ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY.id) % 2 == 1){
+                           ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
+                        }
+                     }else{
+                        ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,0);
+                     }
+                  }
                   
                   int blindDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PARANOIA.id))];
                   int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHADOW_STRIDE.id))];

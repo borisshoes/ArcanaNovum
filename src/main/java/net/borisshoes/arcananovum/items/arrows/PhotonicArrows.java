@@ -17,10 +17,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -50,6 +47,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -134,17 +132,10 @@ public class PhotonicArrows extends RunicArrow {
                SoundUtils.playSound(world,hitPlayer.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS,1f,1f);
                endPoint = startPos.add(view.normalize().multiply(view.normalize().dotProduct(hitPlayer.getPos().subtract(startPos)))).subtract(view.normalize());
                
-               //Activate Shield of Fortitude
+               // Activate Shield of Fortitude
                ItemStack activeItem = hitPlayer.getActiveItem();
-               
                if(MagicItemUtils.identifyItem(activeItem) instanceof ShieldOfFortitude shield){
-                  float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(activeItem,ArcanaAugments.SHIELD_OF_FAITH.id));
-                  float curAbs = hitPlayer.getAbsorptionAmount();
-                  float addedAbs = (float) Math.min(maxAbs,finalDmg*.5);
-                  int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(activeItem,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
-                  ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,activeItem,hitPlayer,addedAbs));
-                  SoundUtils.playSongToPlayer(hitPlayer,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
-                  hitPlayer.setAbsorptionAmount((curAbs + addedAbs));
+                  shield.shieldBlock(hitPlayer, activeItem, finalDmg);
                }
             }
          }

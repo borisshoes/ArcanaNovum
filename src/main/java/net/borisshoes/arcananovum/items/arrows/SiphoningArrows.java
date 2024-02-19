@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.entity.mob.MobEntity;
@@ -35,8 +36,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class SiphoningArrows extends RunicArrow {
+   public static final UUID EFFECT_UUID = UUID.fromString("963e869d-1e6c-4909-bef6-7cf2c46f3bd6");
    
    private static final int[] overhealCap = {0,2,4,10};
    private static final String TXT = "item/runic_arrow";
@@ -97,6 +100,7 @@ public class SiphoningArrows extends RunicArrow {
             float curAbs = player.getAbsorptionAmount();
             ArcanaNovum.addTickTimerCallback(new OverhealTimerCallback(100,player,overheal));
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
+            MiscUtils.addMaxAbsorption(player, SiphoningArrows.EFFECT_UUID,"arcananovum."+ArcanaRegistry.SIPHONING_ARROWS.getId(),overheal);
             player.setAbsorptionAmount((curAbs + overheal));
          }
 

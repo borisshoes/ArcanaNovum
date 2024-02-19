@@ -21,6 +21,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -29,8 +31,10 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.joml.Vector2d;
 
 import java.util.List;
 import java.util.Map;
@@ -133,11 +137,18 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
                if(closestTarget.getUuid().equals(this.getOwner().getUuid())){
                   ArcanaAchievements.grant(player,ArcanaAchievements.TARGET_ACQUIRED.id);
                }
-               float curYaw = MathHelper.wrapDegrees((float)(MathHelper.atan2(newVelocity.z, newVelocity.x) * 57.2957763671875) - 90.0f);
-               float yawDiff = curYaw-data.getFloat("initYaw");
-               yawDiff += (yawDiff>180) ? -360 : (yawDiff<-180) ? 360 : 0;
-               if(Math.abs(yawDiff) >= 90){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.THE_ARROW_KNOWS_WHERE_IT_IS.id);
+               Vector2d horizVel = new Vector2d(newVelocity.x, newVelocity.z);
+               if(Math.abs(newVelocity.y / horizVel.length()) < 4){
+                  float curYaw = MathHelper.wrapDegrees((float)(MathHelper.atan2(newVelocity.z, newVelocity.x) * 57.2957763671875) - 90.0f);
+                  float yawDiff = curYaw-data.getFloat("initYaw");
+                  yawDiff += (yawDiff>180) ? -360 : (yawDiff<-180) ? 360 : 0;
+                  Vector2d currentPos = new Vector2d(getX(),getZ());
+                  NbtList posList = data.getList("initPos", NbtElement.DOUBLE_TYPE);
+                  Vector2d initPos = new Vector2d(posList.getDouble(0),posList.getDouble(2));
+                  double distFromInitYawPlane = initPos.sub(currentPos).length() * Math.sin(Math.toRadians(Math.abs(yawDiff)));
+                  if(Math.abs(yawDiff) >= 90 && distFromInitYawPlane > 10){
+                     ArcanaAchievements.grant(player,ArcanaAchievements.THE_ARROW_KNOWS_WHERE_IT_IS.id);
+                  }
                }
             }
             

@@ -1,18 +1,24 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerShieldItem;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
 import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
@@ -23,6 +29,8 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -30,8 +38,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ShieldOfFortitude extends MagicItem {
+   public static final UUID EFFECT_UUID = UUID.fromString("cb7b7e36-0841-4d3c-bc94-4bbddfdaef4d");
+   
    public ShieldOfFortitude(){
       id = "shield_of_fortitude";
       name = "Shield of Fortitude";
@@ -93,6 +104,19 @@ public class ShieldOfFortitude extends MagicItem {
          }
       }
       return newMagicItem;
+   }
+   
+   public void shieldBlock(LivingEntity entity, ItemStack item, double amount){
+      float maxAbs = 10 + 2*Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH.id));
+      float curAbs = entity.getAbsorptionAmount();
+      float addedAbs = (float) Math.min(maxAbs,amount*.5);
+      int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
+      if(entity instanceof ServerPlayerEntity player){
+         ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
+         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
+      }
+      MiscUtils.addMaxAbsorption(entity, EFFECT_UUID,"arcananovum."+ ArcanaRegistry.SHIELD_OF_FORTITUDE.getId(),addedAbs);
+      entity.setAbsorptionAmount((curAbs + addedAbs));
    }
    
    private List<String> makeLore(){

@@ -65,13 +65,14 @@ public class ParticleEffectUtils {
       ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> ensnaredEffect(living, amplifier,tick < 40 ? tick+1 : 0)));
    }
    
-   public static void transmutationAltarAnim(ServerWorld world, Vec3d center, int tick, Direction direction){
+   public static void transmutationAltarAnim(ServerWorld world, Vec3d center, double rawTick, Direction direction, double speedMod){
       ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
       ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
       ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.7f);
       Vec3d effectCenter = center.add(0,0.6,0);
       
-      double theta = Math.PI*tick / 20.0;
+      int tick = (int)(rawTick);
+      double theta = Math.PI*tick / 30.0;
       int intBonus = tick % 3;
       int itemCI = 20; double itemCR = 0.7; double itemOutset = 3;
       int nodeCI = 8; double nodeCR = 0.25; double nodeOutset = 2.2;
@@ -174,7 +175,7 @@ public class ParticleEffectUtils {
       }
       
       if(tick < 500){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> transmutationAltarAnim(world,center,tick+1, direction)));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> transmutationAltarAnim(world,center,tick+(1*speedMod), direction,speedMod)));
       }
    }
    

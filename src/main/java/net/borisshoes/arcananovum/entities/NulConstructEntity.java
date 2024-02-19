@@ -65,6 +65,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    private boolean summonerHasWings;
    private boolean summonerHasMythical;
    private boolean isMythical;
+   private boolean initializedAttributes = false;
    private float prevHP;
    private int numPlayers;
    private int spellCooldown;
@@ -73,13 +74,6 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    public NulConstructEntity(EntityType<? extends NulConstructEntity> entityType, World world){
       super(entityType, world);
       createSpells();
-
-      getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024f);
-      getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85f);
-      getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85f);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10f);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(10f);
-      getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(128f);
    }
    
    private void createSpells(){
@@ -92,6 +86,16 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       spells.put("reflective_armor",new ConstructSpell("reflective_armor"));
       spells.put("withering_ray",new ConstructSpell("withering_ray"));
       spells.put("dark_conversion",new ConstructSpell("dark_conversion"));
+   }
+   
+   private void initializeAttributes(){
+      getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024f);
+      getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85f);
+      getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85f);
+      getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10f);
+      getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(10f);
+      getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(128f);
+      initializedAttributes = true;
    }
    
    @Override
@@ -141,6 +145,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          MinecraftServer server = getServer();
          if(server == null) return;
          if(spells == null || spells.isEmpty()) createSpells();
+         if(!initializedAttributes) initializeAttributes();
          
          if(shouldHaveSummoner && (summoner == null || summoner.isDead() || !summoner.getWorld().getRegistryKey().equals(getWorld().getRegistryKey()) || distanceTo(summoner) > 128)){
             deconstruct();

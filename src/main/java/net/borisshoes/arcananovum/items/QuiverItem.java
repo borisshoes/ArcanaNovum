@@ -186,7 +186,11 @@ public abstract class QuiverItem extends MagicItem {
                   if(magicArrow instanceof RunicArrow runicArrow){
                      name = runicArrow.getArrowName(stack);
                   }
-                  player.sendMessage(Text.literal("").append(Text.literal("Switched Arrows To: ").formatted(Formatting.GRAY,Formatting.ITALIC)).append(name).formatted(Formatting.ITALIC),true);
+                  player.sendMessage(Text.literal("")
+                              .append(Text.literal("Switched Arrows To: ").formatted(Formatting.GRAY,Formatting.ITALIC))
+                              .append(name.copy().formatted(Formatting.ITALIC))
+                              .append(Text.literal(" ("+stack.getCount()+")").formatted(Formatting.GRAY,Formatting.ITALIC))
+                        ,true);
                }
                return stack;
             }else{
@@ -213,7 +217,11 @@ public abstract class QuiverItem extends MagicItem {
                      if(magicArrow instanceof RunicArrow runicArrow){
                         name = runicArrow.getArrowName(stack);
                      }
-                     player.sendMessage(Text.literal("").append(Text.literal("Switched Arrows To: ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)).append(name).formatted(Formatting.ITALIC),true);
+                     player.sendMessage(Text.literal("")
+                                 .append(Text.literal("Switched Arrows To: ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
+                                 .append(name.copy().formatted(Formatting.ITALIC))
+                                 .append(Text.literal(" ("+stack.getCount()+")").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
+                           ,true);
                   }
                   return stack;
                }else if(magicItem instanceof OverflowingQuiver quiver){
@@ -224,7 +232,11 @@ public abstract class QuiverItem extends MagicItem {
                      if(magicArrow instanceof RunicArrow runicArrow){
                         name = runicArrow.getArrowName(stack);
                      }
-                     player.sendMessage(Text.literal("").append(Text.literal("Switched Arrows To: ").formatted(Formatting.DARK_AQUA,Formatting.ITALIC)).append(name).formatted(Formatting.ITALIC),true);
+                     player.sendMessage(Text.literal("")
+                                 .append(Text.literal("Switched Arrows To: ").formatted(Formatting.DARK_AQUA,Formatting.ITALIC))
+                                 .append(name.copy().formatted(Formatting.ITALIC))
+                                 .append(Text.literal(" ("+stack.getCount()+")").formatted(Formatting.DARK_AQUA,Formatting.ITALIC))
+                           ,true);
                   }
                   return stack;
                }else{

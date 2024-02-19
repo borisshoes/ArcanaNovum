@@ -14,10 +14,7 @@ import net.borisshoes.arcananovum.effects.GreaterInvisibilityEffect;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
@@ -33,6 +30,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -61,6 +59,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -90,15 +89,7 @@ public abstract class LivingEntityMixin {
          return;
       }
       if(magic instanceof ShieldOfFortitude shield){
-         float maxAbs = 10 + 2*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_FAITH.id));
-         float curAbs = entity.getAbsorptionAmount();
-         float addedAbs = (float) Math.min(maxAbs,amount*.5);
-         int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
-         if(entity instanceof ServerPlayerEntity player){
-            ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
-            SoundUtils.playSongToPlayer(player,SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
-         }
-         entity.setAbsorptionAmount((curAbs + addedAbs));
+         shield.shieldBlock(entity,item,amount);
       }
    }
    
@@ -222,6 +213,7 @@ public abstract class LivingEntityMixin {
                SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains); // Remove all absorption callbacks
                int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
                ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,20)); // Put 10 hearts back
+               MiscUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_UUID,"arcananovum."+ArcanaRegistry.SHIELD_OF_FORTITUDE.getId(),20f);
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
                player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(),100);
                SoundUtils.playSound(player.getServerWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);

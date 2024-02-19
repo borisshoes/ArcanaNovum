@@ -61,9 +61,10 @@ public abstract class TransmutationRecipe {
    }
    
    protected ItemStack getBargainReagent(ItemStack stack, int bargainlvl){
+      final double[] bargainMod = new double[]{1,1.5,1.4,1.3,1.2,1.1};
       int count = stack.getCount();
       if(MagicItemUtils.isMagic(stack)) return stack.copy();
-      count = (int) Math.min(stack.getMaxCount(),count * (1+(0.1*bargainlvl)));
+      count = (int) Math.min(stack.getMaxCount(),count * bargainMod[bargainlvl]);
       return stack.copyWithCount(count);
    }
 }
