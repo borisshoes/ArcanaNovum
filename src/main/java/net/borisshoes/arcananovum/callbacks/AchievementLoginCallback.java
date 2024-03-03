@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -40,9 +42,11 @@ public class AchievementLoginCallback extends LoginCallback{
       // Double check that this is the correct player
       ServerPlayerEntity player = netHandler.player;
       if(player.getUuidAsString().equals(playerUUID)){
-         for(ArcanaAchievement achievement : achievements){
-            ArcanaAchievements.grant(player,achievement.id);
-         }
+         ArcanaNovum.addTickTimerCallback(new GenericTimer(100, ()->{
+            for(ArcanaAchievement achievement : achievements){
+               ArcanaAchievements.grant(player,achievement.id);
+            }
+         }));
       }
    }
    

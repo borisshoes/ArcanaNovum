@@ -12,6 +12,8 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
+import net.borisshoes.arcananovum.callbacks.ServerStartedCallback;
 import net.borisshoes.arcananovum.callbacks.TickCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -43,6 +45,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
+import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -581,15 +584,9 @@ public class ArcanaCommands {
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
          
-         if(MagicItemUtils.identifyItem(player.getMainHandStack()) instanceof NulMemento memento){
-            memento.inventoryDialog(player);
-         }
-         if(MagicItemUtils.identifyItem(player.getMainHandStack()) instanceof AequalisScientia aequalis){
-            aequalis.inventoryDialog(player);
-         }
-         if(player.getMainHandStack().isOf(Items.DRAGON_EGG)){
-            TickCallback.dragonEggDialog(player);
-         }
+         PuzzleGui gui = new PuzzleGui(ScreenHandlerType.GENERIC_9X6,player,null);
+         gui.buildPuzzle();
+         gui.open();
          
       } catch (Exception e) {
          e.printStackTrace();

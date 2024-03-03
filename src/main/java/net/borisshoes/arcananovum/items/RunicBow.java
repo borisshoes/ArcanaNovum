@@ -121,6 +121,7 @@ public class RunicBow extends MagicItem {
       ItemStack toolStack = inv.getStack(12); // Should be the Bow
       ItemStack newMagicItem = getNewItem();
       NbtCompound nbt = toolStack.getNbt();
+      boolean powerApplied = false;
       if(nbt != null && nbt.contains("Enchantments")){
          NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
          for(int i = 0; i < enchants.size(); i++){
@@ -129,7 +130,14 @@ public class RunicBow extends MagicItem {
                power.putString("id","power");
                power.putShort("lvl", (short) 7);
                enchants.set(i,power);
+               powerApplied = true;
             }
+         }
+         if(!powerApplied){
+            NbtCompound power = new NbtCompound();
+            power.putString("id","power");
+            power.putShort("lvl", (short) 7);
+            enchants.add(power);
          }
          newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
       }

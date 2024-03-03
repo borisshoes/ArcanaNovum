@@ -98,9 +98,13 @@ public class SpawnerHarness extends MagicItem {
          if(spawnerData.contains("SpawnData")){
             NbtCompound spawnData = spawnerData.getCompound("SpawnData");
             NbtCompound entity = spawnData.getCompound("entity");
-            String entityTypeId = entity.getString("id");
-            String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
-            loreList.add(NbtString.of("[{\"text\":\"Type - "+entityTypeName+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+            if(entity.isEmpty()){
+               loreList.add(NbtString.of("[{\"text\":\"Type - Empty\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+            }else{
+               String entityTypeId = entity.getString("id");
+               String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+               loreList.add(NbtString.of("[{\"text\":\"Type - "+entityTypeName+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+            }
          }else{
             loreList.add(NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
          }
@@ -220,22 +224,19 @@ public class SpawnerHarness extends MagicItem {
                MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(context.getBlockPos());
                NbtCompound spawnerNbt = spawner.createNbt();
                Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,context.getBlockPos());
-               if(renderedEntity == null){
-                  player.sendMessage(Text.literal("This spawner is empty, and cannot be transported").formatted(Formatting.RED,Formatting.ITALIC),true);
-                  SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
-                  return ActionResult.PASS;
+               if(renderedEntity != null){
+                  String entityTypeId = EntityType.getId(renderedEntity.getType()).toString();
+                  String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+                  player.sendMessage(Text.literal("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+                  if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,ArcanaAchievements.FINALLY_USEFUL.id);
                }
-               String entityTypeId = EntityType.getId(renderedEntity.getType()).toString();
-               String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
                
                magicNbt.put("spawner",spawnerNbt);
                world.breakBlock(context.getBlockPos(),false);
                
-               player.sendMessage(Text.literal("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
                buildItemLore(stack,player.getServer());
                
-               if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,ArcanaAchievements.FINALLY_USEFUL.id);
                return ActionResult.SUCCESS;
             }
          }catch (Exception e){

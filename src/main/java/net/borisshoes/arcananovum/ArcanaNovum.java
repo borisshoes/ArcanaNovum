@@ -1,7 +1,12 @@
 package net.borisshoes.arcananovum;
 
+import com.mojang.authlib.GameProfile;
+import de.maxhenkel.voicechat.Voicechat;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
 import net.borisshoes.arcananovum.callbacks.*;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicBlockEntity;
 import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
@@ -20,20 +25,21 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
+import net.minecraft.util.UserCache;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
@@ -45,6 +51,8 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
    public static final HashMap<ServerWorld,ArrayList<ChunkPos>> ANCHOR_CHUNKS = new HashMap<>();
    public static final ArrayList<Pair<BlockEntity,MagicBlockEntity>> ACTIVE_MAGIC_BLOCKS = new ArrayList<>();
+   public static final HashMap<String,List<UUID>> PLAYER_ACHIEVEMENT_TRACKER = new HashMap<>();
+   public static final HashMap<UUID,Integer> PLAYER_XP_TRACKER = new HashMap<>();
    public static MinecraftServer SERVER = null;
    public static final boolean devMode = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
@@ -70,6 +78,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
       ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathCallback::afterRespawn);
       ServerLifecycleEvents.SERVER_STARTING.register(ServerStartingCallback::serverStarting);
+      ServerLifecycleEvents.SERVER_STARTED.register(ServerStartedCallback::serverStarted);
       
       ArcanaRegistry.initialize();
 

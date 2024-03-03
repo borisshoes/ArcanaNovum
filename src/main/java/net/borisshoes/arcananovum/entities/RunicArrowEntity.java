@@ -118,7 +118,9 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          
          double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE.id))+5;
          double distance = 15;
-         List<LivingEntity> possibleTargets = getEntityWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e -> !e.isSpectator() && MiscUtils.inCone(this.getPos(),velocityUnit,distance,1,viewWidth,e.getPos().add(0,e.getHeight()/2,0)));
+         List<LivingEntity> possibleTargets = getEntityWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e ->
+               !e.isSpectator() && MiscUtils.inCone(this.getPos(),velocityUnit,distance,1,viewWidth,e.getPos().add(0,e.getHeight()/2,0)) && !e.isInvisible()
+         );
          LivingEntity closestTarget = null;
          double distFromLine = distance;
          for(LivingEntity possibleTarget : possibleTargets){

@@ -38,6 +38,7 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    void removeMiscData(String id);
    boolean hasAcheivement(String item, String achievementId);
    ArcanaAchievement getAchievement(String item, String achievementId);
+   int totalAcquiredAchievements();
    int getAugmentLevel(String id);
    boolean setAugmentLevel(String id, int level);
    boolean removeAugment(String id);

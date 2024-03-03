@@ -3,7 +3,9 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -26,6 +28,7 @@ import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -61,6 +64,9 @@ public class TomeGui extends SimpleGui {
             BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
             LoreGui loreGui = new LoreGui(player,bookBuilder,tome,ArcaneTome.TomeMode.PROFILE,settings);
             loreGui.open();
+         }else if(index == 10){
+            // Leaderboard View
+            tome.openGui(player, ArcaneTome.TomeMode.LEADERBOARD,settings);
          }else if(index == 19){
             // Achievements View
             tome.openGui(player, ArcaneTome.TomeMode.ACHIEVEMENTS,settings);
@@ -178,6 +184,47 @@ public class TomeGui extends SimpleGui {
                if(settings.getAchPage() < numPages){
                   settings.setAchPage(settings.getAchPage()+1);
                   tome.buildAchievementsGui(this,player,settings);
+               }
+            }
+         }else if(mode == ArcaneTome.TomeMode.LEADERBOARD){
+            if(index == 4){
+               tome.buildProfileGui(this,player);
+            }else if(index == 0){
+               boolean backwards = type == ClickType.MOUSE_RIGHT;
+               boolean middle = type == ClickType.MOUSE_MIDDLE;
+               if(middle){
+                  settings.setLeaderSortType(ArcaneTome.LeaderboardSort.XP_DESC);
+               }else{
+                  settings.setLeaderSortType(ArcaneTome.LeaderboardSort.cycleSort(settings.getLeaderSortType(),backwards));
+               }
+               
+               tome.buildLeaderboardGui(this,player,settings);
+            }else if(index == 8){
+               boolean backwards = type == ClickType.MOUSE_RIGHT;
+               boolean middle = type == ClickType.MOUSE_MIDDLE;
+               if(middle){
+                  settings.setLeaderFilterType(ArcaneTome.LeaderboardFilter.NONE);
+               }else{
+                  settings.setLeaderFilterType(ArcaneTome.LeaderboardFilter.cycleFilter(settings.getLeaderFilterType(),backwards));
+               }
+               
+               List<UUID> players = ArcaneTome.sortedFilteredLeaderboardList(settings);
+               int numPages = (int) Math.ceil((float)players.size()/28.0);
+               if(settings.getLeaderboardPage() > numPages){
+                  settings.setLeaderboardPage(Math.max(1,numPages));
+               }
+               tome.buildLeaderboardGui(this,player,settings);
+            }else if(index == 45){
+               if(settings.getLeaderboardPage() > 1){
+                  settings.setLeaderboardPage(settings.getLeaderboardPage()-1);
+                  tome.buildLeaderboardGui(this,player,settings);
+               }
+            }else if(index == 53){
+               List<UUID> players = ArcaneTome.sortedFilteredLeaderboardList(settings);
+               int numPages = (int) Math.ceil((float)players.size()/28.0);
+               if(settings.getLeaderboardPage() < numPages){
+                  settings.setLeaderboardPage(settings.getLeaderboardPage()+1);
+                  tome.buildLeaderboardGui(this,player,settings);
                }
             }
          }else if(mode == ArcaneTome.TomeMode.RECIPE){
@@ -334,8 +381,11 @@ public class TomeGui extends SimpleGui {
       private ArcaneTome.TomeFilter filterType;
       private ArcaneTome.AchievementSort achSortType;
       private ArcaneTome.AchievementFilter achFilterType;
+      private ArcaneTome.LeaderboardSort leaderSortType;
+      private ArcaneTome.LeaderboardFilter leaderFilterType;
       private int page;
       private int achPage;
+      private int leaderboardPage;
       public final int skillLvl;
       public final int resourceLvl;
       
@@ -344,23 +394,15 @@ public class TomeGui extends SimpleGui {
          this.filterType = ArcaneTome.TomeFilter.NONE;
          this.achSortType = ArcaneTome.AchievementSort.RECOMMENDED;
          this.achFilterType = ArcaneTome.AchievementFilter.NONE;
+         this.leaderSortType = ArcaneTome.LeaderboardSort.XP_DESC;
+         this.leaderFilterType = ArcaneTome.LeaderboardFilter.NONE;
          this.page = 1;
          this.achPage = 1;
+         this.leaderboardPage = 1;
          this.skillLvl = skillLvl;
          this.resourceLvl = resourceLvl;
       }
-   
-      public CompendiumSettings(ArcaneTome.TomeSort sortType, ArcaneTome.TomeFilter filterType, ArcaneTome.AchievementSort achSortType, ArcaneTome.AchievementFilter achFilterType, int page, int achPage, int skillLvl, int resourceLvl){
-         this.sortType = sortType;
-         this.filterType = filterType;
-         this.achSortType = achSortType;
-         this.achFilterType = achFilterType;
-         this.page = page;
-         this.achPage = achPage;
-         this.skillLvl = skillLvl;
-         this.resourceLvl = resourceLvl;
-      }
-   
+      
       public ArcaneTome.TomeFilter getFilterType(){
          return filterType;
       }
@@ -407,6 +449,30 @@ public class TomeGui extends SimpleGui {
       
       public void setSortType(ArcaneTome.AchievementSort sortType){
          this.achSortType = sortType;
+      }
+      
+      public int getLeaderboardPage(){
+         return leaderboardPage;
+      }
+      
+      public void setLeaderboardPage(int leaderboardPage){
+         this.leaderboardPage = leaderboardPage;
+      }
+      
+      public ArcaneTome.LeaderboardSort getLeaderSortType(){
+         return leaderSortType;
+      }
+      
+      public void setLeaderSortType(ArcaneTome.LeaderboardSort leaderSortType){
+         this.leaderSortType = leaderSortType;
+      }
+      
+      public ArcaneTome.LeaderboardFilter getLeaderFilterType(){
+         return leaderFilterType;
+      }
+      
+      public void setLeaderFilterType(ArcaneTome.LeaderboardFilter leaderFilterType){
+         this.leaderFilterType = leaderFilterType;
       }
    }
 }

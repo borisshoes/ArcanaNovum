@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
@@ -43,7 +44,7 @@ import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class NulMemento extends MagicItem {
+public class NulMemento extends EnergyItem {
    
    private static final String TXT = "item/nul_memento";
    private static final Item textureItem = Items.BLACK_STAINED_GLASS;
@@ -99,8 +100,16 @@ public class NulMemento extends MagicItem {
       return loreList;
    }
    
+   @Override
+   public int getMaxEnergy(ItemStack item){
+      return 36000 - 12000*Math.max(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TEMPO_MORTUUS.id),0); // 30 minutes - 10 per level
+   }
+   
    public boolean protectFromDeath(ItemStack stack, LivingEntity living, DamageSource source){
       if (source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.isOf(ArcanaDamageTypes.VENGEANCE_TOTEM) && !source.isOf(ArcanaDamageTypes.CONCENTRATION)) {
+         return false;
+      }
+      if(getEnergy(stack) > 0 && !isActive(stack)){
          return false;
       }
       
@@ -139,7 +148,8 @@ public class NulMemento extends MagicItem {
          PLAYER_DATA.get(player).addXP(5000);
       }
       
-      stack.decrement(1);
+      setEnergy(stack,getMaxEnergy(stack));
+      
       living.setHealth(1.0f);
       living.clearStatusEffects();
       living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, 300, 0));
@@ -591,9 +601,12 @@ public class NulMemento extends MagicItem {
          if(nowOnHead != wasOnHead){
             magicNbt.putBoolean("onHead",nowOnHead);
          }
+         if(nowOnHead && getEnergy(stack) > 0){
+            addEnergy(stack,-1);
+         }
          
-         // 0.000025 ~ 30 minutes between voice lines
-         if(Math.random() < 0.000025){
+         // 0.000015 ~ 60 minutes between voice lines
+         if(Math.random() < 0.000015){
             inventoryDialog(player);
          }
       }

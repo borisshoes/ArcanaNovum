@@ -19,3 +19,4 @@ accessible class net/minecraft/entity/mob/GhastEntity$GhastMoveControl
 accessible class net/minecraft/entity/mob/GuardianEntity$GuardianMoveControl
 accessible class net/minecraft/entity/mob/PhantomEntity$PhantomMoveControl
 accessible class net/minecraft/entity/mob/VexEntity$VexMoveControl
+accessible class net/minecraft/util/UserCache$Entry

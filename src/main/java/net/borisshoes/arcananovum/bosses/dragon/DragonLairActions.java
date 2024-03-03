@@ -143,8 +143,9 @@ public class DragonLairActions {
          for(ServerPlayerEntity player : nearbyPlayers){
             endWorld.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.END_STONE.getDefaultState()), player.getX(), player.getY()-.5, player.getZ(), 40, 3, 1, 3, .5);
             
-            if(quakeTicks % 4 == 0)
-               player.teleport(endWorld,player.getX(), player.getY(), player.getZ(),(float) (player.getYaw()+Math.random()*5-2.5), (float) (player.getPitch()+Math.random()*5-2.5));
+            if(quakeTicks % 4 == 0){
+               player.tiltScreen(Math.random()*10-5, Math.random()*10-5);
+            }
          }
          quakeTicks--;
       }

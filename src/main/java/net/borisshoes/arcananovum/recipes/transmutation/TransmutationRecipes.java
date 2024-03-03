@@ -309,7 +309,7 @@ public class TransmutationRecipes {
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Glowstone Infusion",new ItemStack(Items.REDSTONE,4),new ItemStack(Items.GLOWSTONE_DUST,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.QUARTZ,16)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Ender Infusion",new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.GLOWSTONE_DUST,8),new ItemStack(Items.BLAZE_POWDER,8)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Ender Infusion",new ItemStack(Items.ENDER_PEARL,1),new ItemStack(Items.ENDER_EYE,2),new ItemStack(Items.GLOWSTONE_DUST,12),new ItemStack(Items.BLAZE_POWDER,24)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Refined Flesh",new ItemStack(Items.ROTTEN_FLESH,4),new ItemStack(Items.LEATHER,1),new ItemStack(Items.REDSTONE,8),new ItemStack(Items.SUGAR,16)));
       

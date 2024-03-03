@@ -18,6 +18,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
+import net.minecraft.block.entity.Spawner;
 import net.minecraft.block.spawner.MobSpawnerLogic;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -31,6 +32,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -246,15 +248,13 @@ public class EssenceEgg extends MagicItem {
                BlockPos blockPos = context.getBlockPos();
                BlockEntity blockEntity;
                BlockState blockState = world.getBlockState(blockPos);
-               if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof MobSpawnerBlockEntity){
+               if(blockState.isOf(Blocks.SPAWNER) && (blockEntity = world.getBlockEntity(blockPos)) instanceof Spawner spawner){
                   int captiveLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WILLING_CAPTIVE.id));
                   if(getUses(stack) >= 5-captiveLevel){
-                     MobSpawnerBlockEntity mobSpawnerBlockEntity = (MobSpawnerBlockEntity)blockEntity;
-                     MobSpawnerLogic mobSpawnerLogic = mobSpawnerBlockEntity.getLogic();
                      EntityType<?> entityType = EntityType.get(getType(stack)).get();
-                     mobSpawnerBlockEntity.setEntityType(entityType, world.getRandom());
-                     blockEntity.markDirty();
+                     spawner.setEntityType(entityType, world.getRandom());
                      world.updateListeners(blockPos, blockState, blockState, Block.NOTIFY_ALL);
+                     blockEntity.markDirty();
                      
                      if(playerEntity instanceof ServerPlayerEntity player){
                         player.sendMessage(Text.translatable("The Spawner Assumes the Essence of "+EntityType.get(getType(stack)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);

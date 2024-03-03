@@ -216,6 +216,7 @@ public class MagnetismCharm extends MagicItem {
             if(e instanceof ServerPlayerEntity hitPlayer){
                if(hitPlayer.isBlocking()){
                   hitPlayer.getItemCooldownManager().set(Items.SHIELD, 100);
+                  hitPlayer.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(), 100);
                   hitPlayer.clearActiveItem();
                   hitPlayer.getWorld().sendEntityStatus(hitPlayer, (byte)30);
                }

@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.achievements;
 
+import com.mojang.authlib.GameProfile;
+import it.unimi.dsi.fastutil.Hash;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -7,12 +10,13 @@ import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.block.CropBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.UserCache;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
@@ -853,5 +857,23 @@ public class ArcanaAchievements {
          }
       }
       return false;
+   }
+   
+   public static HashMap<UUID,List<String>> getInvertedTracker(){
+      HashMap<UUID,List<String>> invertedAchList = new HashMap<>();
+      for(Map.Entry<String, List<UUID>> listEntry : ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.entrySet()){
+         for(UUID uuid : listEntry.getValue()){
+            if(invertedAchList.containsKey(uuid)){
+               List<String> curList = invertedAchList.get(uuid);
+               curList.add(listEntry.getKey());
+               invertedAchList.put(uuid,curList);
+            }else{
+               List<String> newList = new ArrayList<>();
+               newList.add(listEntry.getKey());
+               invertedAchList.put(uuid,newList);
+            }
+         }
+      }
+      return invertedAchList;
    }
 }

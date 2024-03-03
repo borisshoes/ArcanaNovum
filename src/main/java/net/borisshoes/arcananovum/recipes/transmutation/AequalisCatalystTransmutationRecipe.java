@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.MagicItem;
 import net.borisshoes.arcananovum.items.AequalisScientia;
+import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.entity.ItemEntity;
@@ -59,6 +60,8 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          return new ArrayList<>();
       }
       MagicItem magicItem = MagicItemUtils.identifyItem(magicItemStack);
+      if(magicItem instanceof RunicArrow) return new ArrayList<>();
+      
       List<Pair<ItemStack,String>> outputs = new ArrayList<>();
       int consumedCatas = 0;
       NbtCompound magicNbt = magicItemStack.getNbt().getCompound("arcananovum");
@@ -177,7 +180,8 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       if(!reagent1Check || !reagent2Check) return false;
       boolean matrixCheck = (input1.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()) || input2.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
       boolean magicItemCheck = (MagicItemUtils.isMagic(input1) && !input1.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem())) || (MagicItemUtils.isMagic(input2) && !input2.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
-      if(!matrixCheck || !magicItemCheck) return false;
+      boolean arrowCheck = MagicItemUtils.identifyItem(input1) instanceof RunicArrow || MagicItemUtils.identifyItem(input2) instanceof RunicArrow;
+      if(!matrixCheck || !magicItemCheck || arrowCheck) return false;
       if(!(MagicItemUtils.identifyItem(aequalisInput) instanceof AequalisScientia as)) return false;
       try{
          boolean hasAugment = ArcanaAugments.getAugmentOnItem(aequalisInput,ArcanaAugments.EQUIVALENT_EXCHANGE.id) > 0;
@@ -191,7 +195,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public ItemStack getViewStack(){
-      return ArcanaRegistry.CATALYTIC_MATRIX.getPrefItem().copyWithCount(1);
+      return new ItemStack(ArcanaRegistry.CATALYTIC_MATRIX.getItem(),1);
    }
    
 }

@@ -100,7 +100,7 @@ public class TickCallback {
                }
             }
             
-            if(MagicItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.000025){
+            if(MagicItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.000015){
                dragonEggDialog(player);
             }
             

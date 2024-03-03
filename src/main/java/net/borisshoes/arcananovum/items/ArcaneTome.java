@@ -42,7 +42,9 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -116,6 +118,9 @@ public class ArcaneTome extends MagicItem {
       }else if(mode == TomeMode.ACHIEVEMENTS){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
          buildAchievementsGui(gui,player,settings);
+      }else if(mode == TomeMode.LEADERBOARD){
+         gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
+         buildLeaderboardGui(gui,player,settings);
       }
       gui.setMode(mode);
       gui.open();
@@ -174,6 +179,8 @@ public class ArcaneTome extends MagicItem {
       }
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"You can increase your arcana by crafting and using magic items!\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"light_purple\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"aqua\",\"bold\":false},{\"text\":\" \",\"bold\":false},{\"text\":\"to see the Leaderboard\",\"bold\":false,\"color\":\"dark_aqua\"}]"));
       display.put("Lore",loreList);
       tag.put("display",display);
       tag.putInt("HideFlags",103);
@@ -357,6 +364,79 @@ public class ArcaneTome extends MagicItem {
          }
       }
       return achs;
+   }
+   
+   public static List<UUID> sortedFilteredLeaderboardList(TomeGui.CompendiumSettings settings){
+      LeaderboardFilter filterType = settings.getLeaderFilterType();
+      LeaderboardSort sortType = settings.getLeaderSortType();
+      List<UUID> players = ArcanaNovum.PLAYER_XP_TRACKER.keySet().stream().toList();
+      List<UUID> filteredSortedPlayers = new ArrayList<>();
+      if(filterType != null){
+         for(UUID player : players){
+            if(LeaderboardFilter.matchesFilter(player, filterType)){
+               filteredSortedPlayers.add(player);
+            }
+         }
+         
+      }else{
+         filteredSortedPlayers = new ArrayList<>(players.stream().toList());
+      }
+      HashMap<UUID,List<String>> invertedAchList = ArcanaAchievements.getInvertedTracker();
+      
+      switch(sortType){
+         case XP_DESC -> {
+            filteredSortedPlayers.sort(Comparator.comparingInt(id -> -ArcanaNovum.PLAYER_XP_TRACKER.get(id)));
+         }
+         case XP_ASC -> {
+            filteredSortedPlayers.sort(Comparator.comparingInt(ArcanaNovum.PLAYER_XP_TRACKER::get));
+         }
+         case ACHIEVES_DESC -> {
+            Comparator<UUID> achieveCountComparator = (UUID i1, UUID i2) -> {
+               int achCount1 = invertedAchList.containsKey(i1) ? invertedAchList.get(i1).size() : 0;
+               int achCount2 = invertedAchList.containsKey(i2) ? invertedAchList.get(i2).size() : 0;
+               int countCompare = (achCount2 - achCount1);
+               if(countCompare == 0){
+                  return ArcanaNovum.PLAYER_XP_TRACKER.get(i2) -  ArcanaNovum.PLAYER_XP_TRACKER.get(i1);
+               }else{
+                  return countCompare;
+               }
+            };
+            filteredSortedPlayers.sort(achieveCountComparator);
+         }
+         case SKILL_POINTS_DESC -> {
+            Comparator<UUID> achieveCountComparator = (UUID i1, UUID i2) -> {
+               int skillCount1 = 0; int skillCount2 = 0;
+               if(invertedAchList.containsKey(i1)){
+                  for(String achId : invertedAchList.get(i1)){
+                     ArcanaAchievement ach = ArcanaAchievements.registry.get(achId);
+                     skillCount1 += ach == null ? 0 : ach.pointsReward;
+                  }
+               }
+               if(invertedAchList.containsKey(i2)){
+                  for(String achId : invertedAchList.get(i2)){
+                     ArcanaAchievement ach = ArcanaAchievements.registry.get(achId);
+                     skillCount2 += ach == null ? 0 : ach.pointsReward;
+                  }
+               }
+               
+               int countCompare = (skillCount2 - skillCount1);
+               if(countCompare == 0){
+                  return ArcanaNovum.PLAYER_XP_TRACKER.get(i2) -  ArcanaNovum.PLAYER_XP_TRACKER.get(i1);
+               }else{
+                  return countCompare;
+               }
+            };
+            filteredSortedPlayers.sort(achieveCountComparator);
+         }
+         case NAME -> {
+            Comparator<UUID> nameComparator = Comparator.comparing(playerID -> {
+               GameProfile profile = ArcanaNovum.SERVER.getUserCache().getByUuid(playerID).orElse(null);
+               return profile == null ? "" : profile.getName();
+            });
+            filteredSortedPlayers.sort(nameComparator);
+         }
+      }
+      return filteredSortedPlayers;
    }
    
    public static <T> List<T> listToPage(List<T> items, int page){
@@ -558,7 +638,23 @@ public class ArcaneTome extends MagicItem {
                      achievementItem.addLoreLine(mutableText);
                   }
                }
-   
+               
+               List<UUID> achPlayers = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
+               if(achPlayers == null || achPlayers.isEmpty()){
+                  achievementItem.addLoreLine(Text.literal("")
+                        .append(Text.literal("No Arcanists have achieved this.").formatted(Formatting.DARK_PURPLE)));
+               }else{
+                  int allArcanists = (int) ArcanaNovum.PLAYER_XP_TRACKER.values().stream().filter(xp -> xp > 1).count();
+                  int acquiredCount = achPlayers.size();
+                  DecimalFormat df = new DecimalFormat("#0.00");
+                  achievementItem.addLoreLine(Text.literal("")
+                        .append(Text.literal("Acquired by ").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal(acquiredCount+"").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(" Arcanists (").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal(df.format((100*(double)acquiredCount)/((double)allArcanists))+"%").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(")").formatted(Formatting.DARK_PURPLE)));
+               }
+               
                if(profile.hasAcheivement(achievement.getMagicItem().getId(),achievement.id)) achievementItem.glow();
                
                gui.setSlot((i*9+10)+j,achievementItem);
@@ -570,6 +666,139 @@ public class ArcaneTome extends MagicItem {
       }
       
       gui.setTitle(Text.literal("All Arcana Achievements"));
+   }
+   
+   public void buildLeaderboardGui(TomeGui gui, ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      gui.setMode(TomeMode.LEADERBOARD);
+      List<UUID> items = sortedFilteredLeaderboardList(settings);
+      List<UUID> pageItems = listToPage(items, settings.getLeaderboardPage());
+      HashMap<UUID,List<String>> achievementMap = ArcanaAchievements.getInvertedTracker();
+      int numPages = (int) Math.ceil((float)items.size()/28.0);
+      int numAchievements = ArcanaAchievements.registry.size();
+      
+      for(int i = 0; i < gui.getSize(); i++){
+         gui.clearSlot(i);
+         gui.setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
+      }
+      
+      GameProfile gameProfile = player.getGameProfile();
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      head.setName((Text.literal("").append(Text.literal(player.getNameForScoreboard()).formatted(Formatting.AQUA))));
+      head.addLoreLine((Text.literal("").append(Text.literal("Arcana Level: ").formatted(Formatting.DARK_PURPLE)).append(Text.literal(""+profile.getLevel()).formatted(Formatting.LIGHT_PURPLE))));
+      if(profile.getLevel() == 100){
+         head.addLoreLine((Text.literal("").append(Text.literal("Total Experience: ").formatted(Formatting.DARK_GREEN)).append(Text.literal(LevelUtils.readableInt(profile.getXP())).formatted(Formatting.GREEN))));
+      }else{
+         head.addLoreLine((Text.literal("")
+               .append(Text.literal("Experience: ").formatted(Formatting.DARK_GREEN))
+               .append(Text.literal(LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()))).formatted(Formatting.GREEN))
+               .append(Text.literal("/").formatted(Formatting.DARK_GREEN))
+               .append(Text.literal(LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).formatted(Formatting.GREEN))));
+      }
+      head.addLoreLine((Text.literal("")
+            .append(Text.literal("Achievements: ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(LevelUtils.readableInt(profile.totalAcquiredAchievements())).formatted(Formatting.AQUA))
+            .append(Text.literal("/").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(LevelUtils.readableInt(numAchievements)).formatted(Formatting.AQUA))));
+      head.addLoreLine(Text.literal(""));
+      head.addLoreLine((Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to return to the profile page").formatted(Formatting.LIGHT_PURPLE))));
+      gui.setSlot(4,head);
+      
+      ItemStack filterItem = new ItemStack(Items.HOPPER);
+      NbtCompound tag = filterItem.getOrCreateNbt();
+      NbtCompound display = new NbtCompound();
+      display.putString("Name","[{\"text\":\"Filter Achievements\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(filterItem);
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE)));
+      filterBuilt.addLoreLine(Text.literal(""));
+      filterBuilt.addLoreLine(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(LeaderboardFilter.getColoredLabel(settings.getLeaderFilterType())));
+      gui.setSlot(8,filterBuilt);
+      
+      ItemStack sortItem = new ItemStack(Items.NETHER_STAR);
+      tag = sortItem.getOrCreateNbt();
+      display = new NbtCompound();
+      display.putString("Name","[{\"text\":\"Sort Achievements\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(sortItem);
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE)));
+      sortBuilt.addLoreLine(Text.literal(""));
+      sortBuilt.addLoreLine(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(LeaderboardSort.getColoredLabel(settings.getLeaderSortType())));
+      gui.setSlot(0,sortBuilt);
+      
+      ItemStack nextPage = new ItemStack(Items.SPECTRAL_ARROW);
+      tag = nextPage.getOrCreateNbt();
+      display = new NbtCompound();
+      NbtList loreList = new NbtList();
+      display.putString("Name","[{\"text\":\"Next Page ("+settings.getLeaderboardPage()+"/"+numPages+")\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to go to the Next Page\",\"color\":\"light_purple\"}]"));
+      display.put("Lore",loreList);
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      gui.setSlot(53,GuiElementBuilder.from(nextPage));
+      
+      ItemStack prevPage = new ItemStack(Items.SPECTRAL_ARROW);
+      tag = prevPage.getOrCreateNbt();
+      display = new NbtCompound();
+      loreList = new NbtList();
+      display.putString("Name","[{\"text\":\"Previous Page ("+settings.getLeaderboardPage()+"/"+numPages+")\",\"italic\":false,\"color\":\"dark_purple\"}]");
+      loreList.add(NbtString.of("[{\"text\":\"Click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to go to the Previous Page\",\"color\":\"light_purple\"}]"));
+      display.put("Lore",loreList);
+      tag.put("display",display);
+      tag.putInt("HideFlags",103);
+      gui.setSlot(45,GuiElementBuilder.from(prevPage));
+      
+      int k = 0;
+      for(int i = 0; i < 4; i++){
+         for(int j = 0; j < 7; j++){
+            if(k < pageItems.size()){
+               UUID playerId = pageItems.get(k);
+               int playerXp = ArcanaNovum.PLAYER_XP_TRACKER.get(playerId);
+               int playerLevel = LevelUtils.levelFromXp(playerXp);
+               GameProfile playerGameProf;
+               GuiElementBuilder playerItem;
+               try{
+                  playerGameProf = player.getServer().getUserCache().getByUuid(playerId).orElseThrow();
+                  playerItem = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(playerGameProf,player.server);
+                  playerItem.setName(Text.literal(playerGameProf.getName()).formatted(Formatting.LIGHT_PURPLE));
+               }catch(Exception e){
+                  playerItem = new GuiElementBuilder(Items.BARRIER);
+                  playerItem.setName(Text.literal("<UNKNOWN>").formatted(Formatting.LIGHT_PURPLE));
+               }
+               playerItem.hideFlags();
+               
+               playerItem.addLoreLine((Text.literal("").append(Text.literal("Arcana Level: ").formatted(Formatting.DARK_PURPLE)).append(Text.literal(""+playerLevel).formatted(Formatting.LIGHT_PURPLE))));
+               if(playerLevel == 100){
+                  playerItem.addLoreLine((Text.literal("").append(Text.literal("Total Experience: ").formatted(Formatting.DARK_GREEN)).append(Text.literal(LevelUtils.readableInt(playerXp)).formatted(Formatting.GREEN))));
+               }else{
+                  playerItem.addLoreLine((Text.literal("")
+                        .append(Text.literal("Experience: ").formatted(Formatting.DARK_GREEN))
+                        .append(Text.literal(LevelUtils.readableInt(LevelUtils.getCurLevelXp(playerXp))).formatted(Formatting.GREEN))
+                        .append(Text.literal("/").formatted(Formatting.DARK_GREEN))
+                        .append(Text.literal(LevelUtils.readableInt(LevelUtils.nextLevelNewXp(playerLevel))).formatted(Formatting.GREEN))));
+               }
+               int playerAchievements = achievementMap.containsKey(playerId) ? achievementMap.get(playerId).size() : 0;
+               playerItem.addLoreLine((Text.literal("")
+                     .append(Text.literal("Achievements: ").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal(LevelUtils.readableInt(playerAchievements)).formatted(Formatting.AQUA))
+                     .append(Text.literal("/").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal(LevelUtils.readableInt(numAchievements)).formatted(Formatting.AQUA))));
+               
+               gui.setSlot((i*9+10)+j,playerItem);
+            }else{
+               gui.setSlot((i*9+10)+j,new GuiElementBuilder(Items.AIR));
+            }
+            k++;
+         }
+      }
+      
+      gui.setTitle(Text.literal("Arcana Leaderboard"));
    }
    
    private static final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
@@ -730,6 +959,22 @@ public class ArcaneTome extends MagicItem {
             }
          }
          
+         List<UUID> achPlayers = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
+         if(achPlayers == null || achPlayers.isEmpty()){
+            achievementItem.addLoreLine(Text.literal("")
+                  .append(Text.literal("No Arcanists have achieved this.").formatted(Formatting.DARK_PURPLE)));
+         }else{
+            int allArcanists = (int) ArcanaNovum.PLAYER_XP_TRACKER.values().stream().filter(xp -> xp > 1).count();
+            int acquiredCount = achPlayers.size();
+            DecimalFormat df = new DecimalFormat("#0.00");
+            achievementItem.addLoreLine(Text.literal("")
+                  .append(Text.literal("Acquired by ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(acquiredCount+"").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal(" Arcanists (").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(df.format((100*(double)acquiredCount)/((double)allArcanists))+"%").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal(")").formatted(Formatting.DARK_PURPLE)));
+         }
+         
          if(profile.hasAcheivement(magicItem.getId(),achievement.id)) achievementItem.glow();
    
          gui.setSlot(46+achieveSlots[i], achievementItem);
@@ -876,9 +1121,11 @@ public class ArcaneTome extends MagicItem {
       ITEM,
       RECIPE,
       NONE,
-      ACHIEVEMENTS
+      ACHIEVEMENTS,
+      LEADERBOARD
    }
    
+   // TODO: Refactor filters and sorts
    public enum TomeFilter{
       NONE("None"),
       MUNDANE("Mundane"),
@@ -1068,6 +1315,95 @@ public class ArcaneTome extends MagicItem {
          
          if(filter == AchievementFilter.ACQUIRED) return acquired;
          if(filter == AchievementFilter.NOT_ACQUIRED) return !acquired;
+         return false;
+      }
+   }
+   
+   public enum LeaderboardSort{
+      XP_DESC("XP Descending (Recommended)"),
+      XP_ASC("XP Ascending"),
+      ACHIEVES_DESC("Achievements Descending"),
+      SKILL_POINTS_DESC("Skill Points Descending"),
+      NAME("Alphabetical");
+      
+      public final String label;
+      
+      LeaderboardSort(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(LeaderboardSort sort){
+         MutableText text = Text.literal(sort.label);
+         
+         return switch(sort){
+            case XP_DESC -> text.formatted(Formatting.LIGHT_PURPLE);
+            case XP_ASC -> text.formatted(Formatting.DARK_PURPLE);
+            case ACHIEVES_DESC -> text.formatted(Formatting.GREEN);
+            case SKILL_POINTS_DESC -> text.formatted(Formatting.DARK_GREEN);
+            case NAME -> text.formatted(Formatting.AQUA);
+         };
+      }
+      
+      public static LeaderboardSort cycleSort(LeaderboardSort sort, boolean backwards){
+         LeaderboardSort[] sorts = LeaderboardSort.values();
+         int ind = -1;
+         for(int i = 0; i < sorts.length; i++){
+            if(sort == sorts[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= sorts.length) ind = 0;
+         if(ind < 0) ind = sorts.length-1;
+         return sorts[ind];
+      }
+   }
+   
+   public enum LeaderboardFilter{
+      NONE("None"),
+      ARCANIST("Arcanist"),
+      MAX_LVL("Max Level"),
+      ABYSS("Abyssal Arcanist");
+      
+      public final String label;
+      
+      LeaderboardFilter(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(LeaderboardFilter filter){
+         MutableText text = Text.literal(filter.label);
+         
+         return switch(filter){
+            case NONE -> text.formatted(Formatting.WHITE);
+            case ARCANIST -> text.formatted(Formatting.LIGHT_PURPLE);
+            case MAX_LVL -> text.formatted(Formatting.GREEN);
+            case ABYSS -> text.formatted(Formatting.DARK_PURPLE);
+         };
+      }
+      
+      public static LeaderboardFilter cycleFilter(LeaderboardFilter filter, boolean backwards){
+         LeaderboardFilter[] filters = LeaderboardFilter.values();
+         int ind = -1;
+         for(int i = 0; i < filters.length; i++){
+            if(filter == filters[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= filters.length) ind = 0;
+         if(ind < 0) ind = filters.length-1;
+         return filters[ind];
+      }
+      
+      public static boolean matchesFilter(UUID playerID, LeaderboardFilter filter){
+         if(filter == LeaderboardFilter.NONE) return true;
+         int xp = ArcanaNovum.PLAYER_XP_TRACKER.get(playerID);
+         int level = LevelUtils.levelFromXp(xp);
+         
+         if(filter == LeaderboardFilter.ARCANIST) return xp > 1;
+         if(filter == LeaderboardFilter.MAX_LVL) return level >= 100;
+         if(filter == LeaderboardFilter.ABYSS) return ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(ArcanaAchievements.ALL_ACHIEVEMENTS.id).contains(playerID);
          return false;
       }
    }

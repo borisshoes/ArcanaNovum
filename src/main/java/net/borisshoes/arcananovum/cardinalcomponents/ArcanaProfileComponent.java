@@ -197,13 +197,15 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
    @Override
    public boolean addXP(int xp){
+      if(!(player instanceof ServerPlayerEntity serverPlayer)) return false;
       if(getLevel() == 100 && this.xp + xp < 1000000000){
          this.xp += xp;
+         ArcanaNovum.PLAYER_XP_TRACKER.put(serverPlayer.getUuid(),this.xp);
          return true;
       }
       
       int newLevel = LevelUtils.levelFromXp(this.xp+xp);
-      if(player instanceof ServerPlayerEntity && getLevel() != newLevel){
+      if(getLevel() != newLevel){
          if(getLevel()/5 < newLevel/5){
             MinecraftServer server = player.getServer();
             List<MutableText> msgs = new ArrayList<>();
@@ -242,7 +244,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             }
          }
          
-         SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
+         SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, .5f,1.5f);
          int resolve = getAugmentLevel(ArcanaAugments.RESOLVE.id);
          player.sendMessage(Text.literal(""),false);
          player.sendMessage(Text.literal("Your Arcana has levelled up to level "+newLevel+"!").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),false);
@@ -251,6 +253,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       }
       this.xp += xp;
       this.level = newLevel;
+      ArcanaNovum.PLAYER_XP_TRACKER.put(serverPlayer.getUuid(),this.xp);
       return true;
    }
    
@@ -306,6 +309,12 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          if(removed) {
             // Update data and return
             itemAchs.add(achievement);
+            List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
+            curList.removeIf(uuid -> uuid.equals(player.getUuid()));
+            if(achievement.isAcquired()){
+               curList.add(player.getUuid());
+            }
+            ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achievement.id,curList);
             return false;
          }
          // Add achievement
@@ -316,6 +325,14 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          itemAchs.add(achievement);
          achievements.put(item,itemAchs);
       }
+      
+      List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
+      curList.removeIf(uuid -> uuid.equals(player.getUuid()));
+      if(achievement.isAcquired()){
+         curList.add(player.getUuid());
+      }
+      ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achievement.id,curList);
+      
       return true;
    }
 
@@ -333,16 +350,23 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
    @Override
    public boolean removeAchievement(String item, String achievementId){
+      boolean found = false;
       if(achievements.containsKey(item)){
          List<ArcanaAchievement> itemAchs = achievements.get(item);
          for(ArcanaAchievement itemAch : itemAchs){
             if(itemAch.id.equals(achievementId)){
                itemAchs.remove(itemAch);
-               return true;
+               found = true;
+               break;
             }
          }
       }
-      return false;
+      
+      List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievementId);
+      curList.removeIf(uuid -> uuid.equals(player.getUuid()));
+      ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achievementId,curList);
+      
+      return found;
    }
 
 //   @Override
@@ -385,6 +409,19 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          }
       }
       return null;
+   }
+   
+   @Override
+   public int totalAcquiredAchievements(){
+      int count = 0;
+      for(Map.Entry<String, List<ArcanaAchievement>> listEntry : achievements.entrySet()){
+         for(ArcanaAchievement ach : listEntry.getValue()){
+            if(ach.isAcquired()){
+               count++;
+            }
+         }
+      }
+      return count;
    }
    
    @Override

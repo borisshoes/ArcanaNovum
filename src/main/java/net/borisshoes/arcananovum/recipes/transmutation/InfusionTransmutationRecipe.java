@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.MagicItem;
@@ -115,6 +116,9 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public ItemStack getViewStack(){
+      if(MagicItemUtils.isMagic(output)){
+         return new ItemStack(output.getItem(),1);
+      }
       return output;
    }
    

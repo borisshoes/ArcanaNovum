@@ -26,6 +26,15 @@ repositories {
         name "Jitpack"
         url "https://jitpack.io"
     }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+
+    maven { url = 'https://maven.maxhenkel.de/repository/public' }
 }
 
 dependencies {
@@ -43,6 +52,7 @@ dependencies {
     modImplementation include("eu.pb4:polymer-resource-pack:${project.polymer_version}")
     modImplementation include("eu.pb4:polymer-virtual-entity:${project.polymer_version}")
     modImplementation include("eu.pb4:polymer-networking:${project.polymer_version}")
+    modImplementation include("xyz.nucleoid:server-translations-api:${project.translation_version}")
 
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
@@ -50,6 +60,9 @@ dependencies {
     include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
     include "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
     include "dev.onyxstudios.cardinal-components-api:cardinal-components-world:${project.cca_version}"
+
+    modImplementation "maven.modrinth:simple-voice-chat:fabric-${voicechat_version}"
+
 }
 
 processResources {

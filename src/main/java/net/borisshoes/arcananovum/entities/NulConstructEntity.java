@@ -89,12 +89,12 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    }
    
    private void initializeAttributes(){
-      getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024f);
-      getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85f);
-      getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85f);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10f);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(10f);
-      getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(128f);
+      getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024.0);
+      getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85);
+      getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85);
+      getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10.0);
+      getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(10.0);
+      getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(128);
       initializedAttributes = true;
    }
    
@@ -114,9 +114,9 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    public static DefaultAttributeContainer.Builder createConstructAttributes() {
       return HostileEntity.createHostileAttributes()
             .add(EntityAttributes.GENERIC_MAX_HEALTH, 1024.0)
-            .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.85f)
-            .add(EntityAttributes.GENERIC_FLYING_SPEED, 0.85f)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128.0)
+            .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.85)
+            .add(EntityAttributes.GENERIC_FLYING_SPEED, 0.85)
+            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128)
             .add(EntityAttributes.GENERIC_ARMOR, 10.0)
             .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10.0);
    }
@@ -261,7 +261,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          return isMythical ? modified * 0.3f : modified * 0.5f;
       }
       
-      return isMythical ? modified * 0.5f : modified * 0.75f;
+      return isMythical ? modified * 0.3f : modified * 0.75f;
    }
    
    private void mythicalAura(){

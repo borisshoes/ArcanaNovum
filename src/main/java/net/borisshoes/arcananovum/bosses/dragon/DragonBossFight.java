@@ -1253,6 +1253,7 @@ public class DragonBossFight {
       
       public void playerExits(){
          setSolveCooldown(2400);
+         state = 1;
          hologramVisible = true;
          player = null;
       }

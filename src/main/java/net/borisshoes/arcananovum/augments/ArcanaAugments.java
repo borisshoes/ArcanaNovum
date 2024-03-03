@@ -377,6 +377,11 @@ public class ArcanaAugments {
          new String[]{"Gives the Nul Memento max enhanced stats"},
          new MagicRarity[]{MYTHICAL}
    ));
+   public static final ArcanaAugment TEMPO_MORTUUS = ArcanaAugments.register(
+         new ArcanaAugment("Tempo Mortuus", "tempo_mortuus", new ItemStack(Items.CLOCK), ArcanaRegistry.NUL_MEMENTO,
+         new String[]{"Reduces the cooldown of the Memento's "," Death Ward by 10 minutes per level"},
+         new MagicRarity[]{LEGENDARY,MYTHICAL}
+   ));
    
    // Overflowing Quiver
    public static final ArcanaAugment ABUNDANT_AMMO = ArcanaAugments.register(
@@ -873,7 +878,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment HASTY_BARGAIN = ArcanaAugments.register(
          new ArcanaAugment("Hasty Bargain", "hasty_bargain", new ItemStack(Items.CLOCK), ArcanaRegistry.TRANSMUTATION_ALTAR,
-         new String[]{"Decreases Altar cooldown by 5 minutes per level","First Level decreases transmutation time by 50%","First Level increases reagent consumption by 50%,"," decreased by 10% per additional level"," Reagent consumption cannot go beyond 1 stack"},
+         new String[]{"Decreases Altar cooldown by 5 minutes per level","First Level decreases transmutation time by 50%","First Level increases reagent consumption by 50%,","Reagent consumption decreased by 10% per extra level","Reagent consumption cannot go beyond 1 stack"},
          new MagicRarity[]{MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC}
    ));
    

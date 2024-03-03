@@ -64,7 +64,7 @@ public class AequalisScientia extends MagicItem {
    public NbtList getItemLore(@Nullable ItemStack itemStack){
       NbtList loreList = new NbtList();
       loreList.add(NbtString.of("[{\"text\":\"A small \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"runestone \",\"color\":\"aqua\"},{\"text\":\"engraved with a lone, \"},{\"text\":\"ancient symbol\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Aspect of Balance\",\"color\":\"aqua\"},{\"text\":\" has granted your their \"},{\"text\":\"favor\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"gray\"}]"));
+      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Aspect of Balance\",\"color\":\"aqua\"},{\"text\":\" has granted you their \"},{\"text\":\"favor\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"Your \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"studies \",\"color\":\"blue\"},{\"text\":\"have taken you far, but everything has its \"},{\"text\":\"limit\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"gray\"}]"));
       loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"ancient being\",\"color\":\"aqua\"},{\"text\":\" offers a \"},{\"text\":\"trade \",\"color\":\"dark_aqua\"},{\"text\":\"for their \"},{\"text\":\"timeless wisdom\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
@@ -400,7 +400,7 @@ public class AequalisScientia extends MagicItem {
          if(!MagicItemUtils.isMagic(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         if(Math.random() < 0.000025){
+         if(Math.random() < 0.000015){
             inventoryDialog(player);
          }
       }

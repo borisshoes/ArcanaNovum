@@ -77,12 +77,14 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          List<ArcanaAugment> item1Augments = ArcanaAugments.getAugmentsForItem(magicItem1);
          List<ArcanaAugment> item2Augments = ArcanaAugments.getAugmentsForItem(magicItem2);
          
-         int cheapestBuy = Integer.MAX_VALUE;
          int sellingPower = 0;
          int liquidated = 0;
+         int cycles = 0;
          
-         while(true){
+         while(cycles < 100){
+            cycles++;
             ArrayList<Pair<ArcanaAugment,Integer>> canBuy = new ArrayList<>();
+            int cheapestBuy = Integer.MAX_VALUE;
             for(ArcanaAugment i2aug : item2Augments){
                int maxLvl = i2aug.getTiers().length;
                int curLvl = profile.getAugmentLevel(i2aug.id);
@@ -206,7 +208,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public ItemStack getViewStack(){
-      return ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItem().copy();
+      return new ItemStack(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem(),1);
    }
    
 }
