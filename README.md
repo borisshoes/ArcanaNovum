@@ -2,7 +2,9 @@
 
 A fabric server-sided magic mod that adds new items and multiblocks to Minecraft.
 
-##### This mod should only be installed on a server.
+### [Modrinth Page](https://modrinth.com/mod/arcana-novum)
+
+#### This mod only needs to be installed on a server.
 
 ### Dev Spotlight / Mod Tutorial
 [![Mod Tutorial](https://img.youtube.com/vi/JU-iLKURhzw/0.jpg)](https://www.youtube.com/watch?v=JU-iLKURhzw)
