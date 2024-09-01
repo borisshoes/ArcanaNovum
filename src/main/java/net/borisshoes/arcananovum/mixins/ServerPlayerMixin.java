@@ -16,10 +16,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.TeleportTarget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
@@ -71,8 +73,8 @@ public class ServerPlayerMixin {
       }
    }
    
-   @Inject(method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/entity/Entity;"))
-   private void arcananovum_teleportDimensionChange(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci){
+   @Inject(method = "teleportTo", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;getLevelProperties()Lnet/minecraft/world/WorldProperties;"))
+   private void arcananovum_teleportDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       PLAYER_DATA.get(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);
    }

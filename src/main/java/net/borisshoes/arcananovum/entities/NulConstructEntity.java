@@ -520,10 +520,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       if(isExalted){
          dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(16),getPos());
+         dropItem(getWorld(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,4+(int)(Math.random()*17)),getPos());
       }else{
          for(int i = 0; i < (int)(Math.random()*12+4); i++){
             ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
             dropItem(getWorld(),stack,getPos());
+            dropItem(getWorld(),stack.copyWithCount(1),getPos());
+            dropItem(getWorld(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,2+(int)(Math.random()*9)),getPos());
          }
       }
       

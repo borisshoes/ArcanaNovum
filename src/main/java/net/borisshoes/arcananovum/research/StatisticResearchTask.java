@@ -31,7 +31,7 @@ public class StatisticResearchTask<T> extends ResearchTask{
    
    @Override
    public boolean isAcquired(ServerPlayerEntity player){
-      return data.left().map(identifier -> player.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(identifier)) > threshold)
-            .orElseGet(() -> data.right().filter(statTypeTPair -> player.getStatHandler().getStat(statTypeTPair.getLeft(), statTypeTPair.getRight()) > threshold).isPresent());
+      return data.left().map(identifier -> player.getStatHandler().getStat(Stats.CUSTOM.getOrCreateStat(identifier)) >= threshold)
+            .orElseGet(() -> data.right().filter(statTypeTPair -> player.getStatHandler().getStat(statTypeTPair.getLeft(), statTypeTPair.getRight()) >= threshold).isPresent());
    }
 }

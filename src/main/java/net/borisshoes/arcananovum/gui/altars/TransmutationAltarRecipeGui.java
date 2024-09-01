@@ -276,7 +276,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             .append(Text.translatable(reagent2.getTranslationKey()).formatted(Formatting.AQUA)))));
       setSlot(50,reagent2Item);
       
-      GuiElementBuilder recipeItem = new GuiElementBuilder(Items.KNOWLEDGE_BOOK).hideDefaultTooltip();
+      GuiElementBuilder recipeItem = new GuiElementBuilder(GraphicalItem.with(GraphicItems.TRANSMUTATION_BOOK)).hideDefaultTooltip();
       recipeItem.setName((Text.literal("")
             .append(Text.literal("Transmutation Recipes").formatted(Formatting.DARK_AQUA))));
       recipeItem.addLoreLine(TextUtils.removeItalics((Text.literal("")

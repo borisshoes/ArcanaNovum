@@ -478,7 +478,7 @@ public class StarlightForgeGui extends SimpleGui {
          recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("")));
          int slotCount = 0;
          for(ArcanaItem item : recipe.getForgeRequirementList()){
-            GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideDefaultTooltip().glow();
+            GuiElementBuilder reqItem = GuiElementBuilder.from(item.getPrefItemNoLore()).hideDefaultTooltip().glow();
             Text req = Text.literal("")
                   .append(Text.literal("Requires").formatted(Formatting.GREEN))
                   .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
@@ -545,7 +545,7 @@ public class StarlightForgeGui extends SimpleGui {
       recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       int slotCount = 0;
       for(ArcanaItem item : recipe.getForgeRequirementList()){
-         GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideDefaultTooltip().glow();
+         GuiElementBuilder reqItem = GuiElementBuilder.from(item.getPrefItemNoLore()).hideDefaultTooltip().glow();
          Text req = Text.literal("")
                .append(Text.literal("Requires").formatted(Formatting.GREEN))
                .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
