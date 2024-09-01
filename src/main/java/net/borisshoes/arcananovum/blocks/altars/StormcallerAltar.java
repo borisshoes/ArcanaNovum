@@ -1,37 +1,37 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicBlock;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
@@ -41,45 +41,66 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class StormcallerAltar extends MagicBlock implements MultiblockCore {
+public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
+	public static final String ID = "stormcaller_altar";
    
    private Multiblock multiblock;
    
    public StormcallerAltar(){
-      id = "stormcaller_altar";
+      id = ID;
       name = "Altar of the Stormcaller";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.ALTARS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.RAW_COPPER_BLOCK;
-      block = new StormcallerAltarBlock(FabricBlockSettings.create().mapColor(MapColor.ORANGE).strength(5.0f,1200.0f).requiresTool().sounds(BlockSoundGroup.METAL));
-      item = new StormcallerAltarItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
+      block = new StormcallerAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.ORANGE).strength(5.0f,1200.0f).requiresTool().sounds(BlockSoundGroup.METAL));
+      item = new StormcallerAltarItem(this.block,new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Altar of the Stormcaller").formatted(Formatting.BOLD,Formatting.AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
+      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_LIGHTNING_ROD,ResearchTasks.ADVANCEMENT_WAX_ON,ResearchTasks.ADVANCEMENT_WAX_OFF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Altar of the Stormcaller\",\"italic\":false,\"color\":\"aqua\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addAltarLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Stormcaller Altar:\",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Altar \",\"color\":\"aqua\"},{\"text\":\"calls upon the \"},{\"text\":\"clouds \",\"color\":\"dark_gray\"},{\"text\":\"to \"},{\"text\":\"shift \",\"color\":\"aqua\"},{\"text\":\"and \"},{\"text\":\"darken\",\"color\":\"dark_gray\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Altar \",\"color\":\"aqua\"},{\"text\":\"can be used to \"},{\"text\":\"change \",\"color\":\"dark_gray\"},{\"text\":\"the \"},{\"text\":\"weather \",\"color\":\"aqua\"},{\"text\":\"to any state.\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Altar \",\"color\":\"aqua\"},{\"text\":\"requires a \"},{\"text\":\"Diamond Block\",\"color\":\"aqua\"},{\"text\":\" to \"},{\"text\":\"activate\",\"color\":\"dark_gray\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addAltarLore(lore);
+      lore.add(Text.literal("Stormcaller Altar:").formatted(Formatting.BOLD,Formatting.AQUA));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("Altar ").formatted(Formatting.AQUA))
+            .append(Text.literal("calls upon the ").formatted(Formatting.GRAY))
+            .append(Text.literal("clouds ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("to ").formatted(Formatting.GRAY))
+            .append(Text.literal("shift ").formatted(Formatting.AQUA))
+            .append(Text.literal("and ").formatted(Formatting.GRAY))
+            .append(Text.literal("darken").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("Altar ").formatted(Formatting.AQUA))
+            .append(Text.literal("can be used to ").formatted(Formatting.GRAY))
+            .append(Text.literal("change ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("the ").formatted(Formatting.GRAY))
+            .append(Text.literal("weather ").formatted(Formatting.AQUA))
+            .append(Text.literal("to any state.").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("Altar ").formatted(Formatting.AQUA))
+            .append(Text.literal("requires a ").formatted(Formatting.GRAY))
+            .append(Text.literal("Diamond Block").formatted(Formatting.AQUA))
+            .append(Text.literal(" to ").formatted(Formatting.GRAY))
+            .append(Text.literal("activate").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -92,30 +113,33 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
       return multiblock;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.LIGHTNING_ROD,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.OXIDIZED_COPPER,64,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.DIAMOND,8,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.HEART_OF_THE_SEA,1,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.RAW_COPPER_BLOCK,64,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.LIGHTNING_ROD,16);
+      ArcanaIngredient b = new ArcanaIngredient(Items.OXIDIZED_COPPER,12);
+      ArcanaIngredient c = new ArcanaIngredient(Items.DIAMOND,6);
+      ArcanaIngredient g = new ArcanaIngredient(Items.HEART_OF_THE_SEA,1);
+      ArcanaIngredient h = new ArcanaIngredient(Items.COPPER_BULB,8);
+      ArcanaIngredient m = new ArcanaIngredient(Items.RAW_COPPER_BLOCK,16);
       
-      MagicItemIngredient[][] ingredients = {
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
-            {b,c,h,c,b},
+            {b,g,h,g,b},
             {c,h,m,h,c},
-            {b,c,h,c,b},
+            {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"      Altar of the\\n      Stormcaller\\n\\nRarity: Exotic\\n\\nIn order to influence the world, I need to tap into the leylines. I have devised a structure capable of such, with this at its heart. It should be able to cause changes in the \"}");
-      list.add("{\"text\":\"      Altar of the\\n      Stormcaller\\n\\natmosphere so that I can dictate the weather. \\nThunder, Rain or Shine, at my command!\\nHowever, in order to provide enough energy to the leylines, I need to use a Diamond Block as a catalyst.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("      Altar of the\n      Stormcaller\n\nRarity: Exotic\n\nIn order to influence the world, I need to tap into the leylines. I have devised a structure capable of such, with this at its heart. It should be able to cause changes in the ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Altar of the\n      Stormcaller\n\natmosphere so that I can dictate the weather. \nThunder, Rain or Shine, at my command!\nHowever, in order to provide enough energy to the leylines, I need to use a Diamond Block as a catalyst.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class StormcallerAltarItem extends MagicPolymerBlockItem {
+   public class StormcallerAltarItem extends ArcanaPolymerBlockItem {
       public StormcallerAltarItem(Block block, Settings settings){
          super(getThis(),block, settings);
       }
@@ -126,14 +150,14 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
       }
    }
    
-   public class StormcallerAltarBlock extends MagicPolymerBlockEntity {
-      public StormcallerAltarBlock(Settings settings){
+   public class StormcallerAltarBlock extends ArcanaPolymerBlockEntity {
+      public StormcallerAltarBlock(AbstractBlock.Settings settings){
          super(settings);
       }
       
       @Override
-      public Block getPolymerBlock(BlockState state) {
-         return Blocks.RAW_COPPER_BLOCK;
+      public BlockState getPolymerBlockState(BlockState state) {
+         return Blocks.RAW_COPPER_BLOCK.getDefaultState();
       }
       
       @Nullable
@@ -157,18 +181,16 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockHitResult hit){
-         if(hand != Hand.MAIN_HAND) return ActionResult.PASS;
+      protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
          StormcallerAltarBlockEntity altar = (StormcallerAltarBlockEntity) world.getBlockEntity(pos);
          if(altar != null){
             if(playerEntity instanceof ServerPlayerEntity player){
-               Multiblock.MultiblockCheck check = new Multiblock.MultiblockCheck(player.getServerWorld(),pos,state,new BlockPos(-5,0,-5),null);
-               if(multiblock.matches(check)){
+               if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getStackInHand(hand).getItem(),1);
+                  player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(check);
+                  multiblock.displayStructure(altar.getMultiblockCheck());
                }
             }
          }
@@ -176,24 +198,12 @@ public class StormcallerAltar extends MagicBlock implements MultiblockCore {
       }
       
       @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-         if (state.isOf(newState.getBlock())) {
-            return;
-         }
-         BlockEntity blockEntity = world.getBlockEntity(pos);
-         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
-         DefaultedList<ItemStack> drops = DefaultedList.of();
-         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
-         ItemScatterer.spawn(world, pos, drops);
-         super.onStateReplaced(state, world, pos, newState, moved);
-      }
-      
-      @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
          BlockEntity entity = world.getBlockEntity(pos);
          if (placer instanceof ServerPlayerEntity player && entity instanceof StormcallerAltarBlockEntity altar) {
-            initializeMagicBlock(stack,altar);
+            initializeArcanaBlock(stack,altar);
          }
       }
    }
 }
+

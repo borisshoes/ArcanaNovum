@@ -1,8 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PotatoesBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;

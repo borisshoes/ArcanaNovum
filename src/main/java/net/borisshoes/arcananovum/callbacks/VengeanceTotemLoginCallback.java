@@ -1,14 +1,13 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -68,7 +67,7 @@ public class VengeanceTotemLoginCallback extends LoginCallback{
       //Data tag just has single float for hearts
       this.data = data;
       String attackerString = data.getString("attacker");
-      this.attacker = attackerString.isEmpty() ? null : UUID.fromString(attackerString);
+      this.attacker = attackerString.isEmpty() ? null : MiscUtils.getUUID(attackerString);
    }
    
    @Override

@@ -2,19 +2,20 @@ package net.borisshoes.arcananovum.effects;
 
 import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
-import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
-import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.utils.RepeatTimer;
+import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+
+import static net.borisshoes.arcananovum.ArcanaNovum.PLAYER_MOVEMENT_TRACKER;
 
 public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatusEffect {
    
@@ -28,7 +29,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
    }
    
    @Override
-   public void applyUpdateEffect(LivingEntity entity, int amplifier){
+   public boolean applyUpdateEffect(LivingEntity entity, int amplifier){
       MinecraftServer server = entity.getServer();
       
       if(entity instanceof ServerPlayerEntity player && server != null && server.getTicks() % 10 == 0){
@@ -39,6 +40,19 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
             protected void onTick(){
                super.onTick();
                
+               if(lifeTime % 5 == 0){
+                  Pair<Vec3d,Vec3d> tracker = PLAYER_MOVEMENT_TRACKER.get(player);
+                  Vec3d vel = tracker == null ? new Vec3d(0,0,0) : tracker.getRight();
+                  for(VirtualElement e : getElements()){
+                     if(e instanceof BlockDisplayElement element){
+                        element.setTranslation(vel.toVector3f().mul(1));
+                        element.setStartInterpolation(-1);
+                        element.setInterpolationDuration(5);
+                        element.startInterpolation();
+                     }
+                  }
+               }
+
                if(lifeTime-- <= 0) {
                   setAttachment(null);
                   destroy(); // Time expired, remove
@@ -59,13 +73,17 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
             holder.addElement(element);
          }
          
-         HolderAttachment attachment = new ManualAttachment(holder, player.getServerWorld(), player::getPos);
-         holder.setAttachment(attachment);
-         attachment.startWatching(player);
-         attachment.updateTracking(player.networkHandler);
-         attachment.holder().startWatching(player);
          
-         ArcanaNovum.addTickTimerCallback(new RepeatTimer(1,16, attachment::tick,null));
+         EntityAttachment attachment = new EntityAttachment(holder,player,true);
+         attachment.startWatching(player);
+         
+         for(ServerPlayerEntity serverPlayer : server.getPlayerManager().getPlayerList()){
+            if(serverPlayer != player){
+               holder.stopWatching(serverPlayer);
+               attachment.stopWatching(serverPlayer);
+            }
+         }
       }
+      return super.applyUpdateEffect(entity,amplifier);
    }
 }

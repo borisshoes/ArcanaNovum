@@ -1,99 +1,125 @@
 package net.borisshoes.arcananovum.items.catalysts;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class CatalyticMatrix extends MagicItem {
+public class CatalyticMatrix extends ArcanaItem {
+	public static final String ID = "catalytic_matrix";
    
    private static final String TXT = "item/catalytic_matrix";
    
    public CatalyticMatrix(){
-      id = "catalytic_matrix";
+      id = ID;
       name = "Catalytic Matrix";
-      rarity = MagicRarity.MUNDANE;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.CATALYSTS};
+      rarity = ArcanaRarity.MUNDANE;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.CATALYSTS};
       itemVersion = 0;
       vanillaItem = Items.NETHER_STAR;
-      item = new CatalyticMatrixItem(new FabricItemSettings().maxCount(4).fireproof());
+      item = new CatalyticMatrixItem(new Item.Settings().maxCount(4).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Catalytic Matrix").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Catalytic Matrix\",\"italic\":false,\"color\":\"yellow\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      stack.setCount(4);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"A fragment of a \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Runic Matrix\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"specialized\",\"color\":\"blue\"},{\"text\":\" in \",\"color\":\"dark_purple\"},{\"text\":\"augmenting \",\"color\":\"dark_aqua\"},{\"text\":\"Arcana\",\"color\":\"light_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"On its own, this \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"new matrix\",\"color\":\"yellow\"},{\"text\":\" is \",\"color\":\"dark_purple\"},{\"text\":\"useless\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"matrix \",\"color\":\"yellow\"},{\"text\":\"must be \",\"color\":\"dark_purple\"},{\"text\":\"built upon\",\"color\":\"blue\"},{\"text\":\" to \",\"color\":\"dark_purple\"},{\"text\":\"unlock \",\"color\":\"dark_aqua\"},{\"text\":\"the \",\"color\":\"dark_purple\"},{\"text\":\"full potential\",\"color\":\"aqua\"},{\"text\":\" of \",\"color\":\"dark_purple\"},{\"text\":\"Arcana\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("A fragment of a ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Matrix").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" specialized").formatted(Formatting.BLUE))
+            .append(Text.literal(" in ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("augmenting ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("Arcana").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("On its own, this ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("new matrix").formatted(Formatting.YELLOW))
+            .append(Text.literal(" is ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("useless").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("matrix ").formatted(Formatting.YELLOW))
+            .append(Text.literal("must be ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("built upon").formatted(Formatting.BLUE))
+            .append(Text.literal(" to ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("unlock ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("full potential").formatted(Formatting.AQUA))
+            .append(Text.literal(" of ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Arcana").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.AMETHYST_SHARD,32,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.CRAFTING_TABLE,16,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,16,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.DIAMOND,4,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.NETHER_STAR,1,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.AMETHYST_SHARD,12);
+      ArcanaIngredient b = new ArcanaIngredient(Items.CRAFTER,3);
+      ArcanaIngredient c = new ArcanaIngredient(Items.DIAMOND,2);
+      ArcanaIngredient g = new ArcanaIngredient(Items.END_CRYSTAL,4);
+      ArcanaIngredient h = new ArcanaIngredient(Items.NETHER_STAR,1);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
       
-      MagicItemIngredient[][] ingredients = {
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
             {b,g,h,g,b},
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"    Catalytic Matrix\\n\\nRarity: Mundane\\n\\nThe full power of a Runic Matrix shouldn't be necessary to further unlock abilities within the items I've made.\\nBreaking one into self-contained fragments should be more efficient.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("    Catalytic Matrix\n\nRarity: Mundane\n\nThe full power of a Runic Matrix shouldn't be necessary to further unlock abilities within the items I've made.\nBreaking one into self-contained fragments should be more efficient.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class CatalyticMatrixItem extends MagicPolymerItem {
-      public CatalyticMatrixItem(Settings settings){
+   public class CatalyticMatrixItem extends ArcanaPolymerItem {
+      public CatalyticMatrixItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -102,3 +128,4 @@ public class CatalyticMatrix extends MagicItem {
       }
    }
 }
+

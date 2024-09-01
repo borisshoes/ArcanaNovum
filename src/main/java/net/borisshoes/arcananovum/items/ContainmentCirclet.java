@@ -1,17 +1,21 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -22,18 +26,17 @@ import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -46,10 +49,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ContainmentCirclet extends MagicItem {
+public class ContainmentCirclet extends ArcanaItem {
+	public static final String ID = "containment_circlet";
+   
+   private static final String CONTENTS_TAG = "contents";
+   private static final String HP_TAG = "hp";
+   private static final String MAX_HP_TAG = "maxHP";
    
    private static final String TXT_EMPTY = "item/containment_circlet_empty";
    private static final String TXT_FILLED = "item/containment_circlet_filled";
@@ -57,86 +66,112 @@ public class ContainmentCirclet extends MagicItem {
    private static final String TXT_CONFINEMENT_FILLED = "item/containment_circlet_confinement_filled";
    
    public ContainmentCirclet(){
-      id = "containment_circlet";
+      id = ID;
       name = "Containment Circlet";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.HEART_OF_THE_SEA;
-      item = new ContainmentCircletItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new ContainmentCircletItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Containment Circlet").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT_EMPTY));
       models.add(new Pair<>(vanillaItem,TXT_FILLED));
       models.add(new Pair<>(vanillaItem,TXT_CONFINEMENT_EMPTY));
       models.add(new Pair<>(vanillaItem,TXT_CONFINEMENT_FILLED));
+      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_TAME_AN_ANIMAL,ResearchTasks.USE_ENDER_CHEST};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Containment Circlet\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").put("contents",new NbtCompound());
-      tag.getCompound("arcananovum").putFloat("hp",-1);
-      tag.getCompound("arcananovum").putFloat("maxHp",-1);
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,CONTENTS_TAG,new NbtCompound());
+      putProperty(stack,HP_TAG,0.0f);
+      putProperty(stack,MAX_HP_TAG,0.0f);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtCompound itemNbt = itemStack.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound contents = magicNbt.getCompound("contents");
-      int hp = (int) magicNbt.getFloat("hp");
-      int maxHp = (int) magicNbt.getFloat("maxHp");
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Animals \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"often have a \",\"color\":\"green\"},{\"text\":\"mind of their own\",\"color\":\"aqua\"},{\"text\":\"; They must be \",\"color\":\"green\"},{\"text\":\"contained\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The Circlet\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" \",\"color\":\"green\"},{\"text\":\"stores animals\",\"color\":\"dark_green\"},{\"text\":\" for safe \",\"color\":\"green\"},{\"text\":\"keeping \",\"color\":\"aqua\"},{\"text\":\"and easy \",\"color\":\"green\"},{\"text\":\"transport\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" a \",\"color\":\"green\"},{\"text\":\"passive animal\",\"color\":\"dark_green\"},{\"text\":\" to \",\"color\":\"green\"},{\"text\":\"contain \",\"color\":\"aqua\"},{\"text\":\"them.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" again to \",\"color\":\"green\"},{\"text\":\"release \",\"color\":\"aqua\"},{\"text\":\"them.\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("Animals ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("often have a ").formatted(Formatting.GREEN))
+            .append(Text.literal("mind of their own").formatted(Formatting.AQUA))
+            .append(Text.literal(" They must be ").formatted(Formatting.GREEN))
+            .append(Text.literal("contained").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The Circlet").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" stores animals").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" for safe ").formatted(Formatting.GREEN))
+            .append(Text.literal("keeping ").formatted(Formatting.AQUA))
+            .append(Text.literal("and easy ").formatted(Formatting.GREEN))
+            .append(Text.literal("transport").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" a ").formatted(Formatting.GREEN))
+            .append(Text.literal("passive animal").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" to ").formatted(Formatting.GREEN))
+            .append(Text.literal("contain ").formatted(Formatting.AQUA))
+            .append(Text.literal("them.").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" again to ").formatted(Formatting.GREEN))
+            .append(Text.literal("release ").formatted(Formatting.AQUA))
+            .append(Text.literal("them.").formatted(Formatting.GREEN)));
+      lore.add(Text.literal(""));
       
-      Optional<EntityType<?>> entity = EntityType.fromNbt(contents);
-      if(!contents.isEmpty() && entity.isPresent()){
-         String entityTypeName = entity.get().getName().getString();
-         loreList.add(NbtString.of("[{\"text\":\"Contains\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" - \",\"color\":\"aqua\"},{\"text\":\""+entityTypeName+" ("+hp+"/"+maxHp+")\",\"color\":\"green\"}]"));
-      }else{
-         loreList.add(NbtString.of("[{\"text\":\"Contains\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" - \",\"color\":\"aqua\"},{\"text\":\"Nothing\",\"color\":\"green\"}]"));
+      
+      boolean hasCreature = false;
+      if(itemStack != null){
+         NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
+         int hp = (int) getFloatProperty(itemStack,HP_TAG);
+         int maxHp = (int) getFloatProperty(itemStack,MAX_HP_TAG);
+         
+         Optional<EntityType<?>> entity = EntityType.fromNbt(contents);
+         if(!contents.isEmpty() && entity.isPresent()){
+            String entityTypeName = entity.get().getName().getString();
+            
+            lore.add(Text.literal("")
+                  .append(Text.literal("Contains").formatted(Formatting.DARK_AQUA))
+                  .append(Text.literal(" - ").formatted(Formatting.AQUA))
+                  .append(Text.literal(entityTypeName+" ("+hp+"/"+maxHp+")").formatted(Formatting.GREEN)));
+            
+            hasCreature = true;
+         }
       }
       
+      if(!hasCreature){
+         lore.add(Text.literal("")
+               .append(Text.literal("Contains").formatted(Formatting.DARK_AQUA))
+               .append(Text.literal(" - ").formatted(Formatting.AQUA))
+               .append(Text.literal("Nothing").formatted(Formatting.GREEN)));
+      }
       
-      return loreList;
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtCompound contents = magicTag.getCompound("contents");
-      float hp = magicTag.getFloat("hp");
-      float maxHp = magicTag.getFloat("maxHp");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").put("contents",contents);
-      newTag.getCompound("arcananovum").putFloat("hp",hp);
-      newTag.getCompound("arcananovum").putFloat("maxHp",maxHp);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);
+      float hp = getFloatProperty(stack,HP_TAG);
+      float maxHp = getFloatProperty(stack,MAX_HP_TAG);
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,CONTENTS_TAG,contents);
+      putProperty(newStack,HP_TAG,hp);
+      putProperty(newStack,MAX_HP_TAG,maxHp);
+      return buildItemLore(newStack,server);
    }
    
    // Normal override in item class doesn't work because tamed animals consume the item interaction
    public ActionResult useOnEntity(PlayerEntity user, LivingEntity entity, Hand hand){
       ItemStack stack = user.getStackInHand(hand);
-      if(!MagicItemUtils.isMagic(stack)) return ActionResult.PASS;
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound contents = magicNbt.getCompound("contents");
+      if(!ArcanaItemUtils.isArcane(stack)) return ActionResult.PASS;
+      NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);
       
       if(!contents.isEmpty()){
          user.sendMessage(Text.literal("The Circlet is occupied").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
@@ -157,9 +192,9 @@ public class ContainmentCirclet extends MagicItem {
       }else if(entity instanceof MobEntity){
          NbtCompound data = entity.writeNbt(new NbtCompound());
          data.putString("id", EntityType.getId(entity.getType()).toString());
-         magicNbt.put("contents",data);
-         magicNbt.putFloat("hp",entity.getHealth());
-         magicNbt.putFloat("maxHp",entity.getMaxHealth());
+         putProperty(stack,CONTENTS_TAG,data);
+         putProperty(stack,HP_TAG,entity.getHealth());
+         putProperty(stack,MAX_HP_TAG,entity.getMaxHealth());
          entity.discard();
          user.sendMessage(Text.literal("The Circlet contains the creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
@@ -170,57 +205,56 @@ public class ContainmentCirclet extends MagicItem {
       return ActionResult.SUCCESS;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.OBSIDIAN,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.IRON_BARS,64,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.COBWEB,16,null);
-      ItemStack potion7 = new ItemStack(Items.POTION);
-      MagicItemIngredient h = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion7, Potions.STRONG_HEALING).getNbt());
-      MagicItemIngredient m = new MagicItemIngredient(Items.ENDER_CHEST,16,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,4);
+      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,4);
+      ArcanaIngredient c = new ArcanaIngredient(Items.IRON_BARS,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.CHAIN,12);
+      ArcanaIngredient h = new ArcanaIngredient(Items.COBWEB,8);
+      ArcanaIngredient m = new ArcanaIngredient(Items.ENDER_CHEST,4);
       
-      MagicItemIngredient[][] ingredients = {
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
-            {b,c,h,c,b},
+            {b,g,h,g,b},
             {c,h,m,h,c},
-            {b,c,h,c,b},
+            {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Containment Circlet\\n\\nRarity: Empowered\\n\\nPets are amazing companions. They're also idiots who love dying and are a pain to move.\\nIf only I had some sort of pocket ball, a pokeb... a Containment Circlet to keep them safe with me.\"}");
-      list.add("{\"text\":\"  Containment Circlet\\n\\nUsing the Circlet of a passive or tamed mob captures it.\\n\\nUsing the Circlet again releases the creature.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Containment Circlet\n\nRarity: Empowered\n\nPets are amazing companions. They're also idiots who love dying and are a pain to move.\nIf only I had some sort of pocket ball, a pokeb... a Containment Circlet to keep them safe with me.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Containment Circlet\n\nUsing the Circlet of a passive or tamed mob captures it.\n\nUsing the Circlet again releases the creature.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class ContainmentCircletItem extends MagicPolymerItem {
-      public ContainmentCircletItem(Settings settings){
+   public class ContainmentCircletItem extends ArcanaPolymerItem {
+      public ContainmentCircletItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT_EMPTY).value();
-         NbtCompound magicNbt = itemStack.getNbt().getCompound("arcananovum");
-         NbtCompound contents = magicNbt.getCompound("contents");
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(TXT_EMPTY).value();
+         NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
          boolean confinement = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CONFINEMENT.id) >= 1;
          if(confinement){
-            return contents.isEmpty() ? ArcanaRegistry.MODELS.get(TXT_CONFINEMENT_EMPTY).value() : ArcanaRegistry.MODELS.get(TXT_CONFINEMENT_FILLED).value();
+            return contents.isEmpty() ? ArcanaRegistry.getModelData(TXT_CONFINEMENT_EMPTY).value() : ArcanaRegistry.getModelData(TXT_CONFINEMENT_FILLED).value();
          }else{
-            return contents.isEmpty() ? ArcanaRegistry.MODELS.get(TXT_EMPTY).value() : ArcanaRegistry.MODELS.get(TXT_FILLED).value();
+            return contents.isEmpty() ? ArcanaRegistry.getModelData(TXT_EMPTY).value() : ArcanaRegistry.getModelData(TXT_FILLED).value();
          }
       }
       
       @Override
       public ActionResult useOnBlock(ItemUsageContext context){
          ItemStack stack = context.getStack();
-         if(!MagicItemUtils.isMagic(stack)) return ActionResult.PASS;
+         if(!ArcanaItemUtils.isArcane(stack)) return ActionResult.PASS;
          
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         NbtCompound contents = magicNbt.getCompound("contents");
-         float hp = magicNbt.getFloat("hp");
+         NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);
+         float hp = getFloatProperty(stack,HP_TAG);
          if(contents.isEmpty()) return ActionResult.PASS;
          
          Optional<Entity> optional = EntityType.getEntityFromNbt(contents,context.getWorld());
@@ -235,7 +269,7 @@ public class ContainmentCirclet extends MagicItem {
             }
             
             serverWorld.spawnEntity(newEntity);
-            magicNbt.put("contents",new NbtCompound());
+            putProperty(stack,CONTENTS_TAG,new NbtCompound());
             
             if(context.getPlayer() instanceof ServerPlayerEntity player){
                player.sendMessage(Text.literal("The Circlet releases its captive").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
@@ -255,17 +289,15 @@ public class ContainmentCirclet extends MagicItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
          
-         float hp = magicNbt.getFloat("hp");
-         float maxHp = magicNbt.getFloat("maxHp");
+         float hp = getFloatProperty(stack,HP_TAG);
+         float maxHp = getFloatProperty(stack,MAX_HP_TAG);
          boolean heals = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HEALING_CIRCLET.id) > 0;
          
          if(heals && player.getServer().getTicks() % 1200 == 0){
-            magicNbt.putFloat("hp",Math.min(maxHp,hp+1));
+            putProperty(stack,HP_TAG,Math.min(maxHp,hp+1));
             buildItemLore(stack,serverWorld.getServer());
          }
       }
@@ -276,3 +308,4 @@ public class ContainmentCirclet extends MagicItem {
       }
    }
 }
+

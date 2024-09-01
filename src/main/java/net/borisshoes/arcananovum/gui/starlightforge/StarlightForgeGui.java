@@ -4,55 +4,59 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.gui.WatchedGui;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.ItemEntity;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-import static net.borisshoes.arcananovum.items.ArcaneTome.CRAFTING_SLOTS;
+import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.CRAFTING_SLOTS;
+import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.DYNAMIC_SLOTS;
 
-public class StarlightForgeGui extends SimpleGui implements WatchedGui {
+public class StarlightForgeGui extends SimpleGui {
    private final StarlightForgeBlockEntity blockEntity;
    private final World world;
    private StarlightForgeInventory inv;
    private StarlightForgeInventoryListener listener;
-   private static final int[] forgeSlots = new int[]{1,2,3,10,11,12,19,20,21,13};
-   private final int mode; // 0 - Menu (hopper), 1 - Magic Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Compendium (9x6)
+   private static final int[] FORGE_SLOTS = new int[]{1,2,3,10,11,12,19,20,21};
+   private static final int[] SKILLED_POINTS = new int[]{0,1,2,3,4,5,6,8,10,12,15};
+   private int mode; // 0 - Menu (hopper), 1 - Arcana Crafting (9x5), 2 - Equipment Forging (9x3), 3 - Recipe (9x5), 4 - Compendium (9x6), 5 - Skilled Selection (9x2)
    private final TomeGui.CompendiumSettings settings;
    
    public StarlightForgeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, StarlightForgeBlockEntity blockEntity, World world, int mode, @Nullable TomeGui.CompendiumSettings settings){
@@ -67,6 +71,13 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
       }else{
          this.settings = settings;
       }
+      this.inv = new StarlightForgeInventory();
+      this.listener = new StarlightForgeInventoryListener(this,blockEntity,world,mode);
+      inv.addListener(listener);
+   }
+   
+   public int getMode(){
+      return mode;
    }
    
    @Override
@@ -77,91 +88,28 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
          }else if(index == 3){
             blockEntity.openGui(1,player,"",settings);
          }
-      }else if(mode == 1){ // Magic Crafting
+      }else if(mode == 1){ // Arcana Crafting
          if(index == 7){
             // Go to compendium
             MiscUtils.returnItems(inv,player);
             blockEntity.openGui(4,player,"",settings);
          }else if(index == 25){
             ItemStack item = this.getSlot(index).getItemStack();
-            if(MagicItemUtils.isMagic(item)){
-               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               MagicItemRecipe recipe = magicItem.getRecipe();
-               Inventory inv = getSlotRedirect(1).inventory;
+            if(ArcanaItemUtils.isArcane(item)){
+               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+               ArcanaRecipe recipe = arcanaItem.getRecipe();
                
-               ItemStack newMagicItem = magicItem.addCrafter(magicItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
-               if(newMagicItem == null){
+               if(!PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+                  player.sendMessage(Text.literal("You must research this item first!").formatted(Formatting.RED),false);
                   return false;
                }
                
-               if(!(magicItem instanceof ArcaneTome)){
-                  int skillPoints = new int[]{0, 1, 2, 3, 5, 7, 9, 12, 15}[settings.skillLvl];
-                  List<ArcanaAugment> allAugs = ArcanaAugments.getAugmentsForItem(magicItem);
-                  allAugs.removeIf(aug -> profile.getAugmentLevel(aug.id) <= 0); // Filter locked augments
-                  
-                  while(skillPoints > 0 && !allAugs.isEmpty()){
-                     TreeMap<ArcanaAugment,Integer> itemAugs = ArcanaAugments.getAugmentsOnItem(newMagicItem);
-                     if(itemAugs == null) break;
-                     int finalSkillPoints = skillPoints;
-                     allAugs.removeIf(aug -> {
-                        int existingLvl = itemAugs.getOrDefault(aug, 0);
-                        if(existingLvl >= aug.getTiers().length) return true; // Maxed
-                        if(profile.getAugmentLevel(aug.id) <= existingLvl) return true; // Next level not unlocked
-                        int nextPoints = aug.getTiers()[existingLvl].rarity + 1;
-                        if(nextPoints > finalSkillPoints) return true; // Too expensive
-                        return false;
-                     });
-                     if(allAugs.isEmpty()) break;
-                     
-                     int ind = (int) (Math.random() * allAugs.size());
-                     ArcanaAugment aug = allAugs.get(ind);
-                     int existingLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(newMagicItem,aug.id));
-                     skillPoints -= aug.getTiers()[existingLvl].rarity + 1;
-                     ArcanaAugments.applyAugment(newMagicItem, aug.id, existingLvl+1,false);
-                  }
-                  
-                  magicItem.buildItemLore(newMagicItem,player.getServer());
-               }
-               
-               
-               if(!PLAYER_DATA.get(player).addCrafted(newMagicItem) && !(magicItem instanceof ArcaneTome)){
-                  PLAYER_DATA.get(player).addXP(MagicRarity.getCraftXp(magicItem.getRarity()));
-               }
-               
-               if(magicItem.getRarity() != MagicRarity.MUNDANE){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.INTRO_ARCANA.id);
-                  ArcanaAchievements.progress(player,ArcanaAchievements.INTERMEDIATE_ARTIFICE.id,1);
-               }
-               if(magicItem.getRarity() == MagicRarity.LEGENDARY) ArcanaAchievements.grant(player,ArcanaAchievements.ARTIFICIAL_DIVINITY.id);
-               if(recipe.getForgeRequirement().needsFletchery()){
-                  ArcanaAchievements.setCondition(player,ArcanaAchievements.OVERLY_EQUIPPED_ARCHER.id,magicItem.getNameString(),true);
-               }
-               
-               ItemStack[][] ingredients = new ItemStack[5][5];
-               for(int i = 0; i < inv.size(); i++){
-                  ingredients[i/5][i%5] = inv.getStack(i);
-               }
-               ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, settings.resourceLvl);
-               for(int i = 0; i < inv.size(); i++){
-                  inv.setStack(i,remainders[i/5][i%5]);
-               }
-               
-               block: {
-                  ItemEntity itemEntity;
-                  boolean bl = player.getInventory().insertStack(newMagicItem);
-                  if (!bl || !newMagicItem.isEmpty()) {
-                     itemEntity = player.dropItem(newMagicItem, false);
-                     if (itemEntity == null) break block;
-                     itemEntity.resetPickupDelay();
-                     itemEntity.setOwner(player.getUuid());
-                     break block;
-                  }
-                  newMagicItem.setCount(1);
-                  itemEntity = player.dropItem(newMagicItem, false);
-                  if (itemEntity != null) {
-                     itemEntity.setDespawnImmediately();
-                  }
+               boolean canApplySkilled = getSkilledOptions(arcanaItem,player).entrySet().stream().anyMatch(entry -> entry.getValue() > 0);
+               if(canApplySkilled){
+                  buildSkilledGui(arcanaItem.getId());
+               }else{
+                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
+                  forgeItem(arcanaItem, newArcanaItem, recipe, null);
                }
             }
          }
@@ -171,165 +119,236 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
             if(!stack.isEmpty()){
                listener.setUpdating();
                DefaultedList<ItemStack> remainders = listener.getRemainders(inv);
-               int stardustCount = inv.getStack(9).getCount();
+               DefaultedList<ItemStack> ingredients = DefaultedList.of();
                for(int i = 0; i < inv.size(); i++){
                   if(i < 9){
-                     inv.removeStack(i,1); // Remove 1 from ingredients
+                     ingredients.add(inv.removeStack(i,1)); // Remove 1 from ingredients
                   }else{
-                     inv.setStack(i,ItemStack.EMPTY); // Clear stardust
+                     inv.setStack(i,ItemStack.EMPTY); // Clear other slots
                   }
                }
-               int influence = 0;
-               if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MOONLIT_FORGE.id) >= 1){
-                  long timeOfDay = world.getTimeOfDay();
-                  int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
-                  int curPhase = day % 8;
-                  influence = Math.abs(-curPhase+4);
-               }
                
-               double percentile = EnhancedStatUtils.generatePercentile(stardustCount,influence);
-               if(percentile >= 0.99){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
-               }
-               EnhancedStatUtils.enhanceItem(stack, percentile);
-               PLAYER_DATA.get(player).addXP(stardustCount*10);
+               MiscUtils.returnItems(inv,player);
                
-               SimpleInventory returnInv = new SimpleInventory(remainders.size()+1);
-               returnInv.addStack(stack);
-               for(ItemStack remainder : remainders){
-                  returnInv.addStack(remainder);
-               }
-               MiscUtils.returnItems(returnInv,player);
-               listener.finishUpdate();
-               listener.onInventoryChanged(inv);
+               EnhancedForgingGui efg = new EnhancedForgingGui(player,this.blockEntity,stack,ingredients,remainders);
+               efg.buildGui();
+               efg.open();
             }
          }else if(index == 17){
             // Guide gui
-            ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-            writablebook.setNbt(getGuideBook());
-            BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
+            BookElementBuilder bookBuilder = getGuideBook();
             LoreGui loreGui = new LoreGui(player,bookBuilder,null,null,null);
             loreGui.open();
             MiscUtils.returnItems(inv,player);
          }
       }else if(mode == 3){ // Recipe
          ItemStack item = this.getSlot(25).getItemStack();
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+         if(arcanaItem == null){
+            return false;
+         }
          if(index == 7){
             blockEntity.openGui(4,player,"",settings);
          }else if(index == 43){
-            blockEntity.openGui(1,player,magicItem.getId(),settings);
+            blockEntity.openGui(1,player, arcanaItem.getId(),settings);
          }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
             ItemStack ingredStack = this.getSlot(index).getItemStack();
-            MagicItem magicItem1 = MagicItemUtils.identifyItem(ingredStack);
-            if(magicItem1 != null){
-               blockEntity.openGui(3,player,magicItem1.getId(),settings);
+            ArcanaItem arcanaItem1 = ArcanaItemUtils.identifyItem(ingredStack);
+            if(arcanaItem1 != null){
+               blockEntity.openGui(3,player, arcanaItem1.getId(),settings);
             }
          }
       }else if(mode == 4){ // Compendium
          if(index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8){
             ItemStack item = this.getSlot(index).getItemStack();
             if(!item.isEmpty()){
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-                  if(magicItem.getRecipe() != null){
-                     blockEntity.openGui(3,player,magicItem.getId(),settings);
-                  }else{
-                     player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
-                  }
-               }else{
-                  if(magicItem.getRecipe() != null){
-                     blockEntity.openGui(3,player,magicItem.getId(),settings);
+               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+               if(arcanaItem == null){
+                  return false;
+               }
+               if(PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+                  if(arcanaItem.getRecipe() != null){
+                     blockEntity.openGui(3,player, arcanaItem.getId(),settings);
                   }else{
                      player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
                   }
+               }else{
+                  player.sendMessage(Text.literal("You must research this item first!").formatted(Formatting.RED),false);
                }
             }
          }else if(index == 0){
             boolean backwards = type == ClickType.MOUSE_RIGHT;
             boolean middle = type == ClickType.MOUSE_MIDDLE;
             if(middle){
-               settings.setSortType(ArcaneTome.TomeSort.RECOMMENDED);
+               settings.setSortType(TomeGui.TomeSort.RECOMMENDED);
             }else{
-               settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType(),backwards));
+               settings.setSortType(TomeGui.TomeSort.cycleSort(settings.getSortType(),backwards));
             }
             
-            ArcaneTome.buildCompendiumGui(this,player,settings);
+            TomeGui.buildCompendiumGui(this,player,settings);
          }else if(index == 8){
             boolean backwards = type == ClickType.MOUSE_RIGHT;
             boolean middle = type == ClickType.MOUSE_MIDDLE;
             if(middle){
-               settings.setFilterType(ArcaneTome.TomeFilter.NONE);
+               settings.setFilterType(TomeGui.TomeFilter.NONE);
             }else{
-               settings.setFilterType(ArcaneTome.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
+               settings.setFilterType(TomeGui.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
             }
             
-            List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
+            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
             int numPages = (int) Math.ceil((float)items.size()/28.0);
             if(settings.getPage() > numPages){
                settings.setPage(numPages);
             }
-            ArcaneTome.buildCompendiumGui(this,player,settings);
+            TomeGui.buildCompendiumGui(this,player,settings);
          }else if(index == 45){
             if(settings.getPage() > 1){
                settings.setPage(settings.getPage()-1);
-               ArcaneTome.buildCompendiumGui(this,player,settings);
+               TomeGui.buildCompendiumGui(this,player,settings);
             }
          }else if(index == 53){
-            List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
+            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
             int numPages = (int) Math.ceil((float)items.size()/28.0);
             if(settings.getPage() < numPages){
                settings.setPage(settings.getPage()+1);
-               ArcaneTome.buildCompendiumGui(this,player,settings);
+               TomeGui.buildCompendiumGui(this,player,settings);
             }
+         }
+      }else if(mode == 5){ // Skilled selection
+         ItemStack item = this.getSlot(4).getItemStack();
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+         
+         if(index >= 19 && index <= 25 && arcanaItem != null){
+            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
+            int[] augmentSlots = DYNAMIC_SLOTS[augments.size()];
+            ArcanaAugment augment = null;
+            for(int i = 0; i < augmentSlots.length; i++){
+               if(index == 19 + augmentSlots[i]){
+                  augment = augments.get(i);
+                  break;
+               }
+            }
+            
+            if(augment != null){
+               int applicableLevel = getSkilledOptions(arcanaItem,player).getOrDefault(augment,0);
+               if(applicableLevel <= 0){
+                  player.sendMessage(Text.literal("You cannot apply this Augment!").formatted(Formatting.RED),false);
+                  return true;
+               }
+               
+               ArcanaRecipe recipe = arcanaItem.getRecipe();
+               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
+               forgeItem(arcanaItem, newArcanaItem, recipe, new Pair<>(augment,applicableLevel));
+               close();
+            }
+         }else if(index == 40 && arcanaItem != null){
+            ArcanaRecipe recipe = arcanaItem.getRecipe();
+            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
+            forgeItem(arcanaItem, newArcanaItem, recipe, null);
          }
       }
    
       return true;
    }
    
+   private void forgeItem(ArcanaItem arcanaItem, ItemStack newArcanaItem, ArcanaRecipe recipe, @Nullable Pair<ArcanaAugment, Integer> skillPair){
+      if(skillPair != null && skillPair.getRight() > 0){
+         ArcanaAugments.applyAugment(newArcanaItem, skillPair.getLeft().id, skillPair.getRight(),false);
+      }
+      
+      arcanaItem.buildItemLore(newArcanaItem,player.getServer());
+      
+      ItemStack[][] ingredients = new ItemStack[5][5];
+      for(int i = 0; i < inv.size(); i++){
+         ingredients[i/5][i%5] = inv.getStack(i);
+      }
+      ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, settings.resourceLvl);
+      for(int i = 0; i < inv.size(); i++){
+         inv.setStack(i,remainders[i/5][i%5]);
+      }
+      
+      ServerWorld world = (ServerWorld) blockEntity.getWorld();
+      ParticleEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0);
+      
+      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(350, () -> {
+         if(!PLAYER_DATA.get(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
+            PLAYER_DATA.get(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
+         }
+         
+         if(arcanaItem.getRarity() != ArcanaRarity.MUNDANE){
+            ArcanaAchievements.grant(player,ArcanaAchievements.INTRO_ARCANA.id);
+            ArcanaAchievements.progress(player,ArcanaAchievements.INTERMEDIATE_ARTIFICE.id,1);
+         }
+         if(arcanaItem.getRarity() == ArcanaRarity.SOVEREIGN) ArcanaAchievements.grant(player,ArcanaAchievements.ARTIFICIAL_DIVINITY.id);
+         if(recipe.getForgeRequirement().needsFletchery()){
+            ArcanaAchievements.setCondition(player,ArcanaAchievements.OVERLY_EQUIPPED_ARCHER.id, arcanaItem.getNameString(),true);
+         }
+         
+         Vec3d pos = blockEntity.getPos().toCenterPos().add(0,2,0);
+         ItemScatterer.spawn(world,pos.x,pos.y,pos.z,newArcanaItem);
+      }));
+      
+      close();
+   }
+   
+   private HashMap<ArcanaAugment,Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayerEntity player){
+      List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
+      HashMap<ArcanaAugment,Integer> options = new HashMap<>();
+      
+      for(ArcanaAugment augment : augments){
+         ArcanaRarity[] tiers = augment.getTiers();
+         int skillPoints = SKILLED_POINTS[settings.skillLvl];
+         int applicableLevel = 0;
+         int sumCost = 0;
+         int unlockedLevel = PLAYER_DATA.get(player).getAugmentLevel(augment.id);
+         for(ArcanaRarity tier : tiers){
+            sumCost += tier.rarity + 1;
+            if(sumCost > skillPoints || applicableLevel+1 > unlockedLevel){
+               break;
+            }else{
+               applicableLevel++;
+            }
+         }
+         options.put(augment,applicableLevel);
+      }
+      return options;
+   }
+   
    public void buildForgeGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          if(i % 9 < 4){
-            setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.literal("Place Recipe Here > ").formatted(Formatting.DARK_PURPLE)));
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Place Recipe Here >").formatted(Formatting.DARK_PURPLE)));
          }else if(i % 9 == 4){
-            setSlot(i,new GuiElementBuilder(Items.YELLOW_STAINED_GLASS_PANE).setName(Text.literal("| Place Stardust Here |").formatted(Formatting.GOLD)));
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("< Place Recipe Here").formatted(Formatting.DARK_PURPLE)));
          }else{
-            setSlot(i,new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.empty()));
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.DARK_COLOR)).setName(Text.empty()).hideTooltip());
          }
       }
       
       GuiElementBuilder bookItem = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
       bookItem.setName((Text.literal("")
-            .append(Text.literal("Read About Enhanced Forging").formatted(Formatting.GREEN))));
+            .append(Text.literal("Read About Stardust Infusion").formatted(Formatting.GREEN))));
       setSlot(17,bookItem);
       
       GuiElementBuilder craftingItem = new GuiElementBuilder(Items.CRAFTING_TABLE);
       craftingItem.setName((Text.literal("")
             .append(Text.literal("Forge Item").formatted(Formatting.AQUA))));
-      craftingItem.addLoreLine((Text.literal("")
+      craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Click Here ").formatted(Formatting.GREEN))
-            .append(Text.literal("to forge an item once a recipe is loaded!").formatted(Formatting.DARK_AQUA))));
-      craftingItem.addLoreLine((Text.literal("")
-            .append(Text.literal("").formatted(Formatting.DARK_AQUA))));
-      craftingItem.addLoreLine((Text.literal("")
-            .append(Text.literal("This slot will show an item once a valid recipe is loaded.").formatted(Formatting.LIGHT_PURPLE))));
+            .append(Text.literal("to forge an item once a recipe is loaded!").formatted(Formatting.DARK_AQUA)))));
+      craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("").formatted(Formatting.DARK_AQUA)))));
+      craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("This slot will show an item once a valid recipe is loaded.").formatted(Formatting.LIGHT_PURPLE)))));
       setSlot(15,craftingItem);
       
-      for(int i = 0; i < forgeSlots.length; i++){
-         setSlot(forgeSlots[i], new GuiElementBuilder(Items.AIR));
+      for(int i = 0; i < FORGE_SLOTS.length; i++){
+         setSlot(FORGE_SLOTS[i], new GuiElementBuilder(Items.AIR));
       }
       
-      inv = new StarlightForgeInventory();
-      listener = new StarlightForgeInventoryListener(this,blockEntity,world,1);
-      inv.addListener(listener);
-      for(int i = 0; i<forgeSlots.length;i++){
-         if(forgeSlots[i] == 13){
-            setSlotRedirect(forgeSlots[i], new StardustSlot(inv,i,0,0));
-         }else{
-            setSlotRedirect(forgeSlots[i], new Slot(inv,i,0,0));
-         }
+      for(int i = 0; i< FORGE_SLOTS.length; i++){
+         setSlotRedirect(FORGE_SLOTS[i], new Slot(inv,i,0,0));
       }
       
       setTitle(Text.literal("Forge Equipment"));
@@ -338,51 +357,57 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.literal("Starlight Forge").formatted(Formatting.DARK_PURPLE)));
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Starlight Forge").formatted(Formatting.DARK_PURPLE)));
       }
       
-      GuiElementBuilder equipmentItem = new GuiElementBuilder(Items.DIAMOND_CHESTPLATE).hideFlags();
+      GuiElementBuilder equipmentItem = new GuiElementBuilder(Items.DIAMOND_CHESTPLATE).hideDefaultTooltip();
       equipmentItem.setName((Text.literal("")
             .append(Text.literal("Forge Equipment").formatted(Formatting.AQUA))));
       setSlot(1,equipmentItem);
       
-      GuiElementBuilder magicItem = new GuiElementBuilder(Items.END_CRYSTAL);
-      magicItem.setName((Text.literal("")
-            .append(Text.literal("Forge Magic Items").formatted(Formatting.LIGHT_PURPLE))));
-      setSlot(3,magicItem);
+      GuiElementBuilder arcanaItem = new GuiElementBuilder(Items.END_CRYSTAL);
+      arcanaItem.setName((Text.literal("")
+            .append(Text.literal("Forge Arcana Items").formatted(Formatting.LIGHT_PURPLE))));
+      setSlot(3,arcanaItem);
       
       setTitle(Text.literal("Starlight Forge"));
    }
    
    public void buildCraftingGui(String itemId){
       for(int i = 0; i < getSize(); i++){
-         clearSlot(i);
-         setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
+         if(i%9 == 0 || i%9 == 6){
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 8){
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 7){
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }
       }
+      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
-      ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-      NbtCompound tag = book.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Magic Items\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"yellow\"},{\"text\":\"to view a Magic Item Recipe\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      setSlot(7,GuiElementBuilder.from(book));
+      GuiElementBuilder book = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
+      book.setName(Text.literal("Forge Item").formatted(Formatting.DARK_PURPLE));
+      book.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click Here").formatted(Formatting.GREEN))
+            .append(Text.literal(" to forge an Arcana Item once a recipe is loaded!").formatted(Formatting.LIGHT_PURPLE))));
+      book.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.YELLOW))
+            .append(Text.literal("to view an Arcana Item Recipe").formatted(Formatting.LIGHT_PURPLE))));
+      setSlot(7,book);
       
-      ItemStack table = new ItemStack(Items.CRAFTING_TABLE);
-      tag = table.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Forge Item\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"green\"},{\"text\":\" to forge a Magic Item once a recipe is loaded!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"This slot will show a Magic Item once a valid recipe is loaded.\",\"italic\":true,\"color\":\"aqua\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      setSlot(25,GuiElementBuilder.from(table));
+      GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
+      table.setName(Text.literal("Forge Item").formatted(Formatting.DARK_PURPLE));
+      table.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click Here").formatted(Formatting.GREEN))
+            .append(Text.literal(" to forge an Arcana Item once a recipe is loaded!").formatted(Formatting.LIGHT_PURPLE))));
+      table.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      table.addLoreLine(TextUtils.removeItalics(Text.literal("This slot will show an Arcana Item once a valid recipe is loaded.").formatted(Formatting.ITALIC,Formatting.AQUA)));
+      setSlot(25,table);
       
       for(int i = 0; i < 25; i++){
          setSlot(CRAFTING_SLOTS[i], new GuiElementBuilder(Items.AIR));
@@ -390,20 +415,17 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
       
       boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION.id) >= 1;
       ArrayList<Inventory> inventories = blockEntity.getIngredientInventories();
-      inv = new StarlightForgeInventory();
-      listener = new StarlightForgeInventoryListener(this,blockEntity,world,0);
-      inv.addListener(listener);
       for(int i = 0; i<25;i++){
          setSlotRedirect(CRAFTING_SLOTS[i], new Slot(inv,i,0,0));
       }
       
       if(itemId != null && !itemId.isEmpty()){
-         MagicItemRecipe recipe = MagicItemUtils.getItemFromId(itemId).getRecipe();
-         MagicItemIngredient[][] ingredients = recipe.getIngredients();
+         ArcanaRecipe recipe = ArcanaItemUtils.getItemFromId(itemId).getRecipe();
+         ArcanaIngredient[][] ingredients = recipe.getIngredients();
          Inventory playerInventory = player.getInventory();
          
          for(int i = 0; i < 25; i++){
-            MagicItemIngredient ingredient = ingredients[i/5][i%5];
+            ArcanaIngredient ingredient = ingredients[i/5][i%5];
             boolean found = false;
             
             for(int j = 0; j < playerInventory.size(); j++){
@@ -445,160 +467,205 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
          
          recipe.getForgeRequirement().forgeMeetsRequirement(blockEntity,true,player);
          
-         
-         ItemStack recipeList = new ItemStack(Items.PAPER);
          HashMap<String, Pair<Integer,ItemStack>> ingredList = recipe.getIngredientList();
-         tag = recipeList.getOrCreateNbt();
-         display = new NbtCompound();
-         loreList = new NbtList();
-         display.putString("Name","[{\"text\":\"Total Ingredients\",\"italic\":false,\"color\":\"dark_purple\"}]");
-         loreList.add(NbtString.of("[{\"text\":\"-----------------------\",\"italic\":false,\"color\":\"light_purple\"}]"));
+         GuiElementBuilder recipeList = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
+         recipeList.setName(Text.literal("Total Ingredients").formatted(Formatting.DARK_PURPLE));
+         recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("-----------------------").formatted(Formatting.LIGHT_PURPLE)));
          for(Map.Entry<String, Pair<Integer,ItemStack>> ingred : ingredList.entrySet()){
-            String ingredStr = getIngredString(ingred);
-            
-            loreList.add(NbtString.of(ingredStr));
+            Text ingredStr = TomeGui.getIngredStr(ingred);
+            recipeList.addLoreLine(TextUtils.removeItalics(ingredStr));
          }
-         loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+         recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("")));
          int slotCount = 0;
-         for(MagicItem item : recipe.getForgeRequirementList()){
-            loreList.add(NbtString.of("[{\"text\":\"Requires\",\"color\":\"green\"},{\"text\":\" a \",\"color\":\"dark_purple\"},{\"text\":\""+item.getNameString()+"\",\"italic\":false,\"color\":\"aqua\"}]"));
-            GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideFlags().glow();
-            reqItem.setName((Text.literal("")
-                  .append(Text.literal("Requires ").formatted(Formatting.GREEN))
-                  .append(Text.literal("a ").formatted(Formatting.DARK_PURPLE))
-                  .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA))));
+         for(ArcanaItem item : recipe.getForgeRequirementList()){
+            GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideDefaultTooltip().glow();
+            Text req = Text.literal("")
+                  .append(Text.literal("Requires").formatted(Formatting.GREEN))
+                  .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA));
+            recipeList.addLoreLine(TextUtils.removeItalics(req));
+            reqItem.setName(req);
             setSlot(slotCount,reqItem);
             slotCount += 9;
          }
-         if(!recipe.getForgeRequirementList().isEmpty()) loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"Does not include item data\",\"italic\":true,\"color\":\"dark_purple\"}]"));
+         if(!recipe.getForgeRequirementList().isEmpty()) recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+         recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("Does not include item data").formatted(Formatting.ITALIC,Formatting.DARK_PURPLE)));
+         setSlot(43,recipeList);
          
-         display.put("Lore",loreList);
-         tag.put("display",display);
-         tag.putInt("HideFlags",103);
-         setSlot(43,GuiElementBuilder.from(recipeList));
       }
       
       setTitle(Text.literal("Forge Items"));
    }
    
    public void buildRecipeGui(String id){
-      MagicItem magicItem = MagicItemUtils.getItemFromId(id);
-      if(magicItem == null){
+      ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+      if(arcanaItem == null){
+         close();
+         return;
+      }
+      
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      
+      GuiElementBuilder returnBook = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
+      returnBook.setName((Text.literal("")
+            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))));
+      returnBook.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.GREEN))
+            .append(Text.literal("to return to the Arcana Items page").formatted(Formatting.LIGHT_PURPLE)))));
+      setSlot(7,returnBook);
+      
+      ArcanaRecipe recipe = arcanaItem.getRecipe();
+      
+      GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
+      table.setName(Text.literal("Forge Item").formatted(Formatting.DARK_PURPLE));
+      table.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click Here").formatted(Formatting.GREEN))
+            .append(Text.literal(" to forge this item!").formatted(Formatting.LIGHT_PURPLE))));
+      if(!(recipe instanceof ExplainRecipe)) setSlot(43,table);
+      
+      
+      setSlot(25,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
+      
+      ArcanaIngredient[][] ingredients = recipe.getIngredients();
+      for(int i = 0; i < 25; i++){
+         ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
+         GuiElementBuilder craftingElement = GuiElementBuilder.from(ingredient);
+         if(ArcanaItemUtils.isArcane(ingredient)) craftingElement.glow();
+         setSlot(CRAFTING_SLOTS[i], craftingElement);
+      }
+      
+      HashMap<String, Pair<Integer,ItemStack>> ingredList = recipe.getIngredientList();
+      GuiElementBuilder recipeList = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
+      recipeList.setName(Text.literal("Total Ingredients").formatted(Formatting.DARK_PURPLE));
+      recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("-----------------------").formatted(Formatting.LIGHT_PURPLE)));
+      for(Map.Entry<String, Pair<Integer,ItemStack>> ingred : ingredList.entrySet()){
+         Text ingredStr = TomeGui.getIngredStr(ingred);
+         recipeList.addLoreLine(TextUtils.removeItalics(ingredStr));
+      }
+      recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      int slotCount = 0;
+      for(ArcanaItem item : recipe.getForgeRequirementList()){
+         GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideDefaultTooltip().glow();
+         Text req = Text.literal("")
+               .append(Text.literal("Requires").formatted(Formatting.GREEN))
+               .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
+               .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA));
+         recipeList.addLoreLine(TextUtils.removeItalics(req));
+         reqItem.setName(req);
+         setSlot(slotCount,reqItem);
+         slotCount += 9;
+      }
+      if(!recipe.getForgeRequirementList().isEmpty()) recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("Does not include item data").formatted(Formatting.ITALIC,Formatting.DARK_PURPLE)));
+      setSlot(26,recipeList);
+      
+      setTitle(Text.literal("Recipe for "+ arcanaItem.getNameString()));
+   }
+   
+   public void buildSkilledGui(String id){
+      mode = 5;
+      ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      if(arcanaItem == null){
          close();
          return;
       }
       
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
-      }
-      
-      GuiElementBuilder returnBook = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
-      returnBook.setName((Text.literal("")
-            .append(Text.literal("Magic Items").formatted(Formatting.DARK_PURPLE))));
-      returnBook.addLoreLine((Text.literal("")
-            .append(Text.literal("Click ").formatted(Formatting.GREEN))
-            .append(Text.literal("to return to the Magic Items page").formatted(Formatting.LIGHT_PURPLE))));
-      setSlot(7,returnBook);
-      
-      MagicItemRecipe recipe = magicItem.getRecipe();
-      
-      ItemStack table = new ItemStack(Items.CRAFTING_TABLE);
-      NbtCompound tag = table.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Forge Item\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click Here\",\"italic\":false,\"color\":\"green\"},{\"text\":\" to forge this item!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      if(!(recipe instanceof ExplainRecipe)){
-         setSlot(43,GuiElementBuilder.from(table));
-      }
-      
-      setSlot(25,GuiElementBuilder.from(magicItem.getPrefItem()).glow());
-      
-      MagicItemIngredient[][] ingredients = recipe.getIngredients();
-      for(int i = 0; i < 25; i++){
-         ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
-         GuiElementBuilder craftingElement = GuiElementBuilder.from(ingredient);
-         if(MagicItemUtils.isMagic(ingredient)) craftingElement.glow();
-         setSlot(CRAFTING_SLOTS[i], craftingElement);
-      }
-      
-      ItemStack recipeList = new ItemStack(Items.PAPER);
-      HashMap<String, Pair<Integer,ItemStack>> ingredList = recipe.getIngredientList();
-      tag = recipeList.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Total Ingredients\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"-----------------------\",\"italic\":false,\"color\":\"light_purple\"}]"));
-      for(Map.Entry<String, Pair<Integer,ItemStack>> ingred : ingredList.entrySet()){
-         String ingredStr = getIngredString(ingred);
-         
-         loreList.add(NbtString.of(ingredStr));
-      }
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      int slotCount = 0;
-      for(MagicItem item : recipe.getForgeRequirementList()){
-         loreList.add(NbtString.of("[{\"text\":\"Requires\",\"color\":\"green\"},{\"text\":\" a \",\"color\":\"dark_purple\"},{\"text\":\""+item.getNameString()+"\",\"italic\":false,\"color\":\"aqua\"}]"));
-         GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideFlags().glow();
-         reqItem.setName((Text.literal("")
-               .append(Text.literal("Requires ").formatted(Formatting.GREEN))
-               .append(Text.literal("a ").formatted(Formatting.DARK_PURPLE))
-               .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA))));
-         setSlot(slotCount,reqItem);
-         slotCount += 9;
-      }
-      if(!recipe.getForgeRequirementList().isEmpty()) loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Does not include item data\",\"italic\":true,\"color\":\"dark_purple\"}]"));
-      
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      setSlot(26,GuiElementBuilder.from(recipeList));
-      
-      setTitle(Text.literal("Recipe for "+magicItem.getNameString()));
-   }
-   
-   private String getIngredString(Map.Entry<String, Pair<Integer, ItemStack>> ingred){
-      ItemStack ingredStack = ingred.getValue().getRight();
-      int maxCount = ingredStack.getMaxCount();
-      int num = ingred.getValue().getLeft();
-      int stacks = num / maxCount;
-      int rem = num % maxCount;
-      String stackStr = "";
-      if(num > maxCount){
-         if(rem > 0){
-            stackStr = "("+stacks+" Stacks + "+rem+")";
+         if(i >= 19 && i <= 25){
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.LIGHT_COLOR)).setName(Text.literal("")).hideTooltip());
          }else{
-            stackStr = "("+stacks+" Stacks)";
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Select an Augment to apply it").formatted(Formatting.DARK_PURPLE)));
          }
-         stackStr = ",{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+stackStr+"\",\"color\":\"yellow\"}";
       }
-      return "[{\"text\":\""+ ingred.getKey()+"\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" - \",\"color\":\"dark_purple\"},{\"text\":\""+num+"\",\"color\":\"green\"}"+stackStr+"]";
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      
+      setSlot(4,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
+      
+      List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
+      int[] augmentSlots = DYNAMIC_SLOTS[augments.size()];
+      
+      for(int i = 0; i < augmentSlots.length; i++){
+         ArcanaAugment augment = augments.get(i);
+         int augmentLvl = profile.getAugmentLevel(augment.id);
+         
+         GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
+         MutableText name = Text.literal(augment.name).formatted(Formatting.DARK_PURPLE);
+         if(augmentLvl > 0){
+            name.append(Text.literal("")
+                  .append(Text.literal(" (Level ")).formatted(Formatting.BLUE)
+                  .append(Text.literal(""+augmentLvl)).formatted(Formatting.DARK_AQUA)
+                  .append(Text.literal(")")).formatted(Formatting.BLUE));
+         }else{
+            name.append(Text.literal("")
+                  .append(Text.literal(" (")).formatted(Formatting.BLUE)
+                  .append(Text.literal("LOCKED")).formatted(Formatting.DARK_AQUA)
+                  .append(Text.literal(")")).formatted(Formatting.BLUE));
+         }
+         
+         augmentItem1.hideDefaultTooltip().setName(name).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
+         
+         int applicableLevel = getSkilledOptions(arcanaItem,player).getOrDefault(augment,0);
+         
+         for(String s : augment.getDescription()){
+            augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal(s).formatted(Formatting.GRAY)));
+         }
+         
+         augmentItem1.addLoreLine(Text.literal(""));
+         if(applicableLevel > 0){
+            augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("Click").formatted(Formatting.AQUA))
+                  .append(Text.literal(" to apply ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(augment.name).formatted(Formatting.DARK_AQUA))
+                  .append(Text.literal(" at Level ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(applicableLevel+"").formatted(Formatting.LIGHT_PURPLE))));
+         }else{
+            augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal("You cannot apply this Augment").formatted(Formatting.RED)));
+         }
+         if(augmentLvl > 0) augmentItem1.glow();
+         
+         setSlot(19+augmentSlots[i], augmentItem1);
+      }
+      
+      GuiElementBuilder cancel = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL)).hideDefaultTooltip();
+      cancel.setName((Text.literal("")
+            .append(Text.literal("Forgo Augmentation").formatted(Formatting.RED))));
+      cancel.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("No Augmentations will be applied").formatted(Formatting.DARK_PURPLE)))));
+      setSlot(40,cancel);
+      
+      setTitle(Text.literal("Skilled Augmentation Selection"));
    }
    
-   public static NbtCompound getGuideBook(){
-      NbtCompound bookLore = new NbtCompound();
-      NbtList loreList = new NbtList();
-      List<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Enhanced Forging\\n-------------------\\nThe Starlight Forge allows you to craft Armor and Melee Weapons of higher quality than in a normal crafting table.\\n\\nThis is done through use of Stardust, a material gained by salvaging enchanted gear in a Stellar Core.\"}");
-      list.add("{\"text\":\"   Enhanced Forging\\n-------------------\\nThe quality of the resulting enhancements is largely random, but more Stardust appears to have a positive effect on the enhancement strength.\\nIt also appears possible to influence the enhancements via Augmentation.\"}");
-      list.add("{\"text\":\"    Enhanced Armor\\n-------------------\\nEnhanced Armor can receive up to a 50% boost in its raw protection, as well as gain additional toughness and knockback resistance.\\nThe highest quality of enhancements seem to also boost the constitution of the wearer.\"}");
-      list.add("{\"text\":\"  Enhanced Weapons\\n-------------------\\nEnhanced Weaponry like Axes and Swords can see improvements in their weight and sharpness, resulting in quicker and more deadly strikes.\\n \\nThe extent of the enhancements also seems to be up to 50% of their base value.\"}");
+   public static BookElementBuilder getGuideBook(){
+      BookElementBuilder book = new BookElementBuilder();
+      List<Text> pages = new ArrayList<>();
       
-      for(String s : list){
-         loreList.add(NbtString.of(s));
+      pages.add(Text.literal("   Stardust Infusion\n-------------------\nThe Starlight Forge has the capability to create equipment that is considerably stronger than equipment made in a crafting table. This is done through the use of Stardust, a material I discovered that comes from salvaging enchanted equipment").formatted(Formatting.BLACK));
+      pages.add(Text.literal("   Stardust Infusion\n-------------------\nin a Stellar Core. \nWhen attempting to forge a new piece of equipment the Forge displays a vision of celestial bodies in Astral Space. Using Stardust I can manipulate the vision to cause the celestial entities to interact and give rise to new ").formatted(Formatting.BLACK));
+      pages.add(Text.literal("   Stardust Infusion\n-------------------\nstars. Each of the objects interacts uniquely with the others, and their layout changes each time I forge something.\nThe more stars that are present at the end of the vision, the more powerful the infusion results. ").formatted(Formatting.BLACK));
+      pages.add(Text.literal("   Infused Equipment\n-------------------\nBased on my results, different equipment experiences different types of enhancements.\n\nAll equipment seems to have a significant buff in its durability, taking up to 50% more time before it breaks.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("      Infused Tools\n-------------------\nTools that undergo infusion gain an increase to their harvesting capabilities, putting them on par with tools that have already undergone high levels of enchantment. However, enchanting infused tools only gives marginal gains.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("    Infused Weapons\n-------------------\nWeapons that undergo infusion become lighter to wield and sharper. The strikes can deal up to 5 additional damage. The quickened strikes only manifests at higher infusion rates, but can increase the rate of attack by up to 0.5 strikes per second.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Infused Armor\n-------------------\nArmor is where Stardust really seems to shine. I have catalogued up to 4 unique effects of infusion on armor, ranging from increasing its base armor, its toughness, its resistance to knockback and even increasing constitution").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Infused Armor\n-------------------\nArmor can receive up to 5 extra points of protection and toughness as well as up to an additional 20% chance to mitigate knockback.\nAt extremely high levels of infusion, this armor has shown to boost my health by up to 2.5 hearts each.").formatted(Formatting.BLACK));
+      
+      pages.forEach(book::addPage);
+      book.setAuthor("Arcana Novum");
+      book.setTitle("Stardust Infusion");
+      
+      return book;
+   }
+   
+   @Override
+   public void onTick(){
+      World world = blockEntity.getWorld();
+      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled()){
+         this.close();
       }
       
-      bookLore.put("pages",loreList);
-      bookLore.putString("author","Arcana Novum");
-      bookLore.putString("filtered_title","enhanced_forging");
-      bookLore.putString("title","enhanced_forging");
-      
-      return bookLore;
+      super.onTick();
    }
    
    @Override
@@ -617,13 +684,4 @@ public class StarlightForgeGui extends SimpleGui implements WatchedGui {
       super.close();
    }
    
-   @Override
-   public BlockEntity getBlockEntity(){
-      return blockEntity;
-   }
-   
-   @Override
-   public SimpleGui getGui(){
-      return this;
-   }
 }

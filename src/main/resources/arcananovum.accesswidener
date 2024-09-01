@@ -1,13 +1,21 @@
-accessWidener	v1	named
+accessWidener	v2	named
 
 accessible field net/minecraft/entity/Entity random Lnet/minecraft/util/math/random/Random;
 accessible field net/minecraft/entity/ai/control/MoveControl entity Lnet/minecraft/entity/mob/MobEntity;
 accessible field net/minecraft/entity/ai/control/MoveControl state Lnet/minecraft/entity/ai/control/MoveControl$State;
 accessible field net/minecraft/entity/projectile/PersistentProjectileEntity stack Lnet/minecraft/item/ItemStack;
+accessible field net/minecraft/entity/projectile/PersistentProjectileEntity weapon Lnet/minecraft/item/ItemStack;
+accessible field net/minecraft/entity/mob/PhantomEntity circlingCenter Lnet/minecraft/util/math/BlockPos;
+accessible field net/minecraft/entity/mob/PhantomEntity targetPosition Lnet/minecraft/util/math/Vec3d;
 
 accessible method net/minecraft/entity/LivingEntity getEquipmentChanges ()Ljava/util/Map;
 accessible method net/minecraft/entity/passive/TadpoleEntity increaseAge (I)V
 accessible method net/minecraft/entity/passive/TadpoleEntity getTicksUntilGrowth ()I
+accessible method net/minecraft/block/CropBlock canPlaceAt (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;)Z
+accessible method net/minecraft/block/PlantBlock canPlaceAt (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;)Z
+accessible method net/minecraft/block/ExperienceDroppingBlock onStacksDropped (Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;Z)V
+accessible method net/minecraft/block/RedstoneOreBlock onStacksDropped (Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;Z)V
+accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
 
 accessible class net/minecraft/entity/ai/control/MoveControl$State
 accessible class net/minecraft/entity/mob/DrownedEntity$DrownedMoveControl
@@ -20,3 +28,4 @@ accessible class net/minecraft/entity/mob/GuardianEntity$GuardianMoveControl
 accessible class net/minecraft/entity/mob/PhantomEntity$PhantomMoveControl
 accessible class net/minecraft/entity/mob/VexEntity$VexMoveControl
 accessible class net/minecraft/util/UserCache$Entry
+accessible class net/minecraft/block/entity/BellBlockEntity$Effect

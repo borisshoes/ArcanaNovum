@@ -1,42 +1,57 @@
 package net.borisshoes.arcananovum.gui.arcanetome;
 
+import com.mojang.authlib.GameProfile;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.gui.altars.TransmutationAltarRecipeGui;
+import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.items.normal.ArcaneNotesItem;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
+import net.borisshoes.arcananovum.research.ResearchTask;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
+import net.minecraft.world.gen.GeneratorOptions;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.text.DecimalFormat;
+import java.util.*;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.log;
+import static net.borisshoes.arcananovum.ArcanaRegistry.RECOMMENDED_LIST;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TomeGui extends SimpleGui {
-   private ArcaneTome.TomeMode mode;
+   private TomeMode mode;
    private ArcaneTome tome;
    private CompendiumSettings settings;
-   private final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
+   public static final int[][] DYNAMIC_SLOTS = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
+   public static final int[] CRAFTING_SLOTS = {1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
    
    /**
     * Constructs a new simple container gui for the supplied player.
@@ -45,7 +60,7 @@ public class TomeGui extends SimpleGui {
     * @param player                      the player to server this gui to
     * @param mode                        mode of screen
     */
-   public TomeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, ArcaneTome.TomeMode mode, ArcaneTome tome, CompendiumSettings settings){
+   public TomeGui(ScreenHandlerType<?> type, ServerPlayerEntity player, TomeMode mode, ArcaneTome tome, CompendiumSettings settings){
       super(type, player, false);
       this.mode = mode;
       this.tome = tome;
@@ -54,239 +69,258 @@ public class TomeGui extends SimpleGui {
    
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
-      if(mode == ArcaneTome.TomeMode.PROFILE){
+      if(mode == TomeMode.PROFILE){
          if(index == 49){
-            tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+            tome.openGui(player,TomeMode.COMPENDIUM,settings);
          }else if(index == 4){
             // Guide gui
-            ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-            writablebook.setNbt(getGuideBook());
-            BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-            LoreGui loreGui = new LoreGui(player,bookBuilder,tome,ArcaneTome.TomeMode.PROFILE,settings);
+            BookElementBuilder bookBuilder = getGuideBook();
+            LoreGui loreGui = new LoreGui(player,bookBuilder,tome,TomeMode.PROFILE,settings);
             loreGui.open();
          }else if(index == 10){
             // Leaderboard View
-            tome.openGui(player, ArcaneTome.TomeMode.LEADERBOARD,settings);
+            tome.openGui(player, TomeMode.LEADERBOARD,settings);
          }else if(index == 19){
             // Achievements View
-            tome.openGui(player, ArcaneTome.TomeMode.ACHIEVEMENTS,settings);
+            tome.openGui(player, TomeMode.ACHIEVEMENTS,settings);
          }
       }else{
          boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
-         if(mode == ArcaneTome.TomeMode.COMPENDIUM){
+         if(mode == TomeMode.COMPENDIUM){
             if(index == 4){
-               tome.buildProfileGui(this,player);
+               buildProfileGui(player);
             }else if(indexInCenter){
-               ItemStack item = this.getSlot(index).getItemStack();
-               if(!item.isEmpty()){
-                  MagicItem magicItem = MagicItemUtils.identifyItem(item);
-                  if(type == ClickType.MOUSE_RIGHT){
-                     if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-                        if(magicItem.getRecipe() != null){
-                           tome.openRecipeGui(player,settings, magicItem.getId());
-                        }else{
-                           player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
-                        }
-                     }else{
-                        if(magicItem.getRecipe() != null){
-                           tome.openRecipeGui(player,settings, magicItem.getId());
+               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+               int ind = (7*(index/9 - 1) + (index % 9 - 1)) + 28*(settings.getPage()-1);
+               if(ind >= items.size()) return true;
+               CompendiumEntry entry = items.get(ind);
+               
+               if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
+                  ArcanaItem arcanaItem = arcanaEntry.getArcanaItem();
+                  if(!PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+                     tome.openResearchGui(player,settings,arcanaItem.getId());
+                  }else{
+                     if(type == ClickType.MOUSE_RIGHT){
+                        if(arcanaItem.getRecipe() != null){
+                           tome.openRecipeGui(player,settings, arcanaItem);
                         }else{
                            player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
                         }
+                     }else{
+                        tome.openItemGui(player,settings, arcanaItem.getId());
                      }
-                  }else{
-                     tome.openItemGui(player,settings, magicItem.getId());
                   }
+               }else if(entry instanceof IngredientCompendiumEntry ingredientEntry){
+                  tome.openRecipeGui(player,settings, ingredientEntry.getName(), ingredientEntry.getRecipe(), ingredientEntry.getDisplayStack());
+               }else if(entry instanceof TransmutationRecipesCompendiumEntry){
+                  TransmutationAltarRecipeGui transmutationGui = new TransmutationAltarRecipeGui(player,this,Optional.empty());
+                  transmutationGui.buildRecipeListGui();
+                  transmutationGui.open();
                }
             }else if(index == 0){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
                boolean middle = type == ClickType.MOUSE_MIDDLE;
                if(middle){
-                  settings.setSortType(ArcaneTome.TomeSort.RECOMMENDED);
+                  settings.setSortType(TomeSort.RECOMMENDED);
                }else{
-                  settings.setSortType(ArcaneTome.TomeSort.cycleSort(settings.getSortType(),backwards));
+                  settings.setSortType(TomeSort.cycleSort(settings.getSortType(),backwards));
                }
                
-               tome.buildCompendiumGui(this,player,settings);
+               buildCompendiumGui(this,player,settings);
             }else if(index == 8){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
                boolean middle = type == ClickType.MOUSE_MIDDLE;
                if(middle){
-                  settings.setFilterType(ArcaneTome.TomeFilter.NONE);
+                  settings.setFilterType(TomeFilter.NONE);
                }else{
-                  settings.setFilterType(ArcaneTome.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
+                  settings.setFilterType(TomeFilter.cycleFilter(settings.getFilterType(),backwards));
                }
                
-               List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
+               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
                int numPages = (int) Math.ceil((float)items.size()/28.0);
                if(settings.getPage() > numPages){
                   settings.setPage(numPages);
                }
-               tome.buildCompendiumGui(this,player,settings);
+               buildCompendiumGui(this,player,settings);
             }else if(index == 45){
                if(settings.getPage() > 1){
                   settings.setPage(settings.getPage()-1);
-                  tome.buildCompendiumGui(this,player,settings);
+                  buildCompendiumGui(this,player,settings);
                }
             }else if(index == 53){
-               List<MagicItem> items = ArcaneTome.sortedFilteredItemList(settings);
+               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
                int numPages = (int) Math.ceil((float)items.size()/28.0);
                if(settings.getPage() < numPages){
                   settings.setPage(settings.getPage()+1);
-                  tome.buildCompendiumGui(this,player,settings);
+                  buildCompendiumGui(this,player,settings);
                }
             }
-         }else if(mode == ArcaneTome.TomeMode.ACHIEVEMENTS){
+         }else if(mode == TomeMode.ACHIEVEMENTS){
             if(index == 4){
                if(type == ClickType.MOUSE_RIGHT){
-                  tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+                  tome.openGui(player,TomeMode.COMPENDIUM,settings);
                }else{
-                  tome.buildProfileGui(this,player);
+                  buildProfileGui(player);
                }
             }else if(indexInCenter){
                ItemStack item = this.getSlot(index).getItemStack();
                if(!item.isEmpty()){
-                  tome.openItemGui(player,settings, item.getNbt().getString("magicItemId"));
+                  tome.openItemGui(player,settings, ArcanaItem.getStringProperty(item,ArcaneTome.DISPLAY_TAG));
                }
             }else if(index == 0){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
                boolean middle = type == ClickType.MOUSE_MIDDLE;
                if(middle){
-                  settings.setSortType(ArcaneTome.AchievementSort.RECOMMENDED);
+                  settings.setSortType(AchievementSort.RECOMMENDED);
                }else{
-                  settings.setSortType(ArcaneTome.AchievementSort.cycleSort(settings.getAchSortType(),backwards));
+                  settings.setSortType(AchievementSort.cycleSort(settings.getAchSortType(),backwards));
                }
          
-               tome.buildAchievementsGui(this,player,settings);
+               buildAchievementsGui(player,settings);
             }else if(index == 8){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
                boolean middle = type == ClickType.MOUSE_MIDDLE;
                if(middle){
-                  settings.setFilterType(ArcaneTome.AchievementFilter.NONE);
+                  settings.setFilterType(AchievementFilter.NONE);
                }else{
-                  settings.setFilterType(ArcaneTome.AchievementFilter.cycleFilter(settings.getAchFilterType(),backwards));
+                  settings.setFilterType(AchievementFilter.cycleFilter(settings.getAchFilterType(),backwards));
                }
          
-               List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
+               List<ArcanaAchievement> achs = TomeGui.sortedFilteredAchievementList(player,settings);
                int numPages = (int) Math.ceil((float)achs.size()/28.0);
                if(settings.getAchPage() > numPages){
                   settings.setAchPage(numPages);
                }
-               tome.buildAchievementsGui(this,player,settings);
+               buildAchievementsGui(player,settings);
             }else if(index == 45){
                if(settings.getAchPage() > 1){
                   settings.setAchPage(settings.getAchPage()-1);
-                  tome.buildAchievementsGui(this,player,settings);
+                  buildAchievementsGui(player,settings);
                }
             }else if(index == 53){
-               List<ArcanaAchievement> achs = ArcaneTome.sortedFilteredAchievementList(player,settings);
+               List<ArcanaAchievement> achs = TomeGui.sortedFilteredAchievementList(player,settings);
                int numPages = (int) Math.ceil((float)achs.size()/28.0);
                if(settings.getAchPage() < numPages){
                   settings.setAchPage(settings.getAchPage()+1);
-                  tome.buildAchievementsGui(this,player,settings);
+                  buildAchievementsGui(player,settings);
                }
             }
-         }else if(mode == ArcaneTome.TomeMode.LEADERBOARD){
+         }else if(mode == TomeMode.LEADERBOARD){
             if(index == 4){
-               tome.buildProfileGui(this,player);
+               buildProfileGui(player);
             }else if(index == 0){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
                boolean middle = type == ClickType.MOUSE_MIDDLE;
                if(middle){
-                  settings.setLeaderSortType(ArcaneTome.LeaderboardSort.XP_DESC);
+                  settings.setLeaderSortType(LeaderboardSort.XP_DESC);
                }else{
-                  settings.setLeaderSortType(ArcaneTome.LeaderboardSort.cycleSort(settings.getLeaderSortType(),backwards));
+                  settings.setLeaderSortType(LeaderboardSort.cycleSort(settings.getLeaderSortType(),backwards));
                }
                
-               tome.buildLeaderboardGui(this,player,settings);
+               buildLeaderboardGui(player,settings);
             }else if(index == 8){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
                boolean middle = type == ClickType.MOUSE_MIDDLE;
                if(middle){
-                  settings.setLeaderFilterType(ArcaneTome.LeaderboardFilter.NONE);
+                  settings.setLeaderFilterType(LeaderboardFilter.NONE);
                }else{
-                  settings.setLeaderFilterType(ArcaneTome.LeaderboardFilter.cycleFilter(settings.getLeaderFilterType(),backwards));
+                  settings.setLeaderFilterType(LeaderboardFilter.cycleFilter(settings.getLeaderFilterType(),backwards));
                }
                
-               List<UUID> players = ArcaneTome.sortedFilteredLeaderboardList(settings);
+               List<UUID> players = TomeGui.sortedFilteredLeaderboardList(settings);
                int numPages = (int) Math.ceil((float)players.size()/28.0);
                if(settings.getLeaderboardPage() > numPages){
                   settings.setLeaderboardPage(Math.max(1,numPages));
                }
-               tome.buildLeaderboardGui(this,player,settings);
+               buildLeaderboardGui(player,settings);
             }else if(index == 45){
                if(settings.getLeaderboardPage() > 1){
                   settings.setLeaderboardPage(settings.getLeaderboardPage()-1);
-                  tome.buildLeaderboardGui(this,player,settings);
+                  buildLeaderboardGui(player,settings);
                }
             }else if(index == 53){
-               List<UUID> players = ArcaneTome.sortedFilteredLeaderboardList(settings);
+               List<UUID> players = TomeGui.sortedFilteredLeaderboardList(settings);
                int numPages = (int) Math.ceil((float)players.size()/28.0);
                if(settings.getLeaderboardPage() < numPages){
                   settings.setLeaderboardPage(settings.getLeaderboardPage()+1);
-                  tome.buildLeaderboardGui(this,player,settings);
+                  buildLeaderboardGui(player,settings);
                }
             }
-         }else if(mode == ArcaneTome.TomeMode.RECIPE){
+         }else if(mode == TomeMode.RECIPE){
             ItemStack item = this.getSlot(25).getItemStack();
-            MagicItem magicItem = MagicItemUtils.identifyItem(item);
+            
             if(index == 7){
-               NbtCompound loreData = magicItem.getBookLore();
-               if(loreData != null){
-                  ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-                  writablebook.setNbt(loreData);
-                  BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-                  LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.RECIPE,settings, magicItem.getId());
-                  loreGui.open();
-               }else{
-                  player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
+               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+               if(arcanaItem != null){
+                  List<List<Text>> loreData = arcanaItem.getBookLore();
+                  if(loreData != null){
+                     BookElementBuilder bookBuilder = new BookElementBuilder();
+                     loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Text[0])));
+                     LoreGui loreGui = new LoreGui(player,bookBuilder,tome, TomeMode.RECIPE,settings, arcanaItem.getId());
+                     loreGui.open();
+                  }else{
+                     player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
+                  }
                }
             }else if(index == 25 || index == 26){
-               tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+               tome.openGui(player,TomeMode.COMPENDIUM,settings);
             }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
                ItemStack ingredStack = this.getSlot(index).getItemStack();
-               MagicItem magicItem1 = MagicItemUtils.identifyItem(ingredStack);
-               if(magicItem1 != null){
-                  tome.openRecipeGui(player,settings, magicItem1.getId());
+               ArcanaItem arcanaItem1 = ArcanaItemUtils.identifyItem(ingredStack);
+               if(arcanaItem1 != null){
+                  tome.openRecipeGui(player,settings, arcanaItem1);
                }
             }
-         }else if(mode == ArcaneTome.TomeMode.ITEM){
+         }else if(mode == TomeMode.ITEM){
             ItemStack item = this.getSlot(4).getItemStack();
-            MagicItem magicItem = MagicItemUtils.identifyItem(item);
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
             
             if(index == 2){
-               if(magicItem.getRarity() == MagicRarity.MYTHICAL){
-                  if(magicItem.getRecipe() != null){
-                     tome.openRecipeGui(player,settings, magicItem.getId());
-                  }else{
-                     player.sendMessage(Text.literal("You Cannot Craft Mythical Items").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC), false);
-                  }
+               if(arcanaItem.getRecipe() != null){
+                  tome.openRecipeGui(player,settings, arcanaItem);
                }else{
-                  if(magicItem.getRecipe() != null){
-                     tome.openRecipeGui(player,settings, magicItem.getId());
-                  }else{
-                     player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
-                  }
+                  player.sendMessage(Text.literal("You Cannot Craft This Item").formatted(Formatting.RED),false);
                }
-            }
-            if(index == 4){
-               tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-            }
-            if(index == 6){
-               NbtCompound loreData = magicItem.getBookLore();
+            }else if(index == 4){
+               tome.openGui(player,TomeMode.COMPENDIUM,settings);
+            }else if(index == 6){
+               List<List<Text>> loreData = arcanaItem.getBookLore();
                if(loreData != null){
-                  ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-                  writablebook.setNbt(loreData);
-                  BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-                  LoreGui loreGui = new LoreGui(player,bookBuilder,tome, ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
+                  BookElementBuilder bookBuilder = new BookElementBuilder();
+                  loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Text[0])));
+                  LoreGui loreGui = new LoreGui(player,bookBuilder,tome, TomeMode.ITEM,settings, arcanaItem.getId());
                   loreGui.open();
                }else{
                   player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
                }
-            }
-            if(index >= 28 && index <= 35){ // Unlock augment
-               List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
-               int[] augmentSlots = dynamicSlots[augments.size()];
+            }else if(index == 8){
+               if(type == ClickType.MOUSE_RIGHT){
+                  tome.openResearchGui(player,settings,arcanaItem.getId());
+               }else{
+                  IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+                  ArcanaRarity rarity = arcanaItem.getRarity();
+                  Item paperType = ArcanaRarity.getArcanePaper(rarity);
+                  int cost = profile.getArcanePaperRequirement(rarity);
+                  if(MiscUtils.removeItems(player,paperType,cost)){
+                     ItemStack newNotes = new ItemStack(ArcanaRegistry.ARCANE_NOTES);
+                     ArcanaItem.putProperty(newNotes,ArcaneNotesItem.UNLOCK_ID_TAG,arcanaItem.getId());
+                     ArcanaItem.putProperty(newNotes,ArcaneNotesItem.COST_TAG,cost);
+                     ArcanaItem.putProperty(newNotes,ArcaneNotesItem.AUTHOR_TAG,player.getGameProfile().getName());
+                     ArcaneNotesItem.buildLore(newNotes);
+                     MiscUtils.returnItems(new SimpleInventory(newNotes),player);
+                     
+                     SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BOOK_PAGE_TURN, 2, 0.75f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 2);
+                  }else{
+                     player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
+                           .append(Text.translatable(paperType.getTranslationKey()).formatted(Formatting.ITALIC,ArcanaRarity.getColor(rarity))),false);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+                  }
+               }
+            }else if(index >= 28 && index <= 35){ // Unlock augment
+               List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
+               int[] augmentSlots = DYNAMIC_SLOTS[augments.size()];
                ArcanaAugment augment = null;
                for(int i = 0; i < augmentSlots.length; i++){
                   if(index == 28+augmentSlots[i]){
@@ -298,16 +332,75 @@ public class TomeGui extends SimpleGui {
                if(augment != null){
                   IArcanaProfileComponent profile = PLAYER_DATA.get(player);
                   int augmentLvl = profile.getAugmentLevel(augment.id);
-                  MagicRarity[] tiers = augment.getTiers();
+                  ArcanaRarity[] tiers = augment.getTiers();
                   if(augmentLvl >= tiers.length) return true;
                   int cost = tiers[augmentLvl].rarity+1;
                   int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
                   if(cost <= unallocated){
                      profile.setAugmentLevel(augment.id,augmentLvl+1);
                      SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(augmentLvl+1)/(tiers.length-1))));
-                     tome.openItemGui(player,settings, magicItem.getId());
+                     tome.openItemGui(player,settings, arcanaItem.getId());
                   }else{
                      player.sendMessage(Text.literal("Not Enough Skill Points").formatted(Formatting.RED),false);
+                  }
+               }
+            }
+         }else if(mode == TomeMode.RESEARCH){
+            ItemStack item = this.getSlot(4).getItemStack();
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+            
+            if(index == 4){
+               tome.openGui(player,TomeMode.COMPENDIUM,settings);
+            }else if(index == 8){
+               settings.setHideCompletedResearch(!settings.hideCompletedResearch());
+               List<ResearchTask> tasks = ResearchTasks.getUniqueTasks(arcanaItem.getResearchTasks()).stream().toList();
+               if(settings.hideCompletedResearch()){
+                  tasks = tasks.stream().filter(task -> !task.isAcquired(player)).toList();
+               }
+               int numPages = (int) (Math.ceil(tasks.size() / 28.0));
+               if(settings.getPage() > numPages){
+                  settings.setPage(numPages);
+               }
+               buildResearchGui(player,settings,arcanaItem.getId());
+            }else if(index == 45){
+               if(settings.getResearchPage() > 1){
+                  settings.setResearchPage(settings.getResearchPage()-1);
+                  buildResearchGui(player,settings,arcanaItem.getId());
+               }
+            }else if(index == 53){
+               List<ResearchTask> tasks = ResearchTasks.getUniqueTasks(arcanaItem.getResearchTasks()).stream().toList();
+               if(settings.hideCompletedResearch()){
+                  tasks = tasks.stream().filter(task -> !task.isAcquired(player)).toList();
+               }
+               int numPages = (int) (Math.ceil(tasks.size() / 28.0));
+               if(settings.getResearchPage() < numPages){
+                  settings.setResearchPage(settings.getResearchPage()+1);
+                  buildResearchGui(player,settings,arcanaItem.getId());
+               }
+            }else if(index == 49){
+               List<ResearchTask> tasks = ResearchTasks.getUniqueTasks(arcanaItem.getResearchTasks()).stream().toList();
+               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+               ArcanaRarity rarity = arcanaItem.getRarity();
+               boolean allAcquired = tasks.stream().allMatch(task -> task.isAcquired(player));
+               Item paperType = ArcanaRarity.getArcanePaper(rarity);
+               int cost = profile.getArcanePaperRequirement(rarity);
+               
+               if(allAcquired){
+                  if(MiscUtils.removeItems(player,paperType,cost)){
+                     ItemStack newNotes = new ItemStack(ArcanaRegistry.ARCANE_NOTES);
+                     ArcanaItem.putProperty(newNotes,ArcaneNotesItem.UNLOCK_ID_TAG,arcanaItem.getId());
+                     ArcanaItem.putProperty(newNotes,ArcaneNotesItem.COST_TAG,cost);
+                     ArcanaItem.putProperty(newNotes,ArcaneNotesItem.AUTHOR_TAG,player.getGameProfile().getName());
+                     ArcaneNotesItem.buildLore(newNotes);
+                     MiscUtils.returnItems(new SimpleInventory(newNotes),player);
+                     
+                     SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BOOK_PAGE_TURN, 2, 0.75f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 2);
+                  }else{
+                     player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
+                           .append(Text.translatable(paperType.getTranslationKey()).formatted(Formatting.ITALIC,ArcanaRarity.getColor(rarity))),false);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
                   }
                }
             }
@@ -316,106 +409,1100 @@ public class TomeGui extends SimpleGui {
       return true;
    }
    
+   public void buildProfileGui(ServerPlayerEntity player){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      setMode(TomeMode.PROFILE);
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      setSlot(27,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      
+      GameProfile gameProfile = player.getGameProfile();
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      head.setName((Text.literal("").append(Text.literal(player.getNameForScoreboard()+"'s ").formatted(Formatting.AQUA)).append(Text.literal("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
+      head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click").formatted(Formatting.YELLOW)).append(Text.literal(" for a brief overview of Arcana Novum!").formatted(Formatting.LIGHT_PURPLE)))));
+      setSlot(4,head);
+      
+      GuiElementBuilder book = new GuiElementBuilder(Items.WRITTEN_BOOK);
+      book.setName(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE));
+      book.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.YELLOW))
+            .append(Text.literal("to go to the Arcana Items Page").formatted(Formatting.LIGHT_PURPLE))));
+      setSlot(49,book);
+      
+      
+      int level = profile.getLevel();
+      String readableXP = LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()));
+      GuiElementBuilder lectern = new GuiElementBuilder(Items.LECTERN);
+      lectern.setName(Text.literal("Arcana Level").formatted(Formatting.DARK_GREEN));
+      lectern.addLoreLine(TextUtils.removeItalics(Text.literal("Arcana Level: "+level).formatted(Formatting.GREEN)));
+      if(level == 100){
+         lectern.addLoreLine(TextUtils.removeItalics(Text.literal("Total Experience: "+ LevelUtils.readableInt(profile.getXP())).formatted(Formatting.GREEN)));
+      }else{
+         lectern.addLoreLine(TextUtils.removeItalics(Text.literal("Experience: "+readableXP+"/"+LevelUtils.readableInt(LevelUtils.nextLevelNewXp(level))).formatted(Formatting.GREEN)));
+      }
+      lectern.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      lectern.addLoreLine(TextUtils.removeItalics(Text.literal("You can increase your arcana by crafting and using Arcana items!").formatted(Formatting.LIGHT_PURPLE)));
+      lectern.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      lectern.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click Here").formatted(Formatting.AQUA))
+            .append(Text.literal(" to see the Leaderboard").formatted(Formatting.DARK_AQUA))));
+      setSlot(10,lectern);
+      
+      
+      if(level == 100){
+         for(int i = 11; i <= 16; i++){
+            setSlot(i,new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Text.literal("XP: "+LevelUtils.readableInt(profile.getXP())).formatted(Formatting.GREEN)));
+         }
+      }else{
+         int filled = (int)Math.round((double)LevelUtils.getCurLevelXp(profile.getXP())/LevelUtils.nextLevelNewXp(profile.getLevel()) * 6.0);
+         for(int i = 11; i <= 16; i++){
+            if(i >= filled+11){
+               setSlot(i,new GuiElementBuilder(Items.GLASS_BOTTLE).setName(Text.literal("XP: "+readableXP+"/"+LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).formatted(Formatting.GREEN)));
+               
+            }else{
+               setSlot(i,new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).setName(Text.literal("XP: "+readableXP+"/"+LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).formatted(Formatting.GREEN)));
+            }
+         }
+      }
+      
+      int totalSkillPoints = profile.getTotalSkillPoints();
+      int spentSkillPoints = profile.getSpentSkillPoints();
+      int bonusSkillPoints = profile.getBonusSkillPoints();
+      GuiElementBuilder shelf = new GuiElementBuilder(Items.BOOKSHELF);
+      shelf.setName(Text.literal("Skill Points").formatted(Formatting.DARK_AQUA));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("Total Skill Points: "+totalSkillPoints).formatted(Formatting.AQUA)));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("Available Points: "+(totalSkillPoints-spentSkillPoints)).formatted(Formatting.AQUA)));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("Points From Leveling: "+LevelUtils.getLevelSkillPoints(level)).formatted(Formatting.BLUE)));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("Points From Achievements: "+profile.getAchievementSkillPoints()).formatted(Formatting.BLUE)));
+      if(bonusSkillPoints != 0) shelf.addLoreLine(TextUtils.removeItalics(Text.literal("Bonus Skill Points: "+bonusSkillPoints).formatted(Formatting.BLUE)));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("Allocate Skill Points to Augment Items!").formatted(Formatting.DARK_PURPLE)));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("Earn Skill Points From Leveling Up or From Achievements!").formatted(Formatting.LIGHT_PURPLE)));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      shelf.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click Here").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(" to see all Achievements").formatted(Formatting.LIGHT_PURPLE))));
+      setSlot(19,shelf);
+      
+      
+      int books = (int)((double)spentSkillPoints/totalSkillPoints * 6.0);
+      for(int i = 20; i <= 25; i++){
+         if(i >= books+20){
+            setSlot(i,new GuiElementBuilder(Items.BOOK).setName(Text.literal("Allocated Skill Points: "+spentSkillPoints+"/"+totalSkillPoints).formatted(Formatting.DARK_AQUA)));
+            
+         }else{
+            setSlot(i,new GuiElementBuilder(Items.ENCHANTED_BOOK).setName(Text.literal("Allocated Skill Points: "+spentSkillPoints+"/"+totalSkillPoints).formatted(Formatting.DARK_AQUA)));
+         }
+      }
+      
+      int resolve = profile.getAugmentLevel(ArcanaAugments.RESOLVE.id);
+      int maxConc = LevelUtils.concFromLevel(profile.getLevel(),resolve);
+      GuiElementBuilder crystal = new GuiElementBuilder(Items.END_CRYSTAL);
+      crystal.setName(Text.literal("Arcane Concentration").formatted(Formatting.BLUE));
+      crystal.addLoreLine(TextUtils.removeItalics(Text.literal("Concentration: "+ ArcanaItemUtils.getUsedConcentration(player)+"/"+maxConc).formatted(Formatting.AQUA)));
+      crystal.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      crystal.addLoreLine(TextUtils.removeItalics(Text.literal("Your max concentration increases with your level!").formatted(Formatting.LIGHT_PURPLE)));
+      
+      List<MutableText> concBreakdown = ArcanaItemUtils.getConcBreakdown(player);
+      if(!concBreakdown.isEmpty()){
+         crystal.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+         crystal.addLoreLine(TextUtils.removeItalics(Text.literal("Items Taking Concentration:").formatted(Formatting.DARK_AQUA)));
+         for(MutableText item : concBreakdown){
+            crystal.addLoreLine(TextUtils.removeItalics(item));
+         }
+      }
+      setSlot(37,crystal);
+      
+      
+      int used = (int)Math.ceil((double) ArcanaItemUtils.getUsedConcentration(player)/maxConc * 6.0);
+      boolean overConc = ArcanaItemUtils.getUsedConcentration(player) > maxConc;
+      for(int i = 38; i <= 43; i++){
+         if(overConc){
+            setSlot(i,new GuiElementBuilder(Items.FIRE_CHARGE).setName(Text.literal("Concentration: "+ ArcanaItemUtils.getUsedConcentration(player)+"/"+maxConc).formatted(Formatting.RED)));
+         }else if(i >= used+38){
+            setSlot(i,new GuiElementBuilder(Items.SLIME_BALL).setName(Text.literal("Concentration: "+ ArcanaItemUtils.getUsedConcentration(player)+"/"+maxConc).formatted(Formatting.AQUA)));
+         }else{
+            setSlot(i,new GuiElementBuilder(Items.MAGMA_CREAM).setName(Text.literal("Concentration: "+ ArcanaItemUtils.getUsedConcentration(player)+"/"+maxConc).formatted(Formatting.AQUA)));
+         }
+         
+      }
+      
+      setTitle(Text.literal("Arcane Profile"));
+   }
+   
+   public static void buildCompendiumGui(SimpleGui gui, ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
+      List<CompendiumEntry> items = sortedFilteredEntryList(settings);
+      if(gui instanceof TomeGui tomeGui){
+         tomeGui.setMode(TomeMode.COMPENDIUM);
+      }else{
+         items = items.stream().filter(entry -> entry instanceof ArcanaItemCompendiumEntry).toList();
+      }
+      List<CompendiumEntry> pageItems = MiscUtils.listToPage(items, settings.getPage(),28);
+      int numPages = (int) Math.ceil((float)items.size()/28.0);
+      
+      MiscUtils.outlineGUI(gui,ArcanaColors.ARCANA_COLOR,Text.empty());
+      
+      GameProfile gameProfile = player.getGameProfile();
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      head.setName((Text.literal("").append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))));
+      if(gui instanceof TomeGui){
+         head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE)))));
+         head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.GREEN)).append(Text.literal(" to view its page or research").formatted(Formatting.LIGHT_PURPLE)))));
+         head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Right Click an item").formatted(Formatting.YELLOW)).append(Text.literal(" to see its recipe or research").formatted(Formatting.LIGHT_PURPLE)))));
+         
+      }else{
+         head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.AQUA)).append(Text.literal(" to see its recipe").formatted(Formatting.LIGHT_PURPLE)))));
+      }
+      gui.setSlot(4,head);
+      
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      filterBuilt.setName(Text.literal("Filter Arcana Items").formatted(Formatting.DARK_PURPLE));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(TomeFilter.getColoredLabel(settings.getFilterType()))));
+      gui.setSlot(8,filterBuilt);
+      
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      sortBuilt.setName(Text.literal("Sort Arcana Items").formatted(Formatting.DARK_PURPLE));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(TomeSort.getColoredLabel(settings.getSortType()))));
+      gui.setSlot(0,sortBuilt);
+      
+      if(numPages > 1){
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         nextPage.setName(Text.literal("Next Page (" + settings.getPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
+         nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
+         gui.setSlot(53, nextPage);
+         
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         prevPage.setName(Text.literal("Previous Page (" + settings.getPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
+         prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Previous Page").formatted(Formatting.LIGHT_PURPLE))));
+         gui.setSlot(45, prevPage);
+      }
+      
+      int k = 0;
+      for(int i = 0; i < 4; i++){
+         for(int j = 0; j < 7; j++){
+            if(k < pageItems.size()){
+               gui.setSlot((i*9+10)+j,GuiElementBuilder.from(pageItems.get(k).getDisplayStack()).glow());
+            }else{
+               gui.setSlot((i*9+10)+j,new GuiElementBuilder(Items.AIR));
+            }
+            k++;
+         }
+      }
+      
+      gui.setTitle(Text.literal("Item Compendium"));
+   }
+   
+   public void buildAchievementsGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      setMode(TomeMode.ACHIEVEMENTS);
+      List<ArcanaAchievement> items = sortedFilteredAchievementList(player,settings);
+      List<ArcanaAchievement> pageItems = MiscUtils.listToPage(items, settings.getAchPage(),28);
+      int numPages = (int) Math.ceil((float)items.size()/28.0);
+      
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      
+      GameProfile gameProfile = player.getGameProfile();
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      head.setName((Text.literal("").append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))));
+      head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE)))));
+      head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Right Click here").formatted(Formatting.GREEN)).append(Text.literal(" to go to the Items Page").formatted(Formatting.LIGHT_PURPLE)))));
+      head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.YELLOW)).append(Text.literal(" to view its page").formatted(Formatting.LIGHT_PURPLE)))));
+      setSlot(4,head);
+      
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      filterBuilt.setName(Text.literal("Filter Achievements").formatted(Formatting.DARK_PURPLE));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(AchievementFilter.getColoredLabel(settings.getAchFilterType()))));
+      setSlot(8,filterBuilt);
+      
+      
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      sortBuilt.setName(Text.literal("Sort Achievements").formatted(Formatting.DARK_PURPLE));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(AchievementSort.getColoredLabel(settings.getAchSortType()))));
+      setSlot(0,sortBuilt);
+      
+      if(numPages > 1){
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         nextPage.setName(Text.literal("Next Page (" + settings.getAchPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
+         nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
+         setSlot(53, nextPage);
+         
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         prevPage.setName(Text.literal("Previous Page (" + settings.getAchPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
+         prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Previous Page").formatted(Formatting.LIGHT_PURPLE))));
+         setSlot(45, prevPage);
+      }
+      
+      int k = 0;
+      for(int i = 0; i < 4; i++){
+         for(int j = 0; j < 7; j++){
+            if(k < pageItems.size()){
+               ArcanaAchievement baseAch = pageItems.get(k);
+               ArcanaAchievement profileAchievement = profile.getAchievement(baseAch.getArcanaItem().getId(),baseAch.id);
+               ArcanaAchievement achievement = profileAchievement != null ? profileAchievement : baseAch;
+               
+               ItemStack displayItem = achievement.getDisplayItem();
+               ArcanaItem.putProperty(displayItem,ArcaneTome.DISPLAY_TAG,achievement.getArcanaItem().getId());
+               GuiElementBuilder achievementItem = GuiElementBuilder.from(displayItem);
+               achievementItem.hideDefaultTooltip().setName(Text.literal(achievement.name+" - "+achievement.getArcanaItem().getNameString()).formatted(Formatting.LIGHT_PURPLE))
+                     .addLoreLine(TextUtils.removeItalics(Text.literal("")
+                           .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
+                           .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                           .append(Text.literal("  |  ").formatted(Formatting.DARK_AQUA))
+                           .append(Text.literal(""+achievement.pointsReward).formatted(Formatting.AQUA))
+                           .append(Text.literal(achievement.pointsReward != 1 ? " Skill Points" : " Skill Point").formatted(Formatting.DARK_AQUA))));
+               
+               for(String s : achievement.getDescription()){
+                  achievementItem.addLoreLine(TextUtils.removeItalics(Text.literal(s).formatted(Formatting.GRAY)));
+               }
+               
+               MutableText[] statusText = achievement.getStatusDisplay(player);
+               if(statusText != null){
+                  for(MutableText mutableText : statusText){
+                     achievementItem.addLoreLine(TextUtils.removeItalics(mutableText));
+                  }
+               }
+               
+               List<UUID> achPlayers = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
+               if(achPlayers == null || achPlayers.isEmpty()){
+                  achievementItem.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("No Arcanists have achieved this").formatted(Formatting.DARK_PURPLE))));
+               }else{
+                  int allArcanists = (int) ArcanaNovum.PLAYER_XP_TRACKER.values().stream().filter(xp -> xp > 1).count();
+                  int acquiredCount = achPlayers.size();
+                  DecimalFormat df = new DecimalFormat("#0.00");
+                  achievementItem.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("Acquired by ").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal(acquiredCount+"").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(" Arcanists (").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal(df.format((100*(double)acquiredCount)/((double)allArcanists))+"%").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(")").formatted(Formatting.DARK_PURPLE))));
+               }
+               
+               if(profile.hasAcheivement(achievement.getArcanaItem().getId(),achievement.id)) achievementItem.glow();
+               
+               setSlot((i*9+10)+j,achievementItem);
+            }else{
+               setSlot((i*9+10)+j,new GuiElementBuilder(Items.AIR));
+            }
+            k++;
+         }
+      }
+      
+      setTitle(Text.literal("All Arcana Achievements"));
+   }
+   
+   public void buildLeaderboardGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      setMode(TomeMode.LEADERBOARD);
+      List<UUID> items = sortedFilteredLeaderboardList(settings);
+      List<UUID> pageItems = MiscUtils.listToPage(items, settings.getLeaderboardPage(),28);
+      HashMap<UUID,List<String>> achievementMap = ArcanaAchievements.getInvertedTracker();
+      int numPages = (int) Math.ceil((float)items.size()/28.0);
+      int numAchievements = ArcanaAchievements.registry.size();
+      
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      
+      GameProfile gameProfile = player.getGameProfile();
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      head.setName((Text.literal("").append(Text.literal(player.getNameForScoreboard()).formatted(Formatting.AQUA))));
+      head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Arcana Level: ").formatted(Formatting.DARK_PURPLE)).append(Text.literal(""+profile.getLevel()).formatted(Formatting.LIGHT_PURPLE)))));
+      if(profile.getLevel() == 100){
+         head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Total Experience: ").formatted(Formatting.DARK_GREEN)).append(Text.literal(LevelUtils.readableInt(profile.getXP())).formatted(Formatting.GREEN)))));
+      }else{
+         head.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Experience: ").formatted(Formatting.DARK_GREEN))
+               .append(Text.literal(LevelUtils.readableInt(LevelUtils.getCurLevelXp(profile.getXP()))).formatted(Formatting.GREEN))
+               .append(Text.literal("/").formatted(Formatting.DARK_GREEN))
+               .append(Text.literal(LevelUtils.readableInt(LevelUtils.nextLevelNewXp(profile.getLevel()))).formatted(Formatting.GREEN)))));
+      }
+      head.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Achievements: ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(LevelUtils.readableInt(profile.totalAcquiredAchievements())).formatted(Formatting.AQUA))
+            .append(Text.literal("/").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(LevelUtils.readableInt(numAchievements)).formatted(Formatting.AQUA)))));
+      head.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to return to the profile page").formatted(Formatting.LIGHT_PURPLE)))));
+      setSlot(4,head);
+      
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      filterBuilt.setName(Text.literal("Filter Arcanists").formatted(Formatting.DARK_PURPLE));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(LeaderboardFilter.getColoredLabel(settings.getLeaderFilterType()))));
+      setSlot(8,filterBuilt);
+      
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      sortBuilt.setName(Text.literal("Sort Arcanists").formatted(Formatting.DARK_PURPLE));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(LeaderboardSort.getColoredLabel(settings.getLeaderSortType()))));
+      setSlot(0,sortBuilt);
+      
+      if(numPages > 1){
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW));
+         nextPage.setName(Text.literal("Next Page (" + settings.getLeaderboardPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
+         nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
+         setSlot(53, nextPage);
+         
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW));
+         prevPage.setName(Text.literal("Previous Page (" + settings.getLeaderboardPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
+         prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Previous Page").formatted(Formatting.LIGHT_PURPLE))));
+         setSlot(45, prevPage);
+      }
+      
+      int k = 0;
+      for(int i = 0; i < 4; i++){
+         for(int j = 0; j < 7; j++){
+            if(k < pageItems.size()){
+               UUID playerId = pageItems.get(k);
+               int playerXp = ArcanaNovum.PLAYER_XP_TRACKER.get(playerId);
+               int playerLevel = LevelUtils.levelFromXp(playerXp);
+               GameProfile playerGameProf;
+               GuiElementBuilder playerItem;
+               try{
+                  playerGameProf = player.getServer().getUserCache().getByUuid(playerId).orElseThrow();
+                  playerItem = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(playerGameProf,player.server);
+                  playerItem.setName(Text.literal(playerGameProf.getName()).formatted(Formatting.LIGHT_PURPLE));
+               }catch(Exception e){
+                  playerItem = new GuiElementBuilder(Items.BARRIER);
+                  playerItem.setName(Text.literal("<UNKNOWN>").formatted(Formatting.LIGHT_PURPLE));
+               }
+               playerItem.hideDefaultTooltip();
+               
+               playerItem.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Arcana Level: ").formatted(Formatting.DARK_PURPLE)).append(Text.literal(""+playerLevel).formatted(Formatting.LIGHT_PURPLE)))));
+               if(playerLevel == 100){
+                  playerItem.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Total Experience: ").formatted(Formatting.DARK_GREEN)).append(Text.literal(LevelUtils.readableInt(playerXp)).formatted(Formatting.GREEN)))));
+               }else{
+                  playerItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Experience: ").formatted(Formatting.DARK_GREEN))
+                        .append(Text.literal(LevelUtils.readableInt(LevelUtils.getCurLevelXp(playerXp))).formatted(Formatting.GREEN))
+                        .append(Text.literal("/").formatted(Formatting.DARK_GREEN))
+                        .append(Text.literal(LevelUtils.readableInt(LevelUtils.nextLevelNewXp(playerLevel))).formatted(Formatting.GREEN)))));
+               }
+               int playerAchievements = achievementMap.containsKey(playerId) ? achievementMap.get(playerId).size() : 0;
+               playerItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                     .append(Text.literal("Achievements: ").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal(LevelUtils.readableInt(playerAchievements)).formatted(Formatting.AQUA))
+                     .append(Text.literal("/").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal(LevelUtils.readableInt(numAchievements)).formatted(Formatting.AQUA)))));
+               
+               setSlot((i*9+10)+j,playerItem);
+            }else{
+               setSlot((i*9+10)+j,new GuiElementBuilder(Items.AIR));
+            }
+            k++;
+         }
+      }
+      
+      setTitle(Text.literal("Arcana Leaderboard"));
+   }
+   
+   public static void buildItemGui(SimpleGui gui, ServerPlayerEntity player, String id){
+      if(gui instanceof TomeGui tomeGui) tomeGui.setMode(TomeMode.ITEM);
+      boolean isTwilightAnvil = gui instanceof TwilightAnvilGui;
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+      if(arcanaItem == null){
+         gui.close();
+         return;
+      }
+      
+      for(int i = 0; i < gui.getSize(); i++){
+         if(i/9 == 1){
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 0){
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 8){
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i/9 == 4){
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }
+      }
+      gui.setSlot(9,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(36,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(44,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      
+      for(int i = 0; i < 9; i++){
+         gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.PAGE_COLOR)).setName(Text.empty()).hideTooltip());
+      }
+      
+      GuiElementBuilder book = new GuiElementBuilder(Items.WRITTEN_BOOK).hideDefaultTooltip();
+      book.setName(Text.literal("Item Lore").formatted(Formatting.DARK_PURPLE));
+      book.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.YELLOW))
+            .append(Text.literal("to read about this Arcana Item").formatted(Formatting.LIGHT_PURPLE))));
+      if(!isTwilightAnvil) gui.setSlot(6,book);
+      
+      GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
+      table.setName(Text.literal("Item Recipe").formatted(Formatting.DARK_PURPLE));
+      table.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.GREEN))
+            .append(Text.literal("to view this item's recipe!").formatted(Formatting.LIGHT_PURPLE))));
+      if(!isTwilightAnvil) gui.setSlot(2, table);
+      
+      gui.setSlot(4,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
+      
+      int paperCost = profile.getArcanePaperRequirement(arcanaItem.getRarity());
+      GuiElementBuilder notes = new GuiElementBuilder(ArcanaRegistry.ARCANE_NOTES).glow().hideDefaultTooltip();
+      notes.setName((Text.literal("")
+            .append(Text.literal("Research Notes").formatted(Formatting.DARK_PURPLE))));
+      notes.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Left Click ").formatted(Formatting.AQUA))
+            .append(Text.literal("to scribe a spare set of Arcane Notes").formatted(Formatting.LIGHT_PURPLE)))));
+      notes.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("(Costs ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(paperCost+" ").formatted(Formatting.YELLOW))
+            .append(Text.translatable(ArcanaRarity.getArcanePaper(arcanaItem.getRarity()).getTranslationKey()).formatted(ArcanaRarity.getColor(arcanaItem.getRarity())))
+            .append(Text.literal(")").formatted(Formatting.DARK_PURPLE)))));
+      notes.addLoreLine(Text.literal(""));
+      notes.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Right Click ").formatted(Formatting.GREEN))
+            .append(Text.literal("to view the research for this item").formatted(Formatting.LIGHT_PURPLE)))));
+      gui.setSlot(8,notes);
+      
+      GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.PAGE_COLOR)).hideDefaultTooltip();
+      augmentPane.setName(Text.literal("Augments:").formatted(Formatting.DARK_PURPLE));
+      augmentPane.addLoreLine(TextUtils.removeItalics(Text.literal("Unlocked augments can be applied to enhance Arcana Items!").formatted(Formatting.LIGHT_PURPLE)));
+      
+      List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
+      int[] augmentSlots = DYNAMIC_SLOTS[augments.size()];
+      for(int i = 0; i < 7; i++){
+         gui.setSlot(19+i,augmentPane);
+         gui.setSlot(28+i,augmentPane);
+      }
+      for(int i = 0; i < augmentSlots.length; i++){
+         ArcanaAugment augment = augments.get(i);
+         gui.clearSlot(19+augmentSlots[i]);
+         gui.clearSlot(28+augmentSlots[i]);
+         
+         int augmentLvl = profile.getAugmentLevel(augment.id);
+         
+         GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
+         augmentItem1.hideDefaultTooltip().setName(Text.literal(augment.name).formatted(Formatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
+         
+         for(String s : augment.getDescription()){
+            augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal(s).formatted(Formatting.GRAY)));
+         }
+         if(augmentLvl > 0) augmentItem1.glow();
+         
+         int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
+         MutableText titleText = augmentLvl == 0 ? Text.literal("Unlock Level 1").formatted(Formatting.LIGHT_PURPLE) : Text.literal("Current Level: ").formatted(Formatting.DARK_PURPLE).append(Text.literal(""+augmentLvl).formatted(Formatting.LIGHT_PURPLE));
+         ArcanaRarity[] tiers = augment.getTiers();
+         Item concrete = augmentLvl == tiers.length ? Items.WHITE_CONCRETE : ArcanaRarity.getColoredConcrete(tiers[augmentLvl]);
+         
+         GuiElementBuilder augmentItem2 = new GuiElementBuilder(concrete);
+         
+         
+         if(augmentLvl == tiers.length){
+            augmentItem2.hideDefaultTooltip().setName(
+                  Text.literal("Level ").formatted(Formatting.DARK_PURPLE)
+                        .append(Text.literal(""+augmentLvl).formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(" Unlocked").formatted(Formatting.DARK_PURPLE)));
+            augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("Max Level").formatted(Formatting.AQUA))));
+            augmentItem2.glow();
+         }else{
+            augmentItem2.hideDefaultTooltip().setName(titleText);
+            augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("Next Level: ").formatted(Formatting.BLUE))
+                  .append(Text.literal((augmentLvl+1)+"").formatted(Formatting.DARK_AQUA))
+                  .append(Text.literal(" (").formatted(Formatting.BLUE))
+                  .append(ArcanaRarity.getColoredLabel(tiers[augmentLvl],false))
+                  .append(Text.literal(")").formatted(Formatting.BLUE))));
+            augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("Skill Point Cost: ").formatted(Formatting.BLUE))
+                  .append(Text.literal((tiers[augmentLvl].rarity+1)+"").formatted(Formatting.DARK_AQUA))));
+            augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+            augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("(").formatted(Formatting.BLUE))
+                  .append(Text.literal(unallocated+"").formatted(Formatting.DARK_AQUA))
+                  .append(Text.literal(" Unallocated Points)").formatted(Formatting.BLUE))));
+            augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("Click To Unlock").formatted(Formatting.AQUA))));
+         }
+         
+         gui.setSlot(19+augmentSlots[i], augmentItem1);
+         gui.setSlot(28+augmentSlots[i], augmentItem2);
+      }
+      
+      GuiElementBuilder achievePane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.PAGE_COLOR)).hideDefaultTooltip();
+      achievePane.setName(Text.literal("Achievements:").formatted(Formatting.DARK_PURPLE));
+      achievePane.addLoreLine(TextUtils.removeItalics(Text.literal("Earning Achievements Grants Skill Points and XP!").formatted(Formatting.LIGHT_PURPLE)));
+      
+      List<ArcanaAchievement> achievements = ArcanaAchievements.getItemAchievements(arcanaItem);
+      int[] achieveSlots = DYNAMIC_SLOTS[achievements.size()];
+      for(int i = 0; i < 7; i++){
+         gui.setSlot(46+i,achievePane);
+      }
+      for(int i = 0; i < achievements.size(); i++){
+         ArcanaAchievement achievement = achievements.get(i);
+         gui.clearSlot(46+achieveSlots[i]);
+         
+         GuiElementBuilder achievementItem = GuiElementBuilder.from(achievement.getDisplayItem());
+         achievementItem.hideDefaultTooltip().setName(Text.literal(achievement.name).formatted(Formatting.LIGHT_PURPLE))
+               .addLoreLine(TextUtils.removeItalics(Text.literal("")
+                     .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
+                     .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal("  |  ").formatted(Formatting.DARK_AQUA))
+                     .append(Text.literal(""+achievement.pointsReward).formatted(Formatting.AQUA))
+                     .append(Text.literal(achievement.pointsReward != 1 ? " Skill Points" : " Skill Point").formatted(Formatting.DARK_AQUA))));
+         
+         for(String s : achievement.getDescription()){
+            achievementItem.addLoreLine(TextUtils.removeItalics(Text.literal(s).formatted(Formatting.GRAY)));
+         }
+         
+         MutableText[] statusText = achievement.getStatusDisplay(player);
+         if(statusText != null){
+            for(MutableText mutableText : statusText){
+               achievementItem.addLoreLine(TextUtils.removeItalics(mutableText));
+            }
+         }
+         
+         List<UUID> achPlayers = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
+         if(achPlayers == null || achPlayers.isEmpty()){
+            achievementItem.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("No Arcanists have achieved this").formatted(Formatting.DARK_PURPLE))));
+         }else{
+            int allArcanists = (int) ArcanaNovum.PLAYER_XP_TRACKER.values().stream().filter(xp -> xp > 1).count();
+            int acquiredCount = achPlayers.size();
+            DecimalFormat df = new DecimalFormat("#0.00");
+            achievementItem.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("Acquired by ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(acquiredCount+"").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal(" Arcanists (").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(df.format((100*(double)acquiredCount)/((double)allArcanists))+"%").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal(")").formatted(Formatting.DARK_PURPLE))));
+         }
+         
+         if(profile.hasAcheivement(arcanaItem.getId(),achievement.id)) achievementItem.glow();
+         
+         gui.setSlot(46+achieveSlots[i], achievementItem);
+      }
+      
+      gui.setTitle(Text.literal(arcanaItem.getNameString()));
+   }
+   
+   public void buildRecipeGui(SimpleGui gui, String name, ArcanaRecipe recipe, ItemStack output){
+      if(gui instanceof TomeGui tomeGui){
+         tomeGui.setMode(TomeMode.RECIPE);
+      }
+      
+      for(int i = 0; i < gui.getSize(); i++){
+         if(i%9 == 0 || i%9 == 6){
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 8){
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 7){
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }
+      }
+      gui.setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      
+      if(ArcanaItemUtils.isArcane(output)){
+         GuiElementBuilder book = new GuiElementBuilder(Items.WRITTEN_BOOK).hideDefaultTooltip();
+         book.setName(Text.literal("Item Lore").formatted(Formatting.DARK_PURPLE));
+         book.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click ").formatted(Formatting.YELLOW))
+               .append(Text.literal("to read about this Arcana Item.").formatted(Formatting.LIGHT_PURPLE))));
+         gui.setSlot(7,book);
+      }
+      
+      gui.setSlot(25,GuiElementBuilder.from(output));
+      
+      GuiElementBuilder returnBook = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
+      returnBook.setName((Text.literal("")
+            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))));
+      returnBook.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.GREEN))
+            .append(Text.literal("to return to the Arcana Items Page").formatted(Formatting.LIGHT_PURPLE)))));
+      gui.setSlot(26,returnBook);
+      
+      
+      ArcanaIngredient[][] ingredients = recipe.getIngredients();
+      for(int i = 0; i < 25; i++){
+         ItemStack ingredient = ingredients[i/5][i%5].ingredientAsStack();
+         GuiElementBuilder craftingElement = GuiElementBuilder.from(ingredient);
+         if(ingredients[i/5][i%5] instanceof ExplainIngredient){
+            craftingElement.hideDefaultTooltip();
+         }
+         if(ArcanaItemUtils.isArcane(ingredient)) craftingElement.glow();
+         gui.setSlot(CRAFTING_SLOTS[i], craftingElement);
+      }
+      
+      
+      GuiElementBuilder recipeItem = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
+      HashMap<String, Pair<Integer,ItemStack>> ingredList = recipe.getIngredientList();
+      recipeItem.setName(Text.literal("Total Ingredients").formatted(Formatting.DARK_PURPLE));
+      recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("-----------------------").formatted(Formatting.LIGHT_PURPLE)));
+      for(Map.Entry<String, Pair<Integer,ItemStack>> ingred : ingredList.entrySet()){
+         recipeItem.addLoreLine(TextUtils.removeItalics(getIngredStr(ingred)));
+      }
+      recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      int slotCount = 0;
+      for(ArcanaItem item : recipe.getForgeRequirementList()){
+         GuiElementBuilder reqItem = new GuiElementBuilder(item.getItem()).hideDefaultTooltip().glow();
+         MutableText requiresText = Text.literal("")
+               .append(Text.literal("Requires").formatted(Formatting.GREEN))
+               .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
+               .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA));
+         recipeItem.addLoreLine(TextUtils.removeItalics(requiresText));
+         reqItem.setName(requiresText);
+         gui.setSlot(slotCount,reqItem);
+         slotCount += 9;
+      }
+      if(!recipe.getForgeRequirementList().isEmpty()) recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("Does not include item data").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC)));
+      gui.setSlot(43,recipeItem);
+      
+      gui.setTitle(Text.literal("Recipe for "+ name));
+   }
+   
+   public void buildResearchGui(ServerPlayerEntity player, CompendiumSettings settings, String id){
+      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      setMode(TomeMode.RESEARCH);
+      
+      ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+      if(arcanaItem == null){
+         close();
+         return;
+      }
+      
+      List<ResearchTask> allTasks = ResearchTasks.getUniqueTasks(arcanaItem.getResearchTasks()).stream().toList();
+      List<ResearchTask> uncompletedOnly = allTasks.stream().filter(task -> !task.isAcquired(player)).toList();
+      boolean allAcquired = allTasks.stream().allMatch(task -> task.isAcquired(player));
+      
+      int allTaskPages = (int) (Math.ceil(allTasks.size() / 28.0));
+      int uncompletedPages = (int) (Math.ceil(uncompletedOnly.size() / 28.0));
+      
+      List<Pair<ResearchTask,Integer>> taskPair;
+      List<ResearchTask> tasks = settings.hideCompletedResearch() ? uncompletedOnly : allTasks;
+      int numPages = (int) (Math.ceil(tasks.size() / 28.0));
+      if(allTaskPages == uncompletedPages){
+         taskPair = MiscUtils.randomlySpace(allTasks,allTaskPages*28, GeneratorOptions.parseSeed(arcanaItem.getId()).orElse(GeneratorOptions.getRandomSeed()));
+         if(settings.hideCompletedResearch()){
+            taskPair = taskPair.stream().filter(pair -> !pair.getLeft().isAcquired(player)).toList();
+         }
+      }else{
+         taskPair = MiscUtils.randomlySpace(tasks,numPages*28, GeneratorOptions.parseSeed(arcanaItem.getId()).orElse(GeneratorOptions.getRandomSeed()));
+      }
+      
+      int paperCost = profile.getArcanePaperRequirement(arcanaItem.getRarity());
+      
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      
+      setSlot(4,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
+      
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      String filterStr = settings.hideCompletedResearch() ? " to show all research." : " to hide completed research.";
+      filterBuilt.setName(Text.literal("Filter Research Tasks").formatted(Formatting.DARK_PURPLE));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(filterStr).formatted(Formatting.LIGHT_PURPLE))));
+      setSlot(8,filterBuilt);
+      
+      if(numPages > 1){
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW));
+         nextPage.setName(Text.literal("Next Page ("+settings.getResearchPage()+"/"+numPages+")").formatted(Formatting.DARK_PURPLE));
+         nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
+         setSlot(53,nextPage);
+         
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW));
+         prevPage.setName(Text.literal("Previous Page ("+settings.getResearchPage()+"/"+numPages+")").formatted(Formatting.DARK_PURPLE));
+         prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.AQUA))
+               .append(Text.literal(" to go to the Previous Page").formatted(Formatting.LIGHT_PURPLE))));
+         setSlot(45,prevPage);
+      }
+      
+      int pageLower = (settings.getResearchPage()-1) * 28;
+      int pageUpper = settings.getResearchPage() * 28;
+      
+      for(int i = 0; i < 4; i++){
+         for(int j = 0; j < 7; j++){
+            setSlot((i*9+10)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,allAcquired ? ArcanaColors.ARCANE_PAGE_COLOR : ArcanaColors.PAGE_COLOR)).hideTooltip());
+         }
+      }
+      
+      for(Pair<ResearchTask, Integer> pair : taskPair){
+         int index = pair.getRight();
+         ResearchTask task = pair.getLeft();
+         if(index >= pageUpper || index < pageLower) continue;
+         boolean acquired = task.isAcquired(player);
+         boolean hasPreReqs = task.satisfiedPreReqs(player);
+         boolean hasPrePreReqs = task.satisfiedPrePreReqs(player);
+         int guiIndex = (index % 28) + 10 + 2 * ((index % 28) / 7);
+         GuiElementBuilder taskItem = GuiElementBuilder.from(task.getDisplayItem()).hideDefaultTooltip().setCount(1).glow(acquired);
+         taskItem.setName(MutableText.of(task.getName().getContent()).formatted(Formatting.YELLOW,Formatting.UNDERLINE));
+         
+         
+         if(acquired){
+            taskItem.addLoreLine(TextUtils.removeItalics(Text.literal("Completed").formatted(Formatting.AQUA)));
+         }else{
+            if(hasPreReqs){
+               boolean colorSwitch = false;
+               for(Text text : task.getDescription()){
+                  if(!text.getString().isEmpty() && text.getString().charAt(0) != ' ') colorSwitch = !colorSwitch;
+                  taskItem.addLoreLine(TextUtils.withColor(TextUtils.removeItalics(MutableText.of(text.getContent())), colorSwitch ? 0xe6d9bc : 0xb5a684));
+               }
+            }else{
+               taskItem.setName(Text.literal("???").formatted(Formatting.YELLOW,Formatting.ITALIC));
+            }
+         }
+         if(hasPrePreReqs){
+            setSlot(guiIndex,taskItem);
+         }
+      }
+      
+      
+      GuiElementBuilder notes = new GuiElementBuilder(ArcanaRegistry.ARCANE_NOTES).glow(allAcquired).hideDefaultTooltip();
+      notes.setName((Text.literal("")
+            .append(Text.literal("Scribe Notes").formatted(Formatting.DARK_PURPLE))));
+      if(allAcquired){
+         notes.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Click ").formatted(Formatting.AQUA))
+               .append(Text.literal("to complete your research").formatted(Formatting.LIGHT_PURPLE)))));
+         notes.addLoreLine(Text.literal(""));
+         notes.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Costs ").formatted(Formatting.DARK_PURPLE))
+               .append(Text.literal(paperCost+" ").formatted(Formatting.YELLOW))
+               .append(Text.translatable(ArcanaRarity.getArcanePaper(arcanaItem.getRarity()).getTranslationKey()).formatted(ArcanaRarity.getColor(arcanaItem.getRarity()))))));
+      }else{
+         notes.addLoreLine(TextUtils.removeItalics(Text.literal("Complete all research tasks to unlock this item.").formatted(Formatting.LIGHT_PURPLE)));
+      }
+      setSlot(49,notes);
+      
+      setTitle(Text.literal(arcanaItem.getNameString()+" Research"));
+   }
+   
+   public static MutableText getIngredStr(Map.Entry<String, Pair<Integer, ItemStack>> ingred){
+      ItemStack ingredStack = ingred.getValue().getRight();
+      int maxCount = ingredStack.getMaxCount();
+      int num = ingred.getValue().getLeft();
+      int stacks = num / maxCount;
+      int rem = num % maxCount;
+      MutableText text = Text.literal("")
+            .append(Text.literal(ingred.getKey()).formatted(Formatting.AQUA))
+            .append(Text.literal(" - ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(num+"").formatted(Formatting.GREEN));
+      if(num > maxCount){
+         text.append(Text.literal(" - ").formatted(Formatting.DARK_PURPLE));
+         if(rem > 0){
+            text.append("("+stacks+" Stacks + "+rem+")").formatted(Formatting.YELLOW);
+         }else{
+            text.append("("+stacks+" Stacks)").formatted(Formatting.YELLOW);
+         }
+      }
+      return text;
+   }
+   
    @Override
    public void onClose(){
-      if(mode == ArcaneTome.TomeMode.RECIPE){ // Recipe gui to compendium
+      if(mode == TomeMode.RECIPE){ // Recipe gui to compendium
          ItemStack item = this.getSlot(25).getItemStack();
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
-         //tome.openGui(player,ArcaneTome.TomeMode.ITEM,settings,magicItem.getId());
-      }else if(mode == ArcaneTome.TomeMode.ITEM){ // Item gui to compendium
-         tome.openGui(player,ArcaneTome.TomeMode.COMPENDIUM,settings);
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+         tome.openGui(player,TomeMode.COMPENDIUM,settings);
+      }else if(mode == TomeMode.ITEM){ // Item gui to compendium
+         tome.openGui(player,TomeMode.COMPENDIUM,settings);
       }
    }
    
-   public ArcaneTome.TomeMode getMode(){
+   public TomeMode getMode(){
       return mode;
    }
    
-   public void setMode(ArcaneTome.TomeMode mode){
+   public void setMode(TomeMode mode){
       this.mode = mode;
    }
    
-   public static NbtCompound getGuideBook(){
-      NbtCompound bookLore = new NbtCompound();
-      NbtList loreList = new NbtList();
-      List<String> list = new ArrayList<>();
-      list.add("{\"text\":\"       Welcome To             Arcana Novum!\\n\\nArcana Novum is a server mod that adds Magic Items that try to stay within the 'feel' of Vanilla Minecraft.\\n\\nYou are probably accessing this guide through your Tome of Arcana Novum.\"}");
-      list.add("{\"text\":\"This Tome is your guide book for the entirety of the mod and will help you discover all of the cool Magic Items you can craft.\\n\\nThe first thing you see when you open the Tome is your profile. Your profile has 3 main sections.\"}");
-      list.add("{\"text\":\"     Arcane Level\\n \\nYour level decides how many Magic Items you can carry through Concentration\\nYou gain XP by using and crafting Magic Items. Crafting an item for the first time gives extra XP.\\nAchievements also grant experience.\\n\\n\"}");
-      list.add("{\"text\":\"     Concentration\\n\\nMagic Items contain powerful Arcana that takes focus to use.\\nEach tier of item takes a certain amount of concentration to hold in your inventory. If you go over your concentration limit your mind starts to collapse and you will die.\"}");
-      list.add("{\"text\":\"       Skill Points\\n\\nYou get 3 skill points per Arcana level.\\nThese points can be used to unlock Augments for items.\\n\\nYou also get skill points by completing achievements with different items.\"}");
-      list.add("{\"text\":\"      Item Rarities\\n\\nThere are 5 rarities:\\nMundane, Empowered, Exotic, Legendary and Mythical.\\n\\nAll Magic Items are immensely powerful, but some are more demanding to wield and craft which is reflected by their rarity.\"}");
-      list.add("{\"text\":\"     Mundane Items\\n\\nCrafting XP: 1st/2nd+ \\n      5000 / 1000 \\nConcentration: 0\\n\\nMundane Items only faintly eminate Arcana and are mostly used in conjunction with other Magic Items as fuel or ingredients.\"}");
-      list.add("{\"text\":\"   Empowered Items\\n\\nCrafting XP: 1st/2nd+ \\n     10000 / 5000\\nConcentration: 1\\n\\nEmpowered Items usually are utility items that offer convienience in common situations. They take a minimal mental toll.\"}");
-      list.add("{\"text\":\"      Exotic Items\\n\\nCrafting XP: 1st/2nd+ \\n     50000 / 10000\\nConcentration: 5\\n\\nExotic Items are where things get interesting. Their abilities are more powerful and are more expensive to craft and use.\"}");
-      list.add("{\"text\":\"   Legendary Items\\n\\nCrafting XP: 1st/2nd+ \\n    100000 / 50000\\nConcentration: 20\\n\\nLegendary Items are Arcanists' best attempts at recreating the power of Mythical Artifacts. However unlike Mythical Items, they lack the divine construction that\"}");
-      list.add("{\"text\":\"   Legendary Items\\n\\nharmlessly channels Arcana through the user, and as a result take an extraordinary amount of focus to wield.\\nWhere the Arcanists succeeded was in replicating the incredible abilities of Mythical Items in a craftable form.\"}");
-      list.add("{\"text\":\"     Mythical Items\\n\\nCrafting XP: - / -\\nConcentration: 0\\n\\nMythical Items are items that have divine origins and tap into the raw Arcana of the world itself and allow a user to wield it with no effort. Mythical Items become an extension of the user.\"}");
-      list.add("{\"text\":\"     Mythical Items\\n\\nMythical Items are unable to be crafted by normal means.\\n\\nThey can only be obtained by interacting with divine entities, which is a very dangerous door to go knocking on, but the reward could be worth it...\"}");
-      list.add("{\"text\":\"    Item Compendium\\n\\nNow that you are caught up on the types of Magic Items, you can use your Tome to look through all of the available items and how to use and craft them.\\nThe Compendium is accessed by clicking the book in the Profile section of the Tome.\"}");
-      list.add("{\"text\":\"     Forging Items\\n\\nIn order to craft Magic Items you need a Starlight Forge. \\nA Starlight Forge is made by placing an Enchanted Golden Apple along with your Tome of Arcana Novum upon a Smithing Table during the height of a New Moon.\"}");
-      list.add("{\"text\":\"     Forging Items\\n\\nThe Starlight Forge will require a structure beneath it, which is shown by right clicking the forge.\\nOnce completed, the Forge will allow you to craft better gear, and Magic Items by following the recipes in your Tome.\"}");
-      list.add("{\"text\":\"     Forging Items\\n\\nSome recipes will require your Forge to be upgraded by making Magic Items that add to the Forge.\\n\\nPlacing them near your Forge will allow you to make new Magic Items, along with providing their own unique abilities.\"}");
-      list.add("{\"text\":\"     Forging Items\\n\\nSome crafting ingredients require more than just the item. For example an item might require enchantments or a Soulstone with a certain amount of souls inside. Make sure you check all requirements in the Recipe Display.\"}");
-      list.add("{\"text\":\"      Augmentation\\n\\nAugments give your items enhanced capabilities or provide a unique twist on their original purpose.\\n\\nEvery Item has Augments you can unlock with Skill Points.\\nHowever, there are not enough Points to unlock every Augment.\\n\"}");
-      list.add("{\"text\":\"      Augmentation\\n\\nAugments follow the same rarity structure as items.\\nRarity defines how many skill points they take to unlock, and the type of catalyst they need to apply.\\nIndividual augments can have multiple tiers of varying rarity.\"}");
-      list.add("{\"text\":\"      Augmentation\\n\\nUnlocking an Augment does NOT immediately provide their benefits.\\n\\nAugments must be applied to individual items using an Augmentation Catalyst in the Twilight Anvil Forge Addition.\"}");
-      list.add("{\"text\":\"      Augmentation\\n\\nItems that hold Augments that you do not possess pose an additional danger to the user.\\n\\nAugments require additional concentration if you do not have the augment unlocked.\"}");
-      list.add("{\"text\":\"       Conclusion\\n\\nThats about it for the basics of the Arcana Novum mod!\\n \\nIf you have any questions you can always ask them on the server discord!\\n\\nEnjoy discovering and unleashing your Arcana Novum!\"}");
+   public static BookElementBuilder getGuideBook(){
+      BookElementBuilder book = new BookElementBuilder();
+      List<Text> pages = new ArrayList<>();
       
-      for(String s : list){
-         loreList.add(NbtString.of(s));
+      pages.add(Text.literal("       Welcome To             Arcana Novum!\n\nArcana Novum is a server mod that adds Arcana Items that try to stay within the 'feel' of Vanilla Minecraft.\n\nYou are probably accessing this guide through your Tome of Arcana Novum.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("This Tome is your guide book for the entirety of the mod and will help you discover all of the cool Arcana Items you can craft.\n\nThe first thing you see when you open the Tome is your profile. Your profile has 3 main sections.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Arcane Level\n \nYour level decides how many Arcana Items you can carry through Concentration\nYou gain XP by using and crafting Arcana Items. Crafting an item for the first time gives extra XP.\nAchievements also grant experience.\n\n").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Concentration\n\nArcana Items contain powerful Arcana that takes focus to use.\nEach tier of item takes a certain amount of concentration to hold in your inventory. If you go over your concentration limit your mind starts to collapse and you will die.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("       Skill Points\n\nYou get 3 skill points per Arcana level.\nThese points can be used to unlock Augments for items.\n\nYou also get skill points by completing achievements with different items.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("      Item Rarities\n\nThere are 5 rarities:\nMundane, Empowered, Exotic, Sovereign and Divine.\n\nAll Arcana Items are immensely powerful, but some are more demanding to wield and craft which is reflected by their rarity.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Mundane Items\n\nCrafting XP: 1st/2nd+ \n      5000 / 1000 \nConcentration: 0\n\nMundane Items only faintly emanate Arcana and are mostly used in conjunction with other Arcana Items as fuel or ingredients.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("   Empowered Items\n\nCrafting XP: 1st/2nd+ \n     10000 / 5000\nConcentration: 1\n\nEmpowered Items usually are utility items that offer convenience in common situations. They take a minimal mental toll.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("      Exotic Items\n\nCrafting XP: 1st/2nd+ \n     50000 / 10000\nConcentration: 5\n\nExotic Items are where things get interesting. Their abilities are more powerful and are more expensive to craft and use.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("   Sovereign Items\n\nCrafting XP: 1st/2nd+ \n    100000 / 50000\nConcentration: 20\n\nSovereign Items are Arcanists' best attempts at recreating the power of Divine Artifacts. However unlike Divine Items, they lack the divine construction that").formatted(Formatting.BLACK));
+      pages.add(Text.literal("   Sovereign Items\n\nharmlessly channels Arcana through the user, and as a result take an extraordinary amount of focus to wield.\nWhere the Arcanists succeeded was in replicating the incredible abilities of Divine Items in a craftable form.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Divine Items\n\nCrafting XP: - / -\nConcentration: 0\n\nDivine Items are items that have divine origins and tap into the raw Arcana of the world itself and allow a user to wield it with no effort. Divine Items become an extension of the user.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Divine Items\n\nDivine Items are unable to be crafted by normal means.\n\nThey can only be obtained by interacting with divine entities, which is a very dangerous door to go knocking on, but the reward could be worth it...").formatted(Formatting.BLACK));
+      pages.add(Text.literal("    Item Compendium\n\nNow that you are caught up on the types of Arcana Items, you can use your Tome to look through all of the available items and how to use and craft them.\nThe Compendium is accessed by clicking the book in the Profile section of the Tome.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Forging Items\n\nIn order to craft Arcana Items you need a Starlight Forge. \nA Starlight Forge is made by placing an Enchanted Golden Apple along with your Tome of Arcana Novum upon a Smithing Table during the height of a New Moon.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Forging Items\n\nThe Starlight Forge will require a structure beneath it, which is shown by right clicking the forge.\nOnce completed, the Forge will allow you to craft better gear, and Arcana Items by following the recipes in your Tome.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Forging Items\n\nSome recipes will require your Forge to be upgraded by making Arcana Items that add to the Forge.\n\nPlacing them near your Forge will allow you to make new Arcana Items, along with providing their own unique abilities.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("     Forging Items\n\nSome crafting ingredients require more than just the item. For example an item might require enchantments or a Soulstone with a certain amount of souls inside. Make sure you check all requirements in the Recipe Display.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("      Augmentation\n\nAugments give your items enhanced capabilities or provide a unique twist on their original purpose.\n\nEvery Item has Augments you can unlock with Skill Points.\nHowever, there are not enough Points to unlock every Augment.\n").formatted(Formatting.BLACK));
+      pages.add(Text.literal("      Augmentation\n\nAugments follow the same rarity structure as items.\nRarity defines how many skill points they take to unlock, and the type of catalyst they need to apply.\nIndividual augments can have multiple tiers of varying rarity.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("      Augmentation\n\nUnlocking an Augment does NOT immediately provide their benefits.\n\nAugments must be applied to individual items using an Augmentation Catalyst in the Twilight Anvil Forge Addition.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("      Augmentation\n\nItems that hold Augments that you do not possess pose an additional danger to the user.\n\nAugments require additional concentration if you do not have the augment unlocked.").formatted(Formatting.BLACK));
+      pages.add(Text.literal("       Conclusion\n\nThat's about it for the basics of the Arcana Novum mod!\n \nIf you have any questions you can always ask them on the server discord!\n\nEnjoy discovering and unleashing your Arcana Novum!").formatted(Formatting.BLACK));
+      
+      pages.forEach(book::addPage);
+      book.setAuthor("Arcana Novum");
+      book.setTitle("Arcana Guide");
+      
+      return book;
+   }
+   
+   public static List<CompendiumEntry> sortedFilteredEntryList(CompendiumSettings settings){
+      TomeFilter filterType = settings.getFilterType();
+      TomeSort sortType = settings.getSortType();
+      List<CompendiumEntry> items;
+      if(filterType != null){
+         items = new ArrayList<>();
+         for(CompendiumEntry entry : RECOMMENDED_LIST){
+            if(TomeFilter.matchesFilter(filterType, entry)){
+               items.add(entry);
+            }
+         }
+      }else{
+         items = RECOMMENDED_LIST;
       }
       
-      bookLore.put("pages",loreList);
-      bookLore.putString("author","Arcana Novum");
-      bookLore.putString("filtered_title","arcana_guide");
-      bookLore.putString("title","arcana_guide");
+      switch(sortType){
+         case RECOMMENDED -> {
+            items.sort(Comparator.comparingInt(RECOMMENDED_LIST::indexOf));
+         }
+         case NAME -> {
+            Comparator<CompendiumEntry> nameComparator = Comparator.comparing(CompendiumEntry::getName);
+            items.sort(nameComparator);
+         }
+         case RARITY_DESC -> {
+            Comparator<CompendiumEntry> rarityDescComparator = (CompendiumEntry i1, CompendiumEntry i2) -> {
+               int rarityCompare = (i2.getRarityValue() - i1.getRarityValue());
+               if(rarityCompare == 0){
+                  return i1.getName().compareTo(i2.getName());
+               }else{
+                  return rarityCompare;
+               }
+            };
+            items.sort(rarityDescComparator);
+         }
+         default -> {
+            Comparator<CompendiumEntry> rarityAscComparator = (CompendiumEntry i1, CompendiumEntry i2) -> {
+               int rarityCompare = (i1.getRarityValue() - i2.getRarityValue());
+               if(rarityCompare == 0){
+                  return i1.getName().compareTo(i2.getName());
+               }else{
+                  return rarityCompare;
+               }
+            };
+            items.sort(rarityAscComparator);
+         }
+      }
+      return items;
+   }
+   
+   public static List<ArcanaAchievement> sortedFilteredAchievementList(ServerPlayerEntity player, CompendiumSettings settings){
+      AchievementFilter filterType = settings.getAchFilterType();
+      AchievementSort sortType = settings.getAchSortType();
+      List<ArcanaAchievement> achs;
+      if(filterType != null){
+         achs = new ArrayList<>();
+         for(ArcanaAchievement achievement : ArcanaAchievements.registry.values().stream().toList()){
+            if(AchievementFilter.matchesFilter(player, filterType,achievement)){
+               achs.add(achievement);
+            }
+         }
+      }else{
+         achs = new ArrayList<>(ArcanaAchievements.registry.values().stream().toList());
+      }
       
-      return bookLore;
+      switch(sortType){
+         case RECOMMENDED -> {
+            achs.sort(Comparator.comparingInt(ach -> RECOMMENDED_LIST.indexOf(ach.getArcanaItem())));
+         }
+         case NAME -> {
+            Comparator<ArcanaAchievement> nameComparator = Comparator.comparing(ArcanaAchievement::getName);
+            achs.sort(nameComparator);
+         }
+         case RARITY_DESC -> {
+            Comparator<ArcanaAchievement> rarityDescComparator = (ArcanaAchievement i1, ArcanaAchievement i2) -> {
+               int rarityCompare = (i2.xpReward - i1.xpReward);
+               if(rarityCompare == 0){
+                  return i1.getName().compareTo(i2.getName());
+               }else{
+                  return rarityCompare;
+               }
+            };
+            achs.sort(rarityDescComparator);
+         }
+         case RARITY_ASC -> {
+            Comparator<ArcanaAchievement> rarityAscComparator = (ArcanaAchievement i1, ArcanaAchievement i2) -> {
+               int rarityCompare = (i1.xpReward - i2.xpReward);
+               if(rarityCompare == 0){
+                  return i1.getName().compareTo(i2.getName());
+               }else{
+                  return rarityCompare;
+               }
+            };
+            achs.sort(rarityAscComparator);
+         }
+      }
+      return achs;
+   }
+   
+   public static List<UUID> sortedFilteredLeaderboardList(CompendiumSettings settings){
+      LeaderboardFilter filterType = settings.getLeaderFilterType();
+      LeaderboardSort sortType = settings.getLeaderSortType();
+      List<UUID> players = ArcanaNovum.PLAYER_XP_TRACKER.keySet().stream().toList();
+      List<UUID> filteredSortedPlayers = new ArrayList<>();
+      if(filterType != null){
+         for(UUID player : players){
+            if(LeaderboardFilter.matchesFilter(player, filterType)){
+               filteredSortedPlayers.add(player);
+            }
+         }
+         
+      }else{
+         filteredSortedPlayers = new ArrayList<>(players.stream().toList());
+      }
+      HashMap<UUID,List<String>> invertedAchList = ArcanaAchievements.getInvertedTracker();
+      
+      switch(sortType){
+         case XP_DESC -> {
+            filteredSortedPlayers.sort(Comparator.comparingInt(id -> -ArcanaNovum.PLAYER_XP_TRACKER.get(id)));
+         }
+         case XP_ASC -> {
+            filteredSortedPlayers.sort(Comparator.comparingInt(ArcanaNovum.PLAYER_XP_TRACKER::get));
+         }
+         case ACHIEVES_DESC -> {
+            Comparator<UUID> achieveCountComparator = (UUID i1, UUID i2) -> {
+               int achCount1 = invertedAchList.containsKey(i1) ? invertedAchList.get(i1).size() : 0;
+               int achCount2 = invertedAchList.containsKey(i2) ? invertedAchList.get(i2).size() : 0;
+               int countCompare = (achCount2 - achCount1);
+               if(countCompare == 0){
+                  return ArcanaNovum.PLAYER_XP_TRACKER.get(i2) -  ArcanaNovum.PLAYER_XP_TRACKER.get(i1);
+               }else{
+                  return countCompare;
+               }
+            };
+            filteredSortedPlayers.sort(achieveCountComparator);
+         }
+         case SKILL_POINTS_DESC -> {
+            Comparator<UUID> achieveCountComparator = (UUID i1, UUID i2) -> {
+               int skillCount1 = 0; int skillCount2 = 0;
+               if(invertedAchList.containsKey(i1)){
+                  for(String achId : invertedAchList.get(i1)){
+                     ArcanaAchievement ach = ArcanaAchievements.registry.get(achId);
+                     skillCount1 += ach == null ? 0 : ach.pointsReward;
+                  }
+               }
+               if(invertedAchList.containsKey(i2)){
+                  for(String achId : invertedAchList.get(i2)){
+                     ArcanaAchievement ach = ArcanaAchievements.registry.get(achId);
+                     skillCount2 += ach == null ? 0 : ach.pointsReward;
+                  }
+               }
+               
+               int countCompare = (skillCount2 - skillCount1);
+               if(countCompare == 0){
+                  return ArcanaNovum.PLAYER_XP_TRACKER.get(i2) -  ArcanaNovum.PLAYER_XP_TRACKER.get(i1);
+               }else{
+                  return countCompare;
+               }
+            };
+            filteredSortedPlayers.sort(achieveCountComparator);
+         }
+         case NAME -> {
+            Comparator<UUID> nameComparator = Comparator.comparing(playerID -> {
+               GameProfile profile = ArcanaNovum.SERVER.getUserCache().getByUuid(playerID).orElse(null);
+               return profile == null ? "" : profile.getName();
+            });
+            filteredSortedPlayers.sort(nameComparator);
+         }
+      }
+      return filteredSortedPlayers;
    }
    
    public static class CompendiumSettings{
-      private ArcaneTome.TomeSort sortType;
-      private ArcaneTome.TomeFilter filterType;
-      private ArcaneTome.AchievementSort achSortType;
-      private ArcaneTome.AchievementFilter achFilterType;
-      private ArcaneTome.LeaderboardSort leaderSortType;
-      private ArcaneTome.LeaderboardFilter leaderFilterType;
+      private TomeSort sortType;
+      private TomeFilter filterType;
+      private AchievementSort achSortType;
+      private AchievementFilter achFilterType;
+      private LeaderboardSort leaderSortType;
+      private LeaderboardFilter leaderFilterType;
       private int page;
       private int achPage;
       private int leaderboardPage;
+      private int researchPage;
+      private boolean hideCompletedResearch;
       public final int skillLvl;
       public final int resourceLvl;
       
       public CompendiumSettings(int skillLvl, int resourceLvl){
-         this.sortType = ArcaneTome.TomeSort.RECOMMENDED;
-         this.filterType = ArcaneTome.TomeFilter.NONE;
-         this.achSortType = ArcaneTome.AchievementSort.RECOMMENDED;
-         this.achFilterType = ArcaneTome.AchievementFilter.NONE;
-         this.leaderSortType = ArcaneTome.LeaderboardSort.XP_DESC;
-         this.leaderFilterType = ArcaneTome.LeaderboardFilter.NONE;
+         this.sortType = TomeSort.RECOMMENDED;
+         this.filterType = TomeFilter.NONE;
+         this.achSortType = AchievementSort.RECOMMENDED;
+         this.achFilterType = AchievementFilter.NONE;
+         this.leaderSortType = LeaderboardSort.XP_DESC;
+         this.leaderFilterType = LeaderboardFilter.NONE;
          this.page = 1;
          this.achPage = 1;
          this.leaderboardPage = 1;
+         this.researchPage = 1;
+         this.hideCompletedResearch = false;
          this.skillLvl = skillLvl;
          this.resourceLvl = resourceLvl;
       }
       
-      public ArcaneTome.TomeFilter getFilterType(){
+      public TomeFilter getFilterType(){
          return filterType;
       }
    
-      public ArcaneTome.TomeSort getSortType(){
+      public TomeSort getSortType(){
          return sortType;
       }
    
-      public ArcaneTome.AchievementSort getAchSortType(){
+      public AchievementSort getAchSortType(){
          return achSortType;
       }
    
-      public ArcaneTome.AchievementFilter getAchFilterType(){
+      public AchievementFilter getAchFilterType(){
          return achFilterType;
       }
    
@@ -435,19 +1522,19 @@ public class TomeGui extends SimpleGui {
          this.achPage = achPage;
       }
    
-      public void setFilterType(ArcaneTome.TomeFilter filterType){
+      public void setFilterType(TomeFilter filterType){
          this.filterType = filterType;
       }
    
-      public void setFilterType(ArcaneTome.AchievementFilter filterType){
+      public void setFilterType(AchievementFilter filterType){
          this.achFilterType = filterType;
       }
    
-      public void setSortType(ArcaneTome.TomeSort sortType){
+      public void setSortType(TomeSort sortType){
          this.sortType = sortType;
       }
       
-      public void setSortType(ArcaneTome.AchievementSort sortType){
+      public void setSortType(AchievementSort sortType){
          this.achSortType = sortType;
       }
       
@@ -459,20 +1546,332 @@ public class TomeGui extends SimpleGui {
          this.leaderboardPage = leaderboardPage;
       }
       
-      public ArcaneTome.LeaderboardSort getLeaderSortType(){
+      public LeaderboardSort getLeaderSortType(){
          return leaderSortType;
       }
       
-      public void setLeaderSortType(ArcaneTome.LeaderboardSort leaderSortType){
+      public void setLeaderSortType(LeaderboardSort leaderSortType){
          this.leaderSortType = leaderSortType;
       }
       
-      public ArcaneTome.LeaderboardFilter getLeaderFilterType(){
+      public LeaderboardFilter getLeaderFilterType(){
          return leaderFilterType;
       }
       
-      public void setLeaderFilterType(ArcaneTome.LeaderboardFilter leaderFilterType){
+      public void setLeaderFilterType(LeaderboardFilter leaderFilterType){
          this.leaderFilterType = leaderFilterType;
+      }
+      
+      public boolean hideCompletedResearch(){
+         return hideCompletedResearch;
+      }
+      
+      public void setHideCompletedResearch(boolean hideCompletedResearch){
+         this.hideCompletedResearch = hideCompletedResearch;
+      }
+      
+      public int getResearchPage(){
+         return researchPage;
+      }
+      
+      public void setResearchPage(int researchPage){
+         this.researchPage = researchPage;
+      }
+   }
+   
+   public enum TomeMode{
+      PROFILE,
+      COMPENDIUM,
+      ITEM,
+      RECIPE,
+      NONE,
+      ACHIEVEMENTS,
+      LEADERBOARD,
+      RESEARCH
+   }
+   
+   // TODO: Refactor filters and sorts
+   public enum TomeFilter{
+      NONE("None"),
+      MUNDANE("Mundane"),
+      EMPOWERED("Empowered"),
+      EXOTIC("Exotic"),
+      SOVEREIGN("Sovereign"),
+      DIVINE("Divine"),
+      ITEMS("Items"),
+      BLOCKS("Blocks"),
+      FORGE("Forge"),
+      ARROWS("Arrows"),
+      ALTARS("Altars"),
+      EQUIPMENT("Equipment"),
+      CHARMS("Charms"),
+      CATALYSTS("Catalysts"),
+      INGREDIENT("Ingredient");
+      
+      public final String label;
+      
+      TomeFilter(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(TomeFilter filter){
+         MutableText text = Text.literal(filter.label);
+         
+         return switch(filter){ // Only Black left for future usage (before repeats)
+            case NONE -> text.formatted(Formatting.WHITE);
+            case MUNDANE -> text.formatted(Formatting.GRAY);
+            case EMPOWERED -> text.formatted(Formatting.GREEN);
+            case EXOTIC -> text.formatted(Formatting.AQUA);
+            case SOVEREIGN -> text.formatted(Formatting.GOLD);
+            case DIVINE -> text.formatted(Formatting.LIGHT_PURPLE);
+            case ITEMS -> text.formatted(Formatting.DARK_AQUA);
+            case BLOCKS -> text.formatted(Formatting.DARK_PURPLE);
+            case FORGE -> text.formatted(Formatting.DARK_GREEN);
+            case ARROWS -> text.formatted(Formatting.RED);
+            case ALTARS -> text.formatted(Formatting.BLUE);
+            case EQUIPMENT -> text.formatted(Formatting.DARK_RED);
+            case CHARMS -> text.formatted(Formatting.YELLOW);
+            case CATALYSTS -> text.formatted(Formatting.DARK_BLUE);
+            case INGREDIENT -> text.formatted(Formatting.DARK_GRAY);
+         };
+      }
+      
+      public static TomeFilter cycleFilter(TomeFilter filter, boolean backwards){
+         TomeFilter[] filters = TomeFilter.values();
+         int ind = -1;
+         for(int i = 0; i < filters.length; i++){
+            if(filter == filters[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= filters.length) ind = 0;
+         if(ind < 0) ind = filters.length-1;
+         return filters[ind];
+      }
+      
+      public static boolean matchesFilter(TomeFilter filter, CompendiumEntry entry){
+         if(filter == TomeFilter.NONE) return true;
+         TomeFilter[] cats = entry.getCategories();
+         if(cats == null){
+            log(2,"No categories found for: "+entry.getName());
+            return false;
+         }
+         for(TomeFilter category : cats){
+            if(filter == category) return true;
+         }
+         return false;
+      }
+   }
+   
+   public enum TomeSort{
+      RECOMMENDED("Recommended"),
+      RARITY_ASC("Rarity Ascending"),
+      RARITY_DESC("Rarity Descending"),
+      NAME("Alphabetical");
+      
+      public final String label;
+      
+      TomeSort(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(TomeSort sort){
+         MutableText text = Text.literal(sort.label);
+         
+         return switch(sort){
+            case RARITY_ASC -> text.formatted(Formatting.LIGHT_PURPLE);
+            case RARITY_DESC -> text.formatted(Formatting.DARK_PURPLE);
+            case NAME -> text.formatted(Formatting.GREEN);
+            case RECOMMENDED -> text.formatted(Formatting.YELLOW);
+         };
+      }
+      
+      public static TomeSort cycleSort(TomeSort sort, boolean backwards){
+         TomeSort[] sorts = TomeSort.values();
+         int ind = -1;
+         for(int i = 0; i < sorts.length; i++){
+            if(sort == sorts[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= sorts.length) ind = 0;
+         if(ind < 0) ind = sorts.length-1;
+         return sorts[ind];
+      }
+   }
+   
+   public enum AchievementSort{
+      RECOMMENDED("Item (Recommended)"),
+      RARITY_ASC("XP/SP Ascending"),
+      RARITY_DESC("XP/SP Descending"),
+      NAME("Alphabetical");
+      
+      public final String label;
+      
+      AchievementSort(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(AchievementSort sort){
+         MutableText text = Text.literal(sort.label);
+         
+         return switch(sort){
+            case RARITY_ASC -> text.formatted(Formatting.LIGHT_PURPLE);
+            case RARITY_DESC -> text.formatted(Formatting.DARK_PURPLE);
+            case NAME -> text.formatted(Formatting.GREEN);
+            case RECOMMENDED -> text.formatted(Formatting.YELLOW);
+         };
+      }
+      
+      public static AchievementSort cycleSort(AchievementSort sort, boolean backwards){
+         AchievementSort[] sorts = AchievementSort.values();
+         int ind = -1;
+         for(int i = 0; i < sorts.length; i++){
+            if(sort == sorts[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= sorts.length) ind = 0;
+         if(ind < 0) ind = sorts.length-1;
+         return sorts[ind];
+      }
+   }
+   
+   public enum AchievementFilter{
+      NONE("None"),
+      ACQUIRED("Acquired"),
+      NOT_ACQUIRED("Not Acquired");
+      
+      public final String label;
+      
+      AchievementFilter(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(AchievementFilter filter){
+         MutableText text = Text.literal(filter.label);
+         
+         return switch(filter){
+            case NONE -> text.formatted(Formatting.WHITE);
+            case ACQUIRED -> text.formatted(Formatting.AQUA);
+            case NOT_ACQUIRED -> text.formatted(Formatting.RED);
+         };
+      }
+      
+      public static AchievementFilter cycleFilter(AchievementFilter filter, boolean backwards){
+         AchievementFilter[] filters = AchievementFilter.values();
+         int ind = -1;
+         for(int i = 0; i < filters.length; i++){
+            if(filter == filters[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= filters.length) ind = 0;
+         if(ind < 0) ind = filters.length-1;
+         return filters[ind];
+      }
+      
+      public static boolean matchesFilter(ServerPlayerEntity player, AchievementFilter filter, ArcanaAchievement ach){
+         if(filter == AchievementFilter.NONE) return true;
+         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         boolean acquired = profile.hasAcheivement(ach.getArcanaItem().getId(),ach.id);
+         
+         if(filter == AchievementFilter.ACQUIRED) return acquired;
+         if(filter == AchievementFilter.NOT_ACQUIRED) return !acquired;
+         return false;
+      }
+   }
+   
+   public enum LeaderboardSort{
+      XP_DESC("XP Descending (Recommended)"),
+      XP_ASC("XP Ascending"),
+      ACHIEVES_DESC("Achievements Descending"),
+      SKILL_POINTS_DESC("Skill Points Descending"),
+      NAME("Alphabetical");
+      
+      public final String label;
+      
+      LeaderboardSort(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(LeaderboardSort sort){
+         MutableText text = Text.literal(sort.label);
+         
+         return switch(sort){
+            case XP_DESC -> text.formatted(Formatting.LIGHT_PURPLE);
+            case XP_ASC -> text.formatted(Formatting.DARK_PURPLE);
+            case ACHIEVES_DESC -> text.formatted(Formatting.GREEN);
+            case SKILL_POINTS_DESC -> text.formatted(Formatting.DARK_GREEN);
+            case NAME -> text.formatted(Formatting.AQUA);
+         };
+      }
+      
+      public static LeaderboardSort cycleSort(LeaderboardSort sort, boolean backwards){
+         LeaderboardSort[] sorts = LeaderboardSort.values();
+         int ind = -1;
+         for(int i = 0; i < sorts.length; i++){
+            if(sort == sorts[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= sorts.length) ind = 0;
+         if(ind < 0) ind = sorts.length-1;
+         return sorts[ind];
+      }
+   }
+   
+   public enum LeaderboardFilter{
+      NONE("None"),
+      ARCANIST("Arcanist"),
+      MAX_LVL("Max Level"),
+      ABYSS("Abyssal Arcanist");
+      
+      public final String label;
+      
+      LeaderboardFilter(String label){
+         this.label = label;
+      }
+      
+      public static Text getColoredLabel(LeaderboardFilter filter){
+         MutableText text = Text.literal(filter.label);
+         
+         return switch(filter){
+            case NONE -> text.formatted(Formatting.WHITE);
+            case ARCANIST -> text.formatted(Formatting.LIGHT_PURPLE);
+            case MAX_LVL -> text.formatted(Formatting.GREEN);
+            case ABYSS -> text.formatted(Formatting.DARK_PURPLE);
+         };
+      }
+      
+      public static LeaderboardFilter cycleFilter(LeaderboardFilter filter, boolean backwards){
+         LeaderboardFilter[] filters = LeaderboardFilter.values();
+         int ind = -1;
+         for(int i = 0; i < filters.length; i++){
+            if(filter == filters[i]){
+               ind = i;
+            }
+         }
+         ind += backwards ? -1 : 1;
+         if(ind >= filters.length) ind = 0;
+         if(ind < 0) ind = filters.length-1;
+         return filters[ind];
+      }
+      
+      public static boolean matchesFilter(UUID playerID, LeaderboardFilter filter){
+         if(filter == LeaderboardFilter.NONE) return true;
+         int xp = ArcanaNovum.PLAYER_XP_TRACKER.get(playerID);
+         int level = LevelUtils.levelFromXp(xp);
+         
+         if(filter == LeaderboardFilter.ARCANIST) return xp > 1;
+         if(filter == LeaderboardFilter.MAX_LVL) return level >= 100;
+         if(filter == LeaderboardFilter.ABYSS) return ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(ArcanaAchievements.ALL_ACHIEVEMENTS.id).contains(playerID);
+         return false;
       }
    }
 }

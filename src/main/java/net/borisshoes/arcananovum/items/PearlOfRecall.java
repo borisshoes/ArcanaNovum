@@ -1,31 +1,32 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -37,102 +38,128 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class PearlOfRecall extends EnergyItem {
+	public static final String ID = "pearl_of_recall";
+   
+   public static final String HEAT_TAG = "heat";
+   public static final String LOCATION_TAG = "location";
    
    public static final int[] cdReduction = {0,60,120,240,360,480};
    private static final String CHARGED_TXT = "item/pearl_of_recall_charged";
    private static final String COOLDOWN_TXT = "item/pearl_of_recall_cooldown";
    
    public PearlOfRecall(){
-      id = "pearl_of_recall";
+      id = ID;
       name = "Pearl of Recall";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
       initEnergy = 600;
       vanillaItem = Items.ENDER_EYE;
-      item = new PearlOfRecallItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new PearlOfRecallItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Pearl of Recall").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,CHARGED_TXT));
       models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
-   
-      ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Pearl of Recall\",\"italic\":false,\"bold\":true,\"color\":\"dark_aqua\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL};
       
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,HEAT_TAG, 0);
       NbtCompound locTag = new NbtCompound();
       locTag.putString("dim","unattuned");
-      tag.getCompound("arcananovum").putInt("heat",0);
-      tag.getCompound("arcananovum").put("location",locTag);
-      stack.setNbt(tag);
+      putProperty(stack,LOCATION_TAG,locTag);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtCompound itemNbt = itemStack.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound locNbt = magicNbt.getCompound("location");
-      String dim = locNbt.getString("dim");
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Ender Pearl\",\"color\":\"dark_aqua\"},{\"text\":\" whose \"},{\"text\":\"moment \",\"color\":\"blue\"},{\"text\":\"of \"},{\"text\":\"activation \",\"color\":\"dark_green\"},{\"text\":\"was \"},{\"text\":\"frozen \",\"color\":\"aqua\"},{\"text\":\"for later use.\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It requires the \",\"italic\":false,\"color\":\"green\"},{\"text\":\"flowing of time\",\"color\":\"blue\"},{\"text\":\" \",\"color\":\"blue\"},{\"text\":\"to \"},{\"text\":\"recharge \",\"color\":\"aqua\"},{\"text\":\"it.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to set its \",\"color\":\"green\"},{\"text\":\"location \",\"color\":\"light_purple\"},{\"text\":\"and \",\"color\":\"green\"},{\"text\":\"to \",\"color\":\"green\"},{\"text\":\"teleport \",\"color\":\"dark_green\"},{\"text\":\"to its \",\"color\":\"green\"},{\"text\":\"set point\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("An ").formatted(Formatting.GREEN))
+            .append(Text.literal("Ender Pearl").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" whose ").formatted(Formatting.GREEN))
+            .append(Text.literal("moment ").formatted(Formatting.BLUE))
+            .append(Text.literal("of ").formatted(Formatting.GREEN))
+            .append(Text.literal("activation ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("was ").formatted(Formatting.GREEN))
+            .append(Text.literal("frozen ").formatted(Formatting.AQUA))
+            .append(Text.literal("for later use.").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("It requires the ").formatted(Formatting.GREEN))
+            .append(Text.literal("flowing of time").formatted(Formatting.BLUE))
+            .append(Text.literal(" to ").formatted(Formatting.GREEN))
+            .append(Text.literal("recharge ").formatted(Formatting.AQUA))
+            .append(Text.literal("it.").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" to set its ").formatted(Formatting.GREEN))
+            .append(Text.literal("location ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("and ").formatted(Formatting.GREEN))
+            .append(Text.literal("to ").formatted(Formatting.GREEN))
+            .append(Text.literal("teleport ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("to its ").formatted(Formatting.GREEN))
+            .append(Text.literal("set point").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.GREEN)));
+      lore.add(Text.literal(""));
       
-      if(itemStack != null){
+      if(itemStack == null){
+         lore.add(Text.literal("")
+               .append(Text.literal("Location - ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal("Unbound").formatted(Formatting.GRAY)));
+         lore.add(Text.literal("")
+               .append(Text.literal("Charged - ").formatted(Formatting.DARK_AQUA))
+               .append(Text.literal("100%").formatted(Formatting.BOLD,Formatting.BLUE)));
+      }else{
+         NbtCompound locNbt = getCompoundProperty(itemStack,LOCATION_TAG);
+         String dim = locNbt.getString("dim");
+         int x = (int) locNbt.getDouble("x");
+         int y = (int) locNbt.getDouble("y");
+         int z = (int) locNbt.getDouble("z");
+         Formatting dimColor;
+         String dimensionName;
+         String location;
+         
+         if(dim.equals(ServerWorld.OVERWORLD.getValue().toString())){
+            dimColor = Formatting.GREEN;
+            dimensionName = "Overworld";
+         }else if(dim.equals(ServerWorld.NETHER.getValue().toString())){
+            dimColor = Formatting.RED;
+            dimensionName = "The Nether";
+         }else if(dim.equals(ServerWorld.END.getValue().toString())){
+            dimColor = Formatting.YELLOW;
+            dimensionName = "The End";
+         }else{
+            dimColor = Formatting.AQUA;
+            dimensionName = dim;
+         }
+         
+         
+         if(!dim.equals("unattuned")){
+            location = dimensionName + " ("+x+","+y+","+z+")";
+            lore.add(Text.literal("")
+                  .append(Text.literal("Location - ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal(location).formatted(dimColor)));
+         }else{
+            lore.add(Text.literal("")
+                  .append(Text.literal("Location - ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal("Unbound").formatted(Formatting.GRAY)));
+         }
+         
          int charge = (getEnergy(itemStack)*100/getMaxEnergy(itemStack));
          String charging = charge == 100 ? "Charged" : "Charging";
-         if(!dim.equals("unattuned")){
-            int x = (int) locNbt.getDouble("x");
-            int y = (int) locNbt.getDouble("y");
-            int z = (int) locNbt.getDouble("z");
-            String dimColor;
-            String dimensionName;
-            String location;
-            switch(dim){
-               case "minecraft:overworld":
-                  dimColor = "green";
-                  dimensionName = "Overworld";
-                  break;
-               case "minecraft:the_nether":
-                  dimColor = "red";
-                  dimensionName = "The Nether";
-                  break;
-               case "minecraft:the_end":
-                  dimColor = "yellow";
-                  dimensionName = "The End";
-                  break;
-               default:
-                  dimColor = "aqua";
-                  dimensionName = dim;
-                  break;
-            }
-            location = dimensionName + " ("+x+","+y+","+z+")";
-            
-            loreList.add(NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\""+location+"\",\"color\":\""+dimColor+"\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-            loreList.add(NbtString.of("[{\"text\":\""+charging+" - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+charge+"%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
-         }else{
-            loreList.add(NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Unbound\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-            loreList.add(NbtString.of("[{\"text\":\""+charging+" - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\""+charge+"%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
-         }
-      }else{
-         loreList.add(NbtString.of("[{\"text\":\"Location - \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Unbound\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"Charged - \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"100%\",\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"color\":\"dark_purple\",\"bold\":false}]"));
+         lore.add(Text.literal("")
+               .append(Text.literal(charging+" - ").formatted(Formatting.DARK_AQUA))
+               .append(Text.literal(charge+"%").formatted(Formatting.BOLD,Formatting.BLUE)));
       }
-      
-      return loreList;
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -148,28 +175,23 @@ public class PearlOfRecall extends EnergyItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtCompound locNbt = magicTag.getCompound("location").copy();
-      int heat = magicTag.getInt("heat");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").putInt("heat",heat);
-      newTag.getCompound("arcananovum").put("location",locNbt);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      NbtCompound locNbt = getCompoundProperty(stack,LOCATION_TAG).copy();
+      int heat = getIntProperty(stack,HEAT_TAG);
+      ItemStack newItem = super.updateItem(stack,server);
+      putProperty(newItem,LOCATION_TAG,locNbt);
+      putProperty(newItem,HEAT_TAG, heat);
+      return buildItemLore(newItem,server);
    }
    
    private void teleport(ItemStack item, ServerPlayerEntity player){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound locNbt = magicNbt.getCompound("location");
+      NbtCompound locNbt = getCompoundProperty(item,LOCATION_TAG);
       String dim = locNbt.getString("dim");
       double x = locNbt.getDouble("x");
       double y = locNbt.getDouble("y");
       double z = locNbt.getDouble("z");
       float yaw = locNbt.getFloat("yaw");
       float pitch = locNbt.getFloat("pitch");
-   
+      
       ServerWorld to = player.getServerWorld();
       for (ServerWorld w : player.getServer().getWorlds()){
          if(w.getRegistryKey().getValue().toString().equals(dim)){
@@ -186,39 +208,43 @@ public class PearlOfRecall extends EnergyItem {
       ParticleEffectUtils.recallTeleport(to,player.getPos());
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,32,null);
-      MagicItemIngredient p = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
-      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
-      MagicItemIngredient t = new MagicItemIngredient(Items.CLOCK,32,null);
-      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_PEARL,8);
+      ArcanaIngredient b = new ArcanaIngredient(Items.GOLD_INGOT,8);
+      ArcanaIngredient c = new ArcanaIngredient(Items.CLOCK,8);
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
+      ArcanaIngredient h = new ArcanaIngredient(Items.LODESTONE,1, true);
+      ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,1);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
       
-      MagicItemIngredient[][] ingredients = {
-            {c,p,s,p,c},
-            {p,t,e,t,p},
-            {s,e,m,e,s},
-            {p,t,e,t,p},
-            {c,p,s,p,c}};
-      return new MagicItemRecipe(ingredients);
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,l,m,l,c},
+            {b,g,l,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
+      
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"    Pearl of Recall\\n\\nRarity: Exotic\\n\\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it. I can even use it multiple times after a recharge.\"}");
-      list.add("{\"text\":\"    Pearl of Recall\\n\\nRight Clicking sets the Pearl's Recall Point.\\n\\nRight Clicking again starts to unfreeze the pearl in time. Taking damage resets the process.\\n\\nAfter use, the Pearl takes a while to resync to the timeline.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("    Pearl of Recall\n\nRarity: Exotic\n\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it. I can even use it multiple times after a recharge.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Pearl of Recall\n\nRight Clicking sets the Pearl's Recall Point.\n\nRight Clicking again starts to unfreeze the pearl in time. Taking damage resets the process.\n\nAfter use, the Pearl takes a while to resync to the timeline.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class PearlOfRecallItem extends MagicPolymerItem {
-      public PearlOfRecallItem(Settings settings){
+   public class PearlOfRecallItem extends ArcanaPolymerItem {
+      public PearlOfRecallItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(CHARGED_TXT).value();
-         return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(CHARGED_TXT).value();
+         return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.getModelData(CHARGED_TXT).value() : ArcanaRegistry.getModelData(COOLDOWN_TXT).value();
       }
       
       @Override
@@ -228,30 +254,29 @@ public class PearlOfRecall extends EnergyItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-         int heat = magicTag.getInt("heat");
+
+         int heat = getIntProperty(stack,HEAT_TAG);
          
          if(heat == 100){
             teleport(stack,player);
-            magicTag.putInt("heat",0);
+            putProperty(stack,HEAT_TAG, 0);
             PLAYER_DATA.get(player).addXP(1000); // Add xp
          }else if(heat > 0){
-            magicTag.putInt("heat",heat+1);
+            putProperty(stack,HEAT_TAG, heat+1);
             ParticleEffectUtils.recallTeleportCharge(serverWorld,player.getPos());
          }else if(heat == -1){
             // Teleport was cancelled by damage
             ParticleEffectUtils.recallTeleportCancel(serverWorld,player.getPos());
             SoundUtils.playSound(player.getServerWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
-            magicTag.putInt("heat",0);
+            putProperty(stack,HEAT_TAG, 0);
             setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
          }
          
-         if(ItemStack.canCombine(stack,player.getMainHandStack()) || ItemStack.canCombine(stack,player.getOffHandStack())){
-            NbtCompound locNbt = magicTag.getCompound("location");
+         if(ItemStack.areItemsAndComponentsEqual(stack,player.getMainHandStack()) || ItemStack.areItemsAndComponentsEqual(stack,player.getOffHandStack())){
+            NbtCompound locNbt = getCompoundProperty(stack,LOCATION_TAG);
             String dim = locNbt.getString("dim");
             double x = locNbt.getDouble("x");
             double y = locNbt.getDouble("y");
@@ -274,9 +299,7 @@ public class PearlOfRecall extends EnergyItem {
          ItemStack item = playerEntity.getStackInHand(hand);
          boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR.id) >= 1;
          if (playerEntity instanceof ServerPlayerEntity player){
-            NbtCompound itemNbt = item.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            NbtCompound locNbt = magicNbt.getCompound("location");
+            NbtCompound locNbt = getCompoundProperty(item,LOCATION_TAG);
             String dim = locNbt.getString("dim");
             
             if(!(canClear && player.isSneaking())){
@@ -287,11 +310,12 @@ public class PearlOfRecall extends EnergyItem {
                   locNbt.putDouble("z", playerEntity.getPos().z);
                   locNbt.putFloat("yaw", playerEntity.getYaw());
                   locNbt.putFloat("pitch", playerEntity.getPitch());
+                  putProperty(item,LOCATION_TAG,locNbt);
                   buildItemLore(item,playerEntity.getServer());
                }else{
                   int curEnergy = getEnergy(item);
                   if(curEnergy >= getMaxEnergy(item)){
-                     magicNbt.putInt("heat", 1); // Starts the heat up process
+                     putProperty(item,HEAT_TAG, 1); // Starts the heat up process
                      SoundUtils.playSound(player.getServerWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
                   }else{
                      playerEntity.sendMessage(Text.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").formatted(Formatting.DARK_AQUA), true);
@@ -302,7 +326,8 @@ public class PearlOfRecall extends EnergyItem {
                if(!dim.equals("unattuned")){
                   locNbt = new NbtCompound();
                   locNbt.putString("dim", "unattuned");
-                  magicNbt.put("location", locNbt);
+                  putProperty(item,LOCATION_TAG,locNbt);
+                  buildItemLore(item,playerEntity.getServer());
                   
                   playerEntity.sendMessage(Text.literal("Saved Location Cleared").formatted(Formatting.DARK_AQUA), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, .7f);
@@ -313,3 +338,4 @@ public class PearlOfRecall extends EnergyItem {
       }
    }
 }
+

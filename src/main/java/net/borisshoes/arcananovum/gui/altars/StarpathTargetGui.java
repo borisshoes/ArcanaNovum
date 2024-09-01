@@ -4,24 +4,24 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
-import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
-import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.item.ItemStack;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
-public class StarpathTargetGui extends AnvilInputGui implements WatchedGui {
+public class StarpathTargetGui extends AnvilInputGui {
    private final StarpathAltarBlockEntity blockEntity;
    private String text;
    private final boolean starcharts;
@@ -29,11 +29,7 @@ public class StarpathTargetGui extends AnvilInputGui implements WatchedGui {
    private final ArrayList<String> sortedKeys;
    private int selectedTarget = -1;
    
-   /**
-    * Constructs a new SignGui for the provided player
-    *
-    * @param player the player to serve this gui to
-    */
+   // TODO Multi-player access may have made this unsafe
    public StarpathTargetGui(ServerPlayerEntity player, StarpathAltarBlockEntity blockEntity){
       super(player,false);
       this.blockEntity = blockEntity;
@@ -45,22 +41,22 @@ public class StarpathTargetGui extends AnvilInputGui implements WatchedGui {
       setTitle(Text.literal("Input Coordinates"));
       setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultStack()).setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA)));
       if(!starcharts){
-         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideFlags();
+         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
          locationItem.setName((Text.literal("")
                .append(Text.literal("Use format: x,y,z").formatted(Formatting.GOLD))));
          setSlot(0,locationItem);
       }else{
-         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideFlags();
+         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
          locationItem.setName((Text.literal("")
                .append(Text.literal("Use format: x,y,z").formatted(Formatting.GOLD))));
-         locationItem.addLoreLine((Text.literal("")
-               .append(Text.literal("- New Target -").formatted(Formatting.YELLOW))));
-         locationItem.addLoreLine(Text.literal(""));
-         locationItem.addLoreLine((Text.literal("")
+         locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("- New Target -").formatted(Formatting.YELLOW)))));
+         locationItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+         locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("Left").formatted(Formatting.GOLD))
                .append(Text.literal(" and ").formatted(Formatting.RED))
                .append(Text.literal("Right").formatted(Formatting.GOLD))
-               .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED))));
+               .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED)))));
          setSlot(0,locationItem);
       }
    }
@@ -117,26 +113,26 @@ public class StarpathTargetGui extends AnvilInputGui implements WatchedGui {
       }
       
       if(starcharts && (index == 1 || index == 0)){
-         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideFlags();
+         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
          if(selectedTarget == -1){
             locationItem.setName((Text.literal("")
                   .append(Text.literal("Use format: x,y,z").formatted(Formatting.GOLD))));
-            locationItem.addLoreLine((Text.literal("")
-                  .append(Text.literal("- New Target -").formatted(Formatting.YELLOW))));
+            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                  .append(Text.literal("- New Target -").formatted(Formatting.YELLOW)))));
          }else{
             String name = sortedKeys.get(selectedTarget);
             BlockPos target = savedTargets.get(name);
             locationItem.setName((Text.literal("")
                   .append(Text.literal(target.getX()+","+target.getY()+","+target.getZ()).formatted(Formatting.GOLD))));
-            locationItem.addLoreLine((Text.literal("")
-                  .append(Text.literal("- "+name+" -").formatted(Formatting.YELLOW))));
+            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                  .append(Text.literal("- "+name+" -").formatted(Formatting.YELLOW)))));
          }
-         locationItem.addLoreLine(Text.literal(""));
-         locationItem.addLoreLine((Text.literal("")
+         locationItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+         locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("Left").formatted(Formatting.GOLD))
                .append(Text.literal(" and ").formatted(Formatting.RED))
                .append(Text.literal("Right").formatted(Formatting.GOLD))
-               .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED))));
+               .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED)))));
          setSlot(0,locationItem);
       }
       
@@ -158,49 +154,49 @@ public class StarpathTargetGui extends AnvilInputGui implements WatchedGui {
             this.selectedTarget = sortedKeys.indexOf(text);
             BlockPos target = savedTargets.get(text);
             
-            GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideFlags();
+            GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
             locationItem.setName((Text.literal("")
                   .append(Text.literal(target.getX()+","+target.getY()+","+target.getZ()).formatted(Formatting.GOLD))));
-            locationItem.addLoreLine((Text.literal("")
-                  .append(Text.literal("- "+text+" -").formatted(Formatting.YELLOW))));
-            locationItem.addLoreLine(Text.literal(""));
-            locationItem.addLoreLine((Text.literal("")
+            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                  .append(Text.literal("- "+text+" -").formatted(Formatting.YELLOW)))));
+            locationItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Left").formatted(Formatting.GOLD))
                   .append(Text.literal(" and ").formatted(Formatting.RED))
                   .append(Text.literal("Right").formatted(Formatting.GOLD))
-                  .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED))));
+                  .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED)))));
             setSlot(0,locationItem);
             saveButton.setName(Text.literal("Valid Location").formatted(Formatting.DARK_AQUA));
-            resultSlot = GuiElementBuilder.from(Items.FILLED_MAP.getDefaultStack()).hideFlags().setName(Text.literal("Valid Location: "+target.toShortString()).formatted(Formatting.DARK_AQUA));
+            resultSlot = GuiElementBuilder.from(Items.FILLED_MAP.getDefaultStack()).hideDefaultTooltip().setName(Text.literal("Valid Location: "+target.toShortString()).formatted(Formatting.DARK_AQUA));
          }else{
             saveButton.setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA));
-            resultSlot = GuiElementBuilder.from(Items.BARRIER.getDefaultStack()).hideFlags().setName(Text.literal("Invalid Location").formatted(Formatting.RED));
+            resultSlot = GuiElementBuilder.from(Items.BARRIER.getDefaultStack()).hideDefaultTooltip().setName(Text.literal("Invalid Location").formatted(Formatting.RED));
          }
       }else{
-         resultSlot = GuiElementBuilder.from(Items.FILLED_MAP.getDefaultStack()).hideFlags().setName(Text.literal("Valid Location: "+parsed.toShortString()).formatted(Formatting.DARK_AQUA));
+         resultSlot = GuiElementBuilder.from(Items.FILLED_MAP.getDefaultStack()).hideDefaultTooltip().setName(Text.literal("Valid Location: "+parsed.toShortString()).formatted(Formatting.DARK_AQUA));
          saveButton.setName(Text.literal("Valid Location").formatted(Formatting.DARK_AQUA));
       }
       
       if(starcharts){
          if(this.selectedTarget == -1 && parsed != null){
-            saveButton.addLoreLine(Text.literal(""));
-            saveButton.addLoreLine((Text.literal("")
+            saveButton.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+            saveButton.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Click").formatted(Formatting.AQUA))
                   .append(Text.literal(" to ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal("save").formatted(Formatting.GREEN))
-                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE))));
+                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE)))));
          }else if(this.selectedTarget != -1 && !sortedKeys.get(selectedTarget).equals(text)){
-            saveButton.addLoreLine(Text.literal(""));
-            saveButton.addLoreLine((Text.literal("")
+            saveButton.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+            saveButton.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Click").formatted(Formatting.AQUA))
                   .append(Text.literal(" to ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal("rename").formatted(Formatting.YELLOW))
-                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE))));
-            saveButton.addLoreLine((Text.literal("")
+                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE)))));
+            saveButton.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Right Click").formatted(Formatting.AQUA))
                   .append(Text.literal(" to ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal("delete").formatted(Formatting.RED))
-                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE))));
+                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE)))));
          }
          
       }
@@ -209,6 +205,16 @@ public class StarpathTargetGui extends AnvilInputGui implements WatchedGui {
       if(resultSlot != null){
          setSlot(2,resultSlot);
       }
+   }
+   
+   @Override
+   public void onTick(){
+      World world = blockEntity.getWorld();
+      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
+         this.close();
+      }
+      
+      super.onTick();
    }
    
    @Override
@@ -226,15 +232,5 @@ public class StarpathTargetGui extends AnvilInputGui implements WatchedGui {
    @Override
    public void close(){
       super.close();
-   }
-   
-   @Override
-   public BlockEntity getBlockEntity(){
-      return blockEntity;
-   }
-   
-   @Override
-   public SimpleGui getGui(){
-      return this;
    }
 }

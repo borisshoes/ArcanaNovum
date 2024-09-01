@@ -1,41 +1,44 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.*;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.FluidDrainable;
+import net.minecraft.block.FluidFillable;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsage;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -52,39 +55,36 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class AquaticEversource extends MagicItem {
+public class AquaticEversource extends ArcanaItem {
+	public static final String ID = "aquatic_eversource";
    
    private static final String TXT_PLACE = "item/aquatic_eversource_place";
    private static final String TXT_REMOVE = "item/aquatic_eversource_remove";
    
    public AquaticEversource(){
-      id = "aquatic_eversource";
+      id = ID;
       name = "Aquatic Eversource";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED,ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED,TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.WATER_BUCKET;
-      item = new AquaticEversourceItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new AquaticEversourceItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Aquatic Eversource").formatted(Formatting.BOLD,Formatting.BLUE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT_PLACE));
       models.add(new Pair<>(vanillaItem,TXT_REMOVE));
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_BLUE_ICE};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Aquatic Eversource\",\"italic\":false,\"bold\":true,\"color\":\"blue\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putInt("mode",0); // 0 place, 1 remove
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,MODE_TAG,0); // 0 place, 1 remove
       setPrefStack(stack);
    }
    
@@ -95,57 +95,76 @@ public class AquaticEversource extends MagicItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      int mode = magicTag.getInt("mode");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").putInt("mode",mode);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      int mode = getIntProperty(stack,MODE_TAG);
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,MODE_TAG,mode);
+      return buildItemLore(newStack,server);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Two \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"buckets can make an \",\"color\":\"aqua\"},{\"text\":\"ocean\"},{\"text\":\", but \",\"color\":\"aqua\"},{\"text\":\"one \"},{\"text\":\"should be \",\"color\":\"aqua\"},{\"text\":\"enough\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" to \",\"color\":\"aqua\"},{\"text\":\"create \",\"color\":\"dark_aqua\"},{\"text\":\"or \",\"color\":\"aqua\"},{\"text\":\"evaporate \",\"color\":\"dark_aqua\"},{\"text\":\"water.\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" to switch between \",\"color\":\"aqua\"},{\"text\":\"placing \",\"color\":\"dark_aqua\"},{\"text\":\"and \",\"color\":\"aqua\"},{\"text\":\"removing \",\"color\":\"dark_aqua\"},{\"text\":\"water.\",\"color\":\"aqua\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("Two ").formatted(Formatting.BLUE))
+            .append(Text.literal("buckets can make an ").formatted(Formatting.AQUA))
+            .append(Text.literal("ocean").formatted(Formatting.BLUE))
+            .append(Text.literal(", but ").formatted(Formatting.AQUA))
+            .append(Text.literal("one ").formatted(Formatting.BLUE))
+            .append(Text.literal("should be ").formatted(Formatting.AQUA))
+            .append(Text.literal("enough").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.BLUE))
+            .append(Text.literal(" to ").formatted(Formatting.AQUA))
+            .append(Text.literal("create ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("or ").formatted(Formatting.AQUA))
+            .append(Text.literal("evaporate ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("water.").formatted(Formatting.AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right Click").formatted(Formatting.BLUE))
+            .append(Text.literal(" to switch between ").formatted(Formatting.AQUA))
+            .append(Text.literal("placing ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("and ").formatted(Formatting.AQUA))
+            .append(Text.literal("removing ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("water.").formatted(Formatting.AQUA)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.BUCKET,16,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.GOLD_INGOT,32,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.DIAMOND,4,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.BLUE_ICE,64,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.HEART_OF_THE_SEA,4,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.BUCKET,8);
+      ArcanaIngredient b = new ArcanaIngredient(Items.GOLD_INGOT,6);
+      ArcanaIngredient c = new ArcanaIngredient(Items.BLUE_ICE,4);
+      ArcanaIngredient h = new ArcanaIngredient(Items.DIAMOND,2);
+      ArcanaIngredient m = new ArcanaIngredient(Items.HEART_OF_THE_SEA,1);
       
-      MagicItemIngredient[][] ingredients = {
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
             {b,c,h,c,b},
             {c,h,m,h,c},
             {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients,new ForgeRequirement());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("\"  Aquatic Eversource\\n\\nRarity: Empowered\\n\\nCarrying numerous water buckets is a waste of inventory space.\\n\\nA rudimentary contraption capable of condensation should alleviate this issue. \"");
-      list.add("\"  Aquatic Eversource\\n\\nThe trinket I created can pull water straight from the air to produce limitless water sources.\\n\\nA reversal of the process lets me use the trinket to remove any type of fluid as well.\"");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Aquatic Eversource\n\nRarity: Empowered\n\nCarrying numerous water buckets is a waste of inventory space.\n\nA rudimentary contraption capable of condensation should alleviate this issue. ")));
+      list.add(List.of(Text.literal("  Aquatic Eversource\n\nThe trinket I created can pull water straight from the air to produce limitless water sources.\n\nA reversal of the process lets me use the trinket to remove any type of fluid as well.")));
       return list;
    }
    
-   public class AquaticEversourceItem extends MagicPolymerItem {
-      public AquaticEversourceItem(Settings settings){
+   public class AquaticEversourceItem extends ArcanaPolymerItem {
+      public AquaticEversourceItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT_PLACE).value();
-         int mode = itemStack.getNbt().getCompound("arcananovum").getInt("mode");
-         return mode == 1 ? ArcanaRegistry.MODELS.get(TXT_REMOVE).value() : ArcanaRegistry.MODELS.get(TXT_PLACE).value();
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(TXT_PLACE).value();
+         int mode = getIntProperty(itemStack,MODE_TAG);
+         return mode == 1 ? ArcanaRegistry.getModelData(TXT_REMOVE).value() : ArcanaRegistry.getModelData(TXT_PLACE).value();
       }
       
       @Override
@@ -155,7 +174,7 @@ public class AquaticEversource extends MagicItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
       }
@@ -164,14 +183,12 @@ public class AquaticEversource extends MagicItem {
       public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
          if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         int mode = magicNbt.getInt("mode");
+         int mode = getIntProperty(stack,MODE_TAG);
          boolean floodgate = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FLOODGATE.id) > 0;
          
          if(playerEntity.isSneaking()){
             int newMode = (mode+1) % (floodgate ? 3 : 2);
-            magicNbt.putInt("mode",newMode);
+            putProperty(stack,MODE_TAG,newMode);
             if(newMode == 1){
                player.sendMessage(Text.literal("The Eversource Evaporates").formatted(Formatting.BLUE,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_EMPTY,1.0f,1.0f);
@@ -283,3 +300,4 @@ public class AquaticEversource extends MagicItem {
       }
    }
 }
+

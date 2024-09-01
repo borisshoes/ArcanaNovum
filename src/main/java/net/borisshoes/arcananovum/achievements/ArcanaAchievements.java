@@ -1,20 +1,12 @@
 package net.borisshoes.arcananovum.achievements;
 
-import com.mojang.authlib.GameProfile;
-import it.unimi.dsi.fastutil.Hash;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.minecraft.block.CropBlock;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.UserCache;
 
 import java.util.*;
 
@@ -24,19 +16,19 @@ public class ArcanaAchievements {
    public static final HashMap<String, ArcanaAchievement> registry = new HashMap<>();
    public static final List<ArcanaAchievement> excludedAchievements = new ArrayList<>();
    
-   // Mythical Catalyst
+   // Divine Catalyst
    public static final ArcanaAchievement DOOR_OF_DIVINITY = ArcanaAchievements.register(
-         new EventAchievement("Door of Divinity", "door_of_divinity", new ItemStack(Items.AMETHYST_SHARD), ArcanaRegistry.MYTHICAL_CATALYST, 1000, 1,
+         new EventAchievement("Door of Divinity", "door_of_divinity", new ItemStack(Items.AMETHYST_SHARD), ArcanaRegistry.DIVINE_CATALYST, 1000, 1,
                new String[]{"Summon a Nul Construct"}
          ));
    public static final ArcanaAchievement CONSTRUCT_DECONSTRUCTED = ArcanaAchievements.register(
-         new EventAchievement("Construct Deconstructed", "construct_deconstructed", new ItemStack(Items.NETHERITE_SCRAP), ArcanaRegistry.MYTHICAL_CATALYST, 5000, 2,
+         new EventAchievement("Construct Deconstructed", "construct_deconstructed", new ItemStack(Items.NETHERITE_SCRAP), ArcanaRegistry.DIVINE_CATALYST, 5000, 2,
                new String[]{"Successfully Defeat a Nul Construct"}
          ));
    
    public static final ArcanaAchievement DIVINE_TRANSMUTATION = ArcanaAchievements.register(
-         new EventAchievement("A Divine Transmutation", "divine_transmutation", new ItemStack(Items.DIAMOND), ArcanaRegistry.MYTHICAL_CATALYST, 10000, 3,
-               new String[]{"Use an Altar of Transmutation to get a Mythical Catalyst"}
+         new EventAchievement("A Divine Transmutation", "divine_transmutation", new ItemStack(Items.DIAMOND), ArcanaRegistry.DIVINE_CATALYST, 10000, 3,
+               new String[]{"Use an Altar of Transmutation to get a Divine Catalyst"}
          ));
    
    // Arcane Flak Arrows
@@ -171,11 +163,11 @@ public class ArcanaAchievements {
          ));
    public static final ArcanaAchievement GOD_BOON = ArcanaAchievements.register(
          new EventAchievement("Boon of the True Gods", "god_boon", new ItemStack(Items.DRAGON_EGG), ArcanaRegistry.ARCANE_TOME, 10000, 3,
-               new String[]{"Obtain a Mythical Magic Item"}
+               new String[]{"Obtain a Divine Arcana Item"}
          ));
    public static final ArcanaAchievement ARCANE_ADDICT = ArcanaAchievements.register(
          new EventAchievement("Arcane Addict", "arcane_addict", new ItemStack(Items.KNOWLEDGE_BOOK), ArcanaRegistry.ARCANE_TOME, 50000, 4,
-               new String[]{"Have 30 Magic Items taking concentration"}
+               new String[]{"Have 30 Arcana Items taking concentration"}
          ));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register(
          new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000, 666,
@@ -514,15 +506,15 @@ public class ArcanaAchievements {
    // Starlight Forge
    public static final ArcanaAchievement INTRO_ARCANA = ArcanaAchievements.register(
          new EventAchievement("Intro to Arcana", "intro_arcana", new ItemStack(Items.BOOK), ArcanaRegistry.STARLIGHT_FORGE, 1000, 1,
-               new String[]{"Craft your first Non-Mundane Magic Item"}
+               new String[]{"Craft your first Non-Mundane Arcana Item"}
          ));
    public static final ArcanaAchievement INTERMEDIATE_ARTIFICE = ArcanaAchievements.register(
          new ProgressAchievement("Intermediate Artifice", "intermediate_artifice", new ItemStack(Items.ENCHANTED_BOOK), ArcanaRegistry.STARLIGHT_FORGE, 5000, 2,
-               new String[]{"Craft 10 Non-Mundane Magic Items"}, 10
+               new String[]{"Craft 10 Non-Mundane Arcana Items"}, 10
          ));
    public static final ArcanaAchievement ARTIFICIAL_DIVINITY = ArcanaAchievements.register(
          new EventAchievement("Artificial Divinity", "artificial_divinity", new ItemStack(Items.GOLDEN_APPLE), ArcanaRegistry.STARLIGHT_FORGE, 10000, 3,
-               new String[]{"Create a Legendary Magic Item"}
+               new String[]{"Create a Sovereign Arcana Item"}
          ));
    public static final ArcanaAchievement MASTER_CRAFTSMAN = ArcanaAchievements.register(
          new EventAchievement("Master Craftsman", "master_craftsman", new ItemStack(Items.CRAFTING_TABLE), ArcanaRegistry.STARLIGHT_FORGE, 25000, 3,
@@ -536,7 +528,7 @@ public class ArcanaAchievements {
    // Twilight Anvil
    public static final ArcanaAchievement TOUCH_OF_PERSONALITY = ArcanaAchievements.register(
          new EventAchievement("A Touch of Personality", "touch_of_personality", new ItemStack(Items.NAME_TAG), ArcanaRegistry.TWILIGHT_ANVIL, 1000, 1,
-               new String[]{"Use The Anvil to Rename a Magic Item"}
+               new String[]{"Use The Anvil to Rename a Arcana Item"}
          ));
    public static final ArcanaAchievement BEYOND_IRONS_LIMIT = ArcanaAchievements.register(
          new EventAchievement("Beyond Iron's Limit", "beyond_irons_limit", new ItemStack(Items.NETHERITE_INGOT), ArcanaRegistry.TWILIGHT_ANVIL, 2500, 2,
@@ -630,7 +622,7 @@ public class ArcanaAchievements {
    
    // Aequalis Scientia
    public static final ArcanaAchievement PRICE_OF_KNOWLEDGE = ArcanaAchievements.register(
-         new EventAchievement("The Price of Knowledge", "price_of_knowledge", new ItemStack(ArcanaRegistry.MYTHICAL_CATALYST.getItem()), ArcanaRegistry.AEQUALIS_SCIENTIA, 10000, 3,
+         new EventAchievement("The Price of Knowledge", "price_of_knowledge", ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA, 10000, 3,
                new String[]{"Acquire an Aequalis Scientia"}
          ));
    public static final ArcanaAchievement QUESTIONABLE_EXCHANGE = ArcanaAchievements.register(
@@ -676,10 +668,10 @@ public class ArcanaAchievements {
       return achievement;
    }
    
-   public static List<ArcanaAchievement> getItemAchievements(MagicItem item){
+   public static List<ArcanaAchievement> getItemAchievements(ArcanaItem item){
       ArrayList<ArcanaAchievement> achs = new ArrayList<>();
       for(Map.Entry<String, ArcanaAchievement> entry : registry.entrySet()){
-         if(entry.getValue().getMagicItem().getId().equals(item.getId())) achs.add(entry.getValue());
+         if(entry.getValue().getArcanaItem().getId().equals(item.getId())) achs.add(entry.getValue());
       }
       return achs;
    }
@@ -687,7 +679,7 @@ public class ArcanaAchievements {
    public static void grant(ServerPlayerEntity player, String id){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             ProgressAchievement newAch = baseAch.makeNew();
@@ -700,7 +692,7 @@ public class ArcanaAchievements {
          }
          baseAch.announceAcquired(player);
       }else if(registry.get(id) instanceof EventAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          EventAchievement achievement = (EventAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             EventAchievement newAch = baseAch.makeNew();
@@ -713,7 +705,7 @@ public class ArcanaAchievements {
          }
          baseAch.announceAcquired(player);
       }else if(registry.get(id) instanceof ConditionalsAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             ConditionalsAchievement newAch = baseAch.makeNew();
@@ -730,7 +722,7 @@ public class ArcanaAchievements {
          }
          baseAch.announceAcquired(player);
       }else if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             TimedAchievement newAch = baseAch.makeNew();
@@ -748,7 +740,7 @@ public class ArcanaAchievements {
    public static void setCondition(ServerPlayerEntity player, String id, String condition, boolean set){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(registry.get(id) instanceof ConditionalsAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(itemId, baseAch.id);
          boolean get;
          if(achievement == null){
@@ -769,7 +761,7 @@ public class ArcanaAchievements {
    public static void progress(ServerPlayerEntity player, String id, int toAdd){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
          boolean get;
          if(achievement == null){
@@ -785,7 +777,7 @@ public class ArcanaAchievements {
             baseAch.announceAcquired(player);
          }
       }else if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
          boolean get;
          if(achievement == null){
@@ -806,7 +798,7 @@ public class ArcanaAchievements {
    public static int getProgress(ServerPlayerEntity player, String id){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             return 0;
@@ -814,7 +806,7 @@ public class ArcanaAchievements {
             return achievement.getProgress();
          }
       }else if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             return 0;
@@ -829,14 +821,14 @@ public class ArcanaAchievements {
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       ArcanaAchievement achieve = registry.get(id);
       if(achieve != null){
-         profile.removeAchievement(achieve.getMagicItem().getId(), id);
+         profile.removeAchievement(achieve.getArcanaItem().getId(), id);
       }
    }
    
    public static void reset(ServerPlayerEntity player, String id){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement != null){
             if(achievement.isAcquired()) return;
@@ -849,7 +841,7 @@ public class ArcanaAchievements {
    public static boolean isTimerActive(ServerPlayerEntity player, String id){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement != null){
             if(achievement.isAcquired()) return false;

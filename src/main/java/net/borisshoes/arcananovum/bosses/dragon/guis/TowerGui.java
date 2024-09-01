@@ -5,6 +5,9 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.HotbarGui;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -23,12 +26,12 @@ public class TowerGui extends HotbarGui {
    }
    
    public void buildGui(){
-      this.setSlot(0, new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("")));
-      this.setSlot(1, new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("")));
-      this.setSlot(3, new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("")));
-      this.setSlot(4, new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("")));
-      this.setSlot(6, new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("")));
-      this.setSlot(7, new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("")));
+      this.setSlot(0, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("")).hideTooltip());
+      this.setSlot(1, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("")).hideTooltip());
+      this.setSlot(3, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("")).hideTooltip());
+      this.setSlot(4, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("")).hideTooltip());
+      this.setSlot(6, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("")).hideTooltip());
+      this.setSlot(7, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("")).hideTooltip());
    
       this.setSlot(2, new GuiElementBuilder(Items.TWISTING_VINES).setName(Text.literal("Channel Laser").formatted(Formatting.BOLD,Formatting.DARK_AQUA)).glow());
       this.setSlot(5, new GuiElementBuilder(Items.LIGHT_BLUE_STAINED_GLASS).setName(Text.literal("Protect Allies").formatted(Formatting.BOLD,Formatting.AQUA)).glow());

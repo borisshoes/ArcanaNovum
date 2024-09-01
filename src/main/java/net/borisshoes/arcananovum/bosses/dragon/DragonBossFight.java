@@ -2,10 +2,12 @@ package net.borisshoes.arcananovum.bosses.dragon;
 
 import com.google.common.collect.ImmutableList;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
-import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
-import eu.pb4.polymer.virtualentity.api.elements.*;
+import eu.pb4.polymer.virtualentity.api.elements.InteractionElement;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
+import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.bosses.BossFight;
@@ -13,15 +15,12 @@ import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
 import net.borisshoes.arcananovum.entities.DragonWizardEntity;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
@@ -40,11 +39,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ShulkerBulletEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.scoreboard.*;
-import net.minecraft.scoreboard.number.NumberFormat;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -54,7 +55,10 @@ import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.random.Random;
@@ -64,7 +68,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.EndSpikeFeature;
 import net.minecraft.world.gen.feature.EndSpikeFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -128,7 +131,7 @@ public class DragonBossFight {
    public static void tick(MinecraftServer server, NbtCompound fightData){
       try{
          States state = States.fromLabel(fightData.getString("State"));
-         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(UUID.fromString(fightData.getString("GameMaster")));
+         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(fightData.getString("GameMaster")));
          List<MutableText> gmNotifs = new ArrayList<>();
          ServerWorld endWorld = server.getWorld(World.END);
          assert endWorld != null;
@@ -209,7 +212,7 @@ public class DragonBossFight {
                      NbtList phantomData = new NbtList();
                      for(int i=0;i<guardianPhantoms.length;i++){
                         guardianPhantoms[i] = DragonGoonHelper.makeGuardianPhantom(endWorld,numPlayers);
-                        phantomBossBars[i] = endWorld.getServer().getBossBarManager().add(new Identifier("guardianphantom-"+guardianPhantoms[i].getUuidAsString()),guardianPhantoms[i].getCustomName());
+                        phantomBossBars[i] = endWorld.getServer().getBossBarManager().add(Identifier.of("guardianphantom-"+guardianPhantoms[i].getUuidAsString()),guardianPhantoms[i].getCustomName());
                         phantomBossBars[i].setColor(BossBar.Color.PURPLE);
                         guardianPhantoms[i].addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE,100,4));
                         endWorld.spawnEntityAndPassengers(guardianPhantoms[i]);
@@ -545,12 +548,12 @@ public class DragonBossFight {
    private static void endFight(MinecraftServer server, ServerWorld endWorld){
       try{
          DragonDialog.announce(DragonDialog.Announcements.EVENT_END,server,null);
-         MagicItem magicWings = ArcanaRegistry.WINGS_OF_ENDERIA;
+         ArcanaItem arcanaWings = ArcanaRegistry.WINGS_OF_ENDERIA;
          
          // Give reward
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
-            ItemStack wings = magicWings.addCrafter(magicWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
+            ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
             PLAYER_DATA.get(player).addCraftedSilent(wings);
          
             ItemEntity itemEntity;
@@ -787,7 +790,7 @@ public class DragonBossFight {
          return -1;
       }
       ServerWorld endWorld = player.getServerWorld();
-      NbtCompound dragonData = (NbtCompound) Util.getResult(EnderDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, endWorld.getEnderDragonFight().toData()), IllegalStateException::new); //wtf
+      NbtCompound dragonData = (NbtCompound) (EnderDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, endWorld.getEnderDragonFight().toData()).getOrThrow());
       NbtCompound fightData = new NbtCompound();
       if(dragonData.getBoolean("DragonKilled")){
          player.sendMessage(Text.literal("Dragon is Dead, Commencing Respawn"), false);
@@ -825,7 +828,7 @@ public class DragonBossFight {
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
       NbtCompound data = bossFight.getRight();
       States state = States.valueOf(data.getString("State"));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(UUID.fromString(data.getString("GameMaster")));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
       ServerWorld endWorld = server.getWorld(World.END);
       if(gm != null){
          gm.sendMessage(Text.literal("Boss Has Been Aborted :(").formatted(Formatting.RED,Formatting.ITALIC));
@@ -892,7 +895,7 @@ public class DragonBossFight {
    
    public static int beginBoss(MinecraftServer server, NbtCompound data){
       States state = States.valueOf(data.getString("State"));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(UUID.fromString(data.getString("GameMaster")));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
       if(state == States.WAITING_START){
          if(startTimeAnnounced){
             States.updateState(States.WAITING_ONE,server);
@@ -920,7 +923,7 @@ public class DragonBossFight {
          startTimeAnnounced = true;
          return 0;
       }else{
-         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(UUID.fromString(data.getString("GameMaster")));
+         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
          if(gm != null){
             gm.sendMessage(Text.literal("The Event State is incompatible with this command. Have you run /arcana boss start dragon?"));
          }
@@ -960,7 +963,7 @@ public class DragonBossFight {
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
       NbtCompound data = bossFight.getRight();
       States state = States.valueOf(data.getString("State"));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(UUID.fromString(data.getString("GameMaster")));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
       ArrayList<MutableText> msgs = new ArrayList<>();
    
       msgs.add(Text.literal(""));
@@ -1199,7 +1202,7 @@ public class DragonBossFight {
             if(state == 2){
                animTicks++;
                if(player != null && player.squaredDistanceTo(pos.x,pos.y+1,pos.z) > 25){
-                  player.teleport(pos.x,pos.y+1,pos.z);
+                  player.requestTeleport(pos.x,pos.y+1,pos.z);
                   player.setVelocity(0,0,0);
                   player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
                }
@@ -1240,7 +1243,7 @@ public class DragonBossFight {
       
       public void playerSolved(){
          state = 2;
-         player.teleport(pos.x,pos.y+1,pos.z);
+         player.requestTeleport(pos.x,pos.y+1,pos.z);
          player.setVelocity(0,0,0);
          player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          hologramVisible = false;

@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.gui.levitationharness;
 
 import net.borisshoes.arcananovum.items.LevitationHarness;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
@@ -54,8 +54,8 @@ public class LevitationHarnessInventoryListener implements InventoryChangedListe
    public boolean validSoulstone(Inventory inv){
       ItemStack item = inv.getStack(0);
       
-      if(MagicItemUtils.isMagic(item)){
-         if(MagicItemUtils.identifyItem(item) instanceof Soulstone stone){
+      if(ArcanaItemUtils.isArcane(item)){
+         if(ArcanaItemUtils.identifyItem(item) instanceof Soulstone stone){
             if(Soulstone.getType(item).equals(EntityType.getId(EntityType.SHULKER).toString())){
                gui.validStone(item);
                return true;

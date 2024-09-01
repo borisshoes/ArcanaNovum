@@ -2,10 +2,10 @@ package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -26,12 +26,12 @@ public class PhantomSpawnerMixin {
             continue;
          }
       
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         if(magicItem instanceof FelidaeCharm charm){
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+         if(arcanaItem instanceof FelidaeCharm charm){
             if(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PANTHERA.id) >= 1){
                return true;
             }
-         }else if(magicItem instanceof ArcanistsBelt belt && !belt.getMatchingItemsWithAugment(ArcanaRegistry.FELIDAE_CHARM.getItem(),item,ArcanaAugments.PANTHERA,1).isEmpty()){
+         }else if(arcanaItem instanceof ArcanistsBelt belt && !belt.getMatchingItemsWithAugment(ArcanaRegistry.FELIDAE_CHARM.getItem(),item,ArcanaAugments.PANTHERA,1).isEmpty()){
             return true;
          }
       }

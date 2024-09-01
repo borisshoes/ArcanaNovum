@@ -6,9 +6,10 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.AequalisScientia;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -27,14 +28,14 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       super(name,new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
    }
    
-   private Pair<ArrayList<Pair<ArcanaAugment,Integer>>,Integer> getCanSell(List<ArcanaAugment> item1Augments, MagicItem otherItem, IArcanaProfileComponent profile){
+   private Pair<ArrayList<Pair<ArcanaAugment,Integer>>,Integer> getCanSell(List<ArcanaAugment> item1Augments, ArcanaItem otherItem, IArcanaProfileComponent profile){
       ArrayList<Pair<ArcanaAugment,Integer>> canSell = new ArrayList<>();
       int sellingPower = 0;
       for(ArcanaAugment i1aug : item1Augments){
          boolean linked = false;
          List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(i1aug.id);
          for(ArcanaAugment linkedAugment : linkedAugments){
-            if(linkedAugment.getMagicItem().getId().equals(otherItem.getId())){
+            if(linkedAugment.getArcanaItem().getId().equals(otherItem.getId())){
                linked = true;
                break;
             }
@@ -65,17 +66,17 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       ItemStack reagent2Stack = reagent2Entity != null ? reagent2Entity.getStack() : ItemStack.EMPTY;
       ItemStack aequalisStack = aequalisEntity != null ? aequalisEntity.getStack() : ItemStack.EMPTY;
       if(!canTransmute(input1Stack,input2Stack,reagent1Stack,reagent2Stack,aequalisStack,altar)) return new ArrayList<>();
-      MagicItem magicItem1 = MagicItemUtils.identifyItem(input1Stack);
-      MagicItem magicItem2 = MagicItemUtils.identifyItem(input2Stack);
-      MagicItem aequalis = MagicItemUtils.identifyItem(aequalisStack);
+      ArcanaItem arcanaItem1 = ArcanaItemUtils.identifyItem(input1Stack);
+      ArcanaItem arcanaItem2 = ArcanaItemUtils.identifyItem(input2Stack);
+      ArcanaItem aequalis = ArcanaItemUtils.identifyItem(aequalisStack);
       
       try{
-         ServerPlayerEntity asPlayer = altar.getWorld().getServer().getPlayerManager().getPlayer(UUID.fromString(aequalis.getCrafter(aequalisStack)));
+         ServerPlayerEntity asPlayer = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(aequalis.getCrafter(aequalisStack)));
          if(asPlayer == null) return new ArrayList<>();
          
          IArcanaProfileComponent profile = PLAYER_DATA.get(asPlayer);
-         List<ArcanaAugment> item1Augments = ArcanaAugments.getAugmentsForItem(magicItem1);
-         List<ArcanaAugment> item2Augments = ArcanaAugments.getAugmentsForItem(magicItem2);
+         List<ArcanaAugment> item1Augments = ArcanaAugments.getAugmentsForItem(arcanaItem1);
+         List<ArcanaAugment> item2Augments = ArcanaAugments.getAugmentsForItem(arcanaItem2);
          
          int sellingPower = 0;
          int liquidated = 0;
@@ -92,7 +93,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
                boolean linked = false;
                List<ArcanaAugment> linkedAugments = ArcanaAugments.getLinkedAugments(i2aug.id);
                for(ArcanaAugment linkedAugment : linkedAugments){
-                  if(linkedAugment.getMagicItem().getId().equals(magicItem1.getId())){
+                  if(linkedAugment.getArcanaItem().getId().equals(arcanaItem1.getId())){
                      linked = true;
                      break;
                   }
@@ -108,7 +109,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
             }
             Collections.shuffle(canBuy);
             
-            Pair<ArrayList<Pair<ArcanaAugment,Integer>>,Integer> canSellRet = getCanSell(item1Augments,magicItem2,profile);
+            Pair<ArrayList<Pair<ArcanaAugment,Integer>>,Integer> canSellRet = getCanSell(item1Augments, arcanaItem2,profile);
             ArrayList<Pair<ArcanaAugment,Integer>> canSell = canSellRet.getLeft();
             sellingPower = canSellRet.getRight();
             
@@ -127,7 +128,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
                   profile.setAugmentLevel(sellAug.id,sellLvl-1);
                   liquidated += sellAug.getTiers()[sellLvl-1].rarity+1;
                   
-                  canSellRet = getCanSell(item1Augments,magicItem2,profile);
+                  canSellRet = getCanSell(item1Augments, arcanaItem2,profile);
                   canSell = canSellRet.getLeft();
                }
                
@@ -137,7 +138,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
             }
          }
          
-         if(magicItem1.getId().equals(magicItem2.getId())){
+         if(arcanaItem1.getId().equals(arcanaItem2.getId())){
             ArcanaAchievements.grant(asPlayer,ArcanaAchievements.QUESTIONABLE_EXCHANGE.id);
          }
       }catch(Exception e){
@@ -194,13 +195,17 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       boolean reagent1Check = validStack(re1,reagent1Input) || validStack(re1,reagent2Input);
       boolean reagent2Check = validStack(re2,reagent1Input) || validStack(re2,reagent2Input);
       if(!reagent1Check || !reagent2Check) return false;
-      boolean magicItemCheck = (MagicItemUtils.isMagic(input1) && MagicItemUtils.isMagic(input2));
+      boolean arcanaItemCheck = (ArcanaItemUtils.isArcane(input1) && ArcanaItemUtils.isArcane(input2));
       boolean matrixCheck = !input1.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()) && !input2.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem());
-      if(!magicItemCheck || !matrixCheck) return false;
-      if(!(MagicItemUtils.identifyItem(aequalisInput) instanceof AequalisScientia as)) return false;
+      if(!arcanaItemCheck || !matrixCheck) return false;
+      if(!(ArcanaItemUtils.identifyItem(aequalisInput) instanceof AequalisScientia as)) return false;
       try{
-         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(UUID.fromString(as.getCrafter(aequalisInput)));
-         return player != null;
+         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(as.getCrafter(aequalisInput)));
+         if(player != null){
+            return PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
+         }else{
+            return false;
+         }
       }catch(Exception e){
          return false;
       }
@@ -208,7 +213,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public ItemStack getViewStack(){
-      return new ItemStack(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem(),1);
+      return ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore().copyWithCount(1);
    }
    
 }

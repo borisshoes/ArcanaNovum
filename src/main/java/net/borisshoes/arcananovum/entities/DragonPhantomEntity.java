@@ -1,9 +1,13 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.mixins.EntityAccessor;
 import net.borisshoes.arcananovum.mixins.PhantomEntityAccessor;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -15,10 +19,14 @@ import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.List;
+
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity {
    
@@ -27,12 +35,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    public DragonPhantomEntity(EntityType<? extends DragonPhantomEntity> entityType, World world){
       super(entityType, world);
       this.numPlayers = 5;
-      setPhantomSize(20);
-   }
-   
-   @Override
-   public void modifyRawTrackedData(List<DataTracker.SerializedEntry<?>> data, ServerPlayerEntity player, boolean initial){
-      data.add(new DataTracker.SerializedEntry<>(PhantomEntityAccessor.getSIZE().getId(), PhantomEntityAccessor.getSIZE().getType(), getPhantomSize()));
+      getAttributes().getCustomInstance(EntityAttributes.GENERIC_SCALE).addPersistentModifier(new EntityAttributeModifier(Identifier.of(MOD_ID,"phantom_scale"), 4.0, EntityAttributeModifier.Operation.ADD_VALUE));
    }
    
    @Override
@@ -46,6 +49,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    
    public static DefaultAttributeContainer.Builder createPhantomAttributes() {
       return HostileEntity.createHostileAttributes()
+            .add(EntityAttributes.GENERIC_SCALE, 1.0)
             .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
             .add(EntityAttributes.GENERIC_MAX_HEALTH, 512.0)
             .add(EntityAttributes.GENERIC_ARMOR, 10)
@@ -59,8 +63,13 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
       try{
          setPersistent();
          
-         if(getEntityWorld() instanceof ServerWorld serverWorld){
+         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getServer().getTicks() % 2 == 0){
             serverWorld.spawnParticles(new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),3f),getX(),getY(),getZ(),1,1.5,1,1.5,0);
+            
+            
+            if(serverWorld.getRegistryKey().equals(World.END) && this.circlingCenter.getY() > 120){
+               this.circlingCenter = new BlockPos(this.circlingCenter.getX(),110,this.circlingCenter.getZ());
+            }
          }
       }catch(Exception e){
          e.printStackTrace();

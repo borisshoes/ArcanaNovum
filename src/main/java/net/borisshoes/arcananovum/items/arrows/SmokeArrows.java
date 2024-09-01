@@ -1,93 +1,88 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SmokeArrows extends RunicArrow {
+	public static final String ID = "smoke_arrows";
    
    private static final String TXT = "item/runic_arrow";
    
    public SmokeArrows(){
-      id = "smoke_arrows";
+      id = ID;
       name = "Smoke Arrows";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ARROWS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new SmokeArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      item = new SmokeArrowsItem(new Item.Settings().maxCount(64).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Smoke").formatted(Formatting.BOLD,Formatting.DARK_GRAY))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(6908265),new ArrayList<>()))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.USE_CAMPFIRE,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Arrows - Smoke\",\"italic\":false,\"color\":\"dark_gray\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("CustomPotionColor",6908265);
-      tag.putInt("HideFlags", 255);
-      stack.setCount(64);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Smoke Arrows:\",\"italic\":false,\"color\":\"dark_gray\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" emit \"},{\"text\":\"smoke\",\"color\":\"dark_gray\"},{\"text\":\" particles near where they land.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Smoke\",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\" gives \",\"color\":\"gray\"},{\"text\":\"blindness\"},{\"text\":\" and \",\"color\":\"gray\"},{\"text\":\"weakness\"},{\"text\":\" to those inside it.\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addRunicArrowLore(lore);
+      lore.add(Text.literal("Smoke Arrows:").formatted(Formatting.BOLD,Formatting.DARK_GRAY));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.GRAY))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" emit ").formatted(Formatting.GRAY))
+            .append(Text.literal("smoke").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" particles near where they land.").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Smoke").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" gives ").formatted(Formatting.GRAY))
+            .append(Text.literal("blindness").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" and ").formatted(Formatting.GRAY))
+            .append(Text.literal("weakness").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" to those inside it.").formatted(Formatting.GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -95,7 +90,7 @@ public class SmokeArrows extends RunicArrow {
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
-         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getType()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
+         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
       }
    }
    
@@ -104,43 +99,44 @@ public class SmokeArrows extends RunicArrow {
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
-         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getType()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
+         ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
       }
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      MagicItemIngredient c = new MagicItemIngredient(Items.CAMPFIRE,64,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.GLOW_INK_SAC,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      MagicItemIngredient i = new MagicItemIngredient(Items.INK_SAC,64,null);
-      ItemStack potion10 = new ItemStack(Items.LINGERING_POTION);
-      MagicItemIngredient k = new MagicItemIngredient(Items.LINGERING_POTION,1, PotionUtil.setPotion(potion10, Potions.LONG_WEAKNESS).getNbt());
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient c = new ArcanaIngredient(Items.CAMPFIRE,12);
+      ArcanaIngredient g = new ArcanaIngredient(Items.GLOW_INK_SAC,12);
+      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
+      ArcanaIngredient i = new ArcanaIngredient(Items.INK_SAC,12);
+      ArcanaIngredient k = new ArcanaIngredient(Items.LINGERING_POTION,1).withPotions(Potions.LONG_WEAKNESS);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,a,c,a,a},
             {a,g,h,i,a},
             {k,h,m,h,k},
             {a,i,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"     Smoke Arrows\\n\\nRarity: Empowered\\n\\nThis Runic Matrix has been configured to summon copious amounts of campfire smoke. Those inside will have trouble seeing, and even breathing, making it harder to land a solid blow.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("     Smoke Arrows\n\nRarity: Empowered\n\nThis Runic Matrix has been configured to summon copious amounts of campfire smoke. Those inside will have trouble seeing, and even breathing, making it harder to land a solid blow.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class SmokeArrowsItem extends MagicPolymerArrowItem {
-      public SmokeArrowsItem(Settings settings){
+   public class SmokeArrowsItem extends ArcanaPolymerArrowItem {
+      public SmokeArrowsItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -149,3 +145,4 @@ public class SmokeArrows extends RunicArrow {
       }
    }
 }
+

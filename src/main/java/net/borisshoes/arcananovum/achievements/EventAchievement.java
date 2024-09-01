@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,8 +13,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 
 public class EventAchievement extends ArcanaAchievement{
    
-   public EventAchievement(String name, String id, ItemStack displayItem, MagicItem magicItem, int xpReward, int pointsReward, String[] description){
-      super(name, id, 0, displayItem, magicItem, xpReward, pointsReward, description);
+   public EventAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description){
+      super(name, id, 0, displayItem, arcanaItem, xpReward, pointsReward, description);
    }
    
    @Override
@@ -36,7 +36,7 @@ public class EventAchievement extends ArcanaAchievement{
    @Override
    public MutableText[] getStatusDisplay(ServerPlayerEntity player){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      EventAchievement achievement = (EventAchievement) profile.getAchievement(getMagicItem().getId(), id);
+      EventAchievement achievement = (EventAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       if(achievement == null) return null;
       
       return new MutableText[]{Text.literal("")
@@ -45,6 +45,6 @@ public class EventAchievement extends ArcanaAchievement{
    
    @Override
    public EventAchievement makeNew(){
-      return new EventAchievement(name, id, getDisplayItem(), getMagicItem(), xpReward, pointsReward, getDescription());
+      return new EventAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription());
    }
 }

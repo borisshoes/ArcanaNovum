@@ -47,7 +47,7 @@ public class ServerStartedCallback {
          
          for(ArcanaAchievement achieve : ArcanaAchievements.registry.values()){
             List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.containsKey(achieve.id) ? ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achieve.id) : new ArrayList<>();
-            if(profile.hasAcheivement(achieve.getMagicItem().getId(), achieve.id)){
+            if(profile.hasAcheivement(achieve.getArcanaItem().getId(), achieve.id)){
                curList.add(player.getUuid());
                ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.put(achieve.id,curList);
             }

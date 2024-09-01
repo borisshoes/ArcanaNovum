@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.items.QuiverItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.nbt.NbtInt;
@@ -11,7 +12,6 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ public class PlayerConnectionCallback {
       //log(player.getEntityName()+" has joined the game");
       
       ArrayList<LoginCallback> toBeRemoved = new ArrayList<>();
-      for(LoginCallback callback : LOGIN_CALLBACK_LIST.get(server.getWorld(ServerWorld.OVERWORLD)).getCallbacks()){
+      for(LoginCallback callback : LOGIN_CALLBACK_LIST.get(server.getOverworld()).getCallbacks()){
          if(callback.getPlayer().equals(player.getUuidAsString())){
             //log("Running login callback for "+player.getEntityName()+". ID: "+callback.getId());
             callback.onLogin(netHandler,server);
@@ -34,7 +34,7 @@ public class PlayerConnectionCallback {
          }
       }
       for(LoginCallback callback :toBeRemoved){
-         LOGIN_CALLBACK_LIST.get(server.getWorld(ServerWorld.OVERWORLD)).removeCallback(callback);
+         LOGIN_CALLBACK_LIST.get(server.getOverworld()).removeCallback(callback);
       }
    
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
@@ -81,20 +81,20 @@ public class PlayerConnectionCallback {
          }
       }
       
-      if(profile.getMiscData("quiverCD") == null){
-         profile.addMiscData("quiverCD", NbtInt.of(0));
+      if(profile.getMiscData(QuiverItem.QUIVER_CD_TAG) == null){
+         profile.addMiscData(QuiverItem.QUIVER_CD_TAG, NbtInt.of(0));
       }
-      if(profile.getMiscData("runicInvId") == null){
-         profile.addMiscData("runicInvId", NbtString.of(""));
+      if(profile.getMiscData(QuiverItem.RUNIC_INV_ID_TAG) == null){
+         profile.addMiscData(QuiverItem.RUNIC_INV_ID_TAG, NbtString.of(""));
       }
-      if(profile.getMiscData("arrowInvId") == null){
-         profile.addMiscData("arrowInvId",NbtString.of(""));
+      if(profile.getMiscData(QuiverItem.ARROW_INV_ID_TAG) == null){
+         profile.addMiscData(QuiverItem.ARROW_INV_ID_TAG,NbtString.of(""));
       }
-      if(profile.getMiscData("runicInvSlot") == null){
-         profile.addMiscData("runicInvSlot",NbtInt.of(0));
+      if(profile.getMiscData(QuiverItem.RUNIC_INV_SLOT_TAG) == null){
+         profile.addMiscData(QuiverItem.RUNIC_INV_SLOT_TAG,NbtInt.of(0));
       }
-      if(profile.getMiscData("arrowInvSlot") == null){
-         profile.addMiscData("arrowInvSlot",NbtInt.of(0));
+      if(profile.getMiscData(QuiverItem.ARROW_INV_SLOT_TAG) == null){
+         profile.addMiscData(QuiverItem.ARROW_INV_SLOT_TAG,NbtInt.of(0));
       }
    }
    

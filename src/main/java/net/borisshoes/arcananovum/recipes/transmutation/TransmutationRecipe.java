@@ -1,9 +1,8 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -43,27 +42,21 @@ public abstract class TransmutationRecipe {
    
    public boolean validStack(ItemStack recipeStack, ItemStack input){
       if(recipeStack.isEmpty()) return true;
-      if(MagicItemUtils.isMagic(recipeStack)){
-         MagicItem stackItem = MagicItemUtils.identifyItem(input);
-         return stackItem != null && stackItem.getId().equals(MagicItemUtils.identifyItem(recipeStack).getId());
+      if(ArcanaItemUtils.isArcane(recipeStack)){
+         ArcanaItem stackItem = ArcanaItemUtils.identifyItem(input);
+         return stackItem != null && stackItem.getId().equals(ArcanaItemUtils.identifyItem(recipeStack).getId());
       }
       
-      if(recipeStack.hasNbt()){
-         if(!recipeStack.isOf(input.getItem())) return false;
-         if(input.getCount() < recipeStack.getCount()) return false;
-         if(!input.hasNbt()) return false;
-         return MagicItemIngredient.validNbt(input.getNbt(),recipeStack.getNbt());
-      }else{
-         if(!recipeStack.isOf(input.getItem())) return false;
-         int reqCount = recipeStack.getCount();
-         return input.getCount() >= reqCount;
-      }
+      // TODO maybe have optional item predicate check?
+      if(!recipeStack.isOf(input.getItem())) return false;
+      int reqCount = recipeStack.getCount();
+      return input.getCount() >= reqCount;
    }
    
-   protected ItemStack getBargainReagent(ItemStack stack, int bargainlvl){
+   public ItemStack getBargainReagent(ItemStack stack, int bargainlvl){
       final double[] bargainMod = new double[]{1,1.5,1.4,1.3,1.2,1.1};
       int count = stack.getCount();
-      if(MagicItemUtils.isMagic(stack)) return stack.copy();
+      if(ArcanaItemUtils.isArcane(stack)) return stack.copy();
       count = (int) Math.min(stack.getMaxCount(),count * bargainMod[bargainlvl]);
       return stack.copyWithCount(count);
    }

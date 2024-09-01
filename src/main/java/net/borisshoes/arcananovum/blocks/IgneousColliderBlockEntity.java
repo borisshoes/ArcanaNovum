@@ -2,14 +2,15 @@ package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.ColliderLoginCallback;
 import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -23,10 +24,12 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -36,9 +39,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class IgneousColliderBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
+public class IgneousColliderBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private int cooldown;
@@ -73,6 +77,8 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       }
       
       if(serverWorld.getServer().getTicks() % 20 == 0){ // Tick the block every second
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+         
          if(cooldown-- <= 0){
             // Do the check
             BlockPos hasLava = null;
@@ -172,7 +178,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                SoundUtils.playSound(serverWorld,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
                
                if(crafterId != null && !crafterId.isEmpty()){
-                  ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
+                  ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(crafterId));
                   if(player == null){
                      ArcanaNovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
                      ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,10));
@@ -210,13 +216,13 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       return customName;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.IGNEOUS_COLLIDER;
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -243,8 +249,8 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){

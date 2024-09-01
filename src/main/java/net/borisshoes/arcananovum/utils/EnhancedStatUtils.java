@@ -1,68 +1,229 @@
 package net.borisshoes.arcananovum.utils;
 
-import com.google.common.collect.Multimap;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.minecraft.entity.EquipmentSlot;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.ToolComponent;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 
-import java.util.Map;
-import java.util.UUID;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class EnhancedStatUtils {
+   public static String ENHANCED_STAT_TAG = "stardust_enhanced";
    
    public static boolean isItemEnhanceable(ItemStack stack){
-      return stack.isIn(ItemTags.TRIMMABLE_ARMOR) || stack.isIn(ItemTags.SWORDS) || stack.isIn(ItemTags.AXES);
+      return (stack.isIn(ItemTags.ARMOR_ENCHANTABLE) && stack.getItem() instanceof ArmorItem) ||
+             (stack.isIn(ItemTags.WEAPON_ENCHANTABLE) || stack.isIn(ItemTags.SWORDS) || stack.isIn(ItemTags.AXES)) ||
+             (stack.contains(DataComponentTypes.TOOL)) ||
+             (stack.contains(DataComponentTypes.MAX_DAMAGE));
    }
    
-   public static double generatePercentile(int stardustCount, int influence){
-      double random = Math.min(1,Math.random()+0.002*influence*stardustCount);
-      double n = 0.046875 * stardustCount;
-      return random*random*random - n*random*random + n*random;
+   public static double generatePercentile(int stars){
+      double random = Math.random();
+      double uncapped = 0.2*(stars+1) * random*random + 0.1*stars;
+      return Math.min(1,uncapped);
+   }
+   
+   public static double getPercentile(ItemStack stack){
+      if(ArcanaItem.hasProperty(stack,ENHANCED_STAT_TAG)){
+         return ArcanaItem.getDoubleProperty(stack,ENHANCED_STAT_TAG);
+      }else{
+         return 0;
+      }
+   }
+   
+   public static void stripEnhancements(ItemStack stack, boolean removeTag){
+      if(!isEnhanced(stack)) return;
+      
+      AttributeModifiersComponent modifiers = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+      List<AttributeModifiersComponent.Entry> attributeList = new ArrayList<>();
+      
+      // Strip enhanced stats
+      for(AttributeModifiersComponent.Entry entry : modifiers.modifiers()){
+         RegistryEntry<EntityAttribute> attribute = entry.attribute();
+         EntityAttributeModifier modifier = entry.modifier();
+         AttributeModifierSlot slot = entry.slot();
+         
+         if(!modifier.id().toString().contains(ENHANCED_STAT_TAG)){
+            attributeList.add(entry);
+         }
+      }
+      
+      if(stack.contains(DataComponentTypes.TOOL)){
+         ToolComponent comp = stack.getItem().getDefaultStack().get(DataComponentTypes.TOOL);
+         
+         List<ToolComponent.Rule> newRules = new ArrayList<>();
+         for(ToolComponent.Rule rule : comp.rules()){
+            if(rule.speed().isPresent()){
+               float newSpeed = rule.speed().get();
+               newRules.add(new ToolComponent.Rule(rule.blocks(), Optional.of(newSpeed), rule.correctForDrops()));
+            }else{
+               newRules.add(rule);
+            }
+         }
+         
+         ToolComponent newComp = new ToolComponent(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock());
+         stack.set(DataComponentTypes.TOOL,newComp);
+      }
+      if(stack.contains(DataComponentTypes.MAX_DAMAGE)){
+         int maxDamage = stack.getItem().getDefaultStack().getMaxDamage();
+         stack.set(DataComponentTypes.MAX_DAMAGE,maxDamage);
+      }
+      
+      
+      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,true);
+      stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
+      
+      if(removeTag){
+         ArcanaItem.removeProperty(stack,ENHANCED_STAT_TAG);
+      }
+      
+      if(!ArcanaItemUtils.isArcane(stack)){
+         LoreComponent lore = stack.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
+         List<Text> lines = new ArrayList<>();
+         List<Text> styledLines = new ArrayList<>();
+         
+         for(Text line : lore.lines()){
+            if(!line.getString().contains("Stardust Infusion: ")){
+               lines.add(line);
+            }
+         }
+         
+         for(Text line : lore.styledLines()){
+            if(!line.getString().contains("Stardust Infusion: ")){
+               styledLines.add(line);
+            }
+         }
+         
+         stack.set(DataComponentTypes.LORE, new LoreComponent(lines, styledLines));
+      }else{
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+         arcanaItem.buildItemLore(stack,ArcanaNovum.SERVER);
+      }
    }
    
    public static void enhanceItem(ItemStack stack, double percentile){
-      if((stack.isIn(ItemTags.TRIMMABLE_ARMOR) || stack.isOf(ArcanaRegistry.WINGS_OF_ENDERIA.getItem()) || stack.isOf(ArcanaRegistry.NUL_MEMENTO.getItem())) && stack.getItem() instanceof ArmorItem armorItem){
-         double armor = armorItem.getProtection();
-         double toughness = armorItem.getToughness();
-         double kbRes = armorItem.getMaterial().getKnockbackResistance();
-         // linear boost
-         double newArmor = armor + 0.5*armor*percentile; // up to 50% extra
-         double newToughness = Math.min(6.0, toughness + 4.0*percentile);
-         double newKbRes = Math.min(0.25, kbRes + 0.25*percentile);
-         // boost max hp for top 5%, up to 2.5 hearts per piece for a total of 1 extra health bar max
+      AttributeModifiersComponent modifiers = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+      List<AttributeModifiersComponent.Entry> attributeList = new ArrayList<>();
+      
+      // Strip old enhanced stats
+      for(AttributeModifiersComponent.Entry entry : modifiers.modifiers()){
+         RegistryEntry<EntityAttribute> attribute = entry.attribute();
+         EntityAttributeModifier modifier = entry.modifier();
+         AttributeModifierSlot slot = entry.slot();
+         
+         if(!modifier.id().toString().contains(ENHANCED_STAT_TAG)){
+            attributeList.add(entry);
+         }
+      }
+      
+      boolean enhanced = false;
+      if(stack.isIn(ItemTags.ARMOR_ENCHANTABLE) && stack.getItem() instanceof ArmorItem armorItem){
+         double newArmor = 5 * percentile + armorItem.getProtection();
+         double newToughness = 5 * percentile + armorItem.getToughness();
+         double newKbRes = 0.2 * percentile + armorItem.getMaterial().value().knockbackResistance();
          double maxHpBoost = percentile >= 0.95 ? percentile*5 : 0;
-         stack.addAttributeModifier(EntityAttributes.GENERIC_ARMOR, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Armor", newArmor, EntityAttributeModifier.Operation.ADDITION),armorItem.getSlotType());
-         stack.addAttributeModifier(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Armor Toughness", newToughness, EntityAttributeModifier.Operation.ADDITION),armorItem.getSlotType());
-         stack.addAttributeModifier(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Knockback Resistance", newKbRes, EntityAttributeModifier.Operation.ADDITION),armorItem.getSlotType());
-         stack.addAttributeModifier(EntityAttributes.GENERIC_MAX_HEALTH, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Max Health", maxHpBoost, EntityAttributeModifier.Operation.ADDITION),armorItem.getSlotType());
-         stack.getOrCreateNbt().putDouble("ArcanaStats",percentile);
-      }else if(stack.isIn(ItemTags.SWORDS) || stack.isIn(ItemTags.AXES)){
-         Multimap<EntityAttribute, EntityAttributeModifier> attributes = stack.getItem().getAttributeModifiers(EquipmentSlot.MAINHAND);
-         double attackSpeed = 0;
-         double attackDamage = 1;
-         for(Map.Entry<EntityAttribute, EntityAttributeModifier> entry : attributes.entries()){
-            if(entry.getKey() == EntityAttributes.GENERIC_ATTACK_DAMAGE){
-               attackDamage = entry.getValue().getValue();
-            }else if(entry.getKey() == EntityAttributes.GENERIC_ATTACK_SPEED){
-               attackSpeed = entry.getValue().getValue();
+         String stat_tag = ENHANCED_STAT_TAG +"_"+ armorItem.getSlotType().asString();
+         
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newArmor,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR_TOUGHNESS,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newToughness,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newKbRes,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_MAX_HEALTH,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),maxHpBoost,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
+         enhanced = true;
+      }
+      if(stack.isIn(ItemTags.WEAPON_ENCHANTABLE) || stack.isIn(ItemTags.SWORDS) || stack.isIn(ItemTags.AXES)){
+         double newAttackSpeed = percentile >= 0.5 ? 0.5*(2*percentile-1) : 0;
+         double newAttackDamage = 5 * percentile;
+         
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ATTACK_DAMAGE,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackDamage,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ATTACK_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackSpeed,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND));
+         enhanced = true;
+      }
+      
+      if(stack.contains(DataComponentTypes.TOOL)){
+         double speedBuff = 1 + (1.25 * percentile*percentile);
+         ToolComponent comp = stack.getItem().getDefaultStack().get(DataComponentTypes.TOOL);
+         
+         List<ToolComponent.Rule> newRules = new ArrayList<>();
+         for(ToolComponent.Rule rule : comp.rules()){
+            if(rule.speed().isPresent()){
+               float newSpeed = (float)((rule.speed().get() + 4*percentile) * speedBuff);
+               newRules.add(new ToolComponent.Rule(rule.blocks(), Optional.of(newSpeed), rule.correctForDrops()));
+            }else{
+               newRules.add(rule);
             }
          }
-         // linear boost, up to 50% in atk speed and 100% in damage
-         double newAttackSpeed = attackSpeed + 0.5*Math.abs(attackSpeed)*percentile; // Attack speed is usually negative for weapons
-         double newAttackDamage = attackDamage + attackDamage*percentile - 1;
-         stack.addAttributeModifier(EntityAttributes.GENERIC_ATTACK_DAMAGE, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Damage", newAttackDamage, EntityAttributeModifier.Operation.ADDITION),EquipmentSlot.MAINHAND);
-         stack.addAttributeModifier(EntityAttributes.GENERIC_ATTACK_SPEED, new EntityAttributeModifier(UUID.randomUUID(), "Arcana Novum Enhanced Attack Speed", newAttackSpeed, EntityAttributeModifier.Operation.ADDITION),EquipmentSlot.MAINHAND);
-         stack.getOrCreateNbt().putDouble("ArcanaStats",percentile);
+         
+         ToolComponent newComp = new ToolComponent(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock());
+         stack.set(DataComponentTypes.TOOL,newComp);
+         enhanced = true;
+      }
+      if(stack.contains(DataComponentTypes.MAX_DAMAGE)){
+         double durabilityBuff = 1 + (0.5 * percentile*percentile);
+         int maxDamage = stack.getItem().getDefaultStack().getMaxDamage();
+         stack.set(DataComponentTypes.MAX_DAMAGE,(int)(maxDamage*durabilityBuff));
+         enhanced = true;
+      }
+      
+      
+      if(enhanced){
+         AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,true);
+         stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
+         
+         ArcanaItem.putProperty(stack,ENHANCED_STAT_TAG,percentile);
+         
+         if(!ArcanaItemUtils.isArcane(stack)){
+            LoreComponent lore = stack.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
+            List<Text> lines = new ArrayList<>();
+            List<Text> styledLines = new ArrayList<>();
+            
+            for(Text line : lore.lines()){
+               if(!line.getString().contains("Stardust Infusion: ")){
+                  lines.add(line);
+               }
+            }
+            
+            for(Text line : lore.styledLines()){
+               if(!line.getString().contains("Stardust Infusion: ")){
+                  styledLines.add(line);
+               }
+            }
+            
+            DecimalFormat df = new DecimalFormat("#0.00");
+            df.setRoundingMode(RoundingMode.DOWN);
+            Text line = TextUtils.removeItalics(Text.literal("")
+                  .append(Text.literal("Stardust Infusion: ").formatted(Formatting.YELLOW))
+                  .append(Text.literal(df.format(percentile*100)+"%").formatted(Formatting.GOLD)));
+            
+            lines.add(line);
+            styledLines.add(line);
+            
+            stack.set(DataComponentTypes.LORE, new LoreComponent(lines, styledLines));
+         }else{
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+            arcanaItem.buildItemLore(stack,ArcanaNovum.SERVER);
+         }
       }
    }
    
    public static boolean isEnhanced(ItemStack stack){
-      return stack.hasNbt() && stack.getNbt().contains("ArcanaStats");
+      return ArcanaItem.hasProperty(stack,ENHANCED_STAT_TAG);
    }
    
    public static double combineStats(double p1, double p2){

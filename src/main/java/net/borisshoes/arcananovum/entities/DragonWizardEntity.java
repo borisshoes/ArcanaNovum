@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.mixins.EntityAccessor;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
@@ -12,7 +12,6 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
@@ -61,13 +60,9 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       this.numPlayers = 5;
    }
    
-   @Override
-   public void modifyRawTrackedData(List<DataTracker.SerializedEntry<?>> data, ServerPlayerEntity player, boolean initial){
-      data.add(new DataTracker.SerializedEntry<>(EntityAccessor.getNO_GRAVITY().getId(), EntityAccessor.getNO_GRAVITY().getType(), true));
-   }
-   
    public static DefaultAttributeContainer.Builder createWizardAttributes() {
       return HostileEntity.createHostileAttributes()
+            .add(EntityAttributes.GENERIC_GRAVITY,0.0)
             .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.0)
             .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
             .add(EntityAttributes.GENERIC_MAX_HEALTH, 64.0)
@@ -252,17 +247,17 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       skeleton.setHealth(skeletonHP);
       skeleton.setPersistent();
       ItemStack bow = new ItemStack(Items.BOW);
-      bow.addEnchantment(Enchantments.PUNCH,2);
-      bow.addEnchantment(Enchantments.POWER,1);
+      bow.addEnchantment(MiscUtils.getEnchantment(Enchantments.PUNCH),2);
+      bow.addEnchantment(MiscUtils.getEnchantment(Enchantments.POWER),1);
       ItemStack helm = new ItemStack(Items.IRON_HELMET);
       ItemStack chest = new ItemStack(Items.IRON_CHESTPLATE);
       ItemStack legs = new ItemStack(Items.IRON_LEGGINGS);
       ItemStack boots = new ItemStack(Items.IRON_BOOTS);
-      helm.addEnchantment(Enchantments.PROTECTION,1);
-      chest.addEnchantment(Enchantments.PROTECTION,1);
-      legs.addEnchantment(Enchantments.PROTECTION,1);
-      boots.addEnchantment(Enchantments.PROTECTION,1);
-      boots.addEnchantment(Enchantments.FEATHER_FALLING,4);
+      helm.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
+      chest.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
+      legs.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
+      boots.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
+      boots.addEnchantment(MiscUtils.getEnchantment(Enchantments.FEATHER_FALLING),4);
       skeleton.equipStack(EquipmentSlot.MAINHAND, bow);
       skeleton.equipStack(EquipmentSlot.HEAD, helm);
       skeleton.equipStack(EquipmentSlot.CHEST, chest);
@@ -310,13 +305,13 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       summonTick = nbt.getInt("summonTick");
       pulseTick = nbt.getInt("pulseTick");
       numPlayers = nbt.getInt("numPlayers");
-      if(nbt.contains("crystalId")) crystalId = UUID.fromString(nbt.getString("crystalId"));
+      if(nbt.contains("crystalId")) crystalId = MiscUtils.getUUID(nbt.getString("crystalId"));
       
       if(getEntityWorld() instanceof ServerWorld serverWorld){
          NbtList skeleList = nbt.getList("skeletons", NbtElement.STRING_TYPE);
          skeletons = new SkeletonEntity[skeleList.size()];
          for(int i = 0; i < skeletons.length; i++){
-            if(serverWorld.getEntity(UUID.fromString(skeleList.getString(i))) instanceof SkeletonEntity skele){
+            if(serverWorld.getEntity(MiscUtils.getUUID(skeleList.getString(i))) instanceof SkeletonEntity skele){
                skeletons[i] = skele;
             }
          }

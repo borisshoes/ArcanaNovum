@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.spawner.MobSpawnerEntry;
@@ -11,11 +12,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,6 +26,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Optional;
+
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
 @Mixin(MobSpawnerLogic.class)
@@ -49,6 +52,17 @@ public class MobSpawnerLogicMixin {
                   cir.cancel();
                }
             }
+         }
+         
+         
+      }
+   }
+   
+   @Inject(method = "isPlayerInRange", at = @At("RETURN"))
+   private void arcananovum_forPlayersInRange(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+      if(cir.getReturnValue() && world instanceof ServerWorld serverWorld){
+         for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(pos, 5.0))){
+            PLAYER_DATA.get(player).setResearchTask(ResearchTasks.FIND_SPAWNER, true);
          }
       }
    }

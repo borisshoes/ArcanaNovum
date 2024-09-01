@@ -2,30 +2,41 @@ package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.AnchorTimeLoginCallback;
 import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ExoticMatter;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.Pair;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,9 +44,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
+public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, SidedInventory, InventoryChangedListener {
    private static final double[] anchorEfficiency = {0,.05,.1,.15,.2,.5};
    public static final int RANGE = 2;
    private TreeMap<ArcanaAugment,Integer> augments;
@@ -45,10 +57,11 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
    private String customName;
    private int fuel;
    private boolean active;
-   private ItemStack fuelStack;
+   private SimpleInventory inventory = new SimpleInventory(size());
    
    public ContinuumAnchorBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.CONTINUUM_ANCHOR_BLOCK_ENTITY, pos, state);
+      this.inventory.addListener(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
@@ -59,7 +72,6 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
       this.customName = customName == null ? "" : customName;
       this.fuel = 0;
       this.active = false;
-      this.fuelStack = ItemStack.EMPTY.copy();
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -83,22 +95,22 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
    }
    
    public ItemStack getFuelStack(){
-      return fuelStack;
+      return inventory.getStack(0);
    }
    
    public int getFuel(){
       return fuel;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.CONTINUUM_ANCHOR;
    }
    
    public boolean interact(PlayerEntity player, ItemStack stack){
-      if(fuel > 0 && stack.isEmpty()){ // Remove fuel
+      if(!inventory.isEmpty() && stack.isEmpty()){ // Remove fuel
          fuel = 0;
-         ItemStack returnStack = fuelStack.copy();
-         fuelStack = ItemStack.EMPTY;
+         ItemStack returnStack = getFuelStack().copy();
+         inventory.setStack(0,ItemStack.EMPTY);
          markDirty();
          if(!player.giveItemStack(returnStack)){
             ItemEntity itemEntity = player.dropItem(returnStack, false);
@@ -110,10 +122,10 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
       }
       
       //Add Fuel
-      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
-      if(fuel == 0 && magicItem instanceof ExoticMatter matter){
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+      if(inventory.isEmpty() && arcanaItem instanceof ExoticMatter matter){
          fuel = matter.getEnergy(stack);
-         fuelStack = stack.copy();
+         inventory.addStack(stack.copy());
          player.getInventory().removeOne(stack);
          markDirty();
          return true;
@@ -137,20 +149,23 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
          boolean prevActive = active;
          active = !serverWorld.isReceivingRedstonePower(pos) && fuel > 0;
          
+         if(fuel <= 0 && !inventory.isEmpty()){
+            inventory.clear();
+         }
          
          if(active && serverWorld.getServer().getTicks() % 20 == 0){
             int lvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.TEMPORAL_RELATIVITY.id);
             if(Math.random() >= anchorEfficiency[lvl]){
                fuel = Math.max(0, fuel - 1);
                
-               if(MagicItemUtils.identifyItem(fuelStack) instanceof ExoticMatter matter){
-                  matter.setFuel(fuelStack, fuel);
+               if(ArcanaItemUtils.identifyItem(getFuelStack()) instanceof ExoticMatter matter){
+                  matter.setFuel(getFuelStack(), fuel);
                   markDirty();
                }
             }
             
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(UUID.fromString(crafterId));
+               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(crafterId));
                if(player == null){
                   ArcanaNovum.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
                   if(serverWorld.getServer().getTicks() % 100 == 0) ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,1));
@@ -185,11 +200,15 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
          
          this.markDirty();
       }
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0 && this.active){
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      }
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -208,9 +227,6 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
       if (nbt.contains("active")) {
          this.active = nbt.getBoolean("active");
       }
-      if (nbt.contains("fuelStack")) {
-         this.fuelStack = ItemStack.fromNbt(nbt.getCompound("fuelStack"));
-      }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
          NbtCompound augCompound = nbt.getCompound("arcanaAugments");
@@ -219,11 +235,16 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
             if(aug != null) augments.put(aug,augCompound.getInt(key));
          }
       }
+      this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
+      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+         Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
+      }
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
@@ -243,8 +264,59 @@ public class ContinuumAnchorBlockEntity extends BlockEntity implements PolymerOb
       nbt.putBoolean("synthetic",this.synthetic);
       nbt.putInt("fuel",this.fuel);
       nbt.putBoolean("active",this.active);
-      if(this.fuelStack != null){
-         nbt.put("fuelStack",fuelStack.writeNbt(new NbtCompound()));
+      if (!this.writeLootTable(nbt)) {
+         Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
       }
+   }
+   
+   public Inventory getInventory(){
+      return this.inventory;
+   }
+   
+   @Override
+   protected Text getContainerName(){
+      return Text.literal("Continuum Anchor");
+   }
+   
+   @Override
+   protected DefaultedList<ItemStack> getHeldStacks(){
+      return this.inventory.getHeldStacks();
+   }
+   
+   @Override
+   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+      for(int i = 0; i < list.size(); i++){
+         this.inventory.setStack(i,list.get(i));
+      }
+   }
+   
+   @Override
+   protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory){
+      return null;
+   }
+   
+   @Override
+   public int[] getAvailableSlots(Direction side){
+      return new int[0];
+   }
+   
+   @Override
+   public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir){
+      return false;
+   }
+   
+   @Override
+   public boolean canExtract(int slot, ItemStack stack, Direction dir){
+      return false;
+   }
+   
+   @Override
+   public int size(){
+      return 1;
+   }
+   
+   @Override
+   public void onInventoryChanged(Inventory sender){
+   
    }
 }

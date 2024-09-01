@@ -6,7 +6,7 @@ import net.minecraft.util.Pair;
 
 import java.util.HashMap;
 
-public class ExplainRecipe extends MagicItemRecipe{
+public class ExplainRecipe extends ArcanaRecipe {
    
    private final ExplainIngredient[][] explainIngredients;
    
@@ -40,5 +40,10 @@ public class ExplainRecipe extends MagicItemRecipe{
          }
       }
       return map;
+   }
+   
+   @Override
+   public ArcanaIngredient[][] getIngredients(){
+      return explainIngredients;
    }
 }

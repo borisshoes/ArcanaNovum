@@ -2,37 +2,42 @@ package net.borisshoes.arcananovum.blocks;
 
 import com.google.common.collect.Lists;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicBlock;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
@@ -44,45 +49,70 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.block.Block.dropStacks;
 
-public class FractalSponge extends MagicBlock {
+public class FractalSponge extends ArcanaBlock {
+   public static final String ID = "fractal_sponge";
    
    public FractalSponge(){
-      id = "fractal_sponge";
+      id = ID;
       name = "Fractal Sponge";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.BLOCKS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SPONGE;
-      block = new FractalSpongeBlock(FabricBlockSettings.create().strength(.6f,1200.0f).sounds(BlockSoundGroup.GRASS));
-      item = new FractalSpongeItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
-   
-      ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Fractal Sponge\",\"italic\":false,\"bold\":true,\"color\":\"yellow\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
+      block = new FractalSpongeBlock(AbstractBlock.Settings.create().strength(.6f,1200.0f).sounds(BlockSoundGroup.GRASS));
+      item = new FractalSpongeItem(this.block,new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Fractal Sponge").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_SPONGE,ResearchTasks.OBTAIN_END_CRYSTAL};
       
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Fractals \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"are known for having \",\"color\":\"blue\"},{\"text\":\"infinite \",\"color\":\"light_purple\"},{\"text\":\"surface area\"},{\"text\":\".\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"effectiveness\",\"color\":\"aqua\"},{\"text\":\" of a \"},{\"text\":\"sponge \",\"color\":\"yellow\"},{\"text\":\"is based on said \"},{\"text\":\"surface area\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"combination \",\"color\":\"aqua\"},{\"text\":\"of the two seems only \"},{\"text\":\"natural\",\"color\":\"dark_aqua\",\"italic\":true},{\"text\":\".\",\"color\":\"blue\",\"italic\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The resulting \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"sponge \",\"color\":\"yellow\"},{\"text\":\"is \"},{\"text\":\"much more effective\",\"color\":\"aqua\"},{\"text\":\" than most \"},{\"text\":\"sponges\",\"color\":\"yellow\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It even works on \",\"italic\":true,\"color\":\"dark_aqua\"},{\"text\":\"lava\",\"color\":\"gold\"},{\"text\":\"!\"},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("Fractals ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("are known for having ").formatted(Formatting.BLUE))
+            .append(Text.literal("infinite ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("surface area").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.BLUE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.BLUE))
+            .append(Text.literal("effectiveness").formatted(Formatting.AQUA))
+            .append(Text.literal(" of a ").formatted(Formatting.BLUE))
+            .append(Text.literal("sponge ").formatted(Formatting.YELLOW))
+            .append(Text.literal("is based on said ").formatted(Formatting.BLUE))
+            .append(Text.literal("surface area").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.BLUE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.BLUE))
+            .append(Text.literal("combination ").formatted(Formatting.AQUA))
+            .append(Text.literal("of the two seems only ").formatted(Formatting.BLUE))
+            .append(Text.literal("natural").formatted(Formatting.ITALIC,Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.BLUE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The resulting ").formatted(Formatting.BLUE))
+            .append(Text.literal("sponge ").formatted(Formatting.YELLOW))
+            .append(Text.literal("is ").formatted(Formatting.BLUE))
+            .append(Text.literal("much more effective").formatted(Formatting.AQUA))
+            .append(Text.literal(" than most ").formatted(Formatting.BLUE))
+            .append(Text.literal("sponges").formatted(Formatting.YELLOW))
+            .append(Text.literal(".").formatted(Formatting.BLUE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("It even works on ").formatted(Formatting.ITALIC,Formatting.DARK_AQUA))
+            .append(Text.literal("lava").formatted(Formatting.GOLD))
+            .append(Text.literal("!").formatted(Formatting.DARK_AQUA)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    private int absorb(ItemStack item, World world, BlockPos pos) {
@@ -163,31 +193,33 @@ public class FractalSponge extends MagicBlock {
       return absorbed;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient m = new MagicItemIngredient(Items.MAGMA_BLOCK,64,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,16,null);
-      MagicItemIngredient s = new MagicItemIngredient(Items.SPONGE,48,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.BLUE_ICE,64,null);
-      MagicItemIngredient i = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,8,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.OBSIDIAN,16);
+      ArcanaIngredient b = new ArcanaIngredient(Items.MAGMA_BLOCK,16);
+      ArcanaIngredient c = new ArcanaIngredient(Items.SPONGE,6);
+      ArcanaIngredient d = new ArcanaIngredient(Items.BLUE_ICE,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.END_CRYSTAL,4);
+      ArcanaIngredient m = new ArcanaIngredient(Items.NETHER_STAR,1);
       
-      MagicItemIngredient[][] ingredients = {
-            {m,c,s,c,b},
-            {c,i,s,i,c},
-            {s,s,n,s,s},
-            {c,i,s,i,c},
-            {b,c,s,c,m}};
-      return new MagicItemRecipe(ingredients);
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,d,a},
+            {b,g,c,g,d},
+            {c,c,m,c,c},
+            {d,g,c,g,b},
+            {a,d,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"    Fractal Sponge\\n\\nRarity: Empowered\\n\\nEver heard of the coastline paradox?\\nI thought about it while staring at an ocean monument from the shore, and now I'm off to shove as many sponges into a Netherite reinforced fractal as I can.\"}");
-      list.add("{\"text\":\"    Fractal Sponge\\n\\nThe Fractal Sponge in practice is only 8 times better than a regular sponge due to it taking time for fluid to soak into the fractal, but it never gets fully soaked and the Netherite frame lets it contain hotter fluids like lava.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("    Fractal Sponge\n\nRarity: Empowered\n\nEver heard of the coastline paradox?\nI thought about it while staring at an ocean monument from the shore, and now I'm off to shove as many sponges into a Netherite reinforced fractal as I can.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Fractal Sponge\n\nThe Fractal Sponge in practice is only 8 times better than a regular sponge due to it taking time for fluid to soak into the fractal, but it never gets fully soaked and the Netherite frame lets it contain hotter fluids like lava.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class FractalSpongeItem extends MagicPolymerBlockItem {
+   public class FractalSpongeItem extends ArcanaPolymerBlockItem {
       public FractalSpongeItem(Block block, Settings settings){
          super(getThis(),block, settings);
       }
@@ -198,14 +230,20 @@ public class FractalSponge extends MagicBlock {
       }
    }
    
-   public class FractalSpongeBlock extends MagicPolymerBlockEntity {
-      public FractalSpongeBlock(Settings settings){
+   public class FractalSpongeBlock extends ArcanaPolymerBlockEntity {
+      public FractalSpongeBlock(AbstractBlock.Settings settings){
          super(settings);
       }
       
       @Override
-      public Block getPolymerBlock(BlockState state) {
-         return Blocks.SPONGE;
+      public BlockState getPolymerBlockState(BlockState state) {
+         return Blocks.SPONGE.getDefaultState();
+      }
+      
+      @Nullable
+      @Override
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+         return validateTicker(type, ArcanaRegistry.FRACTAL_SPONGE_BLOCK_ENTITY, FractalSpongeBlockEntity::ticker);
       }
       
       @Nullable
@@ -223,23 +261,10 @@ public class FractalSponge extends MagicBlock {
       }
       
       @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-         if (state.isOf(newState.getBlock())) {
-            return;
-         }
-         BlockEntity blockEntity = world.getBlockEntity(pos);
-         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
-         DefaultedList<ItemStack> drops = DefaultedList.of();
-         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
-         ItemScatterer.spawn(world, pos, drops);
-         super.onStateReplaced(state, world, pos, newState, moved);
-      }
-      
-      @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
          BlockEntity entity = world.getBlockEntity(pos);
          if (placer instanceof ServerPlayerEntity player && entity instanceof FractalSpongeBlockEntity sponge) {
-            initializeMagicBlock(stack,sponge);
+            initializeArcanaBlock(stack,sponge);
             
             try{
                int absorbed = absorbHelper(player,world,stack,pos,false);
@@ -257,3 +282,4 @@ public class FractalSponge extends MagicBlock {
       }
    }
 }
+

@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
-import dev.onyxstudios.cca.api.v3.component.ComponentV3;
 import net.borisshoes.arcananovum.callbacks.LoginCallback;
+import org.ladysnake.cca.api.v3.component.ComponentV3;
 
 import java.util.List;
 

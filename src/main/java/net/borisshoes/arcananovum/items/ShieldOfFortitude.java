@@ -1,109 +1,132 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerShieldItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerShieldItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BannerPatternsComponent;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.UnbreakableComponent;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.DyeColor;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
-public class ShieldOfFortitude extends MagicItem {
-   public static final UUID EFFECT_UUID = UUID.fromString("cb7b7e36-0841-4d3c-bc94-4bbddfdaef4d");
+public class ShieldOfFortitude extends ArcanaItem {
+   public static final String ID = "shield_of_fortitude";
+   public static final Identifier EFFECT_ID = Identifier.of(ArcanaNovum.MOD_ID,ID);
    
    public ShieldOfFortitude(){
-      id = "shield_of_fortitude";
+      id = ID;
       name = "Shield of Fortitude";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.SHIELD;
-      item = new ShieldOfFortitudeItem(new FabricItemSettings().maxCount(1).fireproof().maxDamage(336));
+      item = new ShieldOfFortitudeItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Shield of Fortitude").formatted(Formatting.BOLD,Formatting.AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
+      );
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_ABSORPTION,ResearchTasks.ADVANCEMENT_DEFLECT_ARROW,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Shield of Fortitude\",\"italic\":false,\"bold\":true,\"color\":\"aqua\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags", 255);
-      tag.putInt("Unbreakable",1);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"This shield is \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"overflowing\",\"italic\":true,\"color\":\"light_purple\"},{\"text\":\" with powerful \",\"color\":\"dark_purple\"},{\"text\":\"defensive\",\"color\":\"blue\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"magic\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Your will for \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"protection\",\"color\":\"aqua\"},{\"text\":\" becomes a tangible \"},{\"text\":\"fortitude\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Damage\",\"italic\":false,\"color\":\"red\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"blocked\",\"color\":\"blue\"},{\"text\":\" becomes \",\"color\":\"dark_purple\"},{\"text\":\"absorption\",\"color\":\"yellow\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"hearts\",\"color\":\"yellow\"},{\"text\":\" and the shield is \",\"color\":\"dark_purple\"},{\"text\":\"unbreakable\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("This shield is ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("overflowing").formatted(Formatting.ITALIC,Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" with powerful ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("defensive magic").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Your will for ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("protection").formatted(Formatting.AQUA))
+            .append(Text.literal(" becomes a tangible ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("fortitude").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Damage").formatted(Formatting.RED))
+            .append(Text.literal(" blocked").formatted(Formatting.BLUE))
+            .append(Text.literal(" becomes ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("absorption hearts").formatted(Formatting.YELLOW))
+            .append(Text.literal(" and the shield is ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("unbreakable").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound banner = itemNbt.getCompound("BlockEntityTag");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      if(enchants != null) newTag.put("Enchantments", enchants);
-      if(banner != null) newTag.put("BlockEntityTag", banner);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      BannerPatternsComponent patterns = stack.get(DataComponentTypes.BANNER_PATTERNS);
+      DyeColor color = stack.get(DataComponentTypes.BASE_COLOR);
+      ItemStack newStack = super.updateItem(stack,server);
+      if(patterns != null) stack.set(DataComponentTypes.BANNER_PATTERNS,patterns);
+      if(color != null) stack.set(DataComponentTypes.BASE_COLOR,color);
+      return buildItemLore(newStack,server);
    }
    
    @Override
    public ItemStack forgeItem(Inventory inv){
-      ItemStack toolStack = inv.getStack(12); // Should be the Sword
-      ItemStack newMagicItem = getNewItem();
-      NbtCompound nbt = toolStack.getNbt();
-      if(nbt != null){
-         if(nbt.contains("Enchantments")){
-            NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-            newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
-         }
-         if(nbt.contains("BlockEntityTag")){
-            newMagicItem.getOrCreateNbt().put("BlockEntityTag", nbt.getCompound("BlockEntityTag"));
-         }
+      ItemStack shieldStack = inv.getStack(12); // Should be the Sword
+      ItemStack newArcanaItem = getNewItem();
+      
+      if(shieldStack.hasEnchantments()){
+         EnchantmentHelper.set(newArcanaItem,shieldStack.getEnchantments());
       }
-      return newMagicItem;
+      
+      BannerPatternsComponent patterns = shieldStack.get(DataComponentTypes.BANNER_PATTERNS);
+      DyeColor color = shieldStack.get(DataComponentTypes.BASE_COLOR);
+      if(color != null){
+         newArcanaItem.set(DataComponentTypes.BASE_COLOR,color);
+      }
+      if(patterns != null){
+         newArcanaItem.set(DataComponentTypes.BANNER_PATTERNS,patterns);
+      }
+
+      return newArcanaItem;
    }
    
    public void shieldBlock(LivingEntity entity, ItemStack item, double amount){
@@ -115,39 +138,42 @@ public class ShieldOfFortitude extends MagicItem {
          ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
       }
-      MiscUtils.addMaxAbsorption(entity, EFFECT_UUID,"arcananovum."+ ArcanaRegistry.SHIELD_OF_FORTITUDE.getId(),addedAbs);
+      MiscUtils.addMaxAbsorption(entity, EFFECT_ID,addedAbs);
       entity.setAbsorptionAmount((curAbs + addedAbs));
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Shield of Fortitude\\n\\nRarity: Legendary\\n\\nTaking after the Wings of Enderia I have successfully recreated their incredible durability. \\n\\nWhile keeping with the protective nature of the Wings I have been able to infuse extra\\n\"}");
-      list.add("{\"text\":\"  Shield of Fortitude\\n\\nArcana into the four basic protection enchantments, fusing them with the ability of golden apples that grants the consumer a protective barrier.\\n\\nAs a result half of all damage blocked becomes a barrier lasting 10 seconds.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Shield of Fortitude\n\nRarity: Sovereign\n\nTaking after the Wings of Enderia I have successfully recreated their incredible durability. \n\nWhile keeping with the protective nature of the Wings I have been able to infuse extra\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Shield of Fortitude\n\nArcana into the four basic protection enchantments, fusing them with the ability of golden apples that grants the consumer a protective barrier.\n\nAs a result half of all damage blocked becomes a barrier lasting 10 seconds.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient s = new MagicItemIngredient(Items.SHIELD,1,null, true);
-      MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,64,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,4,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.GOLDEN_APPLE,64,null);
-      MagicItemIngredient i = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
-      MagicItemIngredient p = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.PROTECTION,4)).getNbt());
-      MagicItemIngredient j = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.PROJECTILE_PROTECTION,4)).getNbt());
-      MagicItemIngredient b = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.BLAST_PROTECTION,4)).getNbt());
-      MagicItemIngredient f = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.FIRE_PROTECTION,4)).getNbt());
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
+      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
+      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.FIRE_PROTECTION),4));
+      ArcanaIngredient c = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
+      ArcanaIngredient g = new ArcanaIngredient(Items.GOLDEN_APPLE,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.BLAST_PROTECTION),4));
+      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.PROTECTION),4));
+      ArcanaIngredient m = new ArcanaIngredient(Items.SHIELD,1, true);
+      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.PROJECTILE_PROTECTION),4));
       
-      MagicItemIngredient[][] ingredients = {
-            {n,o,g,o,n},
-            {o,i,b,i,o},
-            {g,f,s,j,g},
-            {o,i,p,i,o},
-            {n,o,g,o,n}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withEnchanter().withCore());
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,l,m,n,c},
+            {b,g,r,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore().withEnchanter());
+      
    }
    
-   public class ShieldOfFortitudeItem extends MagicPolymerShieldItem {
-      public ShieldOfFortitudeItem(Settings settings){
+   public class ShieldOfFortitudeItem extends ArcanaPolymerShieldItem {
+      public ShieldOfFortitudeItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
@@ -164,12 +190,11 @@ public class ShieldOfFortitude extends MagicItem {
          BlockPos blockPos = context.getBlockPos();
          World world = context.getWorld();
          try{
-            NbtCompound itemNbt = stack.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            
             BlockState blockState = world.getBlockState(blockPos);
-            if(itemNbt.contains("BlockEntityTag") && blockState.getBlock() == Blocks.WATER_CAULDRON){
-               itemNbt.remove("BlockEntityTag");
+            
+            if((stack.contains(DataComponentTypes.BANNER_PATTERNS) || stack.contains(DataComponentTypes.BASE_COLOR)) && blockState.getBlock() == Blocks.WATER_CAULDRON){
+               stack.remove(DataComponentTypes.BANNER_PATTERNS);
+               stack.remove(DataComponentTypes.BASE_COLOR);
                LeveledCauldronBlock.decrementFluidLevel(blockState,world,blockPos);
                return ActionResult.SUCCESS;
             }
@@ -180,3 +205,4 @@ public class ShieldOfFortitude extends MagicItem {
       }
    }
 }
+

@@ -1,12 +1,12 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -45,8 +45,8 @@ public class EntityKilledCallback {
                }
                
                invItems.add(item);
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               if(magicItem instanceof ArcanistsBelt belt){
+               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+               if(arcanaItem instanceof ArcanistsBelt belt){
                   SimpleInventory beltInv = belt.deserialize(item);
                   ArrayList<ItemStack> beltList = new ArrayList<>();
                   for(int j = 0; j < beltInv.size(); j++){
@@ -65,14 +65,14 @@ public class EntityKilledCallback {
                for(int j = 0; j < itemList.size(); j++){
                   ItemStack item = itemList.get(j);
                   
-                  boolean isMagic = MagicItemUtils.isMagic(item);
-                  if(!isMagic){
+                  boolean isArcane = ArcanaItemUtils.isArcane(item);
+                  if(!isArcane){
                      sinv.setStack(j,item);
-                     continue; // Item not magic, skip
+                     continue; // Item not arcane, skip
                   }
-                  MagicItem magicItem = MagicItemUtils.identifyItem(item);
+                  ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
                   
-                  if(magicItem instanceof Soulstone stone && !procdStone){
+                  if(arcanaItem instanceof Soulstone stone && !procdStone){
                      if(Soulstone.getType(item).equals(entityTypeId)){
                         stone.killedEntity(serverWorld,player,livingEntity, item);
                         procdStone = true; // Only activate one soulstone per kill
@@ -82,13 +82,13 @@ public class EntityKilledCallback {
                   sinv.setStack(j,item);
                }
                
-               if(MagicItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
+               if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
                   belt.serialize(carrier, sinv);
                }
             }
    
             ItemStack heldItem = player.getStackInHand(Hand.MAIN_HAND);
-            if(MagicItemUtils.identifyItem(heldItem) instanceof ShadowStalkersGlaive glaive){ // Return 4 charges
+            if(ArcanaItemUtils.identifyItem(heldItem) instanceof ShadowStalkersGlaive glaive){ // Return 4 charges
                int oldEnergy = glaive.getEnergy(heldItem);
                glaive.addEnergy(heldItem, 80);
                int newEnergy = glaive.getEnergy(heldItem);
@@ -97,7 +97,7 @@ public class EntityKilledCallback {
                   for(int i=1; i<=5; i++){
                      message += newEnergy >= i*20 ? "✦ " : "✧ ";
                   }
-                  player.sendMessage(Text.translatable(message).formatted(Formatting.BLACK),true);
+                  player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
                }
    
                if((livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
@@ -109,7 +109,7 @@ public class EntityKilledCallback {
             }
    
             ItemStack chestItem = player.getEquippedStack(EquipmentSlot.CHEST);
-            if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isFallFlying() && livingEntity instanceof MobEntity){
+            if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isFallFlying() && livingEntity instanceof MobEntity){
                ArcanaAchievements.grant(player,ArcanaAchievements.ANGEL_OF_DEATH.id);
             }
          }

@@ -1,37 +1,54 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.*;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.stellarcore.StellarCoreGui;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.*;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.Pair;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
+import static net.borisshoes.arcananovum.blocks.forge.StellarCore.MOLTEN_CORE_ITEMS;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
+public class StellarCoreBlockEntity extends LootableContainerBlockEntity implements PolymerObject, SidedInventory, InventoryChangedListener, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -40,10 +57,14 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
    private final Multiblock multiblock;
    private boolean assembled;
    private boolean seenForge;
+   private boolean updating;
+   private SimpleInventory inventory = new SimpleInventory(size());
+   private final Set<ServerPlayerEntity> watchingPlayers = new HashSet<>();
    
    public StellarCoreBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY, pos, state);
       this.multiblock = ((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getMultiblock();
+      this.inventory.addListener(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
@@ -83,13 +104,19 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
          blockState = blockState.with(StellarCore.StellarCoreBlock.LIT,assembled);
          world.setBlockState(pos, blockState, Block.NOTIFY_ALL);
       }
+      
+      watchingPlayers.removeIf(player -> player.currentScreenHandler == player.playerScreenHandler);
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0 && this.assembled && this.seenForge){
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      }
    }
    
    public List<ItemStack> salvageItem(ItemStack stack){
       List<ItemStack> salvage = new ArrayList<>();
       double salvageLvl = .25*(1+ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.DYSON_SPHERE.id));
       Item item = stack.getItem();
-      if(MagicItemUtils.isMagic(stack)) return salvage;
+      if(ArcanaItemUtils.isArcane(stack)) return salvage;
       
       if(item instanceof ArmorItem armor){
          EquipmentSlot slot = armor.getSlotType();
@@ -99,8 +126,9 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
             case LEGS -> 7;
             case CHEST -> 8;
             case HEAD -> 5;
+            case BODY -> 6;
          };
-         ItemStack[] repairItems = armor.getMaterial().getRepairIngredient().getMatchingStacks();
+         ItemStack[] repairItems = armor.getMaterial().value().repairIngredient().get().getMatchingStacks();
          if(repairItems[0].isOf(Items.NETHERITE_INGOT)){
             salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
          }else{
@@ -154,9 +182,12 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
    public void openGui(ServerPlayerEntity player){
       StellarCoreGui gui = new StellarCoreGui(player,this);
       gui.buildGui();
-      if(!gui.tryOpen(player)){
-         player.sendMessage(Text.literal("Someone else is using the Core").formatted(Formatting.RED),true);
-      }
+      gui.open();
+      watchingPlayers.add(player);
+   }
+   
+   public void removePlayer(ServerPlayerEntity player){
+      watchingPlayers.remove(player);
    }
    
    public boolean isAssembled(){
@@ -190,13 +221,13 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
       return customName;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.STELLAR_CORE;
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -209,6 +240,11 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
       if (nbt.contains("synthetic")) {
          this.synthetic = nbt.getBoolean("synthetic");
       }
+      this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
+      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+         Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
+      }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
          NbtCompound augCompound = nbt.getCompound("arcanaAugments");
@@ -220,8 +256,8 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
@@ -239,5 +275,115 @@ public class StellarCoreBlockEntity extends BlockEntity implements PolymerObject
          nbt.putString("customName",this.customName);
       }
       nbt.putBoolean("synthetic",this.synthetic);
+      if (!this.writeLootTable(nbt)) {
+         Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
+      }
+   }
+   
+   @Override
+   protected Text getContainerName(){
+      return Text.literal("Stellar Core");
+   }
+   
+   public Inventory getInventory(){
+      return this.inventory;
+   }
+   
+   @Override
+   protected DefaultedList<ItemStack> getHeldStacks(){
+      return this.inventory.getHeldStacks();
+   }
+   
+   @Override
+   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+      for(int i = 0; i < list.size(); i++){
+         this.inventory.setStack(i,list.get(i));
+      }
+   }
+   
+   @Override
+   protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory){
+      return null;
+   }
+   
+   @Override
+   public int[] getAvailableSlots(Direction side){
+      return new int[0];
+   }
+   
+   @Override
+   public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir){
+      return false;
+   }
+   
+   @Override
+   public boolean canExtract(int slot, ItemStack stack, Direction dir){
+      return false;
+   }
+   
+   @Override
+   public int size(){
+      return 1;
+   }
+   
+   @Override
+   public void onInventoryChanged(Inventory inv){
+      if(!updating){
+         updating = true;
+         if(!(getWorld() instanceof ServerWorld serverWorld)){
+            updating = false;
+            return;
+         }
+         boolean moltenCore = ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOLTEN_CORE.id) >= 1;
+         BlockState blockState = serverWorld.getBlockState(pos);
+         Direction dir = blockState.get(StellarCore.StellarCoreBlock.HORIZONTAL_FACING);
+         Vec3d itemSpawnPos = pos.add(dir.getVector()).toCenterPos();
+         
+         ItemStack stack = inv.getStack(0);
+         List<ItemStack> salvage = salvageItem(stack);
+         if(!salvage.isEmpty()){
+            salvage = salvage.stream().filter(s -> !s.isEmpty() && s.getCount()>0).toList();
+            watchingPlayers.forEach(player -> ArcanaAchievements.progress(player,ArcanaAchievements.RECLAMATION.id, stack.getCount()));
+            if(salvage.stream().anyMatch(s -> s.isOf(Items.NETHERITE_SCRAP))){
+               watchingPlayers.forEach(player -> ArcanaAchievements.grant(player,ArcanaAchievements.SCRAP_TO_SCRAP.id));
+            }
+            
+            inv.setStack(0,ItemStack.EMPTY);
+            
+            for(ItemStack itemStack : salvage){
+               ItemScatterer.spawn(getWorld(), itemSpawnPos.getX(),itemSpawnPos.getY(),itemSpawnPos.getZ(), itemStack);
+            }
+            
+            watchingPlayers.forEach(player -> PLAYER_DATA.get(player).addXP(100));
+            
+            SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);
+            SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.BLOCKS, 1, 1.2f);
+         }else if(moltenCore){
+            Item moltenItem = MOLTEN_CORE_ITEMS.get(stack.getItem());
+            if(moltenItem != null){
+               int returnCount = stack.getCount() * 2;
+               inv.setStack(0,ItemStack.EMPTY);
+               int finalReturnCount = returnCount;
+               watchingPlayers.forEach(player -> PLAYER_DATA.get(player).addXP(moltenItem instanceof BlockItem ? finalReturnCount * 18 : finalReturnCount * 2));
+               ArrayList<ItemStack> items = new ArrayList<>();
+               
+               while(returnCount > 64){
+                  items.add(new ItemStack(moltenItem,64));
+                  returnCount -= 64;
+               }
+               if(returnCount > 0){
+                  items.add(new ItemStack(moltenItem,returnCount));
+               }
+               for(ItemStack itemStack : items){
+                  ItemScatterer.spawn(serverWorld, itemSpawnPos.getX(),itemSpawnPos.getY(),itemSpawnPos.getZ(), itemStack);
+               }
+               
+               SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);
+               SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.BLOCKS, 1, 1.2f);
+            }
+         }
+         
+         updating = false;
+      }
    }
 }

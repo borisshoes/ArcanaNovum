@@ -1,20 +1,19 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.items.LevitationHarness;
-import net.borisshoes.arcananovum.items.NulMemento;
-import net.borisshoes.arcananovum.items.ShulkerCore;
-import net.borisshoes.arcananovum.items.WingsOfEnderia;
+import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
@@ -22,23 +21,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
+import static net.borisshoes.arcananovum.ArcanaNovum.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
@@ -46,72 +41,64 @@ public class TickCallback {
    public static void onTick(MinecraftServer server){
       try{
          bossTickCheck(server);
+         updateMovementTrackers(server);
+         
+         ArrayList<Pair<BlockEntity, ArcanaBlockEntity>> toRemoveBlocks = new ArrayList<>();
+         for(Map.Entry<Pair<BlockEntity, ArcanaBlockEntity>, Integer> pair : ACTIVE_ARCANA_BLOCKS.entrySet()){
+            if(pair.getValue()-1 > 0){
+               ACTIVE_ARCANA_BLOCKS.put(pair.getKey(),pair.getValue()-1);
+            }else{
+               toRemoveBlocks.add(pair.getKey());
+            }
+         }
+         toRemoveBlocks.forEach(ACTIVE_ARCANA_BLOCKS::remove);
          
          List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
             IArcanaProfileComponent arcaneProfile = PLAYER_DATA.get(player);
             
-            // Check each player's inventory for magic items
+            // Check each player's inventory for arcana items
             PlayerInventory inv = player.getInventory();
             for(int i=0; i<inv.size();i++){
                ItemStack item = inv.getStack(i);
-               if(item.isEmpty()){
-                  if(item.getNbt() != null){
-                     item.setNbt(null);
-                  }else{
-                     continue;
-                  }
-               }
-               
-               // Detect un-formatted item
-               Identifier id = Registries.ITEM.getId(item.getItem());
-               if(id.getNamespace().equals(ArcanaNovum.MOD_ID)){
-                  if(!MagicItemUtils.isMagic(item)){
-                     MagicItem magicItem = ArcanaRegistry.MAGIC_ITEMS.get(id.getPath());
-                     if(magicItem != null){
-                        item.setNbt(magicItem.getNewItem().getNbt());
-                        //ArcanaNovum.devPrint("Replacing data on: "+id.getPath());
-                     }
-                  }
-               }
-               
                
                // Version Update Check
-               boolean isMagic = MagicItemUtils.isMagic(item);
-               if(!isMagic)
-                  continue; // Item not magic, skip
+               boolean isArcane = ArcanaItemUtils.isArcane(item);
+               if(!isArcane)
+                  continue; // Item not arcane, skip
                
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               if(MagicItemUtils.needsVersionUpdate(item)){
-                  magicItem.updateItem(item,server);
+               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+               if(ArcanaItemUtils.needsVersionUpdate(item)){
+                  arcanaItem.updateItem(item,server);
+                  ArcanaNovum.devPrint("Updating Item "+item.getName().getString());
                }
    
                // Achievements
-               if(magicItem instanceof ShulkerCore){
+               if(arcanaItem instanceof ShulkerCore){
                   if(player.getY() > 1610 && player.getActiveStatusEffects().containsKey(StatusEffects.LEVITATION)) ArcanaAchievements.grant(player,ArcanaAchievements.MILE_HIGH.id);
                }
-               if(server.getTicks() % 20 == 0 && magicItem.getRarity() == MagicRarity.MYTHICAL){
+               if(server.getTicks() % 20 == 0 && arcanaItem.getRarity() == ArcanaRarity.DIVINE){
                   ArcanaAchievements.grant(player,ArcanaAchievements.GOD_BOON.id);
                }
    
                // Reset Nul Memento
-               if(magicItem instanceof NulMemento nulMemento && nulMemento.isActive(item) && i != 39){
-                  item.getNbt().getCompound("arcananovum").putBoolean("active",false);
+               if(arcanaItem instanceof NulMemento nulMemento && nulMemento.isActive(item) && i != 39){
+                  ArcanaItem.putProperty(item, ArcanaItem.ACTIVE_TAG,false);
                }
             }
             
-            if(MagicItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.000015){
+            if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.000015){
                dragonEggDialog(player);
             }
             
             wingsTick(player);
             flightCheck(player);
             concCheck(server,player,arcaneProfile);
-            ArcanaRegistry.AREA_EFFECTS.values().forEach(areaEffectTracker -> areaEffectTracker.onTick(server));
+            ArcanaRegistry.AREA_EFFECTS.stream().forEach(areaEffectTracker -> areaEffectTracker.onTick(server));
             
-            int quiverCD = ((NbtInt)arcaneProfile.getMiscData("quiverCD")).intValue();
+            int quiverCD = ((NbtInt)arcaneProfile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
             if(quiverCD > 0){
-               arcaneProfile.addMiscData("quiverCD",NbtInt.of(quiverCD-1));
+               arcaneProfile.addMiscData(QuiverItem.QUIVER_CD_TAG,NbtInt.of(quiverCD-1));
             }
          }
          
@@ -142,6 +129,19 @@ public class TickCallback {
       }
    }
    
+   private static void updateMovementTrackers(MinecraftServer server){
+      for(ServerPlayerEntity player : server.getPlayerManager().getPlayerList()){
+         if(PLAYER_MOVEMENT_TRACKER.containsKey(player)){
+            Pair<Vec3d,Vec3d> tracker = PLAYER_MOVEMENT_TRACKER.get(player);
+            Vec3d oldPos = tracker.getLeft();
+            Vec3d newPos = player.getPos();
+            PLAYER_MOVEMENT_TRACKER.put(player,new Pair<>(newPos, newPos.subtract(oldPos)));
+         }else{
+            PLAYER_MOVEMENT_TRACKER.put(player,new Pair<>(player.getPos(), new Vec3d(0,0,0)));
+         }
+      }
+   }
+   
    private static void bossTickCheck(MinecraftServer server){
       for(ServerWorld world : server.getWorlds()){
          Pair<BossFights, NbtCompound> fight = BOSS_FIGHT.get(world).getBossFight();
@@ -157,8 +157,8 @@ public class TickCallback {
       // Check to make sure everyone is under concentration limit
       int resolve = arcaneProfile.getAugmentLevel(ArcanaAugments.RESOLVE.id);
       int maxConc = LevelUtils.concFromXp(arcaneProfile.getXP(),resolve);
-      int curConc = MagicItemUtils.getUsedConcentration(player);
-      if(MagicItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
+      int curConc = ArcanaItemUtils.getUsedConcentration(player);
+      if(ArcanaItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
       if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
          if((boolean) ArcanaNovum.config.getValue("doConcentrationDamage")){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
@@ -171,7 +171,7 @@ public class TickCallback {
             }
             // Nul Memento
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-            if(MagicItemUtils.identifyItem(headStack) instanceof NulMemento nulMemento && !nulMemento.isActive(headStack)){
+            if(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento nulMemento && !nulMemento.isActive(headStack)){
                nulMemento.forgor(headStack,player);
             }
          }
@@ -180,7 +180,7 @@ public class TickCallback {
    
    private static void wingsTick(ServerPlayerEntity player){
       ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
-      if(MagicItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
+      if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
          if(player.isFallFlying()){ // Wings of Enderia
             wings.addEnergy(item,1); // Add 1 energy for each tick of flying
             if(wings.getEnergy(item) % 1000 == 999)
@@ -204,8 +204,8 @@ public class TickCallback {
       // Levitation Harness
       ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
       boolean allowFly = false;
-      if(MagicItemUtils.isMagic(item)){
-         if(MagicItemUtils.identifyItem(item) instanceof LevitationHarness harness){
+      if(ArcanaItemUtils.isArcane(item)){
+         if(ArcanaItemUtils.identifyItem(item) instanceof LevitationHarness harness){
             if(harness.getEnergy(item) > 0 && harness.getStall(item) == -1){
                allowFly = true;
             }
@@ -242,11 +242,11 @@ public class TickCallback {
       boolean[] conditions = new boolean[]{
             PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
             PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
             PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO) && PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()) && MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()) && ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
       };
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(

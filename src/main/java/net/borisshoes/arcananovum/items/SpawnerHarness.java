@@ -4,36 +4,35 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -45,86 +44,97 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class SpawnerHarness extends MagicItem {
+public class SpawnerHarness extends ArcanaItem {
+	public static final String ID = "spawner_harness";
+   
+   public static final String SPAWNER_TAG = "spawner";
    
    private static final String FULL_TXT = "item/spawner_harness";
    private static final String EMPTY_TXT = "item/spawner_harness_empty";
    
    public SpawnerHarness(){
-      id = "spawner_harness";
+      id = ID;
       name = "Spawner Harness";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.BLOCKS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
       itemVersion = 1;
       vanillaItem = Items.SPAWNER;
-      item = new SpawnerHarnessItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new SpawnerHarnessItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Spawner Harness").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,FULL_TXT));
       models.add(new Pair<>(vanillaItem,EMPTY_TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_SILK_TOUCH,ResearchTasks.BREAK_SPAWNER,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Spawner Harness\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags", 255);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").put("spawner",new NbtCompound());
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,SPAWNER_TAG,new NbtCompound());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"While \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"silk touch\",\"color\":\"light_purple\"},{\"text\":\" fails to provide adequate finesse to obtain \"},{\"text\":\"spawners\",\"color\":\"dark_aqua\"},{\"text\":\",\",\"color\":\"dark_green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"through \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"magical enhancement\",\"color\":\"light_purple\"},{\"text\":\" this harness should suffice.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" on a \",\"color\":\"dark_green\"},{\"text\":\"mob spawner\",\"color\":\"dark_aqua\"},{\"text\":\" to obtain it as an \",\"color\":\"dark_green\"},{\"text\":\"item\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"dark_green\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("While ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("silk touch").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" fails to provide adequate finesse to obtain ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("spawners").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(",").formatted(Formatting.DARK_GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("through ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("magical enhancement").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" this harness should suffice.").formatted(Formatting.DARK_GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right click").formatted(Formatting.AQUA))
+            .append(Text.literal(" on a ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("mob spawner").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" to obtain it as an ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("item").formatted(Formatting.YELLOW))
+            .append(Text.literal(".").formatted(Formatting.DARK_GREEN)));
+      lore.add(Text.literal(""));
       
+      String type = "Uncaptured";
       if(itemStack != null){
-         NbtCompound itemNbt = itemStack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         NbtCompound spawnerData = magicNbt.getCompound("spawner");
-         if(spawnerData.contains("SpawnData")){
-            NbtCompound spawnData = spawnerData.getCompound("SpawnData");
-            NbtCompound entity = spawnData.getCompound("entity");
-            if(entity.isEmpty()){
-               loreList.add(NbtString.of("[{\"text\":\"Type - Empty\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
-            }else{
-               String entityTypeId = entity.getString("id");
-               String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
-               loreList.add(NbtString.of("[{\"text\":\"Type - "+entityTypeName+"\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
+         NbtCompound spawnerTag = getCompoundProperty(itemStack,SPAWNER_TAG);
+         boolean hasSpawner = !spawnerTag.isEmpty();
+         
+         if(hasSpawner){
+            type = "Empty Spawner";
+            if(spawnerTag.contains("SpawnData")){
+               NbtCompound spawnData = spawnerTag.getCompound("SpawnData");
+               NbtCompound entity = spawnData.getCompound("entity");
+               if(!entity.isEmpty()){
+                  String entityTypeId = entity.getString("id");
+                  Optional<EntityType<?>> entityType = EntityType.get(entityTypeId);
+                  type = entityType.isPresent() ? entityType.get().getName().getString() : "Unknown";
+               }
             }
-         }else{
-            loreList.add(NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
          }
-      }else{
-         loreList.add(NbtString.of("[{\"text\":\"Type - Uncaptured\",\"italic\":false,\"color\":\"dark_aqua\"}]"));
       }
       
-      
-      return loreList;
+      lore.add(Text.literal("")
+            .append(Text.literal("Type - ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(type).formatted(Formatting.DARK_GREEN))
+      );
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtCompound spawnerNbt = magicTag.getCompound("spawner").copy();
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").put("spawner",spawnerNbt);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      NbtCompound spawnerNbt = getCompoundProperty(stack,SPAWNER_TAG).copy();
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,SPAWNER_TAG,spawnerNbt);
+      return buildItemLore(newStack,server);
    }
    
    private void giveScrap(PlayerEntity player){
@@ -135,43 +145,44 @@ public class SpawnerHarness extends MagicItem {
       MiscUtils.giveStacks(player,stack);
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Spawner Harness\\n\\nRarity: Exotic\\n\\nSpawners have always been one of the few blocks that have beyond the reach of the silk touch enchantment.\\nPerhaps I can enhance the enchant a bit further by giving the magic a Harness\"}");
-      list.add("{\"text\":\"   Spawner Harness\\n\\nto channel additional Arcana to.\\n\\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however even with my best efforts the Harness can break after use.\"}");
-      list.add("{\"text\":\"   Spawner Harness\\n\\nRight click on a spawner with the Harness to capture the spawner. \\n\\nThe Harness can then place the spawner elsewhere in the world with a 15% chance of breaking after use.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Spawner Harness\n\nRarity: Exotic\n\nSpawners have always been one of the few blocks that have beyond the reach of the silk touch enchantment.\nPerhaps I can enhance the enchant a bit further by giving the magic a Harness").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Spawner Harness\n\nto channel additional Arcana to.\n\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however even with my best efforts the Harness can break after use.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Spawner Harness\n\nRight click on a spawner with the Harness to capture the spawner. \n\nThe Harness can then place the spawner elsewhere in the world with a 15% chance of breaking after use.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
-      MagicItemIngredient p = new MagicItemIngredient(Items.BLAZE_POWDER,64,null);
-      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.CHAIN,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.IRON_BARS,64,null);
-      ItemStack book = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.SILK_TOUCH,1));
-      MagicItemIngredient s = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,book.getNbt());
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
+      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.SILK_TOUCH),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
+      ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BARS,16);
+      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       
-      MagicItemIngredient[][] ingredients = {
-            {e,p,s,p,e},
-            {p,c,b,c,p},
-            {s,b,n,b,s},
-            {p,c,b,c,p},
-            {e,p,s,p,e}};
-      return new MagicItemRecipe(ingredients,new ForgeRequirement().withEnchanter());
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,h,m,h,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withEnchanter().withCore());
    }
    
-   public class SpawnerHarnessItem extends MagicPolymerItem {
-      public SpawnerHarnessItem(Settings settings){
+   public class SpawnerHarnessItem extends ArcanaPolymerItem {
+      public SpawnerHarnessItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(FULL_TXT).value();
-         NbtCompound spawnerData = itemStack.getNbt().getCompound("arcananovum").getCompound("spawner");
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(FULL_TXT).value();
+         NbtCompound spawnerData = getCompoundProperty(itemStack,SPAWNER_TAG);
          boolean hasSpawner = spawnerData.contains("SpawnData");
-         return hasSpawner ? ArcanaRegistry.MODELS.get(FULL_TXT).value() : ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
+         return hasSpawner ? ArcanaRegistry.getModelData(FULL_TXT).value() : ArcanaRegistry.getModelData(EMPTY_TXT).value();
       }
       
       @Override
@@ -183,20 +194,19 @@ public class SpawnerHarness extends MagicItem {
       public ActionResult useOnBlock(ItemUsageContext context){
          World world = context.getWorld();
          PlayerEntity player = context.getPlayer();
+         if(player == null) return ActionResult.PASS;
          try{
             ItemStack stack = context.getStack();
-            NbtCompound itemNbt = stack.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            NbtCompound spawnerData = magicNbt.getCompound("spawner");
+            NbtCompound spawnerTag = getCompoundProperty(stack,SPAWNER_TAG);
             
-            if(spawnerData.contains("SpawnData")){ // Has spawner, try to place
+            if(!spawnerTag.isEmpty()){ // Has spawner, try to place
                Direction side = context.getSide();
                BlockPos placePos = context.getBlockPos().add(side.getVector());
                if(world.getBlockState(placePos).isAir()){
                   BlockEntity blockEntity;
                   world.setBlockState(placePos,Blocks.SPAWNER.getDefaultState(), Block.NOTIFY_ALL);
                   if ((blockEntity = world.getBlockEntity(placePos)) != null) {
-                     blockEntity.readNbt(spawnerData);
+                     blockEntity.read(spawnerTag,context.getWorld().getRegistryManager());
                   }
                   
                   int reinforceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS.id));
@@ -204,14 +214,15 @@ public class SpawnerHarness extends MagicItem {
                   if(Math.random() > breakChance){ // Chance of the harness breaking after use
                      player.sendMessage(Text.literal("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
-                     magicNbt.put("spawner",new NbtCompound());
+                     putProperty(stack,SPAWNER_TAG,new NbtCompound());
                      buildItemLore(stack,player.getServer());
                   }else{
                      boolean scrap = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SALVAGEABLE_FRAME.id)) > 0;
                      player.sendMessage(Text.literal("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.ITEM_SHIELD_BREAK, 1,.5f);
-                     stack.decrement(stack.getCount());
-                     stack.setNbt(new NbtCompound());
+                     putProperty(stack,SPAWNER_TAG,new NbtCompound());
+                     buildItemLore(stack,player.getServer());
+                     stack.decrementUnlessCreative(stack.getCount(),player);
                      if(scrap) giveScrap(player);
                   }
                   PLAYER_DATA.get(player).addXP((int) Math.max(0,20000*breakChance)); // Add xp
@@ -222,16 +233,16 @@ public class SpawnerHarness extends MagicItem {
                }
             }else if(world.getBlockState(context.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(context.getBlockPos()) instanceof MobSpawnerBlockEntity){
                MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(context.getBlockPos());
-               NbtCompound spawnerNbt = spawner.createNbt();
+               NbtCompound spawnerNbt = spawner.createNbt(world.getRegistryManager());
                Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,context.getBlockPos());
                if(renderedEntity != null){
                   String entityTypeId = EntityType.getId(renderedEntity.getType()).toString();
                   String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
                   player.sendMessage(Text.literal("The harness captures the "+entityTypeName+" spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-                  if(entityTypeId.equals("minecraft:silverfish")) ArcanaAchievements.grant((ServerPlayerEntity) player,ArcanaAchievements.FINALLY_USEFUL.id);
+                  if(entityTypeId.equals(EntityType.getId(EntityType.SILVERFISH).toString())) ArcanaAchievements.grant((ServerPlayerEntity) player,ArcanaAchievements.FINALLY_USEFUL.id);
                }
                
-               magicNbt.put("spawner",spawnerNbt);
+               putProperty(stack,SPAWNER_TAG,spawnerNbt);
                world.breakBlock(context.getBlockPos(),false);
                
                SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
@@ -246,3 +257,4 @@ public class SpawnerHarness extends MagicItem {
       }
    }
 }
+

@@ -1,17 +1,21 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class InfusionTransmutationRecipe extends TransmutationRecipe{
    
@@ -53,10 +57,10 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       
       for(int i = 0; i < iterations; i++){
          ItemStack outputStack = output.copy();
-         if(MagicItemUtils.isMagic(inputStack) && MagicItemUtils.isMagic(outputStack) && player != null){
-            MagicItem magicInputItem = MagicItemUtils.identifyItem(inputStack);
-            MagicItem magicOutputItem = MagicItemUtils.identifyItem(outputStack);
-            outputStack = magicOutputItem.addCrafter(magicOutputItem.getNewItem(),magicInputItem.getCrafter(inputStack),false,player.getServer());
+         if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(outputStack) && player != null){
+            ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
+            ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),false,player.getServer());
          }
          
          outputs.add(new Pair<>(outputStack,outputPos));
@@ -110,16 +114,32 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       boolean reagent1Check = validStack(re1,reagent1Input) || validStack(re1,reagent2Input);
       boolean reagent2Check = validStack(re2,reagent1Input) || validStack(re2,reagent2Input);
       if(!reagent1Check || !reagent2Check) return false;
-      boolean inputCheck = validStack(input,input1) || validStack(input,input2);
-      return inputCheck;
+
+      ItemStack inputStack;
+      if(validStack(input,input1)){
+         inputStack = input1;
+      }else if(validStack(input,input2)){
+         inputStack = input2;
+      }else{
+         return false;
+      }
+      
+      if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(output) && altar.getWorld() instanceof ServerWorld serverWorld){
+         ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
+         ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(output);
+         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
+         return player == null || PLAYER_DATA.get(player).hasResearched(arcanaOutputItem);
+      }
+      
+      return true;
    }
    
    @Override
    public ItemStack getViewStack(){
-      if(MagicItemUtils.isMagic(output)){
-         return new ItemStack(output.getItem(),1);
+      if(ArcanaItemUtils.isArcane(output)){
+         return MiscUtils.removeLore(output.copyWithCount(1));
       }
-      return output;
+      return MiscUtils.removeLore(output.copy());
    }
    
    public ItemStack getInput(){

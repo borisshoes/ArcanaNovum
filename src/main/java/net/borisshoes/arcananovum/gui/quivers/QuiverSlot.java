@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.gui.quivers;
 
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -18,9 +18,9 @@ public class QuiverSlot extends Slot {
    @Override
    public boolean canInsert(ItemStack stack){
       if(runic){
-         return (stack.isOf(Items.TIPPED_ARROW) || stack.isOf(Items.SPECTRAL_ARROW) || stack.isOf(Items.ARROW) || MagicItemUtils.isRunicArrow(stack));
+         return (stack.isOf(Items.TIPPED_ARROW) || stack.isOf(Items.SPECTRAL_ARROW) || stack.isOf(Items.ARROW) || ArcanaItemUtils.isRunicArrow(stack));
       }else{
-         return (stack.isOf(Items.TIPPED_ARROW) || stack.isOf(Items.SPECTRAL_ARROW) || stack.isOf(Items.ARROW)) && !(MagicItemUtils.isRunicArrow(stack));
+         return (stack.isOf(Items.TIPPED_ARROW) || stack.isOf(Items.SPECTRAL_ARROW) || stack.isOf(Items.ARROW)) && !(ArcanaItemUtils.isRunicArrow(stack));
       }
    }
 }

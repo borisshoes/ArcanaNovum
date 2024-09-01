@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.augments;
 
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -12,15 +12,15 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
    public final String name;
    public final String id;
    private final ItemStack displayItem;
-   private final MagicItem magicItem;
+   private final ArcanaItem arcanaItem;
    private final String[] description;
-   private final MagicRarity[] tiers;
+   private final ArcanaRarity[] tiers;
    
-   protected ArcanaAugment(String name, String id, ItemStack displayItem, MagicItem magicItem, String[] description, MagicRarity[] tiers){
+   protected ArcanaAugment(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, String[] description, ArcanaRarity[] tiers){
       this.name = name;
       this.id = id;
       this.displayItem = displayItem;
-      this.magicItem = magicItem;
+      this.arcanaItem = arcanaItem;
       this.description = description;
       this.tiers = tiers;
    }
@@ -29,8 +29,8 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
       return displayItem;
    }
    
-   public MagicItem getMagicItem(){
-      return magicItem;
+   public ArcanaItem getArcanaItem(){
+      return arcanaItem;
    }
    
    public String[] getDescription(){
@@ -43,15 +43,15 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
             .append(Text.literal(tiers.length != 1 ? " Levels (" : " Level (").formatted(Formatting.DARK_AQUA));
    
       for(int i = 0; i < tiers.length; i++){
-         MagicRarity tierRarity = tiers[i];
-         text.append(Text.literal("❖").formatted(MagicRarity.getColor(tierRarity)));
+         ArcanaRarity tierRarity = tiers[i];
+         text.append(Text.literal("❖").formatted(ArcanaRarity.getColor(tierRarity)));
       }
       text.append(Text.literal(")").formatted(Formatting.DARK_AQUA));
       
       return text;
    }
    
-   public MagicRarity[] getTiers(){
+   public ArcanaRarity[] getTiers(){
       return tiers;
    }
    

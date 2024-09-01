@@ -5,8 +5,6 @@ import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
 
 public class EnsnarementEffect extends StatusEffect implements PolymerStatusEffect {
    public EnsnarementEffect(){

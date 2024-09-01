@@ -3,38 +3,44 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.SojournerBoots;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.research.EffectResearchTask;
+import net.borisshoes.arcananovum.research.ResearchTask;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.MovementType;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.s2c.play.PlayerAbilitiesS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Map;
+
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
    
-   @Inject(method="teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V",at=@At(value="INVOKE",target="Lnet/minecraft/server/network/ServerPlayerEntity;worldChanged(Lnet/minecraft/server/world/ServerWorld;)V", shift= At.Shift.AFTER))
-   private void arcananovum_sendAbilitiesAfterDimChange(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci){
-      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-      player.networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
-   }
+//   @Inject(method="teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V",at=@At(value="INVOKE",target="Lnet/minecraft/server/network/ServerPlayerEntity;worldChanged(Lnet/minecraft/server/world/ServerWorld;)V", shift= At.Shift.AFTER))
+//   private void arcananovum_sendAbilitiesAfterDimChange(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci){
+//      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+//      player.networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
+//   }
+   // this may have been fixed? Test max HP armor and harness flying
    
    @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;isSprinting()Z",shift = At.Shift.BEFORE))
    private void arcananovum_onGroundMove(double dx, double dy, double dz, CallbackInfo ci){
       PlayerEntity playerEntity = (PlayerEntity) (Object) this;
       if(playerEntity instanceof ServerPlayerEntity player){
          ItemStack bootsItem = player.getEquippedStack(EquipmentSlot.FEET);
-         if(MagicItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
-            boots.attemptStepAssist(bootsItem,player, new Vec3d(dx,dy,dz));
+         if(ArcanaItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
             if(player.isSprinting()){
                int i = Math.round((float)Math.sqrt(dx * dx + dz * dz) * 100.0f);
                ArcanaAchievements.progress(player, ArcanaAchievements.PHEIDIPPIDES.id, i);
@@ -49,5 +55,25 @@ public class ServerPlayerMixin {
       if(player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          player.move(MovementType.PLAYER,player.getVelocity());
       }
+   }
+   
+   @Inject(method = "onStatusEffectApplied", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/criterion/EffectsChangedCriterion;trigger(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/entity/Entity;)V"))
+   private void arcananovum_effectApplied(StatusEffectInstance effect, Entity source, CallbackInfo ci){
+      // Effect Research Task Check
+      for(Map.Entry<RegistryKey<ResearchTask>, ResearchTask> entry : ResearchTasks.RESEARCH_TASKS.getEntrySet()){
+         ResearchTask task = entry.getValue();
+         if(task instanceof EffectResearchTask effectTask){
+            if(effect.getEffectType() == effectTask.getEffect()){
+               ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+               PLAYER_DATA.get(player).setResearchTask(entry.getKey(), true);
+            }
+         }
+      }
+   }
+   
+   @Inject(method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/entity/Entity;"))
+   private void arcananovum_teleportDimensionChange(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci){
+      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+      PLAYER_DATA.get(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);
    }
 }

@@ -1,41 +1,41 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
-import net.borisshoes.arcananovum.core.MagicBlock;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
@@ -45,44 +45,61 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class RadiantFletchery extends MagicBlock implements MultiblockCore {
+public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
+	public static final String ID = "radiant_fletchery";
    
    private Multiblock multiblock;
    
    public RadiantFletchery(){
-      id = "radiant_fletchery";
+      id = ID;
       name = "Radiant Fletchery";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.FORGE};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.FLETCHING_TABLE;
-      block = new RadiantFletcheryBlock(FabricBlockSettings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
-      item = new RadiantFletcheryItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
+      block = new RadiantFletcheryBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
+      item = new RadiantFletcheryItem(this.block,new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Radiant Fletchery").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.ADVANCEMENT_OL_BETSY,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.UNLOCK_STARLIGHT_FORGE};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Radiant Fletchery\",\"italic\":false,\"color\":\"yellow\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Forge Structure\",\"color\":\"yellow\"},{\"text\":\" addon to the \"},{\"text\":\"Starlight Forge\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Fletchery \",\"color\":\"yellow\"},{\"text\":\"enables \"},{\"text\":\"efficient \",\"color\":\"dark_purple\"},{\"text\":\"creation of \"},{\"text\":\"tipped arrows\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Fletchery \",\"color\":\"yellow\"},{\"text\":\"also \"},{\"text\":\"unlocks \",\"color\":\"dark_purple\"},{\"text\":\"the ability to make \"},{\"text\":\"Runic Arrows\",\"color\":\"dark_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      addForgeLore(loreList);
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("A ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Forge Structure").formatted(Formatting.YELLOW))
+            .append(Text.literal(" addon to the ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Starlight Forge").formatted(Formatting.YELLOW))
+            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Fletchery ").formatted(Formatting.YELLOW))
+            .append(Text.literal("enables ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("efficient ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("creation of ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("tipped arrows").formatted(Formatting.YELLOW))
+            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Fletchery ").formatted(Formatting.YELLOW))
+            .append(Text.literal("also ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("unlocks ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("the ability to make ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
+      addForgeLore(lore);
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -95,32 +112,34 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
       return multiblock;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.STRING,64,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,32,null);
-      MagicItemIngredient d = new MagicItemIngredient(Items.BLAZE_POWDER,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.FLETCHING_TABLE,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.BLAZE_POWDER,24);
+      ArcanaIngredient b = new ArcanaIngredient(Items.GLOWSTONE_DUST,12);
+      ArcanaIngredient c = new ArcanaIngredient(Items.END_CRYSTAL,8);
+      ArcanaIngredient g = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.FLETCHING_TABLE,8);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
       
-      MagicItemIngredient[][] ingredients = {
-            {a,b,c,d,a},
-            {b,a,h,a,d},
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
             {c,h,m,h,c},
-            {d,a,h,a,b},
-            {a,d,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Radiant Fletchery\\n\\nRarity: Empowered\\n\\nI have yet to put my Runic Matrix to good use, fortunately this might be my chance.\\nThe Matrix should be able to take on the effect of potions to boost the amount of Tipped Arrows I can make from a single \"}");
-      list.add("{\"text\":\"   Radiant Fletchery\\n\\nPotion. \\nThe Arrows themselves could be an excellent candidate for use of the Matrix once I master more of its capabilities. Perhaps if I make an arrow out of a Matrix it could activate powerful effects upon hitting a target.\"}");
-      list.add("{\"text\":\"   Radiant Fletchery\\n\\nThe Fletchery boosts the amount of Tipped Arrows made per potion, as well as allowing normal potions to be used.\\n\\nThe Fletchery also unlocks a host of Archery related recipes for the Forge\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Radiant Fletchery\n\nRarity: Empowered\n\nI have yet to put my Runic Matrix to good use, fortunately this might be my chance.\nThe Matrix should be able to take on the effect of potions to boost the amount of Tipped Arrows I can make from a single ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Radiant Fletchery\n\nPotion. \nThe Arrows themselves could be an excellent candidate for use of the Matrix once I master more of its capabilities. Perhaps if I make an arrow out of a Matrix it could activate powerful effects upon hitting a target.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Radiant Fletchery\n\nThe Fletchery boosts the amount of Tipped Arrows made per potion, as well as allowing normal potions to be used.\n\nThe Fletchery also unlocks a host of Archery related recipes for the Forge").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class RadiantFletcheryItem extends MagicPolymerBlockItem {
+   public class RadiantFletcheryItem extends ArcanaPolymerBlockItem {
       public RadiantFletcheryItem(Block block, Settings settings){
          super(getThis(),block, settings);
       }
@@ -131,14 +150,14 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
       }
    }
    
-   public class RadiantFletcheryBlock extends MagicPolymerBlockEntity {
-      public RadiantFletcheryBlock(Settings settings){
+   public class RadiantFletcheryBlock extends ArcanaPolymerBlockEntity {
+      public RadiantFletcheryBlock(AbstractBlock.Settings settings){
          super(settings);
       }
       
       @Override
-      public Block getPolymerBlock(BlockState state) {
-         return Blocks.FLETCHING_TABLE;
+      public BlockState getPolymerBlockState(BlockState state) {
+         return Blocks.FLETCHING_TABLE.getDefaultState();
       }
       
       @Nullable
@@ -162,8 +181,7 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockHitResult hit){
-         if(hand != Hand.MAIN_HAND) return ActionResult.PASS;
+      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
          RadiantFletcheryBlockEntity fletchery = (RadiantFletcheryBlockEntity) world.getBlockEntity(pos);
          if(fletchery != null){
             if(playerEntity instanceof ServerPlayerEntity player){
@@ -172,7 +190,7 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
                      player.sendMessage(Text.literal("The Fletchery must be within the range of an active Starlight Forge"));
                   }else{
                      fletchery.openGui(player);
-                     player.getItemCooldownManager().set(playerEntity.getStackInHand(hand).getItem(),1);
+                     player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
@@ -189,10 +207,7 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
             return;
          }
          BlockEntity blockEntity = world.getBlockEntity(pos);
-         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
-         DefaultedList<ItemStack> drops = DefaultedList.of();
-         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
-         ItemScatterer.spawn(world, pos, drops);
+         if(!(blockEntity instanceof ArcanaBlockEntity mbe)) return;
          ItemScatterer.onStateReplaced(state, newState, world, pos);
          super.onStateReplaced(state, world, pos, newState, moved);
       }
@@ -201,8 +216,9 @@ public class RadiantFletchery extends MagicBlock implements MultiblockCore {
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
          BlockEntity entity = world.getBlockEntity(pos);
          if (placer instanceof ServerPlayerEntity player && entity instanceof RadiantFletcheryBlockEntity fletchery) {
-            initializeMagicBlock(stack,fletchery);
+            initializeArcanaBlock(stack,fletchery);
          }
       }
    }
 }
+

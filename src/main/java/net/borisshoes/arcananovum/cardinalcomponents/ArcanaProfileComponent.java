@@ -5,15 +5,18 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.items.OverflowingQuiver;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.research.ResearchTask;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
@@ -25,9 +28,12 @@ import net.minecraft.util.Formatting;
 import java.util.*;
 
 public class ArcanaProfileComponent implements IArcanaProfileComponent{
+   public static final String ADMIN_SKILL_POINTS_TAG = "adminSkillPoints";
+   
    private final PlayerEntity player;
    private final List<String> crafted = new ArrayList<>();
-   //private final List<String> recipes = new ArrayList<>();
+   private final List<String> researchedItems = new ArrayList<>();
+   private final List<String> researchTasks = new ArrayList<>();
    private final HashMap<String, NbtElement> miscData = new HashMap<>();
    private final HashMap<ArcanaAugment, Integer> augments = new HashMap<>();
    private final HashMap<String,List<ArcanaAchievement>> achievements = new HashMap<>();
@@ -39,14 +45,16 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public void readFromNbt(NbtCompound tag){
+   public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       crafted.clear();
       miscData.clear();
       achievements.clear();
       augments.clear();
-      //recipes.clear();
+      researchedItems.clear();
+      researchTasks.clear();
       tag.getList("crafted", NbtElement.STRING_TYPE).forEach(item -> crafted.add(item.asString()));
-      //tag.getList("recipes", NbtElement.STRING_TYPE).forEach(item -> recipes.add(item.asString()));
+      tag.getList("researchedItems", NbtElement.STRING_TYPE).forEach(item -> researchedItems.add(item.asString()));
+      tag.getList("researchTasks", NbtElement.STRING_TYPE).forEach(item -> researchTasks.add(item.asString()));
       NbtCompound miscDataTag = tag.getCompound("miscData");
       Set<String> keys = miscDataTag.getKeys();
       keys.forEach(key ->{
@@ -77,19 +85,24 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public void writeToNbt(NbtCompound tag){
+   public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       NbtList craftedTag = new NbtList();
-      NbtList recipesTag = new NbtList();
+      NbtList researchedTag = new NbtList();
+      NbtList researchTasksTag = new NbtList();
       NbtCompound miscDataTag = new NbtCompound();
       crafted.forEach(item -> {
          craftedTag.add(NbtString.of(item));
       });
-//      recipes.forEach(item -> {
-//         recipesTag.add(NbtString.of(item));
-//      });
+      researchedItems.forEach(item -> {
+         researchedTag.add(NbtString.of(item));
+      });
+      researchTasks.forEach(task -> {
+         researchTasksTag.add(NbtString.of(task));
+      });
       miscData.forEach(miscDataTag::put);
       tag.put("crafted",craftedTag);
-      tag.put("recipes",recipesTag);
+      tag.put("researchedItems",researchedTag);
+      tag.put("researchTasks",researchTasksTag);
       tag.put("miscData",miscDataTag);
       tag.putInt("level",level);
       tag.putInt("xp",xp);
@@ -119,14 +132,38 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public boolean hasCrafted(MagicItem magicItem){
-      return crafted.stream().anyMatch(s -> s.equals(magicItem.getId()));
+   public boolean hasCrafted(ArcanaItem arcanaItem){
+      return crafted.stream().anyMatch(s -> s.equals(arcanaItem.getId()));
    }
    
-//   @Override
-//   public List<String> getRecipes(){
-//      return recipes;
-//   }
+   @Override
+   public boolean hasResearched(ArcanaItem arcanaItem){
+      return researchedItems.stream().anyMatch(s -> s.equals(arcanaItem.getId()));
+   }
+   
+   @Override
+   public List<String> getResearchedItems(){
+      return researchedItems;
+   }
+   
+   @Override
+   public boolean completedResearchTask(String id){
+      return researchTasks.stream().anyMatch(s -> s.equals(id));
+   }
+   
+   @Override
+   public void setResearchTask(RegistryKey<ResearchTask> key, boolean acquired){
+      ResearchTask task = ResearchTasks.RESEARCH_TASKS.get(key);
+      if(task == null) return;
+      String id = task.getId();
+      
+      if(acquired){
+         if(researchTasks.stream().noneMatch(s -> s.equals(id)))
+            researchTasks.add(id);
+      }else{
+         researchTasks.removeIf(s -> s.equals(id));
+      }
+   }
    
    @Override
    public NbtElement getMiscData(String id){
@@ -167,7 +204,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
    @Override
    public int getBonusSkillPoints(){
-      NbtInt pointsEle = (NbtInt) getMiscData("adminSkillPoints");
+      NbtInt pointsEle = (NbtInt) getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
       return pointsEle == null ? 0 : pointsEle.intValue();
    }
    
@@ -187,7 +224,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             counted.addAll(ArcanaAugments.getLinkedAugments(augment.id));
          }
          
-         MagicRarity[] tiers = augment.getTiers();
+         ArcanaRarity[] tiers = augment.getTiers();
          for(int i = 0; i < entry.getValue(); i++){
             spent += tiers[i].rarity + 1;
          }
@@ -272,19 +309,19 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
    @Override
    public boolean addCraftedSilent(ItemStack stack){
-      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
-      if(magicItem == null) return false;
-      String itemId = magicItem.getId();
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+      if(arcanaItem == null) return false;
+      String itemId = arcanaItem.getId();
       if (crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
-      addXP(MagicRarity.getFirstCraftXp(magicItem.getRarity()));
+      addXP(ArcanaRarity.getFirstCraftXp(arcanaItem.getRarity()));
       return crafted.add(itemId);
    }
    
    @Override
    public boolean addCrafted(ItemStack stack){
-      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
-      if(magicItem == null) return false;
-      String itemId = magicItem.getId();
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+      if(arcanaItem == null) return false;
+      String itemId = arcanaItem.getId();
       if (crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
       if(player instanceof ServerPlayerEntity){
          MinecraftServer server = player.getServer();
@@ -292,12 +329,12 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             MutableText newCraftMsg = Text.literal("")
                   .append(player.getDisplayName()).formatted(Formatting.ITALIC)
                   .append(Text.literal(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
-                  .append(Text.literal(magicItem.getNameString()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
+                  .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
                   .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
             server.getPlayerManager().broadcast(newCraftMsg.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)))), false);
          }
       }
-      addXP(MagicRarity.getFirstCraftXp(magicItem.getRarity()));
+      addXP(ArcanaRarity.getFirstCraftXp(arcanaItem.getRarity()));
       return crafted.add(itemId);
    }
    
@@ -336,11 +373,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       return true;
    }
 
-//   @Override
-//   public boolean addRecipe(String item){
-//      if (recipes.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
-//      return recipes.add(item);
-//   }
+   @Override
+   public boolean addResearchedItem(String item){
+      if (researchedItems.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
+      return researchedItems.add(item);
+   }
    
    @Override
    public boolean removeCrafted(String item){
@@ -369,11 +406,11 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       return found;
    }
 
-//   @Override
-//   public boolean removeRecipe(String item){
-//      if (recipes.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
-//      return recipes.removeIf(i -> i.equalsIgnoreCase(item));
-//   }
+   @Override
+   public boolean removeResearchedItem(String item){
+      if (researchedItems.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
+      return researchedItems.removeIf(i -> i.equalsIgnoreCase(item));
+   }
    
    @Override
    public void addMiscData(String id, NbtElement data){
@@ -491,6 +528,12 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    @Override
    public void removeAllAugments(){
       augments.clear();
+   }
+   
+   @Override
+   public int getArcanePaperRequirement(ArcanaRarity rarity){
+      int totalResearched = ArcanaItemUtils.countRarityInList(getResearchedItems(),rarity,false);
+      return Math.min(64,(int) (0.025*Math.pow(totalResearched,2.5) + totalResearched + 1));
    }
    
 }

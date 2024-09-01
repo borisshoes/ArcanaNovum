@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.PickaxeOfCeptyus;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -17,7 +17,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public class BlockBreakCallback {
    public static boolean breakBlock(World world, PlayerEntity playerEntity, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity){
       ItemStack tool = playerEntity.getMainHandStack();
-      if(MagicItemUtils.identifyItem(tool) instanceof PickaxeOfCeptyus pick){
+      if(ArcanaItemUtils.identifyItem(tool) instanceof PickaxeOfCeptyus pick){
          PLAYER_DATA.get(playerEntity).addXP(1);
          if(!playerEntity.isSneaking()){
             pick.veinMine(world,playerEntity,tool,blockPos);

@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.gui.radiantfletchery;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
 import net.minecraft.screen.slot.Slot;
 
 public class RadiantFletcherySlot extends Slot {
@@ -20,7 +20,8 @@ public class RadiantFletcherySlot extends Slot {
       if(mode == 0){
          return stack.isOf(Items.ARROW);
       }else if(mode == 1){
-         return (PotionUtil.getPotion(stack) != Potions.EMPTY || !PotionUtil.getCustomPotionEffects(stack).isEmpty()) && !stack.isOf(Items.TIPPED_ARROW);
+         PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+         return (potionContentsComponent.hasEffects() && !stack.isOf(Items.TIPPED_ARROW));
       }
       return false;
    }

@@ -1,11 +1,9 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.WildGrowthCharm;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.minecraft.block.Block;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
@@ -41,8 +39,8 @@ public class FamlandBlockMixin {
             }
             
             invItems.add(item);
-            MagicItem magicItem = MagicItemUtils.identifyItem(item);
-            if(magicItem instanceof ArcanistsBelt belt){
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+            if(arcanaItem instanceof ArcanistsBelt belt){
                SimpleInventory beltInv = belt.deserialize(item);
                ArrayList<ItemStack> beltList = new ArrayList<>();
                for(int j = 0; j < beltInv.size(); j++){
@@ -56,7 +54,7 @@ public class FamlandBlockMixin {
          for(Pair<List<ItemStack>, ItemStack> allItem : allItems){
             List<ItemStack> itemList = allItem.getLeft();
             for(ItemStack item : itemList){
-               if(MagicItemUtils.identifyItem(item) instanceof WildGrowthCharm){
+               if(ArcanaItemUtils.identifyItem(item) instanceof WildGrowthCharm){
                   ci.cancel();
                   return;
                }

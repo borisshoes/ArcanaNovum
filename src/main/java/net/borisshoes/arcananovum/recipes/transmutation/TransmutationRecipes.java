@@ -2,12 +2,16 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.GoatHornItem;
+import net.minecraft.item.Instrument;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.InstrumentTags;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TransmutationRecipes {
    public static final ArrayList<TransmutationRecipe> transmutationRecipes = new ArrayList<>();
@@ -325,21 +329,23 @@ public class TransmutationRecipes {
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Sculk Shard Infusion",new ItemStack(Items.SCULK,4),new ItemStack(Items.ECHO_SHARD,1),new ItemStack(Items.AMETHYST_SHARD,36),new ItemStack(Items.DIAMOND,12)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Nautilus Synthesis",new ItemStack(Items.SCUTE,4),new ItemStack(Items.NAUTILUS_SHELL,1),new ItemStack(Items.PRISMARINE_CRYSTALS,32),new ItemStack(Items.QUARTZ,16)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Divine Paper Infusion",new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER,2),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,1),ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore(),new ItemStack(Items.DIAMOND,16)));
+      
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Nautilus Synthesis",new ItemStack(Items.TURTLE_SCUTE,4),new ItemStack(Items.NAUTILUS_SHELL,1),new ItemStack(Items.PRISMARINE_CRYSTALS,16),new ItemStack(Items.QUARTZ,16)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Oceanic Heart Synthesis",new ItemStack(Items.NAUTILUS_SHELL,8),new ItemStack(Items.HEART_OF_THE_SEA,1),new ItemStack(Items.PRISMARINE_CRYSTALS,64),new ItemStack(Items.QUARTZ,32)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Trident Synthesis",new ItemStack(Items.DIAMOND_SWORD,1),new ItemStack(Items.TRIDENT,1),new ItemStack(Items.PRISMARINE_CRYSTALS,64),new ItemStack(Items.HEART_OF_THE_SEA,1)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Trident Synthesis",new ItemStack(Items.DIAMOND_SWORD,1),new ItemStack(Items.TRIDENT,1),new ItemStack(Items.PRISMARINE_CRYSTALS,16),new ItemStack(Items.HEART_OF_THE_SEA,1)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Resonator Synthesis",new ItemStack(Items.GOLD_BLOCK,1),new ItemStack(Items.BELL,1),new ItemStack(Items.QUARTZ,64),new ItemStack(Items.AMETHYST_SHARD,64)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Enchanted Golden Apple Synthesis",new ItemStack(Items.TOTEM_OF_UNDYING,1),new ItemStack(Items.ENCHANTED_GOLDEN_APPLE,1),new ItemStack(Items.GOLD_BLOCK,32),new ItemStack(Items.GOLDEN_APPLE,32)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Enchanted Golden Apple Synthesis",new ItemStack(Items.TOTEM_OF_UNDYING,1),new ItemStack(Items.ENCHANTED_GOLDEN_APPLE,1),new ItemStack(Items.GOLD_BLOCK,8),new ItemStack(Items.GOLDEN_APPLE,16)));
       
       transmutationRecipes.add(new InfusionTransmutationRecipe("Dragon Egg Synthesis",new ItemStack(Items.DRAGON_EGG,1),new ItemStack(Items.DRAGON_EGG,2),new ItemStack(Items.DRAGON_BREATH,64),new ItemStack(Items.DIAMOND,64)));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Mythical Catalyst Synthesis",ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem(),ArcanaRegistry.MYTHICAL_CATALYST.getPrefItem(),ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem(),ArcanaRegistry.LEGENDARY_CATALYST.getPrefItem()));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Divine Catalyst Synthesis",ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore(),ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(),ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore(),ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore()));
       
-      transmutationRecipes.add(new InfusionTransmutationRecipe("Aequalis Scientia Synthesis",ArcanaRegistry.MYTHICAL_CATALYST.getPrefItem(),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItem(),new ItemStack(Items.AMETHYST_BLOCK,64),new ItemStack(Items.DIAMOND_BLOCK,16)));
+      transmutationRecipes.add(new InfusionTransmutationRecipe("Aequalis Scientia Synthesis",ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore(),new ItemStack(Items.AMETHYST_BLOCK,64),new ItemStack(Items.DIAMOND_BLOCK,1)));
       
       
       // Aequalis Scientia Recipes

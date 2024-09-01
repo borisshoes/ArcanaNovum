@@ -1,93 +1,119 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class RunicMatrix extends MagicItem {
+public class RunicMatrix extends ArcanaItem {
+	public static final String ID = "runic_matrix";
    
    private static final String TXT = "item/runic_matrix";
    
    public RunicMatrix(){
-      id = "runic_matrix";
+      id = ID;
       name = "Runic Matrix";
-      rarity = MagicRarity.MUNDANE;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.MUNDANE;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.END_CRYSTAL;
-      item = new RunicMatrixItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new RunicMatrixItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Matrix").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
-   
-      ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Matrix\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS,ResearchTasks.OBTAIN_AMETHYST_SHARD};
       
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Runes \",\"color\":\"light_purple\"},{\"text\":\"engraved on this \",\"color\":\"dark_purple\"},{\"text\":\"crystalline \",\"color\":\"aqua\"},{\"text\":\"structure\",\"color\":\"dark_purple\"},{\"text\":\" shift\",\"color\":\"blue\"},{\"text\":\" constantly.\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"They \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"slide\",\"color\":\"blue\"},{\"text\":\" to form different combinations of \"},{\"text\":\"runic \",\"color\":\"light_purple\"},{\"text\":\"equations\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"matrix \",\"color\":\"light_purple\"},{\"text\":\"allows for the \"},{\"text\":\"invocation \",\"color\":\"aqua\"},{\"text\":\"of many different \"},{\"text\":\"effects\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runes ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("engraved on this ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("crystalline ").formatted(Formatting.AQUA))
+            .append(Text.literal("structure").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(" shift").formatted(Formatting.BLUE))
+            .append(Text.literal(" constantly.").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("They ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("slide").formatted(Formatting.BLUE))
+            .append(Text.literal(" to form different combinations of ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("runic ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("equations").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("matrix ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("allows for the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("invocation ").formatted(Formatting.AQUA))
+            .append(Text.literal("of many different ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("effects").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,8,null);
-      MagicItemIngredient t = new MagicItemIngredient(Items.CRAFTING_TABLE,64,null);
-      MagicItemIngredient a = new MagicItemIngredient(Items.AMETHYST_SHARD,16,null);
-      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND,8,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,1,null, true);
-   
-      MagicItemIngredient[][] ingredients = {
-            {a,d,c,d,a},
-            {d,t,a,t,d},
-            {c,a,n,a,c},
-            {d,t,a,t,d},
-            {a,d,c,d,a}};
-      return new MagicItemRecipe(ingredients);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.AMETHYST_SHARD,12);
+      ArcanaIngredient b = new ArcanaIngredient(Items.DIAMOND,2);
+      ArcanaIngredient c = new ArcanaIngredient(Items.END_CRYSTAL,2);
+      ArcanaIngredient g = new ArcanaIngredient(Items.CRAFTER,8);
+      ArcanaIngredient m = new ArcanaIngredient(Items.NETHER_STAR,1, true);
+      
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,a,g,b},
+            {c,a,m,a,c},
+            {b,g,a,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"      Runic Matrix\\n\\nRarity: Mundane\\n\\nRunic language is often used to create magical effects. Being able to freely combine multiple runic words like in a crafting table results in a device capable of producing a vast number of arcane spells.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("      Runic Matrix\n\nRarity: Mundane\n\nRunic language is often used to create magical effects. Being able to freely combine multiple runic words like in a crafting table results in a device capable of producing a vast number of arcane spells.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class RunicMatrixItem extends MagicPolymerItem {
-      public RunicMatrixItem(Settings settings){
+   public class RunicMatrixItem extends ArcanaPolymerItem {
+      public RunicMatrixItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -96,3 +122,4 @@ public class RunicMatrix extends MagicItem {
       }
    }
 }
+

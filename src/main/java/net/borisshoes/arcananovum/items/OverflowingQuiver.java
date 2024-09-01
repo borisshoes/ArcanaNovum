@@ -1,28 +1,33 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -32,50 +37,70 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OverflowingQuiver extends QuiverItem{
+	public static final String ID = "overflowing_quiver";
    
    private static final int[] refillReduction = {0,300,600,900,1200,1800};
    private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
    private static final String TXT = "item/overflowing_quiver";
    
    public OverflowingQuiver(){
-      id = "overflowing_quiver";
+      id = ID;
       name = "Overflowing Quiver";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
       color = Formatting.DARK_AQUA;
       vanillaItem = Items.RABBIT_HIDE;
-      item = new OverflowingQuiverItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new OverflowingQuiverItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Overflowing Quiver").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Overflowing Quiver\",\"italic\":false,\"color\":\"dark_aqua\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").put("arrows",new NbtList());
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,ARROWS_TAG,new NbtList());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"One can never have enough \",\"italic\":false,\"color\":\"aqua\"},{\"text\":\"arrows\",\"color\":\"dark_aqua\"},{\"text\":\"...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Tipped Arrows\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" placed within the \",\"color\":\"aqua\"},{\"text\":\"quiver \"},{\"text\":\"restock \",\"color\":\"blue\"},{\"text\":\"over \",\"color\":\"aqua\"},{\"text\":\"time\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"blue\"},{\"text\":\" to put \",\"color\":\"aqua\"},{\"text\":\"arrows \",\"color\":\"dark_aqua\"},{\"text\":\"in the \",\"color\":\"aqua\"},{\"text\":\"quiver\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Left Click \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"with a \",\"color\":\"aqua\"},{\"text\":\"bow \"},{\"text\":\"to \",\"color\":\"aqua\"},{\"text\":\"swap \",\"color\":\"dark_aqua\"},{\"text\":\"which type of \",\"color\":\"aqua\"},{\"text\":\"arrow \",\"color\":\"dark_aqua\"},{\"text\":\"will be shot.\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("One can never have enough ").formatted(Formatting.AQUA))
+            .append(Text.literal("arrows").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("...").formatted(Formatting.AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Tipped Arrows").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" placed within the ").formatted(Formatting.AQUA))
+            .append(Text.literal("quiver ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("restock ").formatted(Formatting.BLUE))
+            .append(Text.literal("over ").formatted(Formatting.AQUA))
+            .append(Text.literal("time").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.BLUE))
+            .append(Text.literal(" to put ").formatted(Formatting.AQUA))
+            .append(Text.literal("arrows ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("in the ").formatted(Formatting.AQUA))
+            .append(Text.literal("quiver").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Left Click ").formatted(Formatting.BLUE))
+            .append(Text.literal("with a ").formatted(Formatting.AQUA))
+            .append(Text.literal("bow ").formatted(Formatting.BLUE))
+            .append(Text.literal("to ").formatted(Formatting.AQUA))
+            .append(Text.literal("swap ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("which type of ").formatted(Formatting.AQUA))
+            .append(Text.literal("arrow ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("will be shot.").formatted(Formatting.AQUA)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -95,43 +120,41 @@ public class OverflowingQuiver extends QuiverItem{
    }
    
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.NETHER_STAR,2,null);
-      ItemStack enchantedBook1 = new ItemStack(Items.ENCHANTED_BOOK);
-      EnchantedBookItem.addEnchantment(enchantedBook1,new EnchantmentLevelEntry(Enchantments.INFINITY,1));
-      MagicItemIngredient b = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,enchantedBook1.getNbt());
-      MagicItemIngredient c = new MagicItemIngredient(Items.RABBIT_HIDE,32,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.NETHERITE_INGOT,2,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.ARROW,64,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,1);
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.INFINITY),1));
+      ArcanaIngredient c = new ArcanaIngredient(Items.RABBIT_HIDE,12);
+      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,32);
+      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
-            {b,g,h,g,b},
+            {b,c,h,c,b},
             {c,h,m,h,c},
-            {b,g,h,g,b},
+            {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery().withEnchanter());
-   
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withFletchery().withCore().withEnchanter());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Overflowing Quiver\\n\\nRarity: Exotic\\n\\nMore experienced archers keep a variety of arrows on hand, however it is difficult to switch between them in the heat of a fight. This quiver has slots that not only save space, and keep arrows\"}");
-      list.add("{\"text\":\"  Overflowing Quiver\\n\\norganized, but it also contains a mechanism to help guide the archer's hand to the desired arrow type.\\n\\nLeft clicking with any bow cycles the preferred arrows.\\n\\nI have also managed to unlock greater\"}");
-      list.add("{\"text\":\"  Overflowing Quiver\\n\\npotential from the Infinity enchantment and imbued it within the quiver.\\n\\nThe quiver now slowly regenerates all arrows placed inside of it.\\n\\nIt is worth noting that this quiver is not\"}");
-      list.add("{\"text\":\"  Overflowing Quiver\\n\\nsturdy enough to channel Arcana to arrows placed inside,  restricting Runic Arrows from being contained within.\\n\\nI am looking into possible improvments to this design to accommodate more powerful projectiles.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Overflowing Quiver\n\nRarity: Exotic\n\nMore experienced archers keep a variety of arrows on hand, however it is difficult to switch between them in the heat of a fight. This quiver has slots that not only save space, and keep arrows").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Overflowing Quiver\n\norganized, but it also contains a mechanism to help guide the archer's hand to the desired arrow type.\n\nLeft clicking with any bow cycles the preferred arrows.\n\nI have also managed to unlock greater").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Overflowing Quiver\n\npotential from the Infinity enchantment and imbued it within the quiver.\n\nThe quiver now slowly regenerates all arrows placed inside of it.\n\nIt is worth noting that this quiver is not").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Overflowing Quiver\n\nsturdy enough to channel Arcana to arrows placed inside,  restricting Runic Arrows from being contained within.\n\nI am looking into possible improvments to this design to accommodate more powerful projectiles.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class OverflowingQuiverItem extends MagicPolymerItem {
-      public OverflowingQuiverItem(Settings settings){
+   public class OverflowingQuiverItem extends ArcanaPolymerItem {
+      public OverflowingQuiverItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -141,7 +164,7 @@ public class OverflowingQuiver extends QuiverItem{
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          if(world.getServer().getTicks() % getRefillMod(stack) == 0) refillArrow(player, stack);
       }
@@ -159,3 +182,4 @@ public class OverflowingQuiver extends QuiverItem{
       }
    }
 }
+

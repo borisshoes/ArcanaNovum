@@ -4,79 +4,94 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExoticMatter extends EnergyItem {
+	public static final String ID = "exotic_matter";
    
    private static final double[] lvlMultiplier = {1,1.5,2,2.5,3,5};
    private static final String TXT = "item/exotic_matter";
    
    public ExoticMatter(){
-      id = "exotic_matter";
+      id = ID;
       name = "Exotic Matter";
-      rarity = MagicRarity.MUNDANE;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.MUNDANE;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.ITEMS};
       initEnergy = 600000;
       vanillaItem = Items.STRUCTURE_BLOCK;
-      item = new ExoticMatterItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new ExoticMatterItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Exotic Matter").formatted(Formatting.BOLD,Formatting.BLUE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.OBTAIN_CLOCK,ResearchTasks.ADVANCEMENT_SLEEP_IN_BED,ResearchTasks.OBTAIN_END_CRYSTAL};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Exotic Matter\",\"italic\":false,\"color\":\"blue\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"strange matter\",\"color\":\"blue\"},{\"text\":\" seems to warp \"},{\"text\":\"spacetime\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Perhaps it could be \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"useful\",\"italic\":true,\"color\":\"gray\"},{\"text\":\" for something...\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Used as \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"fuel\",\"color\":\"gold\"},{\"text\":\" for the \"},{\"text\":\"Continuum Anchor\",\"color\":\"dark_blue\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      if(itemStack != null){
-         loreList.add(NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\""+getDuration(itemStack)+"\",\"color\":\"blue\"}]"));
-      }else{
-         loreList.add(NbtString.of("[{\"text\":\"Fuel - \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"7 Days\",\"color\":\"blue\"}]"));
-      }
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("strange matter").formatted(Formatting.BLUE))
+            .append(Text.literal(" seems to warp ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("spacetime").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Perhaps it could be ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("useful").formatted(Formatting.ITALIC,Formatting.GRAY))
+            .append(Text.literal(" for something...").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Used as ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("fuel").formatted(Formatting.GOLD))
+            .append(Text.literal(" for the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Continuum Anchor").formatted(Formatting.DARK_BLUE)));
+      lore.add(Text.literal(""));
       
-      return loreList;
+      String timeText = itemStack == null ? "7 Days" : getDuration(itemStack);
+      lore.add(Text.literal("")
+            .append(Text.literal("Fuel - ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(timeText).formatted(Formatting.BLUE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      stack.setNbt(newTag);
-      setFuel(stack,getEnergy(stack));
-      return buildItemLore(stack,server);
+      ItemStack newStack = super.updateItem(stack,server);
+      setFuel(newStack,getEnergy(newStack));
+      return buildItemLore(newStack,server);
    }
    
    @Override
@@ -87,9 +102,6 @@ public class ExoticMatter extends EnergyItem {
    }
    
    public int useFuel(ItemStack item, int fuel){
-      NbtCompound itemNbt = item.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-      
       int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
       buildItemLore(item,ArcanaNovum.SERVER);
@@ -97,9 +109,6 @@ public class ExoticMatter extends EnergyItem {
    }
    
    public void setFuel(ItemStack item, int fuel){
-      NbtCompound itemNbt = item.getNbt();
-      NbtList loreList = itemNbt.getCompound("display").getList("Lore", NbtElement.STRING_TYPE);
-   
       int newFuel = MathHelper.clamp(fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
       buildItemLore(item,ArcanaNovum.SERVER);
@@ -120,36 +129,38 @@ public class ExoticMatter extends EnergyItem {
       return duration;
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"     Exotic Matter\\n\\nRarity: Mundane\\n\\nThe components of this matter seem to spontaneously generate low amounts of Arcana when combined, as well as a small warping in Spacetime. Perhaps this could be exploited further...\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("     Exotic Matter\n\nRarity: Mundane\n\nThe components of this matter seem to spontaneously generate low amounts of Arcana when combined, as well as a small warping in Spacetime. Perhaps this could be exploited further...").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient c = new MagicItemIngredient(Items.END_CRYSTAL,8,null);
-      MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,32,null);
-      MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,32,null);
-      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND,16,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,4,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,8);
+      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,8);
+      ArcanaIngredient c = new ArcanaIngredient(Items.DIAMOND,2);
+      ArcanaIngredient d = new ArcanaIngredient(Items.END_CRYSTAL,2);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
       
-      MagicItemIngredient[][] ingredients = {
-            {p,d,o,c,p},
-            {c,d,c,d,d},
-            {o,c,n,c,o},
-            {d,d,c,d,c},
-            {p,c,o,d,p}};
-      return new MagicItemRecipe(ingredients);
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,d,a},
+            {d,a,d,a,b},
+            {c,d,m,d,c},
+            {b,a,d,a,d},
+            {a,d,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   public class ExoticMatterItem extends MagicPolymerItem {
-      public ExoticMatterItem(Settings settings){
+   public class ExoticMatterItem extends ArcanaPolymerItem {
+      public ExoticMatterItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -158,3 +169,4 @@ public class ExoticMatter extends EnergyItem {
       }
    }
 }
+

@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class AnchorsComponent implements IAnchorsComponent{
    }
    
    @Override
-   public void readFromNbt(NbtCompound tag){
+   public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       try{
          anchors.clear();
          NbtList anchorsTag = tag.getList("Anchors", NbtElement.COMPOUND_TYPE);
@@ -44,7 +45,7 @@ public class AnchorsComponent implements IAnchorsComponent{
    }
    
    @Override
-   public void writeToNbt(NbtCompound tag){
+   public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       try{
          NbtList anchorsTag = new NbtList();
          for(BlockPos anchor : anchors){

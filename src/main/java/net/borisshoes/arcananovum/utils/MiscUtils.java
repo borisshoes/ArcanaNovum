@@ -1,38 +1,206 @@
 package net.borisshoes.arcananovum.utils;
 
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.*;
-import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.attribute.AttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.item.Items;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class MiscUtils {
    
-   public static ItemStack addLoreLine(ItemStack stack, Text loreLine){
-      NbtCompound display = stack.getOrCreateSubNbt("display");
-      NbtList loreList = display.getList("Lore", NbtElement.STRING_TYPE);
-      loreList.add(NbtString.of(Text.Serialization.toJsonString(Text.empty().append(loreLine))));
-      display.put("Lore",loreList);
-      stack.setSubNbt("display",display);
-      return stack;
+   public static void outlineGUI(SimpleGui gui, int color, Text borderText){
+      outlineGUI(gui,color,borderText,null);
+   }
+   
+   public static void outlineGUI(SimpleGui gui, int color, Text borderText, List<Text> lore){
+      for(int i = 0; i < gui.getSize(); i++){
+         gui.clearSlot(i);
+         GuiElementBuilder menuItem;
+         boolean top = i/9 == 0;
+         boolean bottom = i/9 == (gui.getSize()/9 - 1);
+         boolean left = i%9 == 0;
+         boolean right = i%9 == 8;
+         
+         if(top){
+            if(left){
+               menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_LEFT,color));
+            }else if(right){
+               menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_RIGHT,color));
+            }else{
+               menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,color));
+            }
+         }else if(bottom){
+            if(left){
+               menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_LEFT,color));
+            }else if(right){
+               menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_RIGHT,color));
+            }else{
+               menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM,color));
+            }
+         }else if(left){
+            menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,color));
+         }else if(right){
+            menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,color));
+         }else{
+            menuItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,color));
+         }
+         
+         if(borderText.getString().isEmpty()){
+            menuItem.hideTooltip();
+         }else{
+            menuItem.setName(borderText).hideDefaultTooltip();
+            if(lore != null && !lore.isEmpty()){
+               for(Text text : lore){
+                  menuItem.addLoreLine(text);
+               }
+            }
+         }
+         
+         gui.setSlot(i,menuItem);
+      }
+   }
+   
+   public static UUID getUUID(String str){
+      try{
+         return UUID.fromString(str);
+      }catch(Exception e){
+         return UUID.fromString("00000000-0000-4000-8000-000000000000");
+      }
+   }
+   
+   public static <T> T getWeightedOption(List<Pair<T,Integer>> options){
+      return getWeightedOption(options, new Random().nextLong());
+   }
+   
+   public static <T> T getWeightedOption(List<Pair<T,Integer>> options, long seed){
+      ArrayList<T> weightedList = new ArrayList<>();
+      for(Pair<T, Integer> option : options){
+         for(int i = 0; i < option.getRight(); i++){
+            weightedList.add(option.getLeft());
+         }
+      }
+      Random random = new Random(seed);
+      return weightedList.get(random.nextInt(weightedList.size()));
+   }
+   
+   public static <T> List<Pair<T,Integer>> randomlySpace(List<T> items, int size, long seed){
+      Random random = new Random(seed);
+      
+      List<Integer> remaining = new ArrayList<>();
+      List<Pair<T,Integer>> randomized = new ArrayList<>();
+      
+      for(int i = 0; i < size; i++){
+         remaining.add(i);
+      }
+      
+      int i = 0;
+      while(i < items.size() && !remaining.isEmpty()){
+         int index = random.nextInt(remaining.size());
+         randomized.add(new Pair<>(items.get(i),remaining.get(index)));
+         remaining.remove(remaining.get(index));
+         i++;
+      }
+      
+      return randomized;
+   }
+   
+   public static <T> List<T> listToPage(List<T> items, int page, int pageSize){
+      if(page <= 0){
+         return items;
+      }else if(pageSize*(page-1) >= items.size()){
+         return new ArrayList<>();
+      }else{
+         return items.subList(pageSize*(page-1), Math.min(items.size(), pageSize*page));
+      }
+   }
+   
+   public static Vec3d randomSpherePoint(Vec3d center, double range){
+      Random random = new Random();
+      double x = random.nextGaussian();
+      double y = random.nextGaussian();
+      double z = random.nextGaussian();
+      
+      double mag = Math.sqrt(x*x + y*y + z*z);
+      x /= mag; y /= mag; z /= mag;
+      
+      double r = range*Math.cbrt(random.nextDouble());
+      
+      return new Vec3d(x*r,y*r,z*r).add(center);
+   }
+   
+   public static Vec3d randomSpherePoint(Vec3d center, double maxRange, double minRange){
+      Random random = new Random();
+      double x = random.nextGaussian();
+      double y = random.nextGaussian();
+      double z = random.nextGaussian();
+      
+      double mag = Math.sqrt(x*x + y*y + z*z);
+      x /= mag; y /= mag; z /= mag;
+      
+      double r = maxRange*Math.cbrt(random.nextDouble(minRange / maxRange,1));
+      
+      return new Vec3d(x*r,y*r,z*r).add(center);
+   }
+   
+   public static ItemStack removeLore(ItemStack stack){
+      ItemStack copy = stack.copy();
+      copy.remove(DataComponentTypes.LORE);
+      return copy;
+   }
+   
+   public static RegistryEntry<Enchantment> getEnchantment(RegistryKey<Enchantment> key){
+      if(ArcanaNovum.SERVER == null){
+         ArcanaNovum.log(2,"Attempted to access Enchantment "+key.toString()+" before DRM is available");
+         return null;
+      }
+      Optional<RegistryEntry.Reference<Enchantment>> opt = ArcanaNovum.SERVER.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(key);
+      return opt.orElse(null);
+   }
+   
+   public static RegistryEntry<Enchantment> getEnchantment(DynamicRegistryManager drm, RegistryKey<Enchantment> key){
+      Optional<RegistryEntry.Reference<Enchantment>> opt = drm.get(RegistryKeys.ENCHANTMENT).getEntry(key);
+      return opt.orElse(null);
+   }
+   
+   public static ItemEnchantmentsComponent makeEnchantComponent(EnchantmentLevelEntry... entries){
+      ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
+      
+      for(EnchantmentLevelEntry entry : entries){
+         builder.add(entry.enchantment,entry.level);
+      }
+      
+      return builder.build();
    }
    
    public static void giveStacks(PlayerEntity player, ItemStack... stacks){
@@ -93,29 +261,23 @@ public class MiscUtils {
    }
    
    public static int calcEssenceFromEnchants(ItemStack itemStack){
-      Map<Enchantment,Integer> enchants = EnchantmentHelper.get(itemStack);
+      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(itemStack);
       int count = 0;
-      for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()){
-         Enchantment enchant = entry.getKey();
-         int lvl = entry.getValue();
-         count += (int)(calcEssenceValue(enchant,lvl)/2.0);
+      for(RegistryEntry<Enchantment> entry : comp.getEnchantments()){
+         int lvl = comp.getLevel(entry);
+         count += (int)(calcEssenceValue(entry,lvl)/2.0);
       }
       return count;
    }
    
-   public static int calcEssenceValue(Enchantment enchant, int lvl){
-      int rarityMod = switch(enchant.getRarity()){
-         case COMMON -> 1;
-         case UNCOMMON -> 2;
-         case RARE -> 5;
-         case VERY_RARE -> 10;
-      };
-      if(enchant.isCursed()){
-         rarityMod = 0;
-      }else if(enchant.isTreasure()){
-         rarityMod *= 2;
+   public static int calcEssenceValue(RegistryEntry<Enchantment> enchant, int lvl){
+      int essence = (int) (0.25 * lvl * enchant.value().getMaxPower(1));
+      if(enchant.isIn(EnchantmentTags.CURSE)){
+         essence = 0;
+      }else if(enchant.isIn(EnchantmentTags.TREASURE)){
+         essence *= 2;
       }
-      return lvl*rarityMod;
+      return essence;
    }
    
    public static boolean inCone(Vec3d center, Vec3d direction, double range, double closeWidth, double farWidth, Vec3d targetPos){
@@ -173,32 +335,32 @@ public class MiscUtils {
    }
    
    
-   public static void removeMaxAbsorption(LivingEntity entity, UUID uuid, float amount) {
+   public static void removeMaxAbsorption(LivingEntity entity, Identifier id, float amount) {
       AttributeContainer attributeContainer = entity.getAttributes();
       EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
       if (entityAttributeInstance == null) return;
-      EntityAttributeModifier existing = entityAttributeInstance.getModifier(uuid);
+      EntityAttributeModifier existing = entityAttributeInstance.getModifier(id);
       if(existing != null){
-         double current = existing.getValue();
+         double current = existing.value();
          double newAmount = current-amount;
-         entityAttributeInstance.removeModifier(uuid);
+         entityAttributeInstance.removeModifier(id);
          if(newAmount > 0.01){
-            EntityAttributeModifier modifier = new EntityAttributeModifier(uuid, existing.toNbt().getString("Name"), newAmount, EntityAttributeModifier.Operation.ADDITION);
+            EntityAttributeModifier modifier = new EntityAttributeModifier(id, newAmount, EntityAttributeModifier.Operation.ADD_VALUE);
             entityAttributeInstance.addPersistentModifier(modifier);
          }
       }
    }
    
-   public static void addMaxAbsorption(LivingEntity entity, UUID uuid, String name, double amount) {
+   public static void addMaxAbsorption(LivingEntity entity, Identifier id, double amount) {
       AttributeContainer attributeContainer = entity.getAttributes();
-      EntityAttributeModifier modifier = new EntityAttributeModifier(uuid, name, amount, EntityAttributeModifier.Operation.ADDITION);
+      EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE);
       EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
       if (entityAttributeInstance == null) return;
-      EntityAttributeModifier existing = entityAttributeInstance.getModifier(uuid);
+      EntityAttributeModifier existing = entityAttributeInstance.getModifier(id);
       if(existing != null){
-         double current = existing.getValue();
-         entityAttributeInstance.removeModifier(uuid);
-         modifier = new EntityAttributeModifier(uuid, name, amount+current, EntityAttributeModifier.Operation.ADDITION);
+         double current = existing.value();
+         entityAttributeInstance.removeModifier(id);
+         modifier = new EntityAttributeModifier(id, amount+current, EntityAttributeModifier.Operation.ADD_VALUE);
       }
       entityAttributeInstance.addPersistentModifier(modifier);
    }

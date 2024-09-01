@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ContainmentCirclet;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -17,9 +17,9 @@ public class EntityUseCallback {
       ActionResult result = ActionResult.PASS;
       try{
          
-         MagicItem magicItem = MagicItemUtils.identifyItem(playerEntity.getStackInHand(hand));
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(playerEntity.getStackInHand(hand));
          if(entity instanceof LivingEntity living){
-            if(magicItem instanceof ContainmentCirclet circlet){
+            if(arcanaItem instanceof ContainmentCirclet circlet){
                return circlet.useOnEntity(playerEntity,living,hand);
             }
          }

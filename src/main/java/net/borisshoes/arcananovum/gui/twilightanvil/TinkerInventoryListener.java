@@ -1,28 +1,10 @@
 package net.borisshoes.arcananovum.gui.twilightanvil;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.augments.ArcanaAugment;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
-import java.util.List;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TinkerInventoryListener implements InventoryChangedListener {
    private final SimpleGui gui;

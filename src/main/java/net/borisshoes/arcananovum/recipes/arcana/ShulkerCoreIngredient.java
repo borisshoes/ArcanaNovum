@@ -2,28 +2,28 @@ package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.ShulkerCore;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.item.ItemStack;
 
-public class ShulkerCoreIngredient extends MagicItemIngredient{
+public class ShulkerCoreIngredient extends ArcanaIngredient {
    
    private final boolean needsStone;
    private final int minSouls;
    
    public ShulkerCoreIngredient(boolean needsStone, int minSouls){
-      super(ArcanaRegistry.SHULKER_CORE.getPrefItem().getItem(), 1, null);
+      super(ArcanaRegistry.SHULKER_CORE.getPrefItem().getItem(), 1, true);
       this.needsStone = needsStone;
       this.minSouls = minSouls;
    }
    
    @Override
-   public MagicItemIngredient copyWithCount(int newCount){
+   public ArcanaIngredient copyWithCount(int newCount){
       return new ShulkerCoreIngredient(needsStone,minSouls);
    }
    
    @Override
    public boolean validStack(ItemStack stack){
-      if(MagicItemUtils.identifyItem(stack) instanceof ShulkerCore core){
+      if(ArcanaItemUtils.identifyItem(stack) instanceof ShulkerCore core){
          if(needsStone){
             boolean hasStone = core.hasStone(stack);
             if(hasStone){

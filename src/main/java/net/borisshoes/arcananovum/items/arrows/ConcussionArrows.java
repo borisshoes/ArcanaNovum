@@ -4,18 +4,18 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
@@ -24,17 +24,18 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -47,47 +48,50 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ConcussionArrows extends RunicArrow {
+	public static final String ID = "concussion_arrows";
    
    private static final String TXT = "item/runic_arrow";
    
    public ConcussionArrows(){
-      id = "concussion_arrows";
+      id = ID;
       name = "Concussion Arrows";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ARROWS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new ConcussionArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      item = new ConcussionArrowsItem(new Item.Settings().maxCount(64).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Concussion").formatted(Formatting.BOLD,Formatting.GOLD))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(14391821),new ArrayList<>()))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.KILL_SQUID,ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_BLINDNESS,ResearchTasks.EFFECT_WEAKNESS,ResearchTasks.USE_FIREWORK};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Arrows - Concussion\",\"italic\":false,\"color\":\"gold\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("CustomPotionColor",14391821);
-      tag.putInt("HideFlags", 255);
-      stack.setCount(64);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Concussion Arrows:\",\"italic\":false,\"color\":\"gold\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"concuss \",\"color\":\"gold\"},{\"text\":\"entities \",\"color\":\"yellow\"},{\"text\":\"near where the arrow \"},{\"text\":\"impacts\",\"color\":\"gold\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addRunicArrowLore(lore);
+      lore.add(Text.literal("Concussion Arrows:").formatted(Formatting.BOLD,Formatting.GOLD));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.GRAY))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" concuss ").formatted(Formatting.GOLD))
+            .append(Text.literal("entities ").formatted(Formatting.YELLOW))
+            .append(Text.literal("near where the arrow ").formatted(Formatting.GRAY))
+            .append(Text.literal("impacts").formatted(Formatting.GOLD))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -144,40 +148,40 @@ public class ConcussionArrows extends RunicArrow {
       }
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      ItemStack potion2 = new ItemStack(Items.LINGERING_POTION);
-      MagicItemIngredient c = new MagicItemIngredient(Items.LINGERING_POTION,1, PotionUtil.setPotion(potion2, Potions.LONG_SLOWNESS).getNbt());
-      MagicItemIngredient g = new MagicItemIngredient(Items.GLOW_INK_SAC,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      MagicItemIngredient i = new MagicItemIngredient(Items.INK_SAC,64,null);
-      ItemStack potion10 = new ItemStack(Items.LINGERING_POTION);
-      MagicItemIngredient k = new MagicItemIngredient(Items.LINGERING_POTION,1, PotionUtil.setPotion(potion10, Potions.LONG_WEAKNESS).getNbt());
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient c = new ArcanaIngredient(Items.LINGERING_POTION,1).withPotions(Potions.STRONG_SLOWNESS);
+      ArcanaIngredient g = new ArcanaIngredient(Items.GLOW_INK_SAC,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
+      ArcanaIngredient i = new ArcanaIngredient(Items.INK_SAC,16);
+      ArcanaIngredient k = new ArcanaIngredient(Items.LINGERING_POTION,1).withPotions(Potions.LONG_WEAKNESS);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,a,c,a,a},
             {a,g,h,i,a},
             {k,h,m,h,k},
             {a,i,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Concussion Arrows\\n\\nRarity: Empowered\\n\\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact.\\nAnyone caught in its range will have a hard time doing anything for a couple seconds after being hit.\\n\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Concussion Arrows\n\nRarity: Empowered\n\nThis Runic Matrix has been configured to unleash a plethora of unpleasant effects at the area of impact.\nAnyone caught in its range will have a hard time doing anything for a couple seconds after being hit.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class ConcussionArrowsItem extends MagicPolymerArrowItem {
-      public ConcussionArrowsItem(Settings settings){
+   public class ConcussionArrowsItem extends ArcanaPolymerArrowItem {
+      public ConcussionArrowsItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -186,3 +190,4 @@ public class ConcussionArrows extends RunicArrow {
       }
    }
 }
+

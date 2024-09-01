@@ -1,35 +1,37 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.brainjar.BrainJarGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.block.CropBlock;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.EnchantmentEffectComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.math.MathHelper;
@@ -38,67 +40,73 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class BrainJar extends EnergyItem {
+	public static final String ID = "brain_jar";
    public static final int[] capacities = {1000000,2000000,4000000,6000000,8000000,10000000};
    private static final String TXT_ON = "item/brain_jar_on";
    private static final String TXT_OFF = "item/brain_jar_off";
    private static final Item textureItem = Items.TINTED_GLASS;
    
    public BrainJar(){
-      id = "brain_jar";
+      id = ID;
       name = "Brain in a Jar";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.ZOMBIE_HEAD;
-      item = new BrainJarItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new BrainJarItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Brain in a Jar").formatted(Formatting.BOLD,Formatting.GREEN))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(textureItem,TXT_OFF));
       models.add(new Pair<>(textureItem,TXT_ON));
+      researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.BREAK_SCULK,ResearchTasks.LEVEL_100,ResearchTasks.ACTIVATE_MENDING,ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING,ResearchTasks.OBTAIN_ZOMBIE_HEAD,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Brain in a Jar\",\"italic\":false,\"color\":\"green\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putInt("mode",0);
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,ACTIVE_TAG,false);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"A \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"zombie\",\"color\":\"dark_green\"},{\"text\":\" has more aptitude for storing \",\"color\":\"dark_purple\"},{\"text\":\"knowledge\",\"color\":\"green\"},{\"text\":\" than most mobs.\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Containing its \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"brain\",\"color\":\"dark_green\"},{\"text\":\" in a jar could serve as \"},{\"text\":\"XP storage\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It should also be capable of activating the \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"mending\",\"color\":\"light_purple\"},{\"text\":\" enchantment.\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"aqua\"},{\"text\":\" to configure.\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("A ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("zombie").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" has more aptitude for storing ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("knowledge").formatted(Formatting.GREEN))
+            .append(Text.literal(" than most mobs.").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Containing its ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("brain").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" in a jar could serve as ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("XP storage").formatted(Formatting.GREEN))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("It should also be capable of activating the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("mending").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" enchantment.").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right click").formatted(Formatting.AQUA))
+            .append(Text.literal(" to configure.").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal(""));
       
-      if(itemStack != null){
-         int xp = getEnergy(itemStack);
-         NbtCompound itemNbt = itemStack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         boolean mending = magicNbt.getInt("mode") == 1;
-         if(mending){
-            loreList.add(NbtString.of("[{\"text\":\"" + xp + " XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ON\",\"italic\":false,\"color\":\"dark_green\"}]"));
-         }else{
-            loreList.add(NbtString.of("[{\"text\":\"" + xp + " XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"OFF\",\"italic\":false,\"color\":\"red\"}]"));
-         }
-      }else{
-         loreList.add(NbtString.of("[{\"text\":\"0 XP Stored - Mending \",\"italic\":false,\"color\":\"green\"},{\"text\":\"OFF\",\"italic\":false,\"color\":\"red\"}]"));
-      }
+      boolean mending = itemStack != null && getBooleanProperty(itemStack, ACTIVE_TAG);
+      int xp = itemStack != null ? getEnergy(itemStack) : 0;
       
-      return loreList;
+      Text mendText = mending ? Text.literal("ON").formatted(Formatting.DARK_GREEN) : Text.literal("OFF").formatted(Formatting.RED);
+      
+      lore.add(Text.literal("")
+            .append(Text.literal(xp+" XP Stored - Mending ").formatted(Formatting.GREEN))
+            .append(mendText));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -109,201 +117,56 @@ public class BrainJar extends EnergyItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      int mode = magicTag.getInt("mode");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").putInt("mode",mode);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,ACTIVE_TAG,active);
+      return buildItemLore(newStack,server);
    }
    
-   public void openGui(PlayerEntity playerEntity, ItemStack item){
+   public void openGui(PlayerEntity playerEntity, ItemStack stack){
       if(!(playerEntity instanceof ServerPlayerEntity player))
          return;
-      BrainJarGui gui = new BrainJarGui(ScreenHandlerType.HOPPER,player,this, item);
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int mode = magicNbt.getInt("mode"); // 0 is off, 1 is on
-      
-      // Try to fix the wierd xp give shenanigans
-      player.totalExperience = (LevelUtils.vanillaLevelToTotalXp(player.experienceLevel) + (int)(player.experienceProgress*player.getNextLevelExperience()));
-      player.experienceProgress = (float)(player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel)) / (float)player.getNextLevelExperience();
-   
-      ItemStack echest = new ItemStack(Items.ENDER_CHEST);
-      NbtCompound tag = echest.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Store Levels\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click to store \",\"italic\":false,\"color\":\"green\"},{\"text\":\"1\",\"color\":\"aqua\"},{\"text\":\" level\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click to store all (\",\"italic\":false,\"color\":\"green\"},{\"text\":\""+player.experienceLevel+"\",\"color\":\"aqua\"},{\"text\":\") levels\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      gui.setSlot(0,GuiElementBuilder.from(echest));
-   
-      ItemStack bottle = new ItemStack(Items.EXPERIENCE_BOTTLE);
-      tag = bottle.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Withdraw Levels\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click to gain \",\"italic\":false,\"color\":\"green\"},{\"text\":\"1\",\"color\":\"aqua\"},{\"text\":\" level\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click to take all (\",\"italic\":false,\"color\":\"green\"},{\"text\":\""+getEnergy(item)+"\",\"color\":\"aqua\"},{\"text\":\") XP\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      gui.setSlot(4,GuiElementBuilder.from(bottle));
-   
-      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-   
-      if(mode == 0){
-         ItemStack notmending = new ItemStack(Items.BARRIER);
-         tag = notmending.getOrCreateNbt();
-         display = new NbtCompound();
-         loreList = new NbtList();
-         display.putString("Name","[{\"text\":\"Not Mending Items\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-         loreList.add(NbtString.of("[{\"text\":\"Currently Not Mending Items\",\"italic\":false,\"color\":\"red\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"Click to toggle ON\",\"italic\":false,\"color\":\"green\"}]"));
-         display.put("Lore",loreList);
-         tag.put("display",display);
-         gui.setSlot(2,GuiElementBuilder.from(notmending));
-      }else if(mode == 1){
-         ItemStack mending = new ItemStack(Items.STRUCTURE_VOID);
-         tag = mending.getOrCreateNbt();
-         display = new NbtCompound();
-         loreList = new NbtList();
-         display.putString("Name","[{\"text\":\"Mending Items\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-         loreList.add(NbtString.of("[{\"text\":\"Currently Mending Items\",\"italic\":false,\"color\":\"green\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"Click to toggle OFF\",\"italic\":false,\"color\":\"red\"}]"));
-         display.put("Lore",loreList);
-         tag.put("display",display);
-         gui.setSlot(2,GuiElementBuilder.from(mending));
-      }
-   
-   
-      gui.setTitle(Text.literal("Brain in a Jar"));
+      BrainJarGui gui = new BrainJarGui(ScreenHandlerType.HOPPER,player,this, stack);
+      gui.makeGui();
       gui.open();
    }
    
-   public void toggleMending(BrainJarGui gui, ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int mode = magicNbt.getInt("mode");
-      
-      if(mode == 1){
-         ItemStack notmending = new ItemStack(Items.BARRIER);
-         NbtCompound tag = notmending.getOrCreateNbt();
-         NbtCompound display = new NbtCompound();
-         NbtList loreList = new NbtList();
-         display.putString("Name","[{\"text\":\"Not Mending Items\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-         loreList.add(NbtString.of("[{\"text\":\"Currently Not Mending Items\",\"italic\":false,\"color\":\"red\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"Click to toggle ON\",\"italic\":false,\"color\":\"green\"}]"));
-         display.put("Lore",loreList);
-         tag.put("display",display);
-         gui.setSlot(2,GuiElementBuilder.from(notmending));
-         
-         magicNbt.putInt("mode", 0);
-      }else if(mode == 0){
-         ItemStack mending = new ItemStack(Items.STRUCTURE_VOID);
-         NbtCompound tag = mending.getOrCreateNbt();
-         NbtCompound display = new NbtCompound();
-         NbtList loreList = new NbtList();
-         display.putString("Name","[{\"text\":\"Mending Items\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-         loreList.add(NbtString.of("[{\"text\":\"Currently Mending Items\",\"italic\":false,\"color\":\"green\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         loreList.add(NbtString.of("[{\"text\":\"Click to toggle OFF\",\"italic\":false,\"color\":\"red\"}]"));
-         display.put("Lore",loreList);
-         tag.put("display",display);
-         gui.setSlot(2,GuiElementBuilder.from(mending));
-   
-         magicNbt.putInt("mode", 1);
-      }
-      buildItemLore(item,player.getServer());
+   public void toggleMending(BrainJarGui gui, ServerPlayerEntity player, ItemStack stack){
+      boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
+      putProperty(stack,ACTIVE_TAG,active);
+      buildItemLore(stack,player.getServer());
+      gui.makeGui();
    }
    
-   public void withdrawXP(ServerPlayerEntity player, ItemStack item, boolean single, BrainJarGui gui){
+   public void withdrawXP(ServerPlayerEntity player, ItemStack stack, boolean single, BrainJarGui gui){
       if(single){
-         int xpToTake = Math.min(LevelUtils.vanillaLevelToTotalXp(player.experienceLevel+1) - player.totalExperience,getEnergy(item));
-         addEnergy(item,-xpToTake);
+         int xpToTake = Math.min(LevelUtils.vanillaLevelToTotalXp(player.experienceLevel+1) - player.totalExperience,getEnergy(stack));
+         addEnergy(stack,-xpToTake);
          player.addExperience(xpToTake);
       }else{
-         player.addExperience(getEnergy(item));
-         setEnergy(item,0);
+         player.addExperience(getEnergy(stack));
+         setEnergy(stack,0);
       }
-   
-      ItemStack echest = new ItemStack(Items.ENDER_CHEST);
-      NbtCompound tag = echest.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Store Levels\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click to store \",\"italic\":false,\"color\":\"green\"},{\"text\":\"1\",\"color\":\"aqua\"},{\"text\":\" level\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click to store all (\",\"italic\":false,\"color\":\"green\"},{\"text\":\""+player.experienceLevel+"\",\"color\":\"aqua\"},{\"text\":\") levels\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      gui.setSlot(0,GuiElementBuilder.from(echest));
-   
-      ItemStack bottle = new ItemStack(Items.EXPERIENCE_BOTTLE);
-      tag = bottle.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Withdraw Levels\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click to gain \",\"italic\":false,\"color\":\"green\"},{\"text\":\"1\",\"color\":\"aqua\"},{\"text\":\" level\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click to take all (\",\"italic\":false,\"color\":\"green\"},{\"text\":\""+getEnergy(item)+"\",\"color\":\"aqua\"},{\"text\":\") XP\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      gui.setSlot(4,GuiElementBuilder.from(bottle));
       
-      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.literal(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.literal(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      buildItemLore(item,player.getServer());
+      gui.makeGui();
+      buildItemLore(stack,player.getServer());
    }
    
-   public void depositXP(ServerPlayerEntity player, ItemStack item, boolean single, BrainJarGui gui){
+   public void depositXP(ServerPlayerEntity player, ItemStack stack, boolean single, BrainJarGui gui){
       int xpToStore;
       if(single){
          int xpDiff = player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel);
          xpToStore = xpDiff == 0 ? player.totalExperience - LevelUtils.vanillaLevelToTotalXp(player.experienceLevel - 1): xpDiff;
-         xpToStore = Math.min(xpToStore, getMaxEnergy(item) - getEnergy(item));
+         xpToStore = Math.min(xpToStore, getMaxEnergy(stack) - getEnergy(stack));
       }else{
-         xpToStore = Math.min(player.totalExperience, getMaxEnergy(item) - getEnergy(item));
+         xpToStore = Math.min(player.totalExperience, getMaxEnergy(stack) - getEnergy(stack));
       }
-      addEnergy(item,xpToStore);
+      addEnergy(stack,xpToStore);
       player.addExperience(-xpToStore);
-      if(xpToStore > 0 && getEnergy(item) >= getMaxEnergy(item)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
-   
-      ItemStack echest = new ItemStack(Items.ENDER_CHEST);
-      NbtCompound tag = echest.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Store Levels\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click to store \",\"italic\":false,\"color\":\"green\"},{\"text\":\"1\",\"color\":\"aqua\"},{\"text\":\" level\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click to store all (\",\"italic\":false,\"color\":\"green\"},{\"text\":\""+player.experienceLevel+"\",\"color\":\"aqua\"},{\"text\":\") levels\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      gui.setSlot(0,GuiElementBuilder.from(echest));
-   
-      ItemStack bottle = new ItemStack(Items.EXPERIENCE_BOTTLE);
-      tag = bottle.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Withdraw Levels\",\"italic\":false,\"color\":\"dark_aqua\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click to gain \",\"italic\":false,\"color\":\"green\"},{\"text\":\"1\",\"color\":\"aqua\"},{\"text\":\" level\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click to take all (\",\"italic\":false,\"color\":\"green\"},{\"text\":\""+getEnergy(item)+"\",\"color\":\"aqua\"},{\"text\":\") XP\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      gui.setSlot(4,GuiElementBuilder.from(bottle));
+      if(xpToStore > 0 && getEnergy(stack) >= getMaxEnergy(stack)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
       
-      gui.setSlot(1,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      gui.setSlot(3,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE).setName(Text.translatable(getEnergy(item)+" XP Stored").formatted(Formatting.GREEN)));
-      buildItemLore(item,player.getServer());
+      gui.makeGui();
+      buildItemLore(stack,player.getServer());
    }
    
    @Override
@@ -311,33 +174,35 @@ public class BrainJar extends EnergyItem {
       return true;
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"     Brain in a Jar\\n\\nRarity: Exotic\\n\\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time similar to you or me.\\n\\nIf I can expand their\"}");
-      list.add("{\"text\":\"     Brain in a Jar\\n\\ncapacity for knowledge using the extra-dimensional capabilities of Ender Chests it should hold enough XP for practical use.\\n\\nThere should also be a way to incorporate the use of Mending enchantments to have\"}");
-      list.add("{\"text\":\"     Brain in a Jar\\n\\ndirect access to the storage.\\n\\nRight Click the Brain in a Jar to open its internal storage where you can set its Mending interaction or deposit or withdraw XP. It has a base-line internal storage of 1 million XP\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("     Brain in a Jar\n\nRarity: Exotic\n\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time similar to you or me.\n\nIf I can expand their").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Brain in a Jar\n\ncapacity for knowledge using the extra-dimensional capabilities of Ender Chests it should hold enough XP for practical use.\n\nThere should also be a way to incorporate the use of Mending enchantments to have").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Brain in a Jar\n\ndirect access to the storage.\n\nRight Click the Brain in a Jar to open its internal storage where you can set its Mending interaction or deposit or withdraw XP. It has a base-line internal storage of 1 million XP").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient h = new MagicItemIngredient(Items.ZOMBIE_HEAD,1,null, true);
-      MagicItemIngredient c = new MagicItemIngredient(Items.ENDER_CHEST,32,null);
-      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
-      MagicItemIngredient x = new MagicItemIngredient(Items.EXPERIENCE_BOTTLE,64,null);
-      ItemStack book = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.MENDING,1));
-      MagicItemIngredient m = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,book.getNbt());
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_CHEST,4);
+      ArcanaIngredient b = new ArcanaIngredient(Items.EXPERIENCE_BOTTLE,8);
+      ArcanaIngredient c = new ArcanaIngredient(Items.SCULK,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.MENDING),1));
+      ArcanaIngredient h = new ArcanaIngredient(Items.SCULK_CATALYST,8);
+      ArcanaIngredient m = new ArcanaIngredient(Items.ZOMBIE_HEAD,1, true);
       
-      MagicItemIngredient[][] ingredients = {
-            {c,e,x,e,c},
-            {e,m,x,m,e},
-            {x,x,h,x,x},
-            {e,m,x,m,e},
-            {c,e,x,e,c}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withEnchanter());
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,h,m,h,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withEnchanter());
    }
    
-   public class BrainJarItem extends MagicPolymerItem {
-      public BrainJarItem(Settings settings){
+   public class BrainJarItem extends ArcanaPolymerItem {
+      public BrainJarItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
@@ -351,10 +216,9 @@ public class BrainJar extends EnergyItem {
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT_OFF).value();
-         NbtCompound magicNbt = itemStack.getNbt().getCompound("arcananovum");
-         int mode = magicNbt.getInt("mode");
-         return mode == 1 ? ArcanaRegistry.MODELS.get(TXT_ON).value() : ArcanaRegistry.MODELS.get(TXT_OFF).value();
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(TXT_OFF).value();
+         boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
+         return active ? ArcanaRegistry.getModelData(TXT_ON).value() : ArcanaRegistry.getModelData(TXT_OFF).value();
       }
       
       @Override
@@ -364,12 +228,10 @@ public class BrainJar extends EnergyItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         int mode = magicNbt.getInt("mode"); // 0 is off, 1 is on
-         if(mode == 1 && getEnergy(stack) != 0){
+         boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+         if(active && getEnergy(stack) != 0){
             // Check each player's inventory for gear that needs repairing
             PlayerInventory inv = player.getInventory();
             for(int i = 0; i < inv.size() && getEnergy(stack) != 0; i++){
@@ -378,31 +240,20 @@ public class BrainJar extends EnergyItem {
                   continue;
                if(!tool.hasEnchantments())
                   continue;
-               NbtList enchants = tool.getEnchantments();
-               boolean hasMending = false;
-               for(int j = 0; j < enchants.size(); j++){
-                  NbtCompound enchant = enchants.getCompound(j);
-                  if(enchant.contains("id")){
-                     String id = enchant.getString("id");
-                     if(id.equals("minecraft:mending")){
-                        hasMending = true;
-                        break;
-                     }
-                  }
-               }
+               
+               boolean hasMending = EnchantmentHelper.hasAnyEnchantmentsWith(tool, EnchantmentEffectComponentTypes.REPAIR_WITH_XP);
+               
                if(hasMending){
-                  NbtCompound nbt = tool.getNbt();
-                  int durability = nbt != null ? nbt.getInt("Damage") : 0;
-                  int repairAmount = 2 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id));
-                  if(durability <= 0)
+                  int durability = tool.getDamage();
+                  int repairAmount = (int) Math.ceil((EnchantmentHelper.getRepairWithXp(player.getServerWorld(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
+                  if(durability <= 0 || !tool.isDamageable())
                      continue;
                   int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
                   ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
                   addEnergy(stack,-1);
                   PLAYER_DATA.get(player).addXP(5);
                   buildItemLore(stack,player.getServer());
-                  nbt.putInt("Damage", newDura);
-                  tool.setNbt(nbt);
+                  tool.setDamage(newDura);
                }
             }
          }
@@ -433,3 +284,4 @@ public class BrainJar extends EnergyItem {
       }
    }
 }
+

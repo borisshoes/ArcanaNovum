@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.core.LeftClickItem;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
@@ -17,10 +17,10 @@ public class BlockAttackCallback {
       //System.out.println(hand+" "+item);
       ActionResult result = ActionResult.PASS;
       try{
-         LeftClickItem magicItem = null;
-         if(MagicItemUtils.isLeftClickItem(item)){
-            magicItem = MagicItemUtils.identifyLeftClickItem(item);
-            boolean useReturn = magicItem.attackBlock(playerEntity, world, hand, blockPos, direction);
+         LeftClickItem arcanaItem = null;
+         if(ArcanaItemUtils.isLeftClickItem(item)){
+            arcanaItem = ArcanaItemUtils.identifyLeftClickItem(item);
+            boolean useReturn = arcanaItem.attackBlock(playerEntity, world, hand, blockPos, direction);
             result = useReturn ? ActionResult.PASS : ActionResult.SUCCESS;
          }
          

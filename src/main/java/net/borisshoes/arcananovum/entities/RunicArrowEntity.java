@@ -1,20 +1,22 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.items.arrows.TetherArrows;
 import net.borisshoes.arcananovum.items.arrows.TrackingArrows;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -31,9 +33,9 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2d;
 
 import java.util.List;
@@ -52,20 +54,48 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
       super(entityType, world);
    }
    
-   public RunicArrowEntity(World world, LivingEntity owner, ItemStack stack) {
+   public RunicArrowEntity(World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
       this(ArcanaRegistry.RUNIC_ARROW_ENTITY, world);
       setOwner(owner);
       this.setPosition(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
+      data = new NbtCompound();
+      initFromStack(stack,shotFrom);
+   }
+   
+   public RunicArrowEntity(World world, double x, double y, double z, ItemStack stack, @Nullable ItemStack shotFrom) {
+      this(ArcanaRegistry.RUNIC_ARROW_ENTITY, world);
+      this.setPosition(x,y,z);
+      data = new NbtCompound();
+      initFromStack(stack,shotFrom);
+   }
+   
+   public void initFromStack(ItemStack arrowStack, ItemStack weaponStack){
+      augments = ArcanaAugments.getAugmentsOnItem(arrowStack);
+      arrowType = ArcanaItemUtils.identifyRunicArrow(arrowStack);
+      setStack(arrowStack);
       this.pickupType = PickupPermission.CREATIVE_ONLY;
       
-      augments = ArcanaAugments.getAugmentsOnItem(stack);
-      arrowType = MagicItemUtils.identifyRunicArrow(stack);
-      data = new NbtCompound();
+      if(this.stack.contains(DataComponentTypes.CUSTOM_NAME)){
+         this.setCustomName(this.stack.getName());
+      }
+      
+      if(weaponStack != null){
+         this.weapon = weaponStack.copy();
+         
+         if(getWorld() instanceof ServerWorld serverWorld){
+            int i = EnchantmentHelper.getProjectilePiercing(serverWorld, weapon, this.stack);
+            if (i > 0) {
+               this.setPierceLevel((byte)i);
+            }
+            
+            EnchantmentHelper.onProjectileSpawned(serverWorld, weapon, this, item -> this.weapon = null);
+         }
+      }
    }
    
    @Override
-   public void initFromStack(ItemStack stack){
-      super.initFromStack(stack);
+   public void setStack(ItemStack stack){
+      super.setStack(stack);
       
       if(arrowType instanceof ArcaneFlakArrows){
          data.putInt("armTime", 5);
@@ -179,7 +209,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
       // Do this bit manually so extra data can be saved
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       if(ArcanaAchievements.ARROW_FOR_EVERY_FOE instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getMagicItem().getId();
+         String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
          if(achievement == null){
             TimedAchievement newAch = baseAch.makeNew();
@@ -254,8 +284,8 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          }
       }
       if(nbt.contains("runicArrowType")){
-         MagicItem magicItem = ArcanaRegistry.MAGIC_ITEMS.get(nbt.getString("runicArrowType"));
-         if(magicItem instanceof RunicArrow ra) arrowType = ra;
+         ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(nbt.getString("runicArrowType"));
+         if(arcanaItem instanceof RunicArrow ra) arrowType = ra;
       }
       if(nbt.contains("runicArrowData")){
          data = nbt.getCompound("runicArrowData");

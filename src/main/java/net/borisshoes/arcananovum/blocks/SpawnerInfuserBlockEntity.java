@@ -1,11 +1,15 @@
 package net.borisshoes.arcananovum.blocks;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.gui.arcanesingularity.ArcaneSingularityGui;
+import net.borisshoes.arcananovum.gui.spawnerinfuser.SpawnerInfuserGui;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -16,30 +20,36 @@ import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.block.spawner.MobSpawnerLogic;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SidedInventory;
+import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
-public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity implements SidedInventory, PolymerObject, MagicBlockEntity {
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
+
+public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity implements SidedInventory, PolymerObject, InventoryChangedListener, ArcanaBlockEntity {
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
    private boolean synthetic;
    private String customName;
-   private DefaultedList<ItemStack> inventory;
+   private SimpleInventory inventory = new SimpleInventory(size());
    private boolean active;
    private ItemStack soulstone;
    private int points;
@@ -50,10 +60,13 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    private short spawnCount;
    private short playerRange;
    private short maxEntities;
+   private boolean updating;
+   private boolean prevStone;
+   private final HashMap<ServerPlayerEntity, SpawnerInfuserGui> watchingPlayers = new HashMap<>();
    
    public SpawnerInfuserBlockEntity(BlockPos blockPos, BlockState blockState){
       super(ArcanaRegistry.SPAWNER_INFUSER_BLOCK_ENTITY, blockPos, blockState);
-      this.inventory = DefaultedList.ofSize(size(), ItemStack.EMPTY);
+      this.inventory.addListener(this);
    }
    
    public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
@@ -62,7 +75,6 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       this.uuid = uuid;
       this.synthetic = synthetic;
       this.customName = customName == null ? "" : customName;
-      this.inventory = DefaultedList.ofSize(size(), ItemStack.EMPTY);
       this.active = false;
       this.soulstone = ItemStack.EMPTY;
       this.points = 0;
@@ -73,6 +85,17 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       this.maxEntities = 6;
       this.playerRange = 16;
       this.spawnRange = 4;
+   }
+   
+   public void openGui(ServerPlayerEntity player){
+      SpawnerInfuserGui gui = new SpawnerInfuserGui(player,this, getWorld());
+      gui.build();
+      gui.open();
+      watchingPlayers.put(player,gui);
+   }
+   
+   public void removePlayer(ServerPlayerEntity player){
+      watchingPlayers.remove(player);
    }
    
    public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
@@ -121,6 +144,10 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
             SoundUtils.soulSounds(serverWorld,pos,1,5);
          }
       }
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0 && this.active){
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      }
    }
    
    public void tickInfuser(BlockPos spawnerPos, MobSpawnerBlockEntity spawnerEntity){
@@ -161,7 +188,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       return customName;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.SPAWNER_INFUSER;
    }
    
@@ -203,8 +230,8 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -225,15 +252,16 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
             if(aug != null) augments.put(aug,augCompound.getInt(key));
          }
       }
-      this.inventory = DefaultedList.ofSize(this.size(), ItemStack.EMPTY);
-      if (!this.readLootTable(nbt)) {
-         Inventories.readNbt(nbt, this.inventory);
+      this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
+      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+         Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
       if (nbt.contains("active")) {
          this.active = nbt.getBoolean("active");
       }
       if (nbt.contains("soulstone")) {
-         this.soulstone = ItemStack.fromNbt(nbt.getCompound("soulstone"));
+         this.soulstone = ItemStack.fromNbt(registryLookup, nbt.getCompound("soulstone")).orElse(ItemStack.EMPTY);
       }
       if (nbt.contains("points")) {
          this.points = nbt.getInt("points");
@@ -248,9 +276,11 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       }
    }
    
+   
+   
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
@@ -269,14 +299,14 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       }
       nbt.putBoolean("synthetic",this.synthetic);
       if (!this.writeLootTable(nbt)) {
-         Inventories.writeNbt(nbt, this.inventory);
+         Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
       }
       
       nbt.putInt("points",this.points);
       nbt.putInt("spentPoints",this.spentPoints);
       nbt.putBoolean("active",this.active);
       if(this.soulstone != null){
-         nbt.put("soulstone",soulstone.writeNbt(new NbtCompound()));
+         nbt.put("soulstone",soulstone.encodeAllowEmpty(registryLookup));
       }
       
       nbt.put("spawnerStats",getSpawnerStats());
@@ -314,17 +344,16 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       }
    }
    
-   protected DefaultedList<ItemStack> getHeldStacks() {
-      return this.inventory;
+   @Override
+   protected DefaultedList<ItemStack> getHeldStacks(){
+      return this.inventory.getHeldStacks();
    }
    
    @Override
-   protected DefaultedList<ItemStack> method_11282() {
-      return this.inventory;
-   }
-   
-   protected void setInvStackList(DefaultedList<ItemStack> list) {
-      this.inventory = list;
+   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+      for(int i = 0; i < list.size(); i++){
+         this.inventory.setStack(i,list.get(i));
+      }
    }
    
    @Override
@@ -355,5 +384,96 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    @Override
    public int size(){
       return 2;
+   }
+   
+   public Inventory getInventory(){
+      return this.inventory;
+   }
+   
+   public void refreshGuis(){
+      watchingPlayers.values().forEach(SpawnerInfuserGui::build);
+   }
+   
+   @Override
+   public void onInventoryChanged(Inventory inv){
+      if(!updating){
+         updating = true;
+         
+         ItemStack soulstoneSlot = inv.getStack(0);
+         ItemStack extraPoints = ItemStack.EMPTY;
+         int points = getPoints();
+         int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.SOUL_RESERVOIR.id)];
+         int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
+         
+         if(!soulstoneSlot.isEmpty()){
+            setSoulstone(soulstoneSlot);
+            if(!prevStone){
+               watchingPlayers.keySet().forEach(player -> SoundUtils.soulSounds(player,1,20));
+               if(Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot)) == Soulstone.tiers.length){
+                  watchingPlayers.keySet().forEach(player -> ArcanaAchievements.grant(player, ArcanaAchievements.INNOCENT_SOULS.id));
+               }
+            }
+            
+            ItemStack pointsSlot = inv.getStack(1);
+            if(!pointsSlot.isEmpty()){
+               int maxPoints = SpawnerInfuser.pointsFromTier[Soulstone.soulsToTier(Soulstone.getSouls(soulstoneSlot))] + bonusCap;
+               int toAdd = pointsSlot.getCount() * ratio;
+               
+               if(maxPoints-points < toAdd){
+                  setPoints(maxPoints);
+                  extraPoints = pointsSlot.copy();
+                  extraPoints.setCount((toAdd-(maxPoints-points))/ratio);
+               }else{
+                  setPoints(points+toAdd);
+               }
+               int curPoints = getPoints();
+               if(toAdd != 0 && points < maxPoints){
+                  watchingPlayers.keySet().forEach(player -> {
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1, (.8f+((float)curPoints/maxPoints)));
+                     if(curPoints == maxPoints)SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1, 2f);
+                     if(curPoints >= 512) ArcanaAchievements.grant(player,ArcanaAchievements.ARCHLICH.id);
+                     if(curPoints >= 1024) ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OVERWHELMING.id);
+                  });
+               }
+            }
+            prevStone = true;
+         }else{
+            setSoulstone(ItemStack.EMPTY);
+            points += inv.getStack(1).getCount() * ratio;
+            
+            DefaultedList<ItemStack> drops = DefaultedList.of();
+            if(points > 0){
+               while(points/ratio > 64){
+                  ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+                  dropItem.setCount(64);
+                  drops.add(dropItem.copy());
+                  points -= 64*ratio;
+               }
+               ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+               dropItem.setCount(points/ratio);
+               drops.add(dropItem.copy());
+            }
+            
+            if(getWorld() != null){
+               ItemScatterer.spawn(getWorld(),getPos().up(),drops);
+            }
+            
+            if(prevStone){
+               watchingPlayers.keySet().forEach(player -> SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, .8f));
+            }
+            
+            setPoints(0);
+            resetStats();
+            setSpentPoints(0);
+            
+            prevStone = false;
+         }
+         
+         inv.setStack(1,extraPoints);
+         markDirty();
+         refreshGuis();
+         
+         updating = false;
+      }
    }
 }

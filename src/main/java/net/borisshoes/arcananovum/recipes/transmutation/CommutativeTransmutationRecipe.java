@@ -2,12 +2,11 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
-import net.minecraft.util.collection.DefaultedList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +95,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public ItemStack getViewStack(){
-      if(MagicItemUtils.isMagic(communalInputs.get(0))){
+      if(ArcanaItemUtils.isArcane(communalInputs.get(0))){
          return new ItemStack(communalInputs.get(0).getItem(),1);
       }
       return communalInputs.get(0);

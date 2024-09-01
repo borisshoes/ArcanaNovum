@@ -1,88 +1,88 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTask;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.item.*;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.IntProperty;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import static net.minecraft.block.LightBlock.LEVEL_15;
 
-public class LightCharm extends MagicItem {
+public class LightCharm extends ArcanaItem {
+	public static final String ID = "light_charm";
+   
+   public static final String VISION_TAG = "vision";
+   public static final String BRIGHTNESS_TAG = "brightness";
+   public static final String THRESHOLD_TAG = "threshold";
+   public static final String NOVA_TAG = "novaCD";
    
    private static final String ON_TXT = "item/light_charm_on";
    private static final String OFF_TXT = "item/light_charm_off";
    
    public LightCharm(){
-      id = "light_charm";
+      id = ID;
       name = "Charm of Light";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.SUNFLOWER;
-      item = new LightCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new LightCharmItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Charm of Light").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,OFF_TXT));
       models.add(new Pair<>(vanillaItem,ON_TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.EFFECT_NIGHT_VISION, ResearchTasks.PLACE_TORCHES, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Charm of Light\",\"italic\":false,\"color\":\"yellow\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putBoolean("vision",false);
-      tag.getCompound("arcananovum").putBoolean("active",true);
-      tag.getCompound("arcananovum").putInt("mode",0); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
-      tag.getCompound("arcananovum").putInt("brightness",15);
-      tag.getCompound("arcananovum").putInt("threshold",5);
-      tag.getCompound("arcananovum").putInt("novaCD",0);
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,VISION_TAG, false);
+      putProperty(stack,ACTIVE_TAG, false);
+      putProperty(stack,BRIGHTNESS_TAG, 11);
+      putProperty(stack,MODE_TAG, 0); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
+      putProperty(stack,THRESHOLD_TAG, 1);
+      putProperty(stack,NOVA_TAG, 0);
       setPrefStack(stack);
    }
    
@@ -92,65 +92,77 @@ public class LightCharm extends MagicItem {
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"radiates\",\"color\":\"yellow\"},{\"text\":\" a warm glow.\",\"color\":\"gold\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Its light seems to \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"linger\",\"italic\":false,\"color\":\"red\"},{\"text\":\" behind you.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to adjust the \",\"color\":\"gold\"},{\"text\":\"setting\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to toggle the charm \",\"color\":\"gold\"},{\"text\":\"mode\",\"color\":\"yellow\"},{\"text\":\".\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("The charm ").formatted(Formatting.GOLD))
+            .append(Text.literal("radiates").formatted(Formatting.YELLOW))
+            .append(Text.literal(" a warm glow.").formatted(Formatting.GOLD)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Its light seems to ").formatted(Formatting.GOLD))
+            .append(Text.literal("linger").formatted(Formatting.RED))
+            .append(Text.literal(" behind you.").formatted(Formatting.GOLD)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right click").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" to adjust the ").formatted(Formatting.GOLD))
+            .append(Text.literal("setting").formatted(Formatting.YELLOW))
+            .append(Text.literal(".").formatted(Formatting.GOLD)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right click").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" to toggle the charm ").formatted(Formatting.GOLD))
+            .append(Text.literal("mode").formatted(Formatting.YELLOW))
+            .append(Text.literal(".").formatted(Formatting.GOLD)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public void changeSetting(ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      boolean vision = magicTag.getBoolean("vision");
-      boolean active = magicTag.getBoolean("active");
-      int mode = magicTag.getInt("mode"); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
-      int threshold = magicTag.getInt("threshold");
-      int brightness = magicTag.getInt("brightness");
-      int novaCD = magicTag.getInt("novaCD");
-   
+      boolean vision = getBooleanProperty(item,VISION_TAG);
+      boolean active = getBooleanProperty(item,ACTIVE_TAG);
+      int mode = getIntProperty(item,MODE_TAG); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
+      int threshold = getIntProperty(item,THRESHOLD_TAG);
+      int brightness = getIntProperty(item,BRIGHTNESS_TAG);
+      int novaCD = getIntProperty(item,NOVA_TAG);
+      
       switch(mode){
          case 0:
             active = !active;
-            magicTag.putBoolean("active",active);
+            putProperty(item,ACTIVE_TAG, active);
             if(active){
-               player.sendMessage(Text.translatable("The Charm's Light Brightens").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.literal("The Charm's Light Brightens").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
             }else{
-               player.sendMessage(Text.translatable("The Charm's Light Dims").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.literal("The Charm's Light Dims").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
             }
             break;
          case 1:
             vision = !vision;
-            magicTag.putBoolean("vision",vision);
+            putProperty(item,VISION_TAG, vision);
             if(vision){
-               player.sendMessage(Text.translatable("You can now see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.literal("You can now see the arcane lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_ACTIVATE, 1,2f);
             }else{
-               player.sendMessage(Text.translatable("You can no longer see the magical lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.literal("You can no longer see the arcane lights").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 1,.5f);
             }
             break;
          case 2:
             threshold = (threshold+1) % 16;
-            player.sendMessage(Text.translatable("Light Threshold: "+threshold).formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-            magicTag.putInt("threshold",threshold);
+            player.sendMessage(Text.literal("Light Threshold: "+threshold).formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            putProperty(item,THRESHOLD_TAG, threshold);
             break;
          case 3:
             brightness = (brightness+1) % 16;
-            player.sendMessage(Text.translatable("Light Brightness: "+brightness).formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-            magicTag.putInt("brightness",brightness);
+            player.sendMessage(Text.literal("Light Brightness: "+brightness).formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            putProperty(item,BRIGHTNESS_TAG, brightness);
             break;
          case 4:
             if(novaCD == 0){
-               player.sendMessage(Text.translatable("The Charm's Light Flares!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.literal("The Charm's Light Flares!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                nova(player,item);
-               magicTag.putInt("novaCD",30);
+               putProperty(item,NOVA_TAG, 30);
             }else{
-               player.sendMessage(Text.translatable("Radiant Nova Cooldown: "+novaCD+" seconds").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+               player.sendMessage(Text.literal("Radiant Nova Cooldown: "+novaCD+" seconds").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
             }
             break;
          case 5:
@@ -158,44 +170,105 @@ public class LightCharm extends MagicItem {
       }
    }
    
-   private void nova(ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
+   private void nova(ServerPlayerEntity player, ItemStack stack){
       ServerWorld world = player.getServerWorld();
       BlockPos center = player.getBlockPos();
-      int range = 25;
-      BlockPos max = center.add(range,5,range);
-      BlockPos min = center.add(-range,-range,-range);
-      int l = 7;
+      int range = 32;
+      int threshold = 3;
+      BlockPos max = center.add(range,10,range);
+      BlockPos min = center.add(-range,-3*range,-range);
       
+      HashSet<BlockPos> possiblePositions = new HashSet<>();
       
-      for(int x = min.getX(); x <= max.getX(); x+=l){
-         for(int y = min.getY(); y <= max.getY(); y+=l/2){
-            for(int z = min.getZ(); z <= max.getZ(); z+=l){
+      for(int x = min.getX(); x <= max.getX(); x++){
+         for(int y = min.getY(); y <= max.getY(); y++){
+            for(int z = min.getZ(); z <= max.getZ(); z++){
                BlockPos pos = new BlockPos(x, y, z);
-               if(world.getBlockState(pos).isAir() && world.getLightLevel(pos) < 7){
-                  world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(IntProperty.of("level", 0, 15),15), Block.NOTIFY_ALL);
-                  world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
-      
-                  PLAYER_DATA.get(player).addXP(5); // Add xp
-                  ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
-               }
                
+               if(world.isInBuildLimit(pos)){
+                  BlockState state = world.getBlockState(pos);
+                  if(state.isAir() && world.getLightLevel(LightType.BLOCK,pos) <= threshold){
+                     possiblePositions.add(pos);
+                  }
+               }
             }
          }
       }
       
+      List<Pair<BlockPos, Integer>> pairTree = new ArrayList<>();
+      int limit = threshold == 15 ? 1 : (15-threshold);
+      
+      while(!possiblePositions.isEmpty()){
+         BlockPos root = possiblePositions.iterator().next();
+         iterativeNovaSearch(limit, new Pair<>(root,0),possiblePositions,pairTree);
+      }
+      
+      
+      int placedCount = 0;
+      for(Pair<BlockPos, Integer> pair : pairTree){
+         if(pair.getRight() == 0){
+            world.setBlockState(pair.getLeft(),Blocks.LIGHT.getDefaultState().with(LEVEL_15,15), Block.NOTIFY_ALL);
+            world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pair.getLeft());
+            
+            placedCount++;
+         }
+      }
+      
+      PLAYER_DATA.get(player).addXP(placedCount); // Add xp
       SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1f,0.5f);
    }
    
+   // TODO maybe make this async in the future?
+   private void iterativeNovaSearch(int limit, Pair<BlockPos, Integer> startPair, Set<BlockPos> posSet, List<Pair<BlockPos, Integer>> pairTree){
+      Queue<Pair<BlockPos, Integer>> queue = new LinkedList<>();
+      queue.add(startPair);
+      
+      Vec3i[] diagonals = new Vec3i[]{
+            new Vec3i(1,1,0),
+            new Vec3i(-1,1,0),
+            new Vec3i(0,1,1),
+            new Vec3i(0,1,-1),
+            new Vec3i(1,-1,0),
+            new Vec3i(-1,-1,0),
+            new Vec3i(0,-1,1),
+            new Vec3i(0,-1,-1),
+            new Vec3i(1,0,1),
+            new Vec3i(-1,0,1),
+            new Vec3i(1,0,-1),
+            new Vec3i(-1,0,-1),
+      };
+      
+      while(!queue.isEmpty()){
+         Pair<BlockPos, Integer> pair = queue.poll();
+         BlockPos pos = pair.getLeft();
+         
+         if(posSet.remove(pos)){
+            pairTree.add(pair);
+            
+            for(Direction direction : Direction.values()){
+               BlockPos offset = pos.offset(direction);
+               if(posSet.contains(offset) && pair.getRight() + 1 <= limit){
+                  queue.add(new Pair<>(offset, pair.getRight() + 1));
+               }
+            }
+            
+            for(Vec3i diagonal : diagonals){
+               BlockPos offset = pos.mutableCopy().add(diagonal);
+               if(posSet.contains(offset) && pair.getRight() + 2 <= limit){
+                  queue.add(new Pair<>(offset, pair.getRight() + 2));
+               }
+            }
+         }
+      }
+   }
+   
    public void selectMode(ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-      boolean vision = magicTag.getBoolean("vision");
-      boolean active = magicTag.getBoolean("active");
-      int mode = magicTag.getInt("mode"); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
-      int threshold = magicTag.getInt("threshold");
-      int brightness = magicTag.getInt("brightness");
+      boolean vision = getBooleanProperty(item,VISION_TAG);
+      boolean active = getBooleanProperty(item,ACTIVE_TAG);
+      int mode = getIntProperty(item,MODE_TAG); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
+      int threshold = getIntProperty(item,THRESHOLD_TAG);
+      int brightness = getIntProperty(item,BRIGHTNESS_TAG);
+      int novaCD = getIntProperty(item,NOVA_TAG);
       
       boolean hasThresh = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MOOD_LIGHTING.id) >= 1;
       boolean hasBright = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.DIMMER_SWITCH.id) >= 1;
@@ -216,65 +289,73 @@ public class LightCharm extends MagicItem {
       mode = possibleModes.get(newInd);
       switch(mode){
          case 0:
-            player.sendMessage(Text.translatable("Mode: Toggle Light Placement").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Mode: Toggle Light Placement").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
             break;
          case 1:
-            player.sendMessage(Text.translatable("Mode: Toggle Light Visibility").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Mode: Toggle Light Visibility").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
             break;
          case 2:
-            player.sendMessage(Text.translatable("Mode: Threshold Selection").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Mode: Threshold Selection").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
             break;
          case 3:
-            player.sendMessage(Text.translatable("Mode: Brightness Selection").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Mode: Brightness Selection").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
             break;
          case 4:
-            player.sendMessage(Text.translatable("Mode: Radiant Nova").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Mode: Radiant Nova").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
             break;
          case 5:
-            player.sendMessage(Text.translatable("Mode: Manual Placement").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Mode: Manual Placement").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
             break;
       }
-      magicTag.putInt("mode",mode);
+      putProperty(item,MODE_TAG, mode);
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"    Charm of Light\\n\\nRarity: Empowered\\n\\nA Beacon's empowered light that has the ability to embue power seems like a solid base to start. After throwing in every light source under the sun and a couple of potions for good measure I have an \"}");
-      list.add("{\"text\":\"    Charm of Light\\n\\nitem that will leave lingering and invisible magical lights behind me when it gets dark.\\n\\nThankfully those potions were added so I can see the lights by right clicking and remove them if they become a nuisance.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("    Charm of Light\n\nRarity: Empowered\n\nA Beacon's empowered light that has the ability to embue power seems like a solid base to start. After throwing in every light source under the sun and a couple of potions for good measure I have an ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Charm of Light\n\nitem that will leave lingering and invisible arcane lights behind me when it gets dark.\n\nThankfully those potions were added so I can see the lights by right clicking and remove them if they become a nuisance.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient b = new MagicItemIngredient(Items.BEACON,1,null, true);
-      MagicItemIngredient g = new MagicItemIngredient(Items.GLOWSTONE,64,null);
-      MagicItemIngredient s = new MagicItemIngredient(Items.SHROOMLIGHT,64,null);
-      MagicItemIngredient f = new MagicItemIngredient(Items.PEARLESCENT_FROGLIGHT,64,null);
-      MagicItemIngredient o = new MagicItemIngredient(Items.OCHRE_FROGLIGHT,64,null);
-      MagicItemIngredient v = new MagicItemIngredient(Items.VERDANT_FROGLIGHT,64,null);
-      MagicItemIngredient l = new MagicItemIngredient(Items.SEA_LANTERN,64,null);
-      MagicItemIngredient p = new MagicItemIngredient(Items.BLAZE_POWDER,64,null);
-      ItemStack potion = new ItemStack(Items.POTION);
-      MagicItemIngredient n = new MagicItemIngredient(Items.POTION,1,PotionUtil.setPotion(potion,Potions.LONG_NIGHT_VISION).getNbt());
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.LONG_NIGHT_VISION);
+      ArcanaIngredient b = new ArcanaIngredient(Items.TORCH,32);
+      ArcanaIngredient c = new ArcanaIngredient(Items.VERDANT_FROGLIGHT,16);
+      ArcanaIngredient d = new ArcanaIngredient(Items.SOUL_LANTERN,32);
+      ArcanaIngredient f = new ArcanaIngredient(Items.REDSTONE_LAMP,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.SEA_LANTERN,8);
+      ArcanaIngredient h = new ArcanaIngredient(Items.GLOWSTONE,8);
+      ArcanaIngredient j = new ArcanaIngredient(Items.CANDLE,16);
+      ArcanaIngredient k = new ArcanaIngredient(Items.PEARLESCENT_FROGLIGHT,16);
+      ArcanaIngredient m = new ArcanaIngredient(Items.BEACON,1, true);
+      ArcanaIngredient o = new ArcanaIngredient(Items.SHROOMLIGHT,16);
+      ArcanaIngredient p = new ArcanaIngredient(Items.JACK_O_LANTERN,16);
+      ArcanaIngredient t = new ArcanaIngredient(Items.COPPER_BULB,16);
+      ArcanaIngredient v = new ArcanaIngredient(Items.LANTERN,32);
+      ArcanaIngredient w = new ArcanaIngredient(Items.OCHRE_FROGLIGHT,16);
+      ArcanaIngredient x = new ArcanaIngredient(Items.SOUL_TORCH,32);
       
-      MagicItemIngredient[][] ingredients = {
-            {n,p,s,p,n},
-            {p,l,g,l,p},
-            {f,g,b,g,o},
-            {p,l,g,l,p},
-            {n,p,v,p,n}};
-      return new MagicItemRecipe(ingredients);
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,d,a},
+            {f,g,h,g,j},
+            {k,h,m,h,o},
+            {p,g,h,g,t},
+            {a,v,w,x,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   public class LightCharmItem extends MagicPolymerItem {
-      public LightCharmItem(Settings settings){
+   public class LightCharmItem extends ArcanaPolymerItem {
+      public LightCharmItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(OFF_TXT).value();
-         boolean active = itemStack.getNbt().getCompound("arcananovum").getBoolean("active");
-         return active ? ArcanaRegistry.MODELS.get(ON_TXT).value() : ArcanaRegistry.MODELS.get(OFF_TXT).value();
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(OFF_TXT).value();
+         boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
+         return active ? ArcanaRegistry.getModelData(ON_TXT).value() : ArcanaRegistry.getModelData(OFF_TXT).value();
       }
       
       @Override
@@ -284,20 +365,19 @@ public class LightCharm extends MagicItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
-         NbtCompound magicTag = stack.getNbt().getCompound("arcananovum");
-         boolean vision = magicTag.getBoolean("vision");
-         boolean active = magicTag.getBoolean("active");
-         int threshold = magicTag.getInt("threshold");
-         int brightness = magicTag.getInt("brightness");
-         int novaCD = magicTag.getInt("novaCD");
+         boolean vision = getBooleanProperty(stack,VISION_TAG);
+         boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+         int threshold = getIntProperty(stack,THRESHOLD_TAG);
+         int brightness = getIntProperty(stack,BRIGHTNESS_TAG);
+         int novaCD = getIntProperty(stack,NOVA_TAG);
          
          if(world.getServer().getTicks() % 60 == 0){
             BlockPos pos = player.getBlockPos();
             if(active){
-               if(world.getLightLevel(pos) < threshold && world.getBlockState(pos).isAir()){
-                  world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(IntProperty.of("level", 0, 15),brightness), Block.NOTIFY_ALL);
+               if(world.getLightLevel(pos) <= threshold && world.getBlockState(pos).isAir()){
+                  world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(LEVEL_15,brightness), Block.NOTIFY_ALL);
                   world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
                   PLAYER_DATA.get(player).addXP((int) (10*brightness/2.0)); // Add xp
@@ -308,7 +388,7 @@ public class LightCharm extends MagicItem {
          }
          
          if(world.getServer().getTicks() % 20 == 0){
-            if(novaCD > 0) magicTag.putInt("novaCD",novaCD-1);
+            if(novaCD > 0) putProperty(stack,NOVA_TAG, novaCD-1);
             BlockPos pos = player.getBlockPos();
             if(vision){
                // Search 10x10x10 area around player for light blocks
@@ -331,15 +411,13 @@ public class LightCharm extends MagicItem {
          ItemStack stack = context.getStack();
          if(playerEntity == null) return ActionResult.PASS;
          
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-         int mode = magicTag.getInt("mode"); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
-         int brightness = magicTag.getInt("brightness");
+         int mode = getIntProperty(stack,MODE_TAG); // 0 is on/off, 1 is vision, 2 is threshold, 3 is brightness, 4 is nova, 5 is manual
+         int brightness = getIntProperty(stack,BRIGHTNESS_TAG);
          Direction side = context.getSide();
          BlockPos pos = context.getBlockPos().add(side.getVector());
          boolean placeable = world.getBlockState(pos).canReplace(new ItemPlacementContext(playerEntity, hand, new ItemStack(Items.LIGHT), new BlockHitResult(context.getHitPos(),context.getSide(),context.getBlockPos(),context.hitsInsideBlock())));
          if(mode == 5 && playerEntity instanceof ServerPlayerEntity player && placeable){
-            world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(IntProperty.of("level", 0, 15),brightness), Block.NOTIFY_ALL);
+            world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(LEVEL_15,brightness), Block.NOTIFY_ALL);
             world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
             PLAYER_DATA.get(player).addXP(15); // Add xp
@@ -361,3 +439,4 @@ public class LightCharm extends MagicItem {
       }
    }
 }
+

@@ -21,6 +21,14 @@ public class SoundUtils {
       player.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(event), SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch,0));
    }
    
+   public static void playSound(World world, BlockPos pos, RegistryEntry<SoundEvent> event, SoundCategory category, float vol, float pitch){
+      try{
+         world.playSound(null,pos.getX(),pos.getY(),pos.getZ(),event.value(), category, vol, pitch);
+      }catch(Exception e){
+         e.printStackTrace();
+      }
+   }
+   
    public static void playSound(World world, BlockPos pos, SoundEvent event, SoundCategory category, float vol, float pitch){
       try{
          world.playSound(null,pos.getX(),pos.getY(),pos.getZ(),event, category, vol, pitch);

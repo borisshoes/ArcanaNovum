@@ -1,22 +1,28 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.recipes.arcana.*;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -28,54 +34,114 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class AequalisScientia extends MagicItem {
+public class AequalisScientia extends ArcanaItem {
+   public static final String ID = "aequalis_scientia";
    
    private static final String TXT = "item/aequalis_scientia";
    
    public AequalisScientia(){
-      id = "aequalis_scientia";
+      id = ID;
       name = "Aequalis Scientia";
-      rarity = MagicRarity.MYTHICAL;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL,ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.DIVINE;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE,TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.DIAMOND;
-      item = new AequalisScientiaItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new AequalisScientiaItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Aequalis Scientia").formatted(Formatting.BOLD,Formatting.AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TRANSMUTATION_ALTAR,ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_CAKE_TO_NOTE_BLOCK,ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_ITEM_TO_PLAYER};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Aequalis Scientia\",\"italic\":false,\"bold\":true,\"color\":\"aqua\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"A small \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"runestone \",\"color\":\"aqua\"},{\"text\":\"engraved with a lone, \"},{\"text\":\"ancient symbol\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Aspect of Balance\",\"color\":\"aqua\"},{\"text\":\" has granted you their \"},{\"text\":\"favor\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Your \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"studies \",\"color\":\"blue\"},{\"text\":\"have taken you far, but everything has its \"},{\"text\":\"limit\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"An \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"ancient being\",\"color\":\"aqua\"},{\"text\":\" offers a \"},{\"text\":\"trade \",\"color\":\"dark_aqua\"},{\"text\":\"for their \"},{\"text\":\"timeless wisdom\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Knowledge \",\"italic\":true,\"color\":\"blue\"},{\"text\":\"for \",\"color\":\"gray\"},{\"text\":\"Knowledge\"},{\"text\":\"; \",\"color\":\"gray\"},{\"text\":\"Skill \",\"color\":\"aqua\"},{\"text\":\"for \",\"color\":\"gray\"},{\"text\":\"Skill\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"gray\",\"italic\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"glowing rune\",\"color\":\"aqua\"},{\"text\":\" \"},{\"text\":\"reacts \",\"color\":\"blue\"},{\"text\":\"to your \"},{\"text\":\"Arcane items\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"stone \",\"color\":\"aqua\"},{\"text\":\"gravitates \",\"color\":\"blue\"},{\"text\":\"towards the \"},{\"text\":\"shrine \",\"color\":\"dark_aqua\"},{\"text\":\"of its \"},{\"text\":\"patron\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"When \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"activated\",\"color\":\"dark_aqua\"},{\"text\":\", the \"},{\"text\":\"stone \",\"color\":\"aqua\"},{\"text\":\"will \"},{\"text\":\"deallocate \",\"color\":\"dark_aqua\"},{\"text\":\"an \"},{\"text\":\"item's \",\"color\":\"light_purple\"},{\"text\":\"skill points\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"skill points\",\"color\":\"blue\"},{\"text\":\" must be \"},{\"text\":\"allocated \",\"color\":\"aqua\"},{\"text\":\"to a \"},{\"text\":\"new item\",\"color\":\"light_purple\"},{\"text\":\".\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("A small ").formatted(Formatting.GRAY))
+            .append(Text.literal("runestone ").formatted(Formatting.AQUA))
+            .append(Text.literal("engraved with a lone, ").formatted(Formatting.GRAY))
+            .append(Text.literal("ancient symbol").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("Aspect of Balance").formatted(Formatting.AQUA))
+            .append(Text.literal(" has granted you their ").formatted(Formatting.GRAY))
+            .append(Text.literal("favor").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal(""));
+      lore.add(Text.literal("")
+            .append(Text.literal("Your ").formatted(Formatting.GRAY))
+            .append(Text.literal("studies ").formatted(Formatting.BLUE))
+            .append(Text.literal("have taken you far, but everything has its ").formatted(Formatting.GRAY))
+            .append(Text.literal("limit").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("An ").formatted(Formatting.GRAY))
+            .append(Text.literal("ancient being").formatted(Formatting.AQUA))
+            .append(Text.literal(" offers a ").formatted(Formatting.GRAY))
+            .append(Text.literal("trade ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("for their ").formatted(Formatting.GRAY))
+            .append(Text.literal("timeless wisdom").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("").formatted(Formatting.ITALIC)
+            .append(Text.literal("Knowledge ").formatted(Formatting.BLUE))
+            .append(Text.literal("for ").formatted(Formatting.GRAY))
+            .append(Text.literal("Knowledge").formatted(Formatting.BLUE))
+            .append(Text.literal("; ").formatted(Formatting.GRAY))
+            .append(Text.literal("Skill ").formatted(Formatting.AQUA))
+            .append(Text.literal("for ").formatted(Formatting.GRAY))
+            .append(Text.literal("Skill").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal(""));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("glowing rune").formatted(Formatting.AQUA))
+            .append(Text.literal(" reacts ").formatted(Formatting.BLUE))
+            .append(Text.literal("to your ").formatted(Formatting.GRAY))
+            .append(Text.literal("Arcane items").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("stone ").formatted(Formatting.AQUA))
+            .append(Text.literal("gravitates ").formatted(Formatting.BLUE))
+            .append(Text.literal("towards the ").formatted(Formatting.GRAY))
+            .append(Text.literal("shrine ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("of its ").formatted(Formatting.GRAY))
+            .append(Text.literal("patron").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal(""));
+      lore.add(Text.literal("")
+            .append(Text.literal("When ").formatted(Formatting.GRAY))
+            .append(Text.literal("activated").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(", the ").formatted(Formatting.GRAY))
+            .append(Text.literal("stone ").formatted(Formatting.AQUA))
+            .append(Text.literal("will ").formatted(Formatting.GRAY))
+            .append(Text.literal("deallocate ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("an ").formatted(Formatting.GRAY))
+            .append(Text.literal("item's ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("skill points").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.GRAY))
+            .append(Text.literal("skill points").formatted(Formatting.BLUE))
+            .append(Text.literal(" must be ").formatted(Formatting.GRAY))
+            .append(Text.literal("allocated ").formatted(Formatting.AQUA))
+            .append(Text.literal("to a ").formatted(Formatting.GRAY))
+            .append(Text.literal("new item").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public void inventoryDialog(ServerPlayerEntity player){
@@ -84,11 +150,11 @@ public class AequalisScientia extends MagicItem {
       boolean[] conditions = new boolean[]{
             PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
             PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
-            MagicItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),
       };
-
+      
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
@@ -334,60 +400,55 @@ public class AequalisScientia extends MagicItem {
       helper.sendDialog(List.of(player),helper.getWeightedResult(),true);
    }
    
-   private MagicItemRecipe makeRecipe(){
-      ItemStack paneBlack = new ItemStack(Items.BLACK_STAINED_GLASS_PANE).setCustomName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD));
-      MiscUtils.addLoreLine(paneBlack,Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA));
-      
-      ItemStack paneWhite = new ItemStack(Items.WHITE_STAINED_GLASS_PANE).setCustomName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD));
-      MiscUtils.addLoreLine(paneWhite,Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA));
-      
-      ItemStack amethyst = new ItemStack(Items.AMETHYST_BLOCK,64).setCustomName(Text.literal("Amethyst Blocks").formatted(Formatting.DARK_AQUA,Formatting.BOLD));
-      MiscUtils.addLoreLine(amethyst,Text.literal("Transmutation Reagent").formatted(Formatting.LIGHT_PURPLE));
-      
-      ItemStack diamonds = new ItemStack(Items.DIAMOND_BLOCK,16).setCustomName(Text.literal("Diamond Blocks").formatted(Formatting.DARK_AQUA,Formatting.BOLD));
-      MiscUtils.addLoreLine(diamonds,Text.literal("Transmutation Reagent").formatted(Formatting.LIGHT_PURPLE));
-      
-      ItemStack catalyst = ArcanaRegistry.MYTHICAL_CATALYST.getItem().getDefaultStack().copy();
-      MiscUtils.addLoreLine(catalyst,Text.literal("")
-            .append(Text.literal("Transmute").formatted(Formatting.AQUA))
-            .append(Text.literal(" the ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Catalyst").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" with a ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("Transmutation Altar").formatted(Formatting.AQUA)));
-      
-      ExplainIngredient b = new ExplainIngredient(paneBlack,"",false);
-      ExplainIngredient w = new ExplainIngredient(paneWhite,"",false);
-      ExplainIngredient a = new ExplainIngredient(amethyst,"Amethyst Blocks");
-      ExplainIngredient d = new ExplainIngredient(diamonds,"Diamond Blocks");
-      ExplainIngredient c = new ExplainIngredient(catalyst,"Mythical Augment Catalyst");
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ExplainIngredient b = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
+            .withName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
+      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.LIGHT_COLOR),1,"",false)
+            .withName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
+      ExplainIngredient a = new ExplainIngredient(Items.AMETHYST_BLOCK,64,"Amethyst Blocks")
+            .withName(Text.literal("Amethyst Blocks").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Transmutation Reagent").formatted(Formatting.LIGHT_PURPLE)));
+      ExplainIngredient t = new ExplainIngredient(ArcanaRegistry.TRANSMUTATION_ALTAR.getItem(),1,"",false)
+            .withName(Text.literal("Transmutation Altar").formatted(Formatting.AQUA,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
+      ExplainIngredient d = new ExplainIngredient(Items.DIAMOND_BLOCK,1,"Diamond Block")
+            .withName(Text.literal("Diamond Block").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Transmutation Reagent").formatted(Formatting.LIGHT_PURPLE)));
+      ExplainIngredient c = new ExplainIngredient(ArcanaRegistry.DIVINE_CATALYST.getItem(),1,"Divine Augment Catalyst")
+            .withName(Text.literal("Divine Augmentation Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Infusion Input").formatted(Formatting.WHITE)));
       
       ExplainIngredient[][] ingredients = {
-            {b,b,b,b,b},
+            {b,b,c,b,b},
             {b,b,b,b,w},
-            {a,b,c,w,d},
+            {a,b,t,w,d},
             {b,w,w,w,w},
             {w,w,w,w,w}};
       return new ExplainRecipe(ingredients);
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("\"   Aequalis Scientia\\n\\nRarity: Mythical\\n\\nI believe I have solved two mysteries in one!\\nThe entity that powers my Transmutation Altar was, in fact, divine. They call themself Equayus, God of Balance. The transmutations that\"");
-      list.add("\"   Aequalis Scientia\\n\\noccur are actually an implicit barter with Equayus for items of equal value.\\nThey were kind enough to trade a few of my Legendary Catalysts for some divine energy to use in another Catalyst. From there I was able to transmute a stone\"");
-      list.add("\"   Aequalis Scientia\\n\\nwith the divine energy. Equayus was impressed with my understanding and has imbued the stone with their rune.\\nThis stone is the final piece to the Altar and is used in the keystone position to conduct advanced transmutations.\"");
-      list.add("\"   Aequalis Scientia\\n\\nEquayus told me that I have a solid grasp on the value of materials, but need to learn the value of knowledge.\\n\\nThe Aequalis Scientia is supposed to guide me to that realization by letting me exchange some of the skills I have learned\"");
-      list.add("\"   Aequalis Scientia\\n\\nfor others.\\n\\nI can use the Aequalis in conjunction with two of my own Arcane Items and some reagents to transfer the skills I have learned from one item into skills I can learn for the other. \"");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Aequalis Scientia\n\nRarity: Divine\n\nI believe I have solved two mysteries in one!\nThe entity that powers my Transmutation Altar was, in fact, divine. They call themself Equayus, God of Balance. The transmutations that")));
+      list.add(List.of(Text.literal("   Aequalis Scientia\n\noccur are actually an implicit barter with Equayus for items of equal value.\nThey were kind enough to trade a few of my Sovereign Catalysts for some divine energy to use in another Catalyst. From there I was able to transmute a stone")));
+      list.add(List.of(Text.literal("   Aequalis Scientia\n\nwith the divine energy. Equayus was impressed with my understanding and has imbued the stone with their rune.\nThis stone is the final piece to the Altar and is used in the keystone position to conduct advanced transmutations.")));
+      list.add(List.of(Text.literal("   Aequalis Scientia\n\nEquayus told me that I have a solid grasp on the value of materials, but need to learn the value of knowledge.\n\nThe Aequalis Scientia is supposed to guide me to that realization by letting me exchange some of the skills I have learned")));
+      list.add(List.of(Text.literal("   Aequalis Scientia\n\nfor others.\n\nI can use the Aequalis in conjunction with two of my own Arcane Items and some reagents to transfer the skills I have learned from one item into skills I can learn for the other. ")));
       return list;
    }
    
-   public class AequalisScientiaItem extends MagicPolymerItem {
-      public AequalisScientiaItem(Settings settings){
+   public class AequalisScientiaItem extends ArcanaPolymerItem {
+      public AequalisScientiaItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -397,7 +458,7 @@ public class AequalisScientia extends MagicItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
          if(Math.random() < 0.000015){
@@ -412,3 +473,4 @@ public class AequalisScientia extends MagicItem {
       }
    }
 }
+

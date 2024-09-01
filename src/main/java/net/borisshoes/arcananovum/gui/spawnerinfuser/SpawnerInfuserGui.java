@@ -3,23 +3,26 @@ package net.borisshoes.arcananovum.gui.spawnerinfuser;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.SpawnerInfuser;
 import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.gui.SoulstoneSlot;
-import net.borisshoes.arcananovum.gui.WatchedGui;
 import net.borisshoes.arcananovum.items.Soulstone;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
-import net.minecraft.entity.ItemEntity;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.potion.Potions;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,13 +33,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Arrays;
+import java.util.List;
 
 
-public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
+public class SpawnerInfuserGui extends SimpleGui {
    private final SpawnerInfuserBlockEntity blockEntity;
    private final World world;
-   private SpawnerInfuserInventory inv;
-   private SpawnerInfuserInventoryListener listener;
    
    private final int[] minSpeedLvls = {20,30,40,50,75,100,125,150,175,200,300,400,500,1000,2000,3000,4000,5000,10000,25000};
    private final int[] minSpeedPoints = {256,128,96,64,32,16,8,4,2,0,1,2,4,6,8,10,12,14,16,20};
@@ -157,7 +159,7 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       pointDif = pointArr[ind] - pointArr[newInd];
    
       if(spentPoints - pointDif > points){
-         player.sendMessage(Text.translatable("Not Enough Points").formatted(Formatting.RED,Formatting.ITALIC),true);
+         player.sendMessage(Text.literal("Not Enough Points").formatted(Formatting.RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, 0.8f);
          return true;
       }
@@ -169,52 +171,35 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       if(spentPoints-pointDif >= 1) ArcanaAchievements.grant(player,ArcanaAchievements.HUMBLE_NECROMANCER.id);
       if(pointArr[newInd] >= 256) ArcanaAchievements.grant(player,ArcanaAchievements.SCULK_HUNGERS.id);
       
-      build();
+      blockEntity.refreshGuis();
    
       return true;
    }
    
+   
    public void build(){
-      if(inv == null){
-         init();
-      }
-      refresh();
-   }
-   
-   private void init(){
-      inv = new SpawnerInfuserInventory();
-      listener = new SpawnerInfuserInventoryListener(this,blockEntity,world);
-      inv.addListener(listener);
-   }
-   
-   private void refresh(){
-      listener.setUpdating();
-      
       int points = blockEntity.getPoints();
       NbtCompound stats = blockEntity.getSpawnerStats();
       int spentPoints = blockEntity.getSpentPoints();
-   
+      
       boolean hasStone = !blockEntity.getSoulstone().isEmpty();
       boolean spawnerDetected = detectSpawner();
       boolean usable = hasStone && spawnerDetected;
-   
-      for(int i = 0; i < getSize(); i++){
-         clearSlot(i);
-         if(usable){
-            setSlot(i,new GuiElementBuilder(Items.GREEN_STAINED_GLASS_PANE)
-                  .setName(Text.literal("Use the arrows to configure the Infusion").formatted(Formatting.GREEN))
-                  .addLoreLine(Text.literal("")
-                        .append(Text.literal("Apply a ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal("Redstone signal").formatted(Formatting.RED))
-                        .append(Text.literal(" to activate the Infuser").formatted(Formatting.DARK_AQUA))));
-         }else{
-            if(spawnerDetected){
-               setSlot(i,new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("Insert a Soulstone in the top slot").formatted(Formatting.RED)));
-            }else{
-               setSlot(i,new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("A Spawner must be 2 blocks above the Infuser").formatted(Formatting.RED)));
-            }
-         }
+      
+      if(usable){
+         MiscUtils.outlineGUI(this,0x0a6627,Text.literal("Use the arrows to configure the Infusion").formatted(Formatting.GREEN), List.of(
+               TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Apply a ").formatted(Formatting.DARK_AQUA))
+               .append(Text.literal("Redstone signal").formatted(Formatting.RED))
+               .append(Text.literal(" to activate the Infuser").formatted(Formatting.DARK_AQUA)))));
+      }else if(spawnerDetected){
+         MiscUtils.outlineGUI(this,ArcanaColors.DARK_COLOR,Text.literal("Insert a Soulstone in the top slot").formatted(Formatting.RED));
+      }else{
+         MiscUtils.outlineGUI(this,ArcanaColors.DARK_COLOR,Text.literal("A Spawner must be 2 blocks above the Infuser").formatted(Formatting.RED));
       }
+      
+      clearSlot(4);
+      setSlotRedirect(4, new SoulstoneSlot(blockEntity.getInventory(),0,0,0,true,false,null)); // Soulstone slot
    
       for(int i = 1; i <= 7; i++){
          clearSlot(i+9);
@@ -222,18 +207,10 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          clearSlot(i+27);
       }
    
-      clearSlot(4);
-      clearSlot(40);
-      setSlotRedirect(4, new SoulstoneSlot(inv,0,0,0,true,false,null)); // Soulstone slot
-   
       ItemStack stone = blockEntity.getSoulstone();
       
-      if(hasStone){
-         inv.setStack(0,stone);
-      }
-      
       if(usable){
-         setSlotRedirect(40, new SpawnerInfuserPointsSlot(inv,1,0,0)); // Points item slot
+         setSlotRedirect(40, new SpawnerInfuserPointsSlot(blockEntity.getInventory(),1,0,0)); // Points item slot
    
          int bonusCap = new int[]{0,64,128,192,256,352}[ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.SOUL_RESERVOIR.id)];
          int soulstoneTier = Soulstone.soulsToTier(Soulstone.getSouls(stone));
@@ -246,44 +223,42 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
                   .append(Text.literal("Upgrade Points: ").formatted(Formatting.DARK_GREEN))
                   .append(Text.literal(points+"/"+maxPoints).formatted(Formatting.GREEN))
                   .append(Text.literal(" (Tier "+soulstoneTier+")").formatted(Formatting.AQUA))));
-            pipItem.addLoreLine((Text.literal("")
+            pipItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Allocated Points: ").formatted(Formatting.DARK_GREEN))
-                  .append(Text.literal(spentPoints+"/"+points).formatted(Formatting.GREEN))));
-            pipItem.addLoreLine((Text.literal("")));
-            pipItem.addLoreLine((Text.literal("")
+                  .append(Text.literal(spentPoints+"/"+points).formatted(Formatting.GREEN)))));
+            pipItem.addLoreLine(TextUtils.removeItalics((Text.literal(""))));
+            pipItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Add ").formatted(Formatting.DARK_AQUA))
                   .append(Text.literal("Nether Stars").formatted(Formatting.AQUA))
                   .append(Text.literal(" to the bottom slot to add ").formatted(Formatting.DARK_AQUA))
-                  .append(Text.literal("Upgrade Points").formatted(Formatting.GREEN))));
-            pipItem.addLoreLine((Text.literal("")
+                  .append(Text.literal("Upgrade Points").formatted(Formatting.GREEN)))));
+            pipItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("A higher tier ").formatted(Formatting.DARK_AQUA))
                   .append(Text.literal("Soulstone").formatted(Formatting.DARK_RED))
                   .append(Text.literal(" increases your ").formatted(Formatting.DARK_AQUA))
-                  .append(Text.literal("Max Upgrade Points").formatted(Formatting.GREEN))));
+                  .append(Text.literal("Max Upgrade Points").formatted(Formatting.GREEN)))));
             setSlot(31-i*9,pipItem);
          }
          
          GuiElementBuilder maxedOut = new GuiElementBuilder(Items.STRUCTURE_VOID);
          maxedOut.setName((Text.literal("")
                .append(Text.literal("Maximum Value").formatted(Formatting.GREEN))));
-         maxedOut.addLoreLine((Text.literal("")
-               .append(Text.literal("You cannot increase this stat further").formatted(Formatting.DARK_AQUA))));
+         maxedOut.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("You cannot increase this stat further").formatted(Formatting.DARK_AQUA)))));
    
          GuiElementBuilder minedOut = new GuiElementBuilder(Items.STRUCTURE_VOID);
          minedOut.setName((Text.literal("")
                .append(Text.literal("Minimum Value").formatted(Formatting.GREEN))));
-         minedOut.addLoreLine((Text.literal("")
-               .append(Text.literal("You cannot decrease this stat further").formatted(Formatting.DARK_AQUA))));
+         minedOut.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("You cannot decrease this stat further").formatted(Formatting.DARK_AQUA)))));
          
          int minSpeed = stats.getShort("MinSpawnDelay");
          int minSpeedInd = indexOf(minSpeed,minSpeedLvls);
          int minSpeedPointC = minSpeedPoints[minSpeedInd];
-         ItemStack minSpeedArrowStack = new ItemStack(Items.TIPPED_ARROW);
-         minSpeedArrowStack.getOrCreateNbt().putString("Potion","minecraft:slowness");
-         minSpeedArrowStack.getOrCreateNbt().putInt("HideFlags",127);
-         GuiElementBuilder minSpeedIncArrow = GuiElementBuilder.from(minSpeedArrowStack);
+         ItemStack minSpeedArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.SLOWNESS);
+         GuiElementBuilder minSpeedIncArrow = GuiElementBuilder.from(minSpeedArrowStack).hideDefaultTooltip();
          makeArrowItem(minSpeedIncArrow,true,"Minimum Spawn Time","ticks",minSpeedInd,minSpeedPoints,minSpeedLvls);
-         GuiElementBuilder minSpeedDecArrow = GuiElementBuilder.from(minSpeedArrowStack);
+         GuiElementBuilder minSpeedDecArrow = GuiElementBuilder.from(minSpeedArrowStack).hideDefaultTooltip();
          makeArrowItem(minSpeedDecArrow,false,"Minimum Spawn Time","ticks",minSpeedInd,minSpeedPoints,minSpeedLvls);
          GuiElementBuilder minSpeedItem = new GuiElementBuilder(Items.GUNPOWDER);
          makeMainItem(minSpeedItem,"Minimum Spawn Time","The minimum amount of time between mob spawns","ticks",minSpeed,minSpeedPointC);
@@ -295,12 +270,10 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          int maxSpeed = stats.getShort("MaxSpawnDelay");
          int maxSpeedInd = indexOf(maxSpeed,maxSpeedLvls);
          int maxSpeedPointC = maxSpeedPoints[maxSpeedInd];
-         ItemStack maxSpeedArrowStack = new ItemStack(Items.TIPPED_ARROW);
-         maxSpeedArrowStack.getOrCreateNbt().putString("Potion","minecraft:swiftness");
-         maxSpeedArrowStack.getOrCreateNbt().putInt("HideFlags",127);
-         GuiElementBuilder maxSpeedIncArrow = GuiElementBuilder.from(maxSpeedArrowStack);
+         ItemStack maxSpeedArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.SWIFTNESS);
+         GuiElementBuilder maxSpeedIncArrow = GuiElementBuilder.from(maxSpeedArrowStack).hideDefaultTooltip();
          makeArrowItem(maxSpeedIncArrow,true,"Maximum Spawn Time","ticks",maxSpeedInd,maxSpeedPoints,maxSpeedLvls);
-         GuiElementBuilder maxSpeedDecArrow = GuiElementBuilder.from(maxSpeedArrowStack);
+         GuiElementBuilder maxSpeedDecArrow = GuiElementBuilder.from(maxSpeedArrowStack).hideDefaultTooltip();
          makeArrowItem(maxSpeedDecArrow,false,"Maximum Spawn Time","ticks",maxSpeedInd,maxSpeedPoints,maxSpeedLvls);
          GuiElementBuilder maxSpeedItem = new GuiElementBuilder(Items.SUGAR);
          makeMainItem(maxSpeedItem,"Maximum Spawn Time","The maximum amount of time between mob spawns","ticks",maxSpeed,maxSpeedPointC);
@@ -312,12 +285,10 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          int spawnRange = stats.getShort("SpawnRange");
          int spawnRangeInd = indexOf(spawnRange,spawnRangeLvls);
          int spawnRangePointC = spawnRangePoints[spawnRangeInd];
-         ItemStack spawnRangeArrowStack = new ItemStack(Items.TIPPED_ARROW);
-         spawnRangeArrowStack.getOrCreateNbt().putString("Potion","minecraft:slow_falling");
-         spawnRangeArrowStack.getOrCreateNbt().putInt("HideFlags",127);
-         GuiElementBuilder spawnRangeIncArrow = GuiElementBuilder.from(spawnRangeArrowStack);
+         ItemStack spawnRangeArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.SLOW_FALLING);
+         GuiElementBuilder spawnRangeIncArrow = GuiElementBuilder.from(spawnRangeArrowStack).hideDefaultTooltip();
          makeArrowItem(spawnRangeIncArrow,true,"Spawn Range","blocks",spawnRangeInd,spawnRangePoints,spawnRangeLvls);
-         GuiElementBuilder spawnRangeDecArrow = GuiElementBuilder.from(spawnRangeArrowStack);
+         GuiElementBuilder spawnRangeDecArrow = GuiElementBuilder.from(spawnRangeArrowStack).hideDefaultTooltip();
          makeArrowItem(spawnRangeDecArrow,false,"Spawn Range","blocks",spawnRangeInd,spawnRangePoints,spawnRangeLvls);
          GuiElementBuilder spawnRangeItem = new GuiElementBuilder(Items.NETHER_STAR);
          makeMainItem(spawnRangeItem,"Spawn Range","The range in which mobs can spawn","blocks",spawnRange,spawnRangePointC);
@@ -329,12 +300,10 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          int spawnCount = stats.getShort("SpawnCount");
          int spawnCountInd = indexOf(spawnCount,spawnCountLvls);
          int spawnCountPointC = spawnCountPoints[spawnCountInd];
-         ItemStack spawnCountArrowStack = new ItemStack(Items.TIPPED_ARROW);
-         spawnCountArrowStack.getOrCreateNbt().putString("Potion","minecraft:poison");
-         spawnCountArrowStack.getOrCreateNbt().putInt("HideFlags",127);
-         GuiElementBuilder spawnCountIncArrow = GuiElementBuilder.from(spawnCountArrowStack);
+         ItemStack spawnCountArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.POISON);
+         GuiElementBuilder spawnCountIncArrow = GuiElementBuilder.from(spawnCountArrowStack).hideDefaultTooltip();
          makeArrowItem(spawnCountIncArrow,true,"Spawn Count","mobs",spawnCountInd,spawnCountPoints,spawnCountLvls);
-         GuiElementBuilder spawnCountDecArrow = GuiElementBuilder.from(spawnCountArrowStack);
+         GuiElementBuilder spawnCountDecArrow = GuiElementBuilder.from(spawnCountArrowStack).hideDefaultTooltip();
          makeArrowItem(spawnCountDecArrow,false,"Spawn Count","mobs",spawnCountInd,spawnCountPoints,spawnCountLvls);
          GuiElementBuilder spawnCountItem = new GuiElementBuilder(Items.ZOMBIE_HEAD);
          makeMainItem(spawnCountItem,"Spawn Count","The amount of spawn attempts each cycle","mobs",spawnCount,spawnCountPointC);
@@ -346,12 +315,10 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          int maxEntities = stats.getShort("MaxNearbyEntities");
          int maxEntitiesInd = indexOf(maxEntities,maxEntitiesLvls);
          int maxEntitiesPointC = maxEntitiesPoints[maxEntitiesInd];
-         ItemStack maxEntitiesArrowStack = new ItemStack(Items.TIPPED_ARROW);
-         maxEntitiesArrowStack.getOrCreateNbt().putString("Potion","minecraft:water_breathing");
-         maxEntitiesArrowStack.getOrCreateNbt().putInt("HideFlags",127);
-         GuiElementBuilder maxEntitiesIncArrow = GuiElementBuilder.from(maxEntitiesArrowStack);
+         ItemStack maxEntitiesArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.WATER_BREATHING);
+         GuiElementBuilder maxEntitiesIncArrow = GuiElementBuilder.from(maxEntitiesArrowStack).hideDefaultTooltip();
          makeArrowItem(maxEntitiesIncArrow,true,"Max Entities","mobs",maxEntitiesInd,maxEntitiesPoints,maxEntitiesLvls);
-         GuiElementBuilder maxEntitiesDecArrow = GuiElementBuilder.from(maxEntitiesArrowStack);
+         GuiElementBuilder maxEntitiesDecArrow = GuiElementBuilder.from(maxEntitiesArrowStack).hideDefaultTooltip();
          makeArrowItem(maxEntitiesDecArrow,false,"Max Entities","mobs",maxEntitiesInd,maxEntitiesPoints,maxEntitiesLvls);
          GuiElementBuilder maxEntitiesItem = new GuiElementBuilder(Items.WITHER_SKELETON_SKULL);
          makeMainItem(maxEntitiesItem,"Max Entities","The amount of mobs in range before the spawner is disabled","mobs",maxEntities,maxEntitiesPointC);
@@ -363,12 +330,10 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          int playerRange = stats.getShort("RequiredPlayerRange");
          int playerRangeInd = indexOf(playerRange,playerRangeLvls);
          int playerRangePointC = playerRangePoints[playerRangeInd];
-         ItemStack playerRangeArrowStack = new ItemStack(Items.TIPPED_ARROW);
-         playerRangeArrowStack.getOrCreateNbt().putString("Potion","minecraft:turtle_master");
-         playerRangeArrowStack.getOrCreateNbt().putInt("HideFlags",127);
-         GuiElementBuilder playerRangeIncArrow = GuiElementBuilder.from(playerRangeArrowStack);
+         ItemStack playerRangeArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.TURTLE_MASTER);
+         GuiElementBuilder playerRangeIncArrow = GuiElementBuilder.from(playerRangeArrowStack).hideDefaultTooltip();
          makeArrowItem(playerRangeIncArrow,true,"Player Range","blocks",playerRangeInd,playerRangePoints,playerRangeLvls);
-         GuiElementBuilder playerRangeDecArrow = GuiElementBuilder.from(playerRangeArrowStack);
+         GuiElementBuilder playerRangeDecArrow = GuiElementBuilder.from(playerRangeArrowStack).hideDefaultTooltip();
          makeArrowItem(playerRangeDecArrow,false,"Player Range","blocks",playerRangeInd,playerRangePoints,playerRangeLvls);
          GuiElementBuilder playerRangeItem = new GuiElementBuilder(Items.PLAYER_HEAD);
          makeMainItem(playerRangeItem,"Player Range","How close a player has to be for the spawner to work","blocks",playerRange,playerRangePointC);
@@ -376,15 +341,9 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
          setSlot(16,playerRangeInd == playerRangeLvls.length-1 ? maxedOut : playerRangeIncArrow);
          setSlot(25,playerRangeItem);
          setSlot(34,playerRangeInd == 0 ? minedOut : playerRangeDecArrow);
-   
-   
-   
-         
       }
-   
-   
+      
       setTitle(Text.literal(ArcanaRegistry.SPAWNER_INFUSER.getNameString()));
-      listener.finishUpdate();
    }
    
    private boolean detectSpawner(){
@@ -410,15 +369,15 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       elem.setName((Text.literal("")
             .append(Text.literal(title+": ").formatted(Formatting.DARK_GREEN))
             .append(Text.literal(value+" "+units).formatted(Formatting.GREEN))));
-      elem.addLoreLine((Text.literal("")
-            .append(Text.literal(description).formatted(Formatting.DARK_AQUA))));
-      elem.addLoreLine((Text.literal("")));
-      elem.addLoreLine((Text.literal("")
+      elem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal(description).formatted(Formatting.DARK_AQUA)))));
+      elem.addLoreLine(TextUtils.removeItalics((Text.literal(""))));
+      elem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Current Value: ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal(value+" "+units).formatted(Formatting.GREEN))));
-      elem.addLoreLine((Text.literal("")
+            .append(Text.literal(value+" "+units).formatted(Formatting.GREEN)))));
+      elem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Point Allocation: ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal(points+" points").formatted(Formatting.GREEN))));
+            .append(Text.literal(points+" points").formatted(Formatting.GREEN)))));
    }
    
    private void makeArrowItem(GuiElementBuilder elem, boolean increase, String title, String units, int ind, int[] pointArr, int[] lvlArr){
@@ -429,50 +388,28 @@ public class SpawnerInfuserGui extends SimpleGui implements WatchedGui {
       
       elem.setName((Text.literal("")
             .append(Text.literal(incDecStr+" "+title).formatted(Formatting.DARK_GREEN))));
-      elem.addLoreLine((Text.literal("")
+      elem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal(incDecStr+": ").formatted(Formatting.DARK_AQUA))
             .append(Text.literal(lvlArr[ind]+" "+units).formatted(Formatting.GREEN))
             .append(Text.literal(" -> ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal(newVal+" "+units).formatted(Formatting.GREEN))));
-      elem.addLoreLine((Text.literal("")
+            .append(Text.literal(newVal+" "+units).formatted(Formatting.GREEN)))));
+      elem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Point Cost: ").formatted(Formatting.DARK_AQUA))
-            .append(pointDiff > 0 ? Text.literal("+"+pointDiff+" points").formatted(Formatting.GREEN) : Text.literal(pointDiff+" points").formatted(Formatting.RED))));
+            .append(pointDiff > 0 ? Text.literal("+"+pointDiff+" points").formatted(Formatting.GREEN) : Text.literal(pointDiff+" points").formatted(Formatting.RED)))));
    }
    
    @Override
-   public void onClose(){ // Return extra point items
-      ItemStack stack = inv.getStack(1);
-      if(!stack.isEmpty()){
-      
-         ItemEntity itemEntity;
-         boolean bl = player.getInventory().insertStack(stack);
-         if (!bl || !stack.isEmpty()) {
-            itemEntity = player.dropItem(stack, false);
-            if (itemEntity == null) return;
-            itemEntity.resetPickupDelay();
-            itemEntity.setOwner(player.getUuid());
-            return;
-         }
-         stack.setCount(1);
-         itemEntity = player.dropItem(stack, false);
-         if (itemEntity != null) {
-            itemEntity.setDespawnImmediately();
-         }
+   public void onTick(){
+      World world = blockEntity.getWorld();
+      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity){
+         this.close();
       }
+      super.onTick();
    }
    
    @Override
    public void close(){
+      blockEntity.removePlayer(player);
       super.close();
-   }
-   
-   @Override
-   public BlockEntity getBlockEntity(){
-      return blockEntity;
-   }
-   
-   @Override
-   public SimpleGui getGui(){
-      return this;
    }
 }

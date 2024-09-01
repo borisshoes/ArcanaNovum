@@ -10,8 +10,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 
-import java.util.UUID;
-
 public class OverhealLoginCallback extends LoginCallback{
    
    private float hearts;
@@ -38,7 +36,7 @@ public class OverhealLoginCallback extends LoginCallback{
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
          }
-         MiscUtils.removeMaxAbsorption(player, SiphoningArrows.EFFECT_UUID,hearts);
+         MiscUtils.removeMaxAbsorption(player, SiphoningArrows.EFFECT_ID,hearts);
          player.setAbsorptionAmount(removed);
       }
    }

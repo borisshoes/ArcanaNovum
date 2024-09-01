@@ -1,26 +1,28 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarGui;
-import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
-import net.borisshoes.arcananovum.recipes.transmutation.*;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.fabricmc.loader.impl.lib.sat4j.pb.tools.INegator;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -29,11 +31,13 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class TransmutationAltarBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
+import static net.borisshoes.arcananovum.blocks.altars.TransmutationAltar.TransmutationAltarBlock.HORIZONTAL_FACING;
+
+public class TransmutationAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
@@ -41,9 +45,12 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    private boolean synthetic;
    private String customName;
    private int cooldown;
+   private boolean active;
+   private final Multiblock multiblock;
    
    public TransmutationAltarBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.TRANSMUTATION_ALTAR_BLOCK_ENTITY, pos, state);
+      this.multiblock = ((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getMultiblock();
    }
    
    public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
@@ -55,28 +62,20 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       resetCooldown();
    }
    
-   public void openGui(int screen, ServerPlayerEntity player, String data){ // 0 main gui, 1 recipe list gui, 2 commutative recipe view
-      TransmutationAltarGui gui = null;
-      if(screen == 0){
-         gui = new TransmutationAltarGui(ScreenHandlerType.HOPPER,player,this,screen);
-         gui.buildMenuGui();
-      }else if(screen == 1){
-         gui = new TransmutationAltarGui(ScreenHandlerType.GENERIC_9X6,player,this,screen);
-         gui.buildRecipeListGui();
-      }else if(screen == 2){
-         gui = new TransmutationAltarGui(ScreenHandlerType.GENERIC_9X6,player,this,screen);
-         gui.buildRecipeViewGui(data);
+   public void openGui(ServerPlayerEntity player){
+      if(active){
+         player.sendMessage(Text.literal("You cannot access an active Altar").formatted(Formatting.RED));
+         return;
       }
-      
-      if(gui != null && !gui.tryOpen(player)){
-         player.sendMessage(Text.literal("Someone else is using the Altar").formatted(Formatting.RED),true);
-      }
+      TransmutationAltarGui gui = new TransmutationAltarGui(ScreenHandlerType.HOPPER,player,this);
+      gui.buildMenuGui();
+      gui.open();
    }
    
    public HashMap<String, ItemEntity> getTransmutingStacks(){
       HashMap<String, ItemEntity> stacks = new HashMap<>();
       if(this.world == null || this.pos == null) return stacks;
-      Direction direction = world.getBlockState(pos).get(TransmutationAltar.TransmutationAltarBlock.HORIZONTAL_FACING);
+      Direction direction = world.getBlockState(pos).get(HORIZONTAL_FACING);
       Vec3d centerPos = getPos().toCenterPos();
       Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
       Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
@@ -101,7 +100,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    
    public Vec3d getOutputPos(String outputString){
       if(this.world == null || this.pos == null) return null;
-      Direction direction = world.getBlockState(pos).get(TransmutationAltar.TransmutationAltarBlock.HORIZONTAL_FACING);
+      Direction direction = world.getBlockState(pos).get(HORIZONTAL_FACING);
       Vec3d centerPos = getPos().toCenterPos();
       Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
       Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
@@ -128,9 +127,39 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       }
    }
    
+   @Override
+   public boolean isAssembled(){
+      return multiblock.matches(getMultiblockCheck());
+   }
+   
+   public Multiblock.MultiblockCheck getMultiblockCheck(){
+      if (!(this.world instanceof ServerWorld serverWorld)) {
+         return null;
+      }
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-5,0,-5),world.getBlockState(pos).get(HORIZONTAL_FACING));
+   }
+   
    private void tick(){
-      if(cooldown > 0) cooldown--;
-      this.markDirty();
+      if (!(this.world instanceof ServerWorld serverWorld)) {
+         return;
+      }
+      
+      if(isAssembled() && cooldown > 0){
+         cooldown--;
+         this.markDirty();
+      }
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0 && this.isAssembled()){
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      }
+   }
+   
+   public boolean isActive(){
+      return active;
+   }
+   
+   public void setActive(boolean active){
+      this.active = active;
    }
    
    public int getCooldown(){
@@ -165,13 +194,13 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       return customName;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.TRANSMUTATION_ALTAR;
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -198,8 +227,8 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){

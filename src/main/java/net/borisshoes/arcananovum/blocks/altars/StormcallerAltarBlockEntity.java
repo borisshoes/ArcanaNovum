@@ -1,18 +1,24 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StormcallerAltarGui;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +26,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
+
+public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -29,9 +37,12 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    private int cooldown;
    private int mode = 0; // 0 - clear sky, 1 - raining, 2 - thunder
    private int duration = 0;
+   private boolean active;
+   private final Multiblock multiblock;
    
    public StormcallerAltarBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.STORMCALLER_ALTAR_BLOCK_ENTITY, pos, state);
+      this.multiblock = ((MultiblockCore) ArcanaRegistry.STORMCALLER_ALTAR).getMultiblock();
    }
    
    public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
@@ -46,11 +57,13 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    public void openGui(ServerPlayerEntity player){
+      if(active){
+         player.sendMessage(Text.literal("You cannot access an active Altar").formatted(Formatting.RED));
+         return;
+      }
       StormcallerAltarGui gui = new StormcallerAltarGui(player,this);;
       gui.build();
-      if(!gui.tryOpen(player)){
-         player.sendMessage(Text.literal("Someone else is using the Altar").formatted(Formatting.RED),true);
-      }
+      gui.open();
    }
    
    public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
@@ -59,9 +72,39 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       }
    }
    
+   @Override
+   public boolean isAssembled(){
+      return multiblock.matches(getMultiblockCheck());
+   }
+   
+   public Multiblock.MultiblockCheck getMultiblockCheck(){
+      if (!(this.world instanceof ServerWorld serverWorld)) {
+         return null;
+      }
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-5,0,-5),null);
+   }
+   
    private void tick(){
-      if(cooldown > 0) cooldown--;
-      this.markDirty();
+      if (!(this.world instanceof ServerWorld serverWorld)) {
+         return;
+      }
+      
+      if(isAssembled() && cooldown > 0){
+         cooldown--;
+         this.markDirty();
+      }
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0 && this.isAssembled()){
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      }
+   }
+   
+   public boolean isActive(){
+      return active;
+   }
+   
+   public void setActive(boolean active){
+      this.active = active;
    }
    
    public int getCooldown(){
@@ -108,13 +151,13 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       return customName;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.STORMCALLER_ALTAR;
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -147,8 +190,8 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){

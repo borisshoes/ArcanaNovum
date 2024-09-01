@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
@@ -40,8 +40,8 @@ public abstract class PlayerInventoryMixin {
             }
             
             invItems.add(item);
-            MagicItem magicItem = MagicItemUtils.identifyItem(item);
-            if(magicItem instanceof ArcanistsBelt belt){
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+            if(arcanaItem instanceof ArcanistsBelt belt){
                SimpleInventory beltInv = belt.deserialize(item);
                ArrayList<ItemStack> beltList = new ArrayList<>();
                for(int j = 0; j < beltInv.size(); j++){
@@ -52,7 +52,6 @@ public abstract class PlayerInventoryMixin {
          }
          allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
          
-         
          for(int i = 0; i < allItems.size(); i++){
             List<ItemStack> itemList = allItems.get(i).getLeft();
             ItemStack carrier = allItems.get(i).getRight();
@@ -61,14 +60,14 @@ public abstract class PlayerInventoryMixin {
             for(int j = 0; j < itemList.size(); j++){
                ItemStack item = itemList.get(j);
                
-               boolean isMagic = MagicItemUtils.isMagic(item);
-               if(!isMagic){
+               boolean isArcane = ArcanaItemUtils.isArcane(item);
+               if(!isArcane){
                   sinv.setStack(j,item);
-                  continue; // Item not magic, skip
+                  continue; // Item not arcane, skip
                }
                
                // Look for charm
-               if(MagicItemUtils.identifyItem(item) instanceof CindersCharm charm){
+               if(ArcanaItemUtils.identifyItem(item) instanceof CindersCharm charm){
                   ItemStack output = charm.smelt(item, playerInv.player, stack);
                   if(output != null){
                      cir.setReturnValue(customPickUp(stack,slot,playerInv,output));
@@ -79,7 +78,7 @@ public abstract class PlayerInventoryMixin {
                sinv.setStack(j,item);
             }
             
-            if(MagicItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
+            if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
                belt.serialize(carrier, sinv);
             }
          }

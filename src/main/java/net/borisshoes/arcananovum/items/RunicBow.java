@@ -1,44 +1,45 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBowItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBowItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ArrowItem;
-import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -50,10 +51,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class RunicBow extends MagicItem {
+public class RunicBow extends ArcanaItem {
+	public static final String ID = "runic_bow";
    private static final String ACCEL_0_TXT = "item/runic_bow_accel_0";
    private static final String ACCEL_1_TXT = "item/runic_bow_accel_1";
    private static final String ACCEL_2_TXT = "item/runic_bow_accel_2";
@@ -62,12 +65,17 @@ public class RunicBow extends MagicItem {
    private static final String ACCEL_5_TXT = "item/runic_bow_accel_5";
    
    public RunicBow(){
-      id = "runic_bow";
+      id = ID;
       name = "Runic Bow";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.BOW;
-      item = new RunicBowItem(new FabricItemSettings().maxCount(1).fireproof().maxDamage(384));
+      item = new RunicBowItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Bow").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,ACCEL_0_TXT));
       models.add(new Pair<>(vanillaItem,ACCEL_1_TXT));
@@ -75,116 +83,118 @@ public class RunicBow extends MagicItem {
       models.add(new Pair<>(vanillaItem,ACCEL_3_TXT));
       models.add(new Pair<>(vanillaItem,ACCEL_4_TXT));
       models.add(new Pair<>(vanillaItem,ACCEL_5_TXT));
-   
-      ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      NbtCompound power = new NbtCompound();
-      power.putString("id","power");
-      power.putInt("lvl",7);
-      enchants.add(power);
-      display.putString("Name","[{\"text\":\"Runic Bow\",\"italic\":false,\"bold\":true,\"color\":\"light_purple\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags", 255);
-      tag.putInt("Unbreakable",1);
+      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.ADVANCEMENT_SNIPER_DUEL,ResearchTasks.ADVANCEMENT_BULLSEYE};
       
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\",\"color\":\"light_purple\"},{\"text\":\" makes use of the \",\"color\":\"dark_purple\"},{\"text\":\"Runic Matrix\",\"color\":\"light_purple\"},{\"text\":\" to create \",\"color\":\"dark_purple\"},{\"text\":\"unique effects\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\",\"color\":\"light_purple\"},{\"text\":\" can fire and \"},{\"text\":\"activate\",\"italic\":true,\"color\":\"dark_aqua\"},{\"text\":\" \",\"italic\":true},{\"text\":\"the effects of \"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"bow\",\"color\":\"light_purple\"},{\"text\":\" also acts as a \"},{\"text\":\"normal bow\",\"color\":\"yellow\"},{\"text\":\" with \"},{\"text\":\"Power VII\",\"color\":\"aqua\"},{\"text\":\" and is \"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_purple\"}]"));
-      
-      return loreList;
+   public void finalizePrefItem(MinecraftServer server){
+      super.finalizePrefItem(server);
+      ItemStack curPrefItem = this.getPrefItem();
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
+            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.POWER),7)
+      ).withShowInTooltip(false));
+      this.prefItem = buildItemLore(curPrefItem, server);
+   }
+   
+   @Override
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Bow").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" makes use of the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Matrix").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" to create ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("unique effects").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Bow").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" can fire and ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("activate ").formatted(Formatting.ITALIC,Formatting.DARK_AQUA))
+            .append(Text.literal("the effects of ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("bow").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" also acts as a ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("normal bow").formatted(Formatting.YELLOW))
+            .append(Text.literal(" with ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Power VII").formatted(Formatting.AQUA))
+            .append(Text.literal(" and is ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("unbreakable").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      if(enchants != null) newTag.put("Enchantments", enchants);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      ItemStack newStack = super.updateItem(stack,server);
+      return buildItemLore(newStack,server);
    }
    
    @Override
    public ItemStack forgeItem(Inventory inv){
-      ItemStack toolStack = inv.getStack(12); // Should be the Bow
-      ItemStack newMagicItem = getNewItem();
-      NbtCompound nbt = toolStack.getNbt();
-      boolean powerApplied = false;
-      if(nbt != null && nbt.contains("Enchantments")){
-         NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-         for(int i = 0; i < enchants.size(); i++){
-            if(((NbtCompound)enchants.get(i)).getString("id").equals(Registries.ENCHANTMENT.getId(Enchantments.POWER).toString())){
-               NbtCompound power = new NbtCompound();
-               power.putString("id","power");
-               power.putShort("lvl", (short) 7);
-               enchants.set(i,power);
-               powerApplied = true;
-            }
-         }
-         if(!powerApplied){
-            NbtCompound power = new NbtCompound();
-            power.putString("id","power");
-            power.putShort("lvl", (short) 7);
-            enchants.add(power);
-         }
-         newMagicItem.getOrCreateNbt().put("Enchantments",enchants);
-      }
-      return newMagicItem;
-   }
-   
-   private MagicItemRecipe makeRecipe(){
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      MagicItemIngredient c = new MagicItemIngredient(Items.AMETHYST_SHARD,64,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
-      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.BOW,1,null, true);
-      MagicItemIngredient e = new MagicItemIngredient(Items.ENCHANTED_BOOK,1, EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(Enchantments.POWER,5)).getNbt());
+      ItemStack bowStack = inv.getStack(12); // Should be the Bow
+      ItemStack newArcanaItem = getNewItem();
       
-      MagicItemIngredient[][] ingredients = {
-            {c,s,e,s,c},
-            {s,n,m,n,s},
-            {e,m,b,m,e},
-            {s,n,m,n,s},
-            {c,s,e,s,c}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery().withEnchanter().withCore());
+      if(bowStack.hasEnchantments()){
+         EnchantmentHelper.set(newArcanaItem,bowStack.getEnchantments());
+      }
+      newArcanaItem.addEnchantment(MiscUtils.getEnchantment(Enchantments.POWER),7);
+      return newArcanaItem;
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"       Runic Bow\\n\\nRarity: Legendary\\n\\nThe Runic Bow is truely a masterpiece of adaptive Arcana. The integrated Runic Matrices reconfigure the Bow's ethereal structure based on the projectile being fired to unlock its Arcane effects. \"}");
-      list.add("{\"text\":\"       Runic Bow\\n\\nThe Runic Bow is capable of utilizing Runic Arrows and activating their special abilities. The Bow also enhances normal arrows to do more damage than a traditional enchanted bow as well as being incredibly durable.\"}");
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
+      ArcanaIngredient b = new ArcanaIngredient(Items.AMETHYST_SHARD,32);
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.POWER),5));
+      ArcanaIngredient d = new ArcanaIngredient(Items.END_CRYSTAL,24);
+      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
+      GenericArcanaIngredient h = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      ArcanaIngredient m = new ArcanaIngredient(Items.BOW,1, true);
+      
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,d,a},
+            {b,g,h,g,d},
+            {c,h,m,h,c},
+            {d,g,h,g,b},
+            {a,d,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withFletchery().withEnchanter().withCore());
+   }
+   
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("       Runic Bow\n\nRarity: Sovereign\n\nThe Runic Bow is truely a masterpiece of adaptive Arcana. The integrated Runic Matrices reconfigure the Bow's ethereal structure based on the projectile being fired to unlock its Arcane effects. ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Runic Bow\n\nThe Runic Bow is capable of utilizing Runic Arrows and activating their special abilities. The Bow also enhances normal arrows to do more damage than a traditional enchanted bow as well as being incredibly durable.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class RunicBowItem extends MagicPolymerBowItem {
-      public static final Predicate<ItemStack> RUNIC_BOW_PROJECTILES = stack -> (stack.isIn(ItemTags.ARROWS) || MagicItemUtils.identifyItem(stack) instanceof RunicArrow);
+   public class RunicBowItem extends ArcanaPolymerBowItem {
+      public static final Predicate<ItemStack> RUNIC_BOW_PROJECTILES = stack -> (stack.isIn(ItemTags.ARROWS) || ArcanaItemUtils.identifyItem(stack) instanceof RunicArrow);
       public static final float[] STABILITY = new float[]{1f, .75f, .5f, 0f};
       
-      public RunicBowItem(Settings settings){
+      public RunicBowItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
          int tier = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.BOW_ACCELERATION.id);
-         if(tier == 1) return ArcanaRegistry.MODELS.get(ACCEL_1_TXT).value();
-         if(tier == 2) return ArcanaRegistry.MODELS.get(ACCEL_2_TXT).value();
-         if(tier == 3) return ArcanaRegistry.MODELS.get(ACCEL_3_TXT).value();
-         if(tier == 4) return ArcanaRegistry.MODELS.get(ACCEL_4_TXT).value();
-         if(tier == 5) return ArcanaRegistry.MODELS.get(ACCEL_5_TXT).value();
-         return ArcanaRegistry.MODELS.get(ACCEL_0_TXT).value();
+         if(tier == 1) return ArcanaRegistry.getModelData(ACCEL_1_TXT).value();
+         if(tier == 2) return ArcanaRegistry.getModelData(ACCEL_2_TXT).value();
+         if(tier == 3) return ArcanaRegistry.getModelData(ACCEL_3_TXT).value();
+         if(tier == 4) return ArcanaRegistry.getModelData(ACCEL_4_TXT).value();
+         if(tier == 5) return ArcanaRegistry.getModelData(ACCEL_5_TXT).value();
+         return ArcanaRegistry.getModelData(ACCEL_0_TXT).value();
       }
       
       @Override
@@ -198,89 +208,78 @@ public class RunicBow extends MagicItem {
       }
       
       @Override
-      public void onStoppedUsing(ItemStack bow, World world, LivingEntity user, int remainingUseTicks){
-         boolean dontConsumeArrow;
-         float pullPercent;
+      public void onStoppedUsing(ItemStack bow, World world, LivingEntity user, int remainingUseTicks) {
          if (!(user instanceof PlayerEntity playerEntity)) {
             return;
          }
-         boolean hasInfiniteArrows = playerEntity.getAbilities().creativeMode || EnchantmentHelper.getLevel(Enchantments.INFINITY, bow) > 0;
          ItemStack arrowStack = playerEntity.getProjectileType(bow);
-         if (arrowStack.isEmpty() && !hasInfiniteArrows) {
-            return;
-         }
-         if (arrowStack.isEmpty()) {
-            arrowStack = new ItemStack(Items.ARROW);
-         }
-         if ((double)(pullPercent = getPullProgress(this.getMaxUseTime(bow) - remainingUseTicks, bow)) < 0.1) {
-            return;
-         }
-         boolean arrowsRunic = MagicItemUtils.isRunicArrow(arrowStack);
-         boolean hasEnhancedInfinity = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.ENHANCED_INFINITY.id)) >= 1;
-         dontConsumeArrow = hasInfiniteArrows && (arrowStack.isOf(Items.ARROW) || (hasEnhancedInfinity && !arrowsRunic && (arrowStack.isOf(Items.SPECTRAL_ARROW) || arrowStack.isOf(Items.TIPPED_ARROW))));
-         
-         SoundEvent sound = SoundEvents.ENTITY_ARROW_SHOOT;
-         float volume = 1.0f;
-         if (!world.isClient) {
-            int punchLvl;
-            int powerLvl;
-            float divergence = STABILITY[Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_STABILIZATION.id))];
+         boolean arrowsRunic = ArcanaItemUtils.isRunicArrow(arrowStack);
+         if (!arrowStack.isEmpty()) {
+            float pullPercent = getPullProgress(this.getMaxUseTime(bow, user) - remainingUseTicks, bow);
+            if((double) pullPercent < 0.1){
+               return;
+            }
+            List<ItemStack> list = load(bow, arrowStack, playerEntity);
+            if (world instanceof ServerWorld serverWorld && !list.isEmpty()) {
+               float divergence = STABILITY[Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_STABILIZATION.id))];
+               this.shootAll(serverWorld, playerEntity, playerEntity.getActiveHand(), bow, list, pullPercent * 3.0F, divergence, pullPercent == 1.0F, null);
+            }
             
-            ArrowItem arrowItem = (ArrowItem)(arrowStack.getItem() instanceof ArrowItem ? arrowStack.getItem() : Items.ARROW);
-            PersistentProjectileEntity persistentProjectileEntity = arrowItem.createArrow(world, arrowStack, playerEntity);
-            persistentProjectileEntity.setVelocity(playerEntity, playerEntity.getPitch(), playerEntity.getYaw(), 0.0f, pullPercent * 3.0f, divergence);
-            if (pullPercent == 1.0f) {
-               persistentProjectileEntity.setCritical(true);
-            }
-            if ((powerLvl = EnchantmentHelper.getLevel(Enchantments.POWER, bow)) > 0) {
-               persistentProjectileEntity.setDamage(persistentProjectileEntity.getDamage() + (double)powerLvl * 0.5 + 0.5);
-            }
-            if ((punchLvl = EnchantmentHelper.getLevel(Enchantments.PUNCH, bow)) > 0) {
-               persistentProjectileEntity.setPunch(punchLvl);
-            }
-            if (EnchantmentHelper.getLevel(Enchantments.FLAME, bow) > 0) {
-               persistentProjectileEntity.setOnFireFor(100);
-            }
-            bow.damage(1, playerEntity, p -> p.sendToolBreakStatus(playerEntity.getActiveHand()));
-            if (dontConsumeArrow || playerEntity.getAbilities().creativeMode && (arrowStack.isOf(Items.SPECTRAL_ARROW) || arrowStack.isOf(Items.TIPPED_ARROW))) {
-               persistentProjectileEntity.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
-            }
-            world.spawnEntity(persistentProjectileEntity);
+            SoundEvent sound = SoundEvents.ENTITY_ARROW_SHOOT;
+            float volume = 1.0f;
             
             if(arrowsRunic){
-               RunicArrow runicArrow = MagicItemUtils.identifyRunicArrow(arrowStack);
-               NbtCompound magicTag = arrowStack.getNbt().getCompound("arcananovum");
-               sound = SoundEvents.ITEM_TRIDENT_THROW;
+               sound = SoundEvents.ITEM_TRIDENT_THROW.value();
                volume = 0.8f;
                
-               if(playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, 1);
+               RunicArrow runicArrow = ArcanaItemUtils.identifyRunicArrow(arrowStack);
                if(runicArrow instanceof PhotonicArrows photonArrows){
-                  int alignmentLvl = Math.max(0, ArcanaAugments.getAugmentFromCompound(magicTag, ArcanaAugments.PRISMATIC_ALIGNMENT.id));
-                  photonArrows.shoot(world,user,persistentProjectileEntity,alignmentLvl);
-                  persistentProjectileEntity.kill();
                   sound = SoundEvents.BLOCK_AMETHYST_BLOCK_HIT;
                   volume = 1.2f;
                }
-               PLAYER_DATA.get(playerEntity).addXP(50);
+               
+               PLAYER_DATA.get(playerEntity).addXP(50 * list.size());
+               if(playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, list.size());
+            }
+            
+            world.playSound(null, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), sound, SoundCategory.PLAYERS,volume,1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + pullPercent * 0.5F);
+            playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
+         }
+      }
+      
+      protected void shootAll(ServerWorld world, LivingEntity shooter, Hand hand, ItemStack bow, List<ItemStack> projectiles, float speed, float divergence, boolean critical, @Nullable LivingEntity target) {
+         float f = EnchantmentHelper.getProjectileSpread(world, bow, shooter, 0.0F);
+         float g = projectiles.size() == 1 ? 0.0F : 2.0F * f / (float)(projectiles.size() - 1);
+         float h = (float)((projectiles.size() - 1) % 2) * g / 2.0F;
+         float i = 1.0F;
+         
+         for (int j = 0; j < projectiles.size(); j++) {
+            ItemStack arrowStack = (ItemStack)projectiles.get(j);
+            if (!arrowStack.isEmpty()) {
+               float k = h + i * (float)((j + 1) / 2) * g;
+               i = -i;
+               ProjectileEntity projectileEntity = this.createArrowEntity(world, shooter, bow, arrowStack, critical);
+               this.shoot(shooter, projectileEntity, j, speed, divergence, k, target);
+               world.spawnEntity(projectileEntity);
+               
+               if(ArcanaItemUtils.identifyRunicArrow(arrowStack) instanceof PhotonicArrows photonArrows){
+                  int alignmentLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(arrowStack, ArcanaAugments.PRISMATIC_ALIGNMENT.id));
+                  photonArrows.shoot(world, shooter, projectileEntity, alignmentLvl);
+                  projectileEntity.kill();
+               }
+               
+               bow.damage(this.getWeaponStackDamage(arrowStack), shooter, LivingEntity.getSlotForHand(hand));
+               if (bow.isEmpty()) {
+                  break;
+               }
             }
          }
-         
-         SoundUtils.playSound(world,playerEntity.getBlockPos(), sound, SoundCategory.PLAYERS, volume, 1.0f / (world.getRandom().nextFloat() * 0.4f + 1.2f) + pullPercent * 0.5f);
-         
-         if (!dontConsumeArrow && !playerEntity.getAbilities().creativeMode) {
-            QuiverItem.decreaseQuiver(bow,arrowStack,playerEntity);
-            arrowStack.decrement(1);
-            if (arrowStack.isEmpty()) {
-               playerEntity.getInventory().removeOne(arrowStack);
-            }
-         }
-         playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
       }
       
       @Override
       public void usageTick(World world, LivingEntity user, ItemStack bow, int remainingUseTicks){
          int accelLvl = ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION.id);
-         float prog = getPullProgress(getMaxUseTime(bow)-remainingUseTicks,bow);
+         float prog = getPullProgress(getMaxUseTime(bow,user)-remainingUseTicks,bow);
          if(accelLvl > 0 && user instanceof ServerPlayerEntity player && prog >= 0.1){
             String t =  "▁▂▃▅▆▇۞";
             char c = t.charAt((int) (Math.max(0,prog*t.length()-1)));
@@ -295,8 +294,8 @@ public class RunicBow extends MagicItem {
       
       private float getPullProgress(int useTicks, ItemStack bow){
          float maxPullTicks = 20f;
-         MagicItem magicBow = MagicItemUtils.identifyItem(bow);
-         if(magicBow instanceof RunicBow){
+         ArcanaItem arcanaBow = ArcanaItemUtils.identifyItem(bow);
+         if(arcanaBow instanceof RunicBow){
             int accelLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.BOW_ACCELERATION.id));
             final float[] accel = {20,18,17,16,15,10};
             maxPullTicks = accel[accelLvl];
@@ -312,8 +311,8 @@ public class RunicBow extends MagicItem {
       }
       
       @Override
-      public int getMaxUseTime(ItemStack stack){
-         return super.getMaxUseTime(stack);
+      public int getMaxUseTime(ItemStack stack, LivingEntity user){
+         return super.getMaxUseTime(stack,user);
       }
       
       @Override
@@ -322,3 +321,4 @@ public class RunicBow extends MagicItem {
       }
    }
 }
+

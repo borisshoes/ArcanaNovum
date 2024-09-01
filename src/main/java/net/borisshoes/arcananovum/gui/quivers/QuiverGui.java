@@ -3,13 +3,14 @@ package net.borisshoes.arcananovum.gui.quivers;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.QuiverItem;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -47,14 +48,12 @@ public class QuiverGui extends SimpleGui {
       for(int i = 0; i < inv.size(); i++){
          setSlotRedirect(i, new QuiverSlot(inv,runic,i,i%3,i/3));
       }
-   
-      NbtCompound tag = item.getNbt();
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      NbtList arrows = magicTag.getList("arrows",NbtElement.COMPOUND_TYPE);
+      
+      NbtList arrows = ArcanaItem.getListProperty(item, QuiverItem.ARROWS_TAG, NbtElement.COMPOUND_TYPE);
       for(int i = 0; i < arrows.size(); i++){
          NbtCompound arrow = arrows.getCompound(i);
          int slot = arrow.getByte("Slot");
-         ItemStack stack = ItemStack.fromNbt(arrow);
+         ItemStack stack = ItemStack.fromNbt(player.getRegistryManager(),arrow).orElse(ItemStack.EMPTY);
          if(stack.getCount() > 0 && !stack.isEmpty())
             inv.setStack(slot,stack);
       }
@@ -70,7 +69,7 @@ public class QuiverGui extends SimpleGui {
       }else if(index > 9){
          int invSlot = index >= 36 ? index - 36 : index;
          ItemStack stack = player.getInventory().getStack(invSlot);
-         if(ItemStack.canCombine(item,stack)){
+         if(ItemStack.areItemsAndComponentsEqual(item,stack)){
             close();
             return false;
          }
@@ -81,31 +80,23 @@ public class QuiverGui extends SimpleGui {
    
    @Override
    public void onClose(){
-      NbtCompound tag = item.getNbt();
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      int slot = magicTag.getInt("slot");
       NbtList arrows = new NbtList();
       
       for(int i = 0; i < inv.size(); i++){
          ItemStack arrowStack = inv.getStack(i);
          if(arrowStack.isEmpty()) continue;
-         if(slot == -1){
-            slot = i;
-            magicTag.putInt("slot",slot);
-         }
-         NbtCompound arrow = arrowStack.writeNbt(new NbtCompound());
+         NbtCompound arrow = (NbtCompound) arrowStack.encodeAllowEmpty(player.getRegistryManager());
          arrow.putByte("Slot", (byte) i);
          arrows.add(arrow);
       }
-      if(arrows.isEmpty()) magicTag.putInt("slot",-1);
-      magicTag.put("arrows",arrows);
+      ArcanaItem.putProperty(item,QuiverItem.ARROWS_TAG,arrows);
    
       List<Integer> tippedTypes = new ArrayList<>();
       if(!runic){
          for(int i = 0; i < inv.size(); i++){
             ItemStack arrowStack = inv.getStack(i);
-            if(arrowStack.isOf(Items.TIPPED_ARROW)){
-               int color = PotionUtil.getColor(arrowStack);
+            if(arrowStack.isOf(Items.TIPPED_ARROW) && arrowStack.contains(DataComponentTypes.POTION_CONTENTS)){
+               int color = arrowStack.get(DataComponentTypes.POTION_CONTENTS).getColor();
                if(!tippedTypes.contains(color)) tippedTypes.add(color);
             }
          }

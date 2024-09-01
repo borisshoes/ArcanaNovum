@@ -1,11 +1,12 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
@@ -14,10 +15,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +26,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class MidnightEnchanterBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
+
+public class MidnightEnchanterBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -77,14 +80,16 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       if(assembled && seenForge && hasBooks){
          ParticleEffectUtils.midnightEnchanterAnim(serverWorld,pos.toCenterPos(),ticks % 300);
       }
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0 && this.assembled && this.seenForge){
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      }
    }
    
    public void openGui(ServerPlayerEntity player){
       MidnightEnchanterGui gui = new MidnightEnchanterGui(player,this);
       gui.buildGui();
-      if(!gui.tryOpen(player)){
-         player.sendMessage(Text.literal("Someone else is using the Enchanter").formatted(Formatting.RED),true);
-      }
+      gui.open();
    }
    
    public boolean isAssembled(){
@@ -122,13 +127,13 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       return customName;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.MIDNIGHT_ENCHANTER;
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -152,8 +157,8 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){

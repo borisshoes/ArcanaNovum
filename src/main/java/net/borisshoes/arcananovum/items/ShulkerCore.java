@@ -5,21 +5,23 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,10 +31,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.MinecraftServer;
@@ -40,6 +40,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
@@ -47,63 +48,101 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShulkerCore extends EnergyItem {
+	public static final String ID = "shulker_core";
+   
+   public static final String SPEED_TAG = "speed";
+   public static final String SPEED_CD_TAG = "speedCD";
+   public static final String STONE_TAG = "stone";
+   public static final String STONE_DATA_TAG = "stoneData";
    
    private static final String TXT = "item/shulker_core";
    
    public ShulkerCore(){
-      id = "shulker_core";
+      id = ID;
       name = "Shulker Core";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
-      item = new ShulkerCoreItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new ShulkerCoreItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.literal("Shulker Core").formatted(Formatting.BOLD),0xFFFF99))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       itemVersion = 1;
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
-   
-      ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Shulker Core\",\"italic\":false,\"color\":\"#ffff99\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_LEVITATE,ResearchTasks.EFFECT_SLOW_FALLING,ResearchTasks.UNLOCK_STELLAR_CORE};
       
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putInt("speed",1);
-      tag.getCompound("arcananovum").putInt("speedCD",0);
-      tag.getCompound("arcananovum").putBoolean("stone",true);
-      stack.setNbt(tag);
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,SPEED_TAG,1);
+      putProperty(stack,SPEED_CD_TAG,0);
+      putProperty(stack,STONE_TAG,true);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Shulkers \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"possess a \",\"color\":\"gray\"},{\"text\":\"unique \",\"color\":\"dark_purple\"},{\"text\":\"ability to defy \",\"color\":\"gray\"},{\"text\":\"gravity\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Core \",\"color\":\"dark_purple\"},{\"text\":\"has \"},{\"text\":\"harnessed\",\"color\":\"yellow\"},{\"text\":\" that ability to allow \"},{\"text\":\"controlled\",\"color\":\"yellow\"},{\"text\":\" \"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\" must be \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"refilled \",\"color\":\"dark_aqua\"},{\"text\":\"with \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Shulkers\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to grant \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to change the \",\"color\":\"gray\"},{\"text\":\"speed \",\"color\":\"dark_aqua\"},{\"text\":\"of \",\"color\":\"gray\"},{\"text\":\"levitation\",\"color\":\"white\"},{\"text\":\".\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click in off-hand \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"to \",\"color\":\"gray\"},{\"text\":\"refill \",\"color\":\"dark_aqua\"},{\"text\":\"the \",\"color\":\"gray\"},{\"text\":\"Core\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("Shulkers ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("possess a ").formatted(Formatting.GRAY))
+            .append(Text.literal("unique ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("ability to defy ").formatted(Formatting.GRAY))
+            .append(Text.literal("gravity").formatted(Formatting.WHITE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("This ").formatted(Formatting.GRAY))
+            .append(Text.literal("Core ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("has ").formatted(Formatting.GRAY))
+            .append(Text.literal("harnessed").formatted(Formatting.YELLOW))
+            .append(Text.literal(" that ability to allow ").formatted(Formatting.GRAY))
+            .append(Text.literal("controlled").formatted(Formatting.YELLOW))
+            .append(Text.literal(" levitation").formatted(Formatting.WHITE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("Core").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(" must be ").formatted(Formatting.GRAY))
+            .append(Text.literal("refilled ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("with ").formatted(Formatting.GRAY))
+            .append(Text.literal("Shulkers").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" to grant ").formatted(Formatting.GRAY))
+            .append(Text.literal("levitation").formatted(Formatting.WHITE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right Click").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" to change the ").formatted(Formatting.GRAY))
+            .append(Text.literal("speed ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("of ").formatted(Formatting.GRAY))
+            .append(Text.literal("levitation").formatted(Formatting.WHITE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right Click in off-hand ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("to ").formatted(Formatting.GRAY))
+            .append(Text.literal("refill ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("the ").formatted(Formatting.GRAY))
+            .append(Text.literal("Core").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+      lore.add(Text.literal(""));
+
+      int energy = itemStack != null ? getEnergy(itemStack) : 1000;
       
-      if(itemStack != null){
-         loreList.add(NbtString.of("[{\"text\":\"Shulkers Left\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" - \",\"color\":\"gray\"},{\"text\":\""+getEnergy(itemStack)+"\",\"color\":\"yellow\"}]"));
-      }else{
-         loreList.add(NbtString.of("[{\"text\":\"Shulkers Left\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" - \",\"color\":\"gray\"},{\"text\":\"1000\",\"color\":\"yellow\"}]"));
-      }
-      
-      return loreList;
+      lore.add(Text.literal("")
+            .append(Text.literal("Shulkers Left").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" - ").formatted(Formatting.GRAY))
+            .append(Text.literal(""+energy).formatted(Formatting.YELLOW)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -113,42 +152,37 @@ public class ShulkerCore extends EnergyItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      int speed = magicTag.getInt("speed");
-      int speedCD = magicTag.getInt("speedCD");
-      boolean stone = magicTag.getBoolean("stone");
-      NbtCompound stoneData = magicTag.getCompound("stoneData");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").putInt("speed",speed);
-      newTag.getCompound("arcananovum").putInt("speedCD",speedCD);
-      newTag.getCompound("arcananovum").putBoolean("stone",stone);
-      newTag.getCompound("arcananovum").put("stoneData",stoneData);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      int speed = getIntProperty(stack,SPEED_TAG);
+      int speedCD = getIntProperty(stack,SPEED_CD_TAG);
+      boolean stone = getBooleanProperty(stack,STONE_TAG);
+      NbtCompound stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,SPEED_TAG,speed);
+      putProperty(newStack,SPEED_CD_TAG,speedCD);
+      putProperty(newStack,STONE_TAG,stone);
+      putProperty(newStack,STONE_DATA_TAG,stoneData);
+      return buildItemLore(newStack,server);
    }
    
    private void changeSpeed(PlayerEntity playerEntity, World world, Hand hand){
-      ItemStack item = playerEntity.getStackInHand(hand);
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      int speed = magicTag.getInt("speed");
-      int speedCD = magicTag.getInt("speedCD");
-      boolean reabsorb = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.LEVITATIVE_REABSORPTION.id)) >= 1;
+      ItemStack stack = playerEntity.getStackInHand(hand);
+      int speed = getIntProperty(stack,SPEED_TAG);
+      int speedCD = getIntProperty(stack,SPEED_CD_TAG);
+      boolean reabsorb = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.LEVITATIVE_REABSORPTION.id)) >= 1;
       int maxSpeed = reabsorb ? 11 : 9;
-   
+      
       if(speedCD == 0){
          // 1 3 5 7 9
          speed += 2;
-      
+         
          if(speed > maxSpeed){
             speed = 1;
          }else if(speed < 1){
             speed = maxSpeed;
          }
-      
-         magicTag.putInt("speed",speed);
-         magicTag.putInt("speedCD",5);
+         
+         putProperty(stack,SPEED_TAG,speed);
+         putProperty(stack,SPEED_CD_TAG,5);
          if(playerEntity instanceof ServerPlayerEntity player){
             if(speed == 11){
                player.sendMessage(Text.literal("Shulker Core Mode: Reabsorption").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC),true);
@@ -163,40 +197,29 @@ public class ShulkerCore extends EnergyItem {
    }
    
    private void levitate(PlayerEntity playerEntity, World world, Hand hand){
-      ItemStack item = playerEntity.getStackInHand(hand);
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      int speed = magicTag.getInt("speed");
+      ItemStack stack = playerEntity.getStackInHand(hand);
+      int speed = getIntProperty(stack,SPEED_TAG);
       final int duration = 100;
-   
+      
       if(speed == 11){
-         for(Map.Entry<StatusEffect, StatusEffectInstance> effectEntry : playerEntity.getActiveStatusEffects().entrySet()){
-            StatusEffectInstance effect = effectEntry.getValue();
-            if(effect.getEffectType() == StatusEffects.LEVITATION){
-               playerEntity.removeStatusEffect(StatusEffects.LEVITATION);
-               SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
-            }
+         if(playerEntity.hasStatusEffect(StatusEffects.LEVITATION)){
+            playerEntity.removeStatusEffect(StatusEffects.LEVITATION);
+            SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
          }
       }else{
-         if(getEnergy(item) > 0){
-            boolean hasBetter = false;
-            for(Map.Entry<StatusEffect, StatusEffectInstance> effectEntry : playerEntity.getActiveStatusEffects().entrySet()){
-               StatusEffectInstance effect = effectEntry.getValue();
-               if(effect.getEffectType() == StatusEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration)){
-                  hasBetter = true;
-               }
-            }
-            if(!hasBetter){
+         if(getEnergy(stack) > 0){
+            StatusEffectInstance effect = playerEntity.getStatusEffect(StatusEffects.LEVITATION);
+            if(!(effect != null && effect.getEffectType() == StatusEffects.LEVITATION && effect.getAmplifier() >= speed && !(effect.getDuration() < 10 || effect.getDuration() > duration))){
                StatusEffectInstance levit = new StatusEffectInstance(StatusEffects.LEVITATION, duration, speed, false, false, false);
-               if(Math.random() >= (new double[]{0,0.1,0.25,0.5})[Math.max(0, ArcanaAugments.getAugmentOnItem(item, "shulker_recycler"))])
-                  addEnergy(item, -(speed / 2 + 1));
+               if(Math.random() >= (new double[]{0,0.1,0.25,0.5})[Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SHULKER_RECYCLER.id))])
+                  addEnergy(stack, -(speed / 2 + 1));
                playerEntity.addStatusEffect(levit);
                SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
                PLAYER_DATA.get(playerEntity).addXP(50 * (speed / 2 + 1)); // Add xp
                if(world instanceof ServerWorld serverWorld){
                   ParticleEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
-               buildItemLore(item,playerEntity.getServer());
+               buildItemLore(stack,playerEntity.getServer());
             }
          }else{
             playerEntity.sendMessage(Text.literal("The Shulker Core is empty.").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
@@ -205,43 +228,41 @@ public class ShulkerCore extends EnergyItem {
       }
    }
    
-   public void openGui(PlayerEntity playerEntity, ItemStack item){
+   public void openGui(PlayerEntity playerEntity, ItemStack stack){
       if(!(playerEntity instanceof ServerPlayerEntity player))
          return;
-      ShulkerCoreGui gui = new ShulkerCoreGui(ScreenHandlerType.HOPPER,player,this, item);
-   
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      boolean hasStone = magicNbt.getBoolean("stone");
-   
+      ShulkerCoreGui gui = new ShulkerCoreGui(ScreenHandlerType.HOPPER,player,this, stack);
+      
+      boolean hasStone = getBooleanProperty(stack,STONE_TAG);
+      
       for(int i = 0; i < gui.getSize(); i++){
          gui.clearSlot(i);
       }
-   
-      Item pane = hasStone ? Items.MAGENTA_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE;
-      String paneText = hasStone ? getEnergy(item) + " Shulker Souls" : "No Soulstone Inserted";
+      
+      GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
+      String paneText = hasStone ? getEnergy(stack) + " Shulker Souls" : "No Soulstone Inserted";
       Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
-   
-      gui.setSlot(0,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
-      gui.setSlot(1,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
-      gui.setSlot(3,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
-      gui.setSlot(4,new GuiElementBuilder(pane).setName(Text.literal(paneText).formatted(textColor)));
-   
+      
+      gui.setSlot(0,pane.setName(Text.literal(paneText).formatted(textColor)));
+      gui.setSlot(1,pane.setName(Text.literal(paneText).formatted(textColor)));
+      gui.setSlot(3,pane.setName(Text.literal(paneText).formatted(textColor)));
+      gui.setSlot(4,pane.setName(Text.literal(paneText).formatted(textColor)));
+      
       ShulkerCoreInventory inv = new ShulkerCoreInventory();
-      ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this,gui,item);
+      ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this,gui,stack);
       inv.addListener(listener);
       listener.setUpdating();
-   
+      
       gui.setSlotRedirect(2, new Slot(inv,0,0,0));
       if(hasStone){
-         NbtCompound stoneData = magicNbt.getCompound("stoneData");
+         NbtCompound stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
          ItemStack stone;
          if(stoneData == null || stoneData.isEmpty()){
             stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
          }else{
-            stone = ItemStack.fromNbt(stoneData);
+            stone = ItemStack.fromNbt(playerEntity.getRegistryManager(),stoneData).orElse(ItemStack.EMPTY);
          }
-         stone = Soulstone.setSouls(stone,getEnergy(item));
+         stone = Soulstone.setSouls(stone,getEnergy(stack));
          
          inv.setStack(0,stone);
          gui.validStone(stone);
@@ -254,28 +275,21 @@ public class ShulkerCore extends EnergyItem {
       gui.open();
    }
    
-   public boolean hasStone(ItemStack item){
-      if(MagicItemUtils.identifyItem(item) instanceof ShulkerCore){
-         NbtCompound itemNbt = item.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         return magicNbt.getBoolean("stone");
-      }
-      return false;
+   public boolean hasStone(ItemStack stack){
+      return getBooleanProperty(stack,STONE_TAG);
    }
    
-   public ItemStack getStone(ItemStack item){
-      if(MagicItemUtils.identifyItem(item) instanceof ShulkerCore){
-         NbtCompound itemNbt = item.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         if(magicNbt.getBoolean("stone")){
-            NbtCompound stoneData = magicNbt.getCompound("stoneData");
+   public ItemStack getStone(ItemStack stack){
+      if(ArcanaItemUtils.identifyItem(stack) instanceof ShulkerCore){
+         if(getBooleanProperty(stack,STONE_TAG)){
+            NbtCompound stoneData = getCompoundProperty(stack,STONE_DATA_TAG);
             ItemStack stone;
             if(stoneData == null || stoneData.isEmpty()){
                stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
             }else{
-               stone = ItemStack.fromNbt(stoneData);
+               stone = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stoneData).orElse(null);
             }
-            stone = Soulstone.setSouls(stone,getEnergy(item));
+            stone = Soulstone.setSouls(stone,getEnergy(stack));
             
             return stone;
          }
@@ -283,17 +297,15 @@ public class ShulkerCore extends EnergyItem {
       return null;
    }
    
-   public void setStone(ItemStack item, ItemStack stone){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+   public void setStone(ItemStack stack, ItemStack stone){
       if(stone == null){
-         magicNbt.putBoolean("stone",false);
-         magicNbt.put("stoneData",new NbtCompound());
-         setEnergy(item,0);
+         putProperty(stack,STONE_TAG,false);
+         putProperty(stack,STONE_DATA_TAG,new NbtCompound());
+         setEnergy(stack,0);
       }else{
-         magicNbt.putBoolean("stone",true);
-         magicNbt.put("stoneData",stone.writeNbt(new NbtCompound()));
-         setEnergy(item,Soulstone.getSouls(stone));
+         putProperty(stack,STONE_TAG,true);
+         putProperty(stack,STONE_DATA_TAG,stone.encodeAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
+         setEnergy(stack,Soulstone.getSouls(stone));
       }
    }
    
@@ -301,49 +313,50 @@ public class ShulkerCore extends EnergyItem {
    public ItemStack forgeItem(Inventory inv){
       // Souls n stuff
       ItemStack soulstoneStack = inv.getStack(12); // Should be the Soulstone
-      ItemStack newMagicItem = null;
-      if(MagicItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
-         newMagicItem = getNewItem();
-         setStone(newMagicItem,soulstoneStack);
-         buildItemLore(newMagicItem,ArcanaNovum.SERVER);
+      ItemStack newArcanaItem = null;
+      if(ArcanaItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
+         newArcanaItem = getNewItem();
+         setStone(newArcanaItem,soulstoneStack);
+         buildItemLore(newArcanaItem,ArcanaNovum.SERVER);
       }
-      return newMagicItem;
+      return newArcanaItem;
    }
    
-   private MagicItemRecipe makeRecipe(){
+   @Override
+	protected ArcanaRecipe makeRecipe(){
       SoulstoneIngredient t = new SoulstoneIngredient(Soulstone.tiers[4],false,true, false,EntityType.getId(EntityType.SHULKER).toString());
-      MagicItemIngredient s = new MagicItemIngredient(Items.SHULKER_SHELL,64,null);
-      MagicItemIngredient o = new MagicItemIngredient(Items.GLOWSTONE,64,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHER_STAR,4,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.PHANTOM_MEMBRANE,32,null);
-   
-      ItemStack p1 = new ItemStack(Items.POTION);
-      MagicItemIngredient p = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(p1, Potions.LONG_SLOW_FALLING).getNbt());
+      ArcanaIngredient a = new ArcanaIngredient(Items.PHANTOM_MEMBRANE,16);
+      ArcanaIngredient b = new ArcanaIngredient(Items.SHULKER_SHELL,8);
+      ArcanaIngredient c = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.LONG_SLOW_FALLING);
+      ArcanaIngredient g = new ArcanaIngredient(Items.GLOWSTONE_DUST,32);
+      ArcanaIngredient h = new ArcanaIngredient(Items.NETHER_STAR,1);
       
-      MagicItemIngredient[][] ingredients = {
-            {o,s,m,s,o},
-            {s,n,p,n,s},
-            {m,p,t,p,m},
-            {s,n,p,n,s},
-            {o,s,m,s,o}};
-      return new MagicItemRecipe(ingredients);
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,h,t,h,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withAnvil());
+      
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"     Shulker Core\\n\\nRarity: Exotic\\n\\nShulkers are fascinating creatures, their unique levitation effect could be a precursor to true flight if I combined a bit of their essence... er... a lot of their essence... Whats a bit of genocide anyways?\"}");
-      list.add("{\"text\":\"     Shulker Core\\n\\nAfter a massacre that took too long to comprehend, I have enough essence to control their power.\\n\\nRight click to grant levitation.\\nSneak right click to change the speed.\\nLeft click to swap out the Soulstone inside.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("     Shulker Core\n\nRarity: Exotic\n\nShulkers are fascinating creatures, their unique levitation effect could be a precursor to true flight if I combined a bit of their essence... er... a lot of their essence... Whats a bit of genocide anyways?").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Shulker Core\n\nAfter a massacre that took too long to comprehend, I have enough essence to control their power.\n\nRight click to grant levitation.\nSneak right click to change the speed.\nLeft click to swap out the Soulstone inside.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class ShulkerCoreItem extends MagicPolymerItem {
-      public ShulkerCoreItem(Settings settings){
+   public class ShulkerCoreItem extends ArcanaPolymerItem {
+      public ShulkerCoreItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -383,15 +396,14 @@ public class ShulkerCore extends EnergyItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-         int speedCD = magicTag.getInt("speedCD");
+         int speedCD = getIntProperty(stack,SPEED_CD_TAG);
          if(speedCD > 0){
             speedCD--;
-            magicTag.putInt("speedCD",speedCD);
+            putProperty(stack,SPEED_CD_TAG,speedCD);
          }
       }
    }
 }
+

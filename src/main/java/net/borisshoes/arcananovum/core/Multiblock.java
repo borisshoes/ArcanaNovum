@@ -18,7 +18,6 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.BlockRotation;
@@ -218,7 +217,7 @@ public class Multiblock {
             String blockName = blockTag.getString("Name");
             BlockState rawState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),blockTag); // Save raw state for display
             Predicate<BlockState> pred;
-            Identifier identifier = new Identifier(blockName);
+            Identifier identifier = Identifier.of(blockName);
             Optional<RegistryEntry.Reference<Block>> optional = Registries.BLOCK.getReadOnlyWrapper().getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
             if (optional.isEmpty()) { // If block isn't found, let any block work
                pred = blockState -> true;

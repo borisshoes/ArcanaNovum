@@ -1,17 +1,16 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
-import it.unimi.dsi.fastutil.Hash;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -41,33 +40,32 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       ItemStack aequalisStack = aequalisEntity != null ? aequalisEntity.getStack() : ItemStack.EMPTY;
       if(!canTransmute(input1Stack,input2Stack,reagent1Stack,reagent2Stack,aequalisStack,altar)) return new ArrayList<>();
       
-      ItemStack magicItemStack,catalystStack;
-      ItemEntity magicItemEntity,catalystEntity;
+      ItemStack arcanaItemStack,catalystStack;
+      ItemEntity arcanaItemEntity,catalystEntity;
       String outputPos;
-      if(MagicItemUtils.isMagic(input1Stack) && !input1Stack.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem())){
-         magicItemStack = input1Stack;
+      if(ArcanaItemUtils.isArcane(input1Stack) && !input1Stack.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem())){
+         arcanaItemStack = input1Stack;
          catalystStack = input2Stack;
-         magicItemEntity = input1Entity;
+         arcanaItemEntity = input1Entity;
          catalystEntity = input2Entity;
          outputPos = "negative";
-      }else if(MagicItemUtils.isMagic(input2Stack) && !input2Stack.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem())){
-         magicItemStack = input2Stack;
+      }else if(ArcanaItemUtils.isArcane(input2Stack) && !input2Stack.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem())){
+         arcanaItemStack = input2Stack;
          catalystStack = input1Stack;
-         magicItemEntity = input2Entity;
+         arcanaItemEntity = input2Entity;
          catalystEntity = input1Entity;
          outputPos = "positive";
       }else{
          return new ArrayList<>();
       }
-      MagicItem magicItem = MagicItemUtils.identifyItem(magicItemStack);
-      if(magicItem instanceof RunicArrow) return new ArrayList<>();
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(arcanaItemStack);
+      if(arcanaItem instanceof RunicArrow) return new ArrayList<>();
       
       List<Pair<ItemStack,String>> outputs = new ArrayList<>();
       int consumedCatas = 0;
-      NbtCompound magicNbt = magicItemStack.getNbt().getCompound("arcananovum");
-      NbtList catas = magicNbt.contains("catalysts") ? magicNbt.getList("catalysts", NbtElement.COMPOUND_TYPE) : new NbtList();
+      NbtList catas = ArcanaItem.getListProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG,NbtElement.COMPOUND_TYPE);
       
-      TreeMap<ArcanaAugment, Integer> curAugments = ArcanaAugments.getAugmentsOnItem(magicItemStack);
+      TreeMap<ArcanaAugment, Integer> curAugments = ArcanaAugments.getAugmentsOnItem(arcanaItemStack);
       if(curAugments == null) return new ArrayList<>();
       
       while(consumedCatas < catalystStack.getCount()){
@@ -89,11 +87,11 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
                
                String aug = cata.getString("augment");
                int lvl = cata.getInt("level");
-               MagicRarity rarity = MagicRarity.rarityFromInt(cata.getInt("rarity"));
+               ArcanaRarity rarity = ArcanaRarity.rarityFromInt(cata.getInt("rarity"));
                
                if(aug.equals(augment.id) && level == lvl){
-                  MagicItem magicCata = MagicRarity.getAugmentCatalyst(rarity);
-                  ItemStack catalyst = magicCata.addCrafter(magicCata.getNewItem(),magicItem.getCrafter(magicItemStack),false,altar.getWorld().getServer());
+                  ArcanaItem arcanaCata = ArcanaRarity.getAugmentCatalyst(rarity);
+                  ItemStack catalyst = arcanaCata.addCrafter(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack),false,altar.getWorld().getServer());
                   outputs.add(new Pair<>(catalyst,outputPos));
                   consumedCatas++;
                   cataFound = true;
@@ -111,8 +109,8 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          if(!cataFound) break;
       }
       
-      magicNbt.put("catalysts",catas);
-      ArcanaAugments.setAugmentsOnItem(magicItemStack,curAugments);
+      ArcanaItem.putProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG,catas);
+      ArcanaAugments.setAugmentsOnItem(arcanaItemStack,curAugments);
       
       if(aequalisEntity != null){
          int timelessLvl = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM.id);
@@ -122,8 +120,8 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      if(magicItemEntity != null){
-         magicItemEntity.setStack(magicItemStack);
+      if(arcanaItemEntity != null){
+         arcanaItemEntity.setStack(arcanaItemStack);
       }
       
       if(catalystEntity != null){
@@ -179,15 +177,19 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       boolean reagent2Check = validStack(re2,reagent1Input) || validStack(re2,reagent2Input);
       if(!reagent1Check || !reagent2Check) return false;
       boolean matrixCheck = (input1.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()) || input2.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
-      boolean magicItemCheck = (MagicItemUtils.isMagic(input1) && !input1.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem())) || (MagicItemUtils.isMagic(input2) && !input2.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
-      boolean arrowCheck = MagicItemUtils.identifyItem(input1) instanceof RunicArrow || MagicItemUtils.identifyItem(input2) instanceof RunicArrow;
-      if(!matrixCheck || !magicItemCheck || arrowCheck) return false;
-      if(!(MagicItemUtils.identifyItem(aequalisInput) instanceof AequalisScientia as)) return false;
+      boolean arcanaItemCheck = (ArcanaItemUtils.isArcane(input1) && !input1.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem())) || (ArcanaItemUtils.isArcane(input2) && !input2.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()));
+      boolean arrowCheck = ArcanaItemUtils.identifyItem(input1) instanceof RunicArrow || ArcanaItemUtils.identifyItem(input2) instanceof RunicArrow;
+      if(!matrixCheck || !arcanaItemCheck || arrowCheck) return false;
+      if(!(ArcanaItemUtils.identifyItem(aequalisInput) instanceof AequalisScientia as)) return false;
       try{
          boolean hasAugment = ArcanaAugments.getAugmentOnItem(aequalisInput,ArcanaAugments.EQUIVALENT_EXCHANGE.id) > 0;
          if(!hasAugment) return false;
-         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(UUID.fromString(as.getCrafter(aequalisInput)));
-         return player != null;
+         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(as.getCrafter(aequalisInput)));
+         if(player != null){
+            return PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
+         }else{
+            return false;
+         }
       }catch(Exception e){
          return false;
       }
@@ -195,7 +197,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public ItemStack getViewStack(){
-      return new ItemStack(ArcanaRegistry.CATALYTIC_MATRIX.getItem(),1);
+      return ArcanaRegistry.CATALYTIC_MATRIX.getPrefItemNoLore().copyWithCount(1);
    }
    
 }

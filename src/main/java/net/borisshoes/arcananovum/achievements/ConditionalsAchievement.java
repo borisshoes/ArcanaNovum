@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -19,8 +19,8 @@ import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentIniti
 public class ConditionalsAchievement extends ArcanaAchievement{
    private final HashMap<String,Boolean> conditions;
    
-   public ConditionalsAchievement(String name, String id, ItemStack displayItem, MagicItem magicItem, int xpReward, int pointsReward, String[] description, String[] conditions){
-      super(name, id, 2, displayItem, magicItem, xpReward, pointsReward, description);
+   public ConditionalsAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description, String[] conditions){
+      super(name, id, 2, displayItem, arcanaItem, xpReward, pointsReward, description);
       this.conditions = new HashMap<>();
       for(String cond : conditions){
          this.conditions.put(cond,false);
@@ -71,7 +71,7 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    @Override
    public MutableText[] getStatusDisplay(ServerPlayerEntity player){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(getMagicItem().getId(), id);
+      ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
       if(achievement != null && achievement.isAcquired()) {
          return new MutableText[]{Text.literal("Achieved!").formatted(Formatting.AQUA)};
@@ -96,6 +96,6 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    
    @Override
    public ConditionalsAchievement makeNew(){
-      return new ConditionalsAchievement(name, id, getDisplayItem(), getMagicItem(), xpReward, pointsReward, getDescription(), conditions.keySet().toArray(new String[0]));
+      return new ConditionalsAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription(), conditions.keySet().toArray(new String[0]));
    }
 }

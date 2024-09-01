@@ -1,34 +1,36 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -40,47 +42,56 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ExpulsionArrows extends RunicArrow {
+	public static final String ID = "expulsion_arrows";
    
    private static final String TXT = "item/runic_arrow";
    
    public ExpulsionArrows(){
-      id = "expulsion_arrows";
+      id = ID;
       name = "Expulsion Arrows";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new ExpulsionArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      item = new ExpulsionArrowsItem(new Item.Settings().maxCount(64).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Expulsion").formatted(Formatting.BOLD,Formatting.BLUE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(889599),new ArrayList<>()))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SLIME,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.USE_ENDER_PEARL};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Arrows - Expulsion\",\"italic\":false,\"color\":\"blue\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("CustomPotionColor",889599);
-      tag.putInt("HideFlags", 255);
-      stack.setCount(64);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Expulsion Arrows:\",\"italic\":false,\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"repulse \",\"color\":\"blue\"},{\"text\":\"entities\",\"color\":\"aqua\"},{\"text\":\" near the area of \"},{\"text\":\"impact\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"dark_aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"A hit \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"entity \",\"color\":\"aqua\"},{\"text\":\"is \"},{\"text\":\"not affected\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addRunicArrowLore(lore);
+      lore.add(Text.literal("Expulsion Arrows:").formatted(Formatting.BOLD,Formatting.BLUE));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" repulse ").formatted(Formatting.BLUE))
+            .append(Text.literal("entities").formatted(Formatting.AQUA))
+            .append(Text.literal(" near the area of ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("impact").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("A hit ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("entity ").formatted(Formatting.AQUA))
+            .append(Text.literal("is ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("not affected").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -132,37 +143,39 @@ public class ExpulsionArrows extends RunicArrow {
       }
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      MagicItemIngredient c = new MagicItemIngredient(Items.AMETHYST_SHARD,32,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.SLIME_BLOCK,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      MagicItemIngredient k = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient c = new ArcanaIngredient(Items.AMETHYST_SHARD,32);
+      ArcanaIngredient g = new ArcanaIngredient(Items.SLIME_BLOCK,8);
+      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
+      ArcanaIngredient k = new ArcanaIngredient(Items.ENDER_PEARL,16);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,a,c,a,a},
             {a,g,h,g,a},
             {k,h,m,h,k},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Expulsion Arrows\\n\\nRarity: Exotic\\n\\nThis Runic Matrix is configured to repulse anything nearby like bouncing on a slime block. Great for jump pads, zoning off monsters, or sending foes off a steep cliff.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Expulsion Arrows\n\nRarity: Exotic\n\nThis Runic Matrix is configured to repulse anything nearby like bouncing on a slime block. Great for jump pads, zoning off monsters, or sending foes off a steep cliff.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class ExpulsionArrowsItem extends MagicPolymerArrowItem {
-      public ExpulsionArrowsItem(Settings settings){
+   public class ExpulsionArrowsItem extends ArcanaPolymerArrowItem {
+      public ExpulsionArrowsItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -171,3 +184,4 @@ public class ExpulsionArrows extends RunicArrow {
       }
    }
 }
+

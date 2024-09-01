@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.effects;
 
 import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
@@ -20,15 +20,12 @@ public class DamageAmpEffect extends StatusEffect implements PolymerStatusEffect
    public static final HashMap<LivingEntity,LivingEntity> AMP_TRACKER = new HashMap<>();
    
    public DamageAmpEffect(){
-      super(StatusEffectCategory.HARMFUL,0xdff595);
+      super(StatusEffectCategory.HARMFUL,0xdff595, ParticleTypes.CRIT);
    }
    
    @Override
-   public void applyUpdateEffect(LivingEntity entity, int amplifier){
-      if(entity.getWorld() instanceof ServerWorld serverWorld){
-         Vec3d pos = entity.getPos();
-         serverWorld.spawnParticles(ParticleTypes.CRIT,pos.x,pos.y+entity.getHeight()/2,pos.z,1,.4,.4,.4,0.05);
-      }
+   public boolean applyUpdateEffect(LivingEntity entity, int amplifier){
+      return super.applyUpdateEffect(entity,amplifier);
    }
    
    @Override

@@ -168,7 +168,7 @@ public class DragonLairActions {
    
             for(ServerPlayerEntity player : hitPlayers){
                if(player.isBlocking() && (player.getMainHandStack().isOf(Items.SHIELD) || player.getOffHandStack().isOf(Items.SHIELD)) && player.getPitch() < -60){
-                  player.disableShield(true);
+                  player.disableShield();
                }else{
                   player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),10);
                }

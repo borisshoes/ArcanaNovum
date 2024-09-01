@@ -1,33 +1,35 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FoodComponent;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.FoodComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -37,62 +39,66 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class FeastingCharm extends MagicItem {
+public class FeastingCharm extends ArcanaItem {
+	public static final String ID = "feasting_charm";
    
    private static final int[] gluttonyFoodBoost = {0,2,4,8};
    private static final float[] gluttonySatBoost = {0,0.5f,1f,2f};
    private static final String TXT = "item/feasting_charm";
    
    public FeastingCharm(){
-      id = "feasting_charm";
+      id = ID;
       name = "Charm of Feasting";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.RABBIT_STEW;
-      item = new FeastingCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new FeastingCharmItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Charm of Feasting").formatted(Formatting.BOLD,Formatting.GOLD))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new net.minecraft.util.Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_BALANCED_DIET,ResearchTasks.HUNGER_DAMAGE,ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Charm of Feasting\",\"italic\":false,\"bold\":true,\"color\":\"gold\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putInt("mode",0);
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,MODE_TAG,0);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Just carrying the charm makes you feel \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"well nourished\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"dark_green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The charm \",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\"feeds\",\"color\":\"gold\"},{\"text\":\" you from your\"},{\"text\":\" inventory.\",\"color\":\"gold\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right click\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" to\",\"color\":\"dark_green\"},{\"text\":\" toggle \",\"color\":\"gold\"},{\"text\":\"the charm between feeding modes.\",\"color\":\"dark_green\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("Just carrying the charm makes you feel ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("well nourished").formatted(Formatting.GOLD))
+            .append(Text.literal(".").formatted(Formatting.DARK_GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The charm ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("feeds").formatted(Formatting.GOLD))
+            .append(Text.literal(" you from your").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" inventory.").formatted(Formatting.GOLD)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right click").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" to").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" toggle ").formatted(Formatting.GOLD))
+            .append(Text.literal("the charm between feeding modes.").formatted(Formatting.DARK_GREEN)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    // Mode 0 is optimal eating - Optimal Eating
    // Mode 1 is eat when below regen range - Eat for Regen
    // Mode 2 is eat if possible when below half HP, otherwise optimal - Optimal + Emergency Eating
    // Mode 3 is eat if possible when below half HP, otherwise when below 2 regen range - Regen + Emergency Eating
-   public void toggleMode(ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      int mode = (magicNbt.getInt("mode")+1) % 4;
-      magicNbt.putInt("mode",mode);
-      itemNbt.put("arcananovum",magicNbt);
-      item.setNbt(itemNbt);
+   public void toggleMode(ServerPlayerEntity player, ItemStack stack){
+      int mode = (getIntProperty(stack,MODE_TAG)+1) % 4;
+      putProperty(stack,MODE_TAG,mode);
       switch(mode){
          case 0 -> player.sendMessage(Text.literal("Feasting Mode: Optimal").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
          case 1 -> player.sendMessage(Text.literal("Feasting Mode: Regen").formatted(Formatting.YELLOW, Formatting.ITALIC), true);
@@ -101,47 +107,53 @@ public class FeastingCharm extends MagicItem {
       }
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Charm of Feasting\\n\\nRarity: Empowered\\n\\nA simple infusion of Arcana can go a long way. Infusing the already slightly magical Enchanted Golden Apple with enough calories to feed a nation for a year lets any food I have on me get \"}");
-      list.add("{\"text\":\"  Charm of Feasting\\n\\nautomatically digested as soon as I can fit the full meal. \\n\\nThe charm will feed me any food that isn't magic, Enchanted Golden Apple included. \\nAlso wearing it for a while makes my appetite decrease...\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Charm of Feasting\n\nRarity: Empowered\n\nA simple infusion of Arcana can go a long way. Infusing the already slightly magical Enchanted Golden Apple with enough calories to feed a nation for a year lets any food I have on me get ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Charm of Feasting\n\nautomatically digested as soon as I can fit the full meal. \n\nThe charm will feed me any food that isn't magic, Enchanted Golden Apple included. \nAlso wearing it for a while makes my appetite decrease...").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient god = new MagicItemIngredient(Items.ENCHANTED_GOLDEN_APPLE,1,null, true);
-      MagicItemIngredient app = new MagicItemIngredient(Items.GOLDEN_APPLE,32,null);
-      MagicItemIngredient car = new MagicItemIngredient(Items.GOLDEN_CARROT,32,null);
-      MagicItemIngredient sal = new MagicItemIngredient(Items.COOKED_SALMON,64,null);
-      MagicItemIngredient cod = new MagicItemIngredient(Items.COOKED_COD,64,null);
-      MagicItemIngredient kel = new MagicItemIngredient(Items.DRIED_KELP,64,null);
-      MagicItemIngredient chi = new MagicItemIngredient(Items.COOKED_CHICKEN,64,null);
-      MagicItemIngredient rab = new MagicItemIngredient(Items.COOKED_RABBIT,64,null);
-      MagicItemIngredient pot = new MagicItemIngredient(Items.BAKED_POTATO,64,null);
-      MagicItemIngredient bre = new MagicItemIngredient(Items.BREAD,64,null);
-      MagicItemIngredient pie = new MagicItemIngredient(Items.PUMPKIN_PIE,64,null);
-      MagicItemIngredient cok = new MagicItemIngredient(Items.COOKIE,64,null);
-      MagicItemIngredient mut = new MagicItemIngredient(Items.COOKED_MUTTON,64,null);
-      MagicItemIngredient stk = new MagicItemIngredient(Items.COOKED_BEEF,64,null);
-      MagicItemIngredient prk = new MagicItemIngredient(Items.COOKED_PORKCHOP,64,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.COOKED_SALMON,16);
+      ArcanaIngredient b = new ArcanaIngredient(Items.GLOW_BERRIES,16);
+      ArcanaIngredient c = new ArcanaIngredient(Items.COOKED_BEEF,16);
+      ArcanaIngredient d = new ArcanaIngredient(Items.PUMPKIN_PIE,16);
+      ArcanaIngredient e = new ArcanaIngredient(Items.BREAD,16);
+      ArcanaIngredient f = new ArcanaIngredient(Items.COOKIE,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.GOLDEN_CARROT,8);
+      ArcanaIngredient h = new ArcanaIngredient(Items.GOLDEN_APPLE,4);
+      ArcanaIngredient j = new ArcanaIngredient(Items.MELON_SLICE,16);
+      ArcanaIngredient k = new ArcanaIngredient(Items.COOKED_CHICKEN,16);
+      ArcanaIngredient m = new ArcanaIngredient(Items.ENCHANTED_GOLDEN_APPLE,1, true);
+      ArcanaIngredient o = new ArcanaIngredient(Items.COOKED_MUTTON,16);
+      ArcanaIngredient p = new ArcanaIngredient(Items.BEETROOT,16);
+      ArcanaIngredient t = new ArcanaIngredient(Items.DRIED_KELP,16);
+      ArcanaIngredient u = new ArcanaIngredient(Items.COOKED_RABBIT,16);
+      ArcanaIngredient v = new ArcanaIngredient(Items.BAKED_POTATO,16);
+      ArcanaIngredient w = new ArcanaIngredient(Items.COOKED_PORKCHOP,16);
+      ArcanaIngredient x = new ArcanaIngredient(Items.SWEET_BERRIES,16);
+      ArcanaIngredient y = new ArcanaIngredient(Items.COOKED_COD,16);
       
-      MagicItemIngredient[][] ingredients = {
-            {sal,cod,car,chi,rab},
-            {kel,car,app,car,pot},
-            {car,app,god,app,car},
-            {bre,car,app,car,prk},
-            {cok,pie,car,mut,stk}};
-      return new MagicItemRecipe(ingredients);
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,d,e},
+            {f,g,h,g,j},
+            {k,h,m,h,o},
+            {p,g,h,g,t},
+            {u,v,w,x,y}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   public class FeastingCharmItem extends MagicPolymerItem {
-      public FeastingCharmItem(Settings settings){
+   public class FeastingCharmItem extends ArcanaPolymerItem {
+      public FeastingCharmItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -151,10 +163,10 @@ public class FeastingCharm extends MagicItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         int mode = stack.getNbt().getCompound("arcananovum").getInt("mode");
+         int mode = getIntProperty(stack,MODE_TAG);
          int time = 400 - 100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENZYMES.id));
          int gluttony = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.GLUTTONY.id));
          
@@ -166,20 +178,21 @@ public class FeastingCharm extends MagicItem {
             int bestFoodInd = -1;
             for(int i=0; i<inv.size();i++){
                ItemStack invItem = inv.getStack(i);
-               if(invItem.isEmpty())
+               if(invItem.isEmpty() || !invItem.contains(DataComponentTypes.FOOD))
                   continue;
-               if(invItem.isFood() && !MagicItemUtils.isMagic(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
-                  FoodComponent foodComponent = invItem.getItem().getFoodComponent();
+               
+               if(!ArcanaItemUtils.isArcane(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
+                  FoodComponent foodComponent = invItem.get(DataComponentTypes.FOOD);
                   availableFoods.add(new Pair<>(i,foodComponent));
-                  if(bestFoodInd == -1 ||inv.getStack(bestFoodInd).getItem().getFoodComponent().getHunger() < foodComponent.getHunger()){
+                  if(bestFoodInd == -1 || inv.getStack(bestFoodInd).get(DataComponentTypes.FOOD).nutrition() < foodComponent.nutrition()){
                      bestFoodInd = i;
                   }
                }
             }
             if(bestFoodInd != -1){
-               ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PICKY_EATER.id) >= 1 ? inv.getStack(bestFoodInd) : inv.getStack(availableFoods.get(0).getFirst());
-               FoodComponent foodComponent = selectedFood.getItem().getFoodComponent();
-               int foodValue = foodComponent.getHunger();
+               ItemStack selectedFood = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PICKY_EATER.id) >= 1 ? inv.getStack(bestFoodInd) : inv.getStack(availableFoods.getFirst().getFirst());
+               FoodComponent foodComponent = selectedFood.get(DataComponentTypes.FOOD);
+               int foodValue = foodComponent.nutrition();
                
                boolean consume = switch(mode){
                   case 0 -> // Mode 0 is optimal eating - Optimal Eating
@@ -194,14 +207,14 @@ public class FeastingCharm extends MagicItem {
                };
                
                if(consume){
-                  player.sendMessage(Text.translatable("Your Feasting Charm consumes a "+selectedFood.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
-                  hunger.eat(selectedFood.getItem(),selectedFood);
-                  player.getHungerManager().add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
+                  player.sendMessage(Text.literal("Your Feasting Charm consumes a "+selectedFood.getName().getString()).formatted(Formatting.GOLD,Formatting.ITALIC),true);
+                  hunger.eat(foodComponent);
+                  hunger.add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
                   // Apply Status Effects
-                  List<Pair<StatusEffectInstance, Float>> list = foodComponent.getStatusEffects();
-                  for (Pair<StatusEffectInstance, Float> pair : list) {
-                     if (world.isClient || pair.getFirst() == null || !(world.random.nextFloat() < pair.getSecond().floatValue())) continue;
-                     player.addStatusEffect(new StatusEffectInstance(pair.getFirst()));
+                  List<FoodComponent.StatusEffectEntry> list = foodComponent.effects();
+                  for (FoodComponent.StatusEffectEntry entry : list) {
+                     if (world.isClient || !(player.random.nextFloat() < entry.probability())) continue;
+                     player.addStatusEffect(entry.effect());
                   }
                   if(selectedFood.isOf(Items.POISONOUS_POTATO)){
                      ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Poisonous Potato",true);
@@ -217,9 +230,7 @@ public class FeastingCharm extends MagicItem {
                      ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Pufferfish",true);
                   }
                   
-                  selectedFood.decrement(1);
-                  if(selectedFood.getCount() == 0)
-                     selectedFood.setNbt(new NbtCompound());
+                  selectedFood.decrementUnlessCreative(1,player);
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_GENERIC_EAT, 1,.7f);
                   PLAYER_DATA.get(player).addXP(50*foodValue); // Add xp
                }
@@ -237,3 +248,4 @@ public class FeastingCharm extends MagicItem {
       }
    }
 }
+

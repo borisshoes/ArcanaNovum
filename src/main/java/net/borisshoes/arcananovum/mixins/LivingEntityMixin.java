@@ -7,13 +7,14 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
 import net.borisshoes.arcananovum.effects.GreaterInvisibilityEffect;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.Entity;
@@ -23,14 +24,13 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.fluid.FluidState;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -55,11 +55,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -79,16 +77,16 @@ public abstract class LivingEntityMixin {
    private void arcananovum_shieldAbsorb(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
       LivingEntity entity = (LivingEntity) (Object) this;
       ItemStack activeItem = entity.getActiveItem();
-      MagicItem magic;
+      ArcanaItem arcaneItem;
       ItemStack item = null;
       
-      if(MagicItemUtils.isMagic(activeItem)){
-         magic = MagicItemUtils.identifyItem(activeItem);
+      if(ArcanaItemUtils.isArcane(activeItem)){
+         arcaneItem = ArcanaItemUtils.identifyItem(activeItem);
          item = activeItem;
       }else{
          return;
       }
-      if(magic instanceof ShieldOfFortitude shield){
+      if(arcaneItem instanceof ShieldOfFortitude shield){
          shield.shieldBlock(entity,item,amount);
       }
    }
@@ -104,17 +102,17 @@ public abstract class LivingEntityMixin {
                continue;
             }
       
-            boolean isMagic = MagicItemUtils.isMagic(item);
-            if(!isMagic)
-               continue; // Item not magic, skip
+            boolean isArcane = ArcanaItemUtils.isArcane(item);
+            if(!isArcane)
+               continue; // Item not arcane, skip
       
             
          }
    
          // Stall Levitation Harness
          ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
-         if(MagicItemUtils.isMagic(chestItem) && player.getAbilities().flying){
-            if(MagicItemUtils.identifyItem(chestItem) instanceof LevitationHarness harness){
+         if(ArcanaItemUtils.isArcane(chestItem) && player.getAbilities().flying){
+            if(ArcanaItemUtils.identifyItem(chestItem) instanceof LevitationHarness harness){
                int sturdyLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.STURDY_CONSTRUCTION.id));
                final double[] sturdyChance = {0,.15,.35,.5};
                if(Math.random() >= sturdyChance[sturdyLvl]){
@@ -133,6 +131,14 @@ public abstract class LivingEntityMixin {
                }
             }
          }
+         
+         if(source.isOf(DamageTypes.STARVE)){
+            PLAYER_DATA.get(player).setResearchTask(ResearchTasks.HUNGER_DAMAGE, true);
+         }
+         
+         if(source.isOf(ArcanaDamageTypes.CONCENTRATION)){
+            PLAYER_DATA.get(player).setResearchTask(ResearchTasks.CONCENTRATION_DAMAGE, true);
+         }
       }
    }
    
@@ -144,7 +150,7 @@ public abstract class LivingEntityMixin {
       if(attacker instanceof ServerPlayerEntity player){
          ItemStack weapon = player.getEquippedStack(EquipmentSlot.MAINHAND);
    
-         if(MagicItemUtils.identifyItem(weapon) instanceof ShadowStalkersGlaive glaive){
+         if(ArcanaItemUtils.identifyItem(weapon) instanceof ShadowStalkersGlaive glaive){
             int oldEnergy = glaive.getEnergy(weapon);
             glaive.addEnergy(weapon, (int) amount);
             int newEnergy = glaive.getEnergy(weapon);
@@ -170,7 +176,7 @@ public abstract class LivingEntityMixin {
       if(attacker instanceof ServerPlayerEntity player){
          // Juggernaut Augment
          ItemStack boots = player.getEquippedStack(EquipmentSlot.FEET);
-         if(MagicItemUtils.identifyItem(boots) instanceof SojournerBoots sojournerBoots && !source.isIndirect()){
+         if(ArcanaItemUtils.identifyItem(boots) instanceof SojournerBoots sojournerBoots && source.isDirect()){
             boolean juggernaut = ArcanaAugments.getAugmentOnItem(boots,ArcanaAugments.JUGGERNAUT.id) >= 1;
             int energy = sojournerBoots.getEnergy(boots);
             if(juggernaut && energy >= 200){
@@ -186,13 +192,13 @@ public abstract class LivingEntityMixin {
          
          // Shield Bash Augment
          ItemStack shieldStack = null;
-         if(MagicItemUtils.identifyItem(player.getEquippedStack(EquipmentSlot.OFFHAND)) instanceof ShieldOfFortitude){
+         if(ArcanaItemUtils.identifyItem(player.getEquippedStack(EquipmentSlot.OFFHAND)) instanceof ShieldOfFortitude){
             shieldStack = player.getEquippedStack(EquipmentSlot.OFFHAND);
-         }else if(MagicItemUtils.identifyItem(player.getEquippedStack(EquipmentSlot.MAINHAND)) instanceof ShieldOfFortitude){
+         }else if(ArcanaItemUtils.identifyItem(player.getEquippedStack(EquipmentSlot.MAINHAND)) instanceof ShieldOfFortitude){
             shieldStack = player.getEquippedStack(EquipmentSlot.MAINHAND);
          }
          
-         if(shieldStack != null && ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_BASH.id) >= 1 && !player.getItemCooldownManager().isCoolingDown(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem()) && !source.isIndirect()){
+         if(shieldStack != null && ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_BASH.id) >= 1 && !player.getItemCooldownManager().isCoolingDown(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem()) && source.isDirect()){
             ArrayList<ShieldTimerCallback> toRemove = new ArrayList<>();
             float shieldTotal = 0;
             float absAmt = player.getAbsorptionAmount();
@@ -213,7 +219,7 @@ public abstract class LivingEntityMixin {
                SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains); // Remove all absorption callbacks
                int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
                ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,20)); // Put 10 hearts back
-               MiscUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_UUID,"arcananovum."+ArcanaRegistry.SHIELD_OF_FORTITUDE.getId(),20f);
+               MiscUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,20f);
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
                player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(),100);
                SoundUtils.playSound(player.getServerWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
@@ -241,8 +247,8 @@ public abstract class LivingEntityMixin {
             }
          
             invItems.add(item);
-            MagicItem magicItem = MagicItemUtils.identifyItem(item);
-            if(magicItem instanceof ArcanistsBelt belt){
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+            if(arcanaItem instanceof ArcanistsBelt belt){
                SimpleInventory beltInv = belt.deserialize(item);
                ArrayList<ItemStack> beltList = new ArrayList<>();
                for(int j = 0; j < beltInv.size(); j++){
@@ -261,14 +267,14 @@ public abstract class LivingEntityMixin {
             for(int j = 0; j < itemList.size(); j++){
                ItemStack item = itemList.get(j);
                
-               boolean isMagic = MagicItemUtils.isMagic(item);
-               if(!isMagic){
+               boolean isArcane = ArcanaItemUtils.isArcane(item);
+               if(!isArcane){
                   sinv.setStack(j,item);
-                  continue; // Item not magic, skip
+                  continue; // Item not arcane, skip
                }
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
+               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
                
-               if((magicItem instanceof FelidaeCharm) && source.isIn(DamageTypeTags.IS_FALL) && !procdFelidae){ // Felidae Charm
+               if((arcanaItem instanceof FelidaeCharm) && source.isIn(DamageTypeTags.IS_FALL) && !procdFelidae){ // Felidae Charm
                   int graceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.FELINE_GRACE.id));
                   float dmgMod = (float) (0.5 - 0.125*graceLvl);
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
@@ -278,29 +284,25 @@ public abstract class LivingEntityMixin {
                   if(oldReturn > player.getHealth() && newReturn < player.getHealth()) ArcanaAchievements.grant(player,ArcanaAchievements.LAND_ON_FEET.id);
                   procdFelidae = true; // Make it so multiple charms don't stack
                   
-               }else if(magicItem instanceof PearlOfRecall){ // Cancel all Pearls of Recall
-                  NbtCompound itemNbt = item.getNbt();
-                  NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
+               }else if(arcanaItem instanceof PearlOfRecall pearl){ // Cancel all Pearls of Recall
                   int defenseLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PHASE_DEFENSE.id));
                   final double[] defenseChance = {0,.15,.35,.5};
                   
-                  if(magicNbt.getInt("heat") > 0){
+                  
+                  if(ArcanaItem.getIntProperty(item, PearlOfRecall.HEAT_TAG) > 0){
                      if(Math.random() >= defenseChance[defenseLvl]){
                         player.sendMessage(Text.literal("Your Recall Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
-                        magicNbt.putInt("heat", -1);
+                        ArcanaItem.putProperty(item,PearlOfRecall.HEAT_TAG,-1);
                      }else{
                         newReturn = 0;
                      }
                   }
-               }else if(magicItem instanceof Planeshifter){ // Cancel all Planeshifters
-                  NbtCompound itemNbt = item.getNbt();
-                  NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-                  
-                  if(magicNbt.getInt("heat") > 0){
+               }else if(arcanaItem instanceof Planeshifter){ // Cancel all Planeshifters
+                  if(ArcanaItem.getIntProperty(item, Planeshifter.HEAT_TAG) > 0){
                      player.sendMessage(Text.literal("Your Plane-Shift Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
-                     magicNbt.putInt("heat", -1);
+                     ArcanaItem.putProperty(item,Planeshifter.HEAT_TAG,-1);
                   }
-               }else if(magicItem instanceof CindersCharm cinders && source.isIn(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
+               }else if(arcanaItem instanceof CindersCharm cinders && source.isIn(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
                   boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CREMATION.id)) >= 1;
                   if(cremation){
                      final double energyPerDamage = 15;
@@ -322,14 +324,14 @@ public abstract class LivingEntityMixin {
                sinv.setStack(j,item);
             }
             
-            if(MagicItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
+            if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
                belt.serialize(carrier, sinv);
             }
          }
       }
       
       ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
-      if(MagicItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings){
+      if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings){
          boolean canReduce = source.isIn(DamageTypeTags.IS_FALL) || source.getName().equals("flyIntoWall") || ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.SCALES_OF_THE_CHAMPION.id) >= 2;
          if(canReduce){
             int energy = wings.getEnergy(chestItem);
@@ -410,15 +412,34 @@ public abstract class LivingEntityMixin {
    
       ItemStack totemStack = null;
       ItemStack vengeanceStack = null;
-      TotemOfVengeance magicTotem = null;
+      TotemOfVengeance vengeanceTotem = null;
       for (Hand hand : Hand.values()) {
          ItemStack handStack = livingEntity.getStackInHand(hand);
          if(handStack.isOf(Items.TOTEM_OF_UNDYING)){
             totemStack = handStack;
             break;
-         }else if(handStack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && MagicItemUtils.identifyItem(handStack) instanceof TotemOfVengeance vtotem){
+         }else if(handStack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && ArcanaItemUtils.identifyItem(handStack) instanceof TotemOfVengeance vtotem){
             vengeanceStack = handStack;
-            magicTotem = vtotem;
+            vengeanceTotem = vtotem;
+         }
+      }
+      
+      ItemStack arcanistsBelt = null;
+      if(livingEntity instanceof ServerPlayerEntity player){
+         Inventory inv = player.getInventory();
+         for(int i = 0; i < inv.size(); i++){
+            ItemStack beltStack = inv.getStack(i);
+            if(ArcanaItemUtils.identifyItem(beltStack) instanceof ArcanistsBelt belt){
+               SimpleInventory beltInv = belt.deserialize(beltStack);
+               for(int j = 0; j < beltInv.size(); j++){
+                  ItemStack stack = beltInv.getStack(j);
+                  if(stack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance vtotem){
+                     vengeanceStack = stack;
+                     vengeanceTotem = vtotem;
+                     arcanistsBelt = beltStack;
+                  }
+               }
+            }
          }
       }
       
@@ -440,13 +461,28 @@ public abstract class LivingEntityMixin {
          return;
       }
       
-      if(vengeanceStack != null && magicTotem.tryUseTotem(vengeanceStack, livingEntity,source)){
+      if(vengeanceStack != null && vengeanceTotem.tryUseTotem(vengeanceStack, livingEntity,source)){
+         if(arcanistsBelt == null){
+            vengeanceStack.decrement(1);
+         }else{
+            if(ArcanaItemUtils.identifyItem(arcanistsBelt) instanceof ArcanistsBelt belt){
+               SimpleInventory beltInv = belt.deserialize(arcanistsBelt);
+               for(int j = 0; j < beltInv.size(); j++){
+                  ItemStack stack = beltInv.getStack(j);
+                  if(stack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance){
+                     stack.decrement(1);
+                  }
+               }
+               belt.serialize(arcanistsBelt,beltInv);
+            }
+         }
+         
          cir.setReturnValue(true);
          return;
       }
       
       ItemStack headStack = livingEntity.getEquippedStack(EquipmentSlot.HEAD);
-      if(MagicItemUtils.identifyItem(headStack) instanceof NulMemento memento && memento.protectFromDeath(headStack,livingEntity,source)){
+      if(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento memento && memento.protectFromDeath(headStack,livingEntity,source)){
          cir.setReturnValue(true);
          return;
       }
@@ -454,7 +490,7 @@ public abstract class LivingEntityMixin {
    
    @Redirect(method="tickFallFlying", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
    private boolean arcananovum_elytraTick(ItemStack stack, Item item){
-      return stack.isOf(item) || MagicItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
+      return stack.isOf(item) || ArcanaItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
    }
    
    @Inject(method="onStatusEffectRemoved",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onRemoved(Lnet/minecraft/entity/attribute/AttributeContainer;)V"))
@@ -492,7 +528,7 @@ public abstract class LivingEntityMixin {
    @Inject(method="onEquipStack", at=@At("HEAD"), cancellable = true)
    private void arcananovum_sojournerEquipBug(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack, CallbackInfo ci){
       String uuid1,uuid2;
-      if(oldStack.isOf(newStack.getItem()) && MagicItemUtils.isMagic(oldStack) && (uuid1 = MagicItem.getUUID(newStack)) != null && (uuid2 = MagicItem.getUUID(newStack)) != null && uuid1.equals(uuid2)){
+      if(oldStack.isOf(newStack.getItem()) && ArcanaItemUtils.isArcane(oldStack) && (uuid1 = ArcanaItem.getUUID(newStack)) != null && (uuid2 = ArcanaItem.getUUID(newStack)) != null && uuid1.equals(uuid2)){
          ci.cancel();
       }
    }

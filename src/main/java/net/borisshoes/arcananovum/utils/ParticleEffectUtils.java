@@ -1,17 +1,23 @@
 package net.borisshoes.arcananovum.utils;
 
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.minecraft.block.Block;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
@@ -27,13 +33,341 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.*;
 
 public class ParticleEffectUtils {
+   
+   public static void arcaneNotesFinish(ServerPlayerEntity player, ArcanaItem arcanaItem){
+      ServerWorld world = player.getServerWorld();
+      world.spawnParticles(ParticleTypes.ENCHANT,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),100,0.4,0.8,0.4,0);
+      world.spawnParticles(ParticleTypes.WITCH,player.getX(),player.getY()+player.getHeight()/1.5,+player.getZ(),100,0.25,0.6,0.25,0.3);
+      
+      Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getColorValue();
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(color == null ? 0xffffff : color).toVector3f(),1.4f);
+      world.spawnParticles(dust,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),30,0.4,0.8,0.4,1);
+   }
+   
+   public static void arcaneNotesAnim(ServerPlayerEntity player, ArcanaItem arcanaItem, int usageTick){
+      ServerWorld world = player.getServerWorld();
+      world.spawnParticles(ParticleTypes.ENCHANT,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),3,0.25,0.6,0.25,0);
+      world.spawnParticles(player,ParticleTypes.ENCHANT,false,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),5,0.25,0.6,0.25,1);
+      
+      Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getColorValue();
+      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(color == null ? 0xffffff : color).toVector3f(),0.5f);
+      world.spawnParticles(dust,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),4,0.4,0.8,0.4,1);
+   }
+   
+   public static void enhancedForgingAnim(ServerWorld world, BlockPos forgePos, ItemStack stack, int tick){
+      Vec3d center = forgePos.toCenterPos();
+      if(tick < 350){
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> enhancedForgingAnim(world, forgePos, stack, tick+1)));
+      }
+      if(tick == 0){
+         ItemDisplayElement item = new ItemDisplayElement(stack);
+         item.setGlowColorOverride(0xf7ed57);
+         item.setBrightness(new Brightness(15,15));
+         item.setScale(new Vector3f(0.5f));
+         
+         ElementHolder holder = new ElementHolder() {
+            int lifeTime = 350;
+            
+            @Override
+            protected void onTick(){
+               super.onTick();
+               
+               if(lifeTime-- <= 0) {
+                  setAttachment(null);
+                  destroy(); // Time expired, remove
+                  return;
+               }
+               if(lifeTime < 80){
+                  item.setGlowing(true);
+               }
+               
+               for(VirtualElement element : getElements()){
+                  if(element instanceof ItemDisplayElement elem){
+                     elem.setLeftRotation(elem.getLeftRotation().rotateY(0.1f,new Quaternionf()));
+                     
+                     if(elem.getScale().y() < 1){
+                        elem.setScale(elem.getScale().add(0.01f,0.01f,0.01f,new Vector3f()));
+                     }
+                     
+                     if(elem.getTranslation().y() < 1.5){
+                        elem.setTranslation(elem.getTranslation().add(0,0.02f,0,new Vector3f()));
+                     }
+                  }
+               }
+            }
+         };
+         holder.addElement(item);
+         HolderAttachment attachment = ChunkAttachment.ofTicking(holder, world, forgePos);
+         
+         SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_POWER_SELECT, SoundCategory.BLOCKS, 2f, 0.8f);
+      }
+      
+      ParticleEffect yellow = new DustParticleEffect(Vec3d.unpackRgb(0xf7ed57).toVector3f(),0.7f);
+      
+      double starTicks = 75;
+      for(float i = 0; i < Math.PI*2; i+= (float) (Math.PI/4.0f)){
+         double radius = tick >= starTicks ? 1.15 : (-0.000782113805012*tick*tick + 0.0739918687092*tick); // Quadratic from https://www.desmos.com/calculator/vuyttamm67
+         double height = tick >= starTicks ? 2.5 : 2.5*tick/starTicks;
+         float rotation = i - 0.01f * tick;
+         Vec3d starPos = center.add(new Vec3d(radius, 0.25+height, 0).rotateY(rotation));
+         world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,starPos.x,starPos.y,starPos.z,1,0,0,0,0);
+         if(tick >= starTicks && tick < 320){
+            world.spawnParticles(yellow,starPos.x,starPos.y,starPos.z,1,0.1,0.1,0.1,0);
+         }
+      }
+      
+      Vec3d itemCenter = new Vec3d(center.x,center.y+1.6,center.z);
+      
+      if(tick >= starTicks && tick < 300){
+         world.spawnParticles(ParticleTypes.VAULT_CONNECTION,center.x,center.y+2.5,center.z,3,0.2,0.2,0.2,1);
+         world.spawnParticles(yellow,center.x,center.y+2.5,center.z,3,0.8,0.8,0.8,0);
+      }
+      
+      if(tick == 50){
+         SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS, 2f, 0.8f);
+      }
+      
+      if(tick >= 120 && tick <= 270){
+         if(tick % 19 == 0){
+            animatedLightningBolt(world,itemCenter,MiscUtils.randomSpherePoint(itemCenter,4,2.5),8,0.5,ParticleTypes.ELECTRIC_SPARK,8,1,0,0,false,2,30);
+            SoundUtils.playSound(world, forgePos, SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.BLOCKS, 0.25f, 1.75f + 0.25f*(float)Math.random());
+         }
+      }
+      
+      if(tick == 130){
+         SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.BLOCKS, 0.7f, 0.7f);
+      }
+      
+      if(tick >= 200 && tick <= 280){
+         int count = (int) Math.min(4,(tick-200) * 0.05) + 1;
+         world.spawnParticles(ParticleTypes.OMINOUS_SPAWNING,itemCenter.x,itemCenter.y,itemCenter.z,count,0.2,0.2,0.2,1);
+      }
+      
+      if(tick == 280){
+         SoundUtils.playSound(world, forgePos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1.25f, 0.7f);
+      }
+      
+      if(tick == 330){
+         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
+      }
+      
+      if(tick % 2 == 0){
+         return;
+      }
+      
+      if(tick < 300){
+         world.spawnParticles(ParticleTypes.END_ROD,center.x,center.y+5.5,center.z,1,1.5,1,1.5,0);
+      }
+      
+      double padScale = tick > 150 ? Math.min(1,(350-tick)/50.0) : Math.min(1,tick/50.0);
+      
+      final double L1 = 1.5 * padScale;
+      final double S1 = 0.5 * padScale;
+      final int I1 = tick % 4 == 1 ? 10 : 11;
+      final double D1 = 0.02;
+      final int C1 = 1;
+      
+      line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,S1),yellow,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,L1),center.add(S1,-0.4,S1),yellow,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,L1),center.add(-S1,-0.4,S1),yellow,I1,C1,D1,1);
+      line(world,null,center.add(-L1,-0.4,0),center.add(-S1,-0.4,S1),yellow,I1,C1,D1,1);
+      line(world,null,center.add(-L1,-0.4,0),center.add(-S1,-0.4,-S1),yellow,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,-L1),center.add(S1,-0.4,-S1),yellow,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,-L1),center.add(-S1,-0.4,-S1),yellow,I1,C1,D1,1);
+      line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,-S1),yellow,I1,C1,D1,1);
+      
+      
+      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x79e0fc).toVector3f(),0.7f);
+      final double L2 = 1.2 * padScale;
+      final double S2 = 0.55 * padScale;
+      final int I2 = tick % 4 == 1 ? 10 : 11;
+      final double D2 = 0.02;
+      final int C2 = 1;
+      
+      line(world,null,center.add(L2,-0.4,L2),center.add(0,-0.4,S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,L2),center.add(S2,-0.4,0),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,L2),center.add(0,-0.4,S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,L2),center.add(-S2,-0.4,0),blue,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,-L2),center.add(0,-0.4,-S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,-L2),center.add(S2,-0.4,0),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,-L2),center.add(0,-0.4,-S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,-L2),center.add(-S2,-0.4,0),blue,I2,C2,D2,1);
+      
+      ParticleEffect white = new DustParticleEffect(Vec3d.unpackRgb(0xe6fff6).toVector3f(),0.7f);
+      final double L3 = 1.8 * padScale;
+      final double S3 = 1.15 * padScale;
+      final int I3 = tick % 4 == 1 ? 30 : 31;
+      final double D3 = 0.02;
+      final int C3 = 1;
+      
+      line(world,null,center.add(L3,-0.4,0),center.add(-L3,-0.4,0),white,I3,C3,D3,1);
+      line(world,null,center.add(0,-0.4,L3),center.add(0,-0.4,-L3),white,I3,C3,D3,1);
+      line(world,null,center.add(S3,-0.4,S3),center.add(-S3,-0.4,-S3),white,I3,C3,D3,1);
+      line(world,null,center.add(-S3,-0.4,S3),center.add(S3,-0.4,-S3),white,I3,C3,D3,1);
+   }
+   
+   public static void arcanaCraftingAnim(ServerWorld world, BlockPos forgePos, ItemStack stack, int tick){
+      Vec3d center = forgePos.toCenterPos();
+      if(tick < 350){
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> arcanaCraftingAnim(world, forgePos, stack, tick+1)));
+      }
+      if(tick == 0){
+         ItemDisplayElement item = new ItemDisplayElement(stack);
+         item.setGlowColorOverride(0x9404d6);
+         item.setBrightness(new Brightness(15,15));
+         item.setScale(new Vector3f(0.5f));
+         
+         ElementHolder holder = new ElementHolder() {
+            int lifeTime = 350;
+            
+            @Override
+            protected void onTick(){
+               super.onTick();
+               
+               if(lifeTime-- <= 0) {
+                  setAttachment(null);
+                  destroy(); // Time expired, remove
+                  return;
+               }
+               if(lifeTime < 80){
+                  item.setGlowing(true);
+               }
+               
+               for(VirtualElement element : getElements()){
+                  if(element instanceof ItemDisplayElement elem){
+                     elem.setLeftRotation(elem.getLeftRotation().rotateY(0.1f,new Quaternionf()));
+                     
+                     if(elem.getScale().y() < 1){
+                        elem.setScale(elem.getScale().add(0.01f,0.01f,0.01f,new Vector3f()));
+                     }
+                     
+                     if(elem.getTranslation().y() < 1.5){
+                        elem.setTranslation(elem.getTranslation().add(0,0.02f,0,new Vector3f()));
+                     }
+                  }
+               }
+            }
+         };
+         holder.addElement(item);
+         HolderAttachment attachment = ChunkAttachment.ofTicking(holder, world, forgePos);
+         
+         SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_POWER_SELECT, SoundCategory.BLOCKS, 2f, 0.8f);
+      }
+      
+      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0x9404d6).toVector3f(),0.7f);
+      
+      double starTicks = 75;
+      for(float i = 0; i < Math.PI*2; i+= (float) (Math.PI/4.0f)){
+         double radius = tick >= starTicks ? 1.15 : (-0.000782113805012*tick*tick + 0.0739918687092*tick); // Quadratic from https://www.desmos.com/calculator/vuyttamm67
+         double height = tick >= starTicks ? 2.5 : 2.5*tick/starTicks;
+         float rotation = i - 0.01f * tick;
+         Vec3d starPos = center.add(new Vec3d(radius, 0.25+height, 0).rotateY(rotation));
+         world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,starPos.x,starPos.y,starPos.z,1,0,0,0,0);
+         if(tick >= starTicks && tick < 320){
+            world.spawnParticles(purple,starPos.x,starPos.y,starPos.z,1,0.1,0.1,0.1,0);
+         }
+      }
+      
+      Vec3d itemCenter = new Vec3d(center.x,center.y+1.6,center.z);
+      
+      if(tick >= starTicks && tick < 300){
+         world.spawnParticles(ParticleTypes.ENCHANT,center.x,center.y+2.5,center.z,3,0.2,0.2,0.2,1);
+         world.spawnParticles(purple,center.x,center.y+2.5,center.z,3,0.8,0.8,0.8,0);
+      }
+      
+      if(tick == 50){
+         SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS, 2f, 0.8f);
+      }
+      
+      if(tick >= 120 && tick <= 270){
+         if(tick % 19 == 0){
+            animatedLightningBolt(world,itemCenter,MiscUtils.randomSpherePoint(itemCenter,4,2.5),8,0.5,ParticleTypes.ELECTRIC_SPARK,8,1,0,0,false,2,30);
+            SoundUtils.playSound(world, forgePos, SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.BLOCKS, 0.25f, 1.75f + 0.25f*(float)Math.random());
+         }
+      }
+      
+      if(tick == 130){
+         SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.BLOCKS, 0.7f, 0.7f);
+      }
+      
+      if(tick >= 200 && tick <= 280){
+         int count = (int) Math.min(4,(tick-200) * 0.05) + 1;
+         world.spawnParticles(ParticleTypes.OMINOUS_SPAWNING,itemCenter.x,itemCenter.y,itemCenter.z,count,0.2,0.2,0.2,1);
+         world.spawnParticles(ParticleTypes.WITCH,itemCenter.x,itemCenter.y,itemCenter.z,count,0.2,0.5,0.2,0.05);
+      }
+      
+      if(tick == 280){
+         SoundUtils.playSound(world, forgePos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1.25f, 0.7f);
+      }
+      
+      if(tick == 330){
+         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
+         world.spawnParticles(ParticleTypes.WITCH,itemCenter.x,itemCenter.y,itemCenter.z,100,0.2,0.5,0.2,0.1);
+      }
+      
+      if(tick % 2 == 0){
+         return;
+      }
+      
+      if(tick < 300){
+         world.spawnParticles(ParticleTypes.END_ROD,center.x,center.y+5.5,center.z,1,1.5,1,1.5,0);
+      }
+      
+      double padScale = tick > 150 ? Math.min(1,(350-tick)/50.0) : Math.min(1,tick/50.0);
+      
+      final double L1 = 1.5 * padScale;
+      final double S1 = 0.5 * padScale;
+      final int I1 = tick % 4 == 1 ? 10 : 11;
+      final double D1 = 0.02;
+      final int C1 = 1;
+      
+      line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,S1),purple,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,L1),center.add(S1,-0.4,S1),purple,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,L1),center.add(-S1,-0.4,S1),purple,I1,C1,D1,1);
+      line(world,null,center.add(-L1,-0.4,0),center.add(-S1,-0.4,S1),purple,I1,C1,D1,1);
+      line(world,null,center.add(-L1,-0.4,0),center.add(-S1,-0.4,-S1),purple,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,-L1),center.add(S1,-0.4,-S1),purple,I1,C1,D1,1);
+      line(world,null,center.add(0,-0.4,-L1),center.add(-S1,-0.4,-S1),purple,I1,C1,D1,1);
+      line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,-S1),purple,I1,C1,D1,1);
+      
+      
+      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x79e0fc).toVector3f(),0.7f);
+      final double L2 = 1.2 * padScale;
+      final double S2 = 0.55 * padScale;
+      final int I2 = tick % 4 == 1 ? 10 : 11;
+      final double D2 = 0.02;
+      final int C2 = 1;
+      
+      line(world,null,center.add(L2,-0.4,L2),center.add(0,-0.4,S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,L2),center.add(S2,-0.4,0),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,L2),center.add(0,-0.4,S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,L2),center.add(-S2,-0.4,0),blue,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,-L2),center.add(0,-0.4,-S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(L2,-0.4,-L2),center.add(S2,-0.4,0),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,-L2),center.add(0,-0.4,-S2),blue,I2,C2,D2,1);
+      line(world,null,center.add(-L2,-0.4,-L2),center.add(-S2,-0.4,0),blue,I2,C2,D2,1);
+      
+      ParticleEffect white = new DustParticleEffect(Vec3d.unpackRgb(0xd9daff).toVector3f(),0.7f);
+      final double L3 = 1.8 * padScale;
+      final double S3 = 1.15 * padScale;
+      final int I3 = tick % 4 == 1 ? 30 : 31;
+      final double D3 = 0.02;
+      final int C3 = 1;
+      
+      line(world,null,center.add(L3,-0.4,0),center.add(-L3,-0.4,0),white,I3,C3,D3,1);
+      line(world,null,center.add(0,-0.4,L3),center.add(0,-0.4,-L3),white,I3,C3,D3,1);
+      line(world,null,center.add(S3,-0.4,S3),center.add(-S3,-0.4,-S3),white,I3,C3,D3,1);
+      line(world,null,center.add(-S3,-0.4,S3),center.add(S3,-0.4,-S3),white,I3,C3,D3,1);
+   }
+   
    
    public static void ensnaredEffect(LivingEntity living, int amplifier, int tick){
       if(!living.isAlive() || living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) == null || !(living.getEntityWorld() instanceof ServerWorld world)){
@@ -429,7 +763,7 @@ public class ParticleEffectUtils {
       ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
       final double L1 = 2.35;
       final double S1 = 0.85;
-      final int I1 = 10;
+      final int I1 = tick % 4 == 1 ? 10 : 11;
       final double D1 = 0.02;
       final int C1 = 1;
       
@@ -446,7 +780,7 @@ public class ParticleEffectUtils {
       ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
       final double L2 = 1.4;
       final double S2 = 0.6;
-      final int I2 = 10;
+      final int I2 = tick % 4 == 1 ? 10 : 11;
       final double D2 = 0.02;
       final int C2 = 1;
       
@@ -462,7 +796,7 @@ public class ParticleEffectUtils {
       ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.7f);
       final double L3 = 2.0;
       final double S3 = 1.15;
-      final int I3 = 30;
+      final int I3 = tick % 4 == 1 ? 30 : 31;
       final double D3 = 0.02;
       final int C3 = 1;
       
@@ -483,16 +817,16 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.LAVA,pos.getX(),pos.getY(),pos.getZ(),1,0.25,0.05,0.25,0.02);
    }
    
-   public static void arcaneSingularityAnim(ServerWorld world, Vec3d center, int tick, Direction direction){
+   public static void arcaneSingularityAnim(ServerWorld world, Vec3d center, int tick, Direction direction, double fillPercent){
       if(tick % 2 == 0) return;
       double L = 300.0;
       double animPercent = tick/L;
       double piPercent = Math.PI*2*animPercent;
       ParticleEffect black = new DustParticleEffect(Vec3d.unpackRgb(0x000000).toVector3f(),2.0f);
       ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x00ECFF).toVector3f(),0.75f);
-      sphere(world,null,center,black,0.7,50,2,0.1,0,piPercent);
-      sphere(world,null,center,ParticleTypes.WITCH,1.25,80,1,0.05,0,3*piPercent);
-      sphere(world,null,center,blue,1,80,1,0.01,0,-3*piPercent);
+      sphere(world,null,center,black,0.2+0.65*fillPercent,(int)(20*fillPercent+5),1,0.025,0,5*piPercent);
+      sphere(world,null,center,ParticleTypes.WITCH,0.5+0.85*fillPercent,(int)(30*fillPercent+12),1,0.05,0,3*piPercent);
+      sphere(world,null,center,blue,0.4+0.75*fillPercent,(int)(70*fillPercent+12),1,0.01,0,-3*piPercent);
       world.spawnParticles(ParticleTypes.WITCH,center.getX(),center.getY()-1.2,center.getZ(),4,0.3,0.4,0.3,0);
       
       List<Vec3d> rods = new ArrayList<>(Arrays.asList(
@@ -548,7 +882,7 @@ public class ParticleEffectUtils {
       }
    }
    
-   public static void mythicalConstructSummon(ServerWorld world, Vec3d pos, int tick){
+   public static void exaltedConstructSummon(ServerWorld world, Vec3d pos, int tick){
       double or = 5*(1-tick/220.0);
       double inter = 0.15;
       int num = 2;
@@ -596,7 +930,7 @@ public class ParticleEffectUtils {
       }
       
       if(tick < 220){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> mythicalConstructSummon(world,pos,tick+1)));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> exaltedConstructSummon(world,pos,tick+1)));
       }else{
          world.spawnParticles(ParticleTypes.WITCH,pos.x,pos.y,pos.z,150,1,1,1,0.01);
       }
@@ -973,6 +1307,104 @@ public class ParticleEffectUtils {
       double theta = 2*Math.PI / 20.0;
       ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),(float)radius/2);
       sphere(world,null,center,dust,radius,(int)(radius*radius+radius*10+radius),1,0,1,theta*ticks);
+   }
+   
+   public static void lightningBolt(ServerWorld world, Vec3d p1, Vec3d p2, int numSegments, double maxDevDist, ParticleEffect type, int particlesPerBlock, int count, double delta, double speed, boolean longDist){
+      if(numSegments <= 0) return;
+      List<Vec3d> points = new ArrayList<>();
+      points.add(p1);
+      double dx = (p2.x-p1.x)/numSegments;
+      double dy = (p2.y-p1.y)/numSegments;
+      double dz = (p2.z-p1.z)/numSegments;
+      for(int i = 0; i < numSegments-1; i++){
+         double x = p1.x + dx*i;
+         double y = p1.y + dy*i;
+         double z = p1.z + dz*i;
+         points.add(MiscUtils.randomSpherePoint(new Vec3d(x,y,z),maxDevDist));
+      }
+      points.add(p2);
+      
+      for(int i = 1; i < points.size(); i++){
+         Vec3d ps = points.get(i-1);
+         Vec3d pe = points.get(i);
+         int intervals = (int) (pe.subtract(ps).length() * particlesPerBlock);
+         
+         if(longDist){
+            line(world,null,ps,pe,type,intervals,count,delta,speed);
+         }else{
+            longDistLine(world,ps,pe,type,intervals,count,delta,speed);
+         }
+      }
+   }
+   
+   public static void animatedLightningBolt(ServerWorld world, Vec3d p1, Vec3d p2, int numSegments, double maxDevDist, ParticleEffect type, int particlesPerBlock, int count, double delta, double speed, boolean longDist, int persistMod, int duration){
+      if(numSegments <= 0) return;
+      List<Vec3d> points = new ArrayList<>();
+      points.add(p1);
+      double dx = (p2.x-p1.x)/numSegments;
+      double dy = (p2.y-p1.y)/numSegments;
+      double dz = (p2.z-p1.z)/numSegments;
+      for(int i = 0; i < numSegments-1; i++){
+         double x = p1.x + dx*i;
+         double y = p1.y + dy*i;
+         double z = p1.z + dz*i;
+         points.add(MiscUtils.randomSpherePoint(new Vec3d(x,y,z),maxDevDist));
+      }
+      points.add(p2);
+      
+      int particleCount = 0;
+      for(int i = 1; i < points.size(); i++){
+         Vec3d ps = points.get(i-1);
+         Vec3d pe = points.get(i);
+         int intervals = (int) (pe.subtract(ps).length() * particlesPerBlock);
+         
+         particleCount += intervals;
+      }
+      
+      float particlesPerTick = (float) particleCount / duration;
+      HashMap<Vec3d, Integer> pp = new HashMap<>();
+      
+      int c = 0;
+      for(int i = 1; i < points.size(); i++){
+         Vec3d ps = points.get(i-1);
+         Vec3d pe = points.get(i);
+         int intervals = (int) (pe.subtract(ps).length() * particlesPerBlock);
+         
+         dx = (pe.x-ps.x)/intervals;
+         dy = (pe.y-ps.y)/intervals;
+         dz = (pe.z-ps.z)/intervals;
+         for(int j = 0; j < intervals; j++){
+            double x = ps.x + dx * j;
+            double y = ps.y + dy * j;
+            double z = ps.z + dz * j;
+            
+            pp.put(new Vec3d(x,y,z),Math.round(c / particlesPerTick));
+            c++;
+         }
+      }
+      
+      animatedLightningBoltHelper(world,pp,type,count,delta,speed,longDist,persistMod,0);
+   }
+   
+   private static void animatedLightningBoltHelper(ServerWorld world, HashMap<Vec3d, Integer> points, ParticleEffect type, int count, double delta, double speed, boolean longDist, int persistMod, int tick){
+      int highestTick = 0;
+      for(Map.Entry<Vec3d, Integer> entry : points.entrySet()){
+         int pTick = entry.getValue();
+         Vec3d point = entry.getKey();
+         if(pTick > highestTick) highestTick = pTick;
+         
+         if(!(persistMod > 0 && tick % persistMod == 0 && pTick < tick) && pTick != tick) continue;
+         
+         if(longDist){
+            spawnLongParticle(world,type,point.x,point.y,point.z,delta,delta,delta,speed,count);
+         }else{
+            world.spawnParticles(type,point.x,point.y,point.z,count,delta,delta,delta,speed);
+         }
+      }
+      
+      if(tick < highestTick){
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> animatedLightningBoltHelper(world, points, type, count, delta, speed, longDist, persistMod, tick+1)));
+      }
    }
    
    public static void longDistLine(ServerWorld world, Vec3d p1, Vec3d p2, ParticleEffect type, int intervals, int count, double delta, double speed){

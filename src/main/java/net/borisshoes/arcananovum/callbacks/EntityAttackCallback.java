@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -20,8 +20,8 @@ public class EntityAttackCallback {
          PlayerInventory inv = playerEntity.getInventory();
          for(int i=0; i<inv.size();i++){
             ItemStack invItem = inv.getStack(i);
-            MagicItem magicItem = MagicItemUtils.identifyItem(invItem);
-            if(magicItem instanceof ShadowStalkersGlaive glaive){ // Check for Shadow Stalkers Glaive
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(invItem);
+            if(arcanaItem instanceof ShadowStalkersGlaive glaive){ // Check for Shadow Stalkers Glaive
                glaive.entityAttacked(playerEntity,invItem,entity);
             }
          }

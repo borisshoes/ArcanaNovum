@@ -1,14 +1,7 @@
 package net.borisshoes.arcananovum;
 
-import com.mojang.authlib.GameProfile;
-import de.maxhenkel.voicechat.Voicechat;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
 import net.borisshoes.arcananovum.callbacks.*;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.gui.WatchedGui;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -25,21 +18,18 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
-import net.minecraft.util.UserCache;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
@@ -48,11 +38,11 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    private static final Logger logger = LogManager.getLogger("Arcana Novum");
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
-   public static final HashMap<ServerPlayerEntity, WatchedGui> OPEN_GUIS = new HashMap<>();
    public static final HashMap<ServerWorld,ArrayList<ChunkPos>> ANCHOR_CHUNKS = new HashMap<>();
-   public static final ArrayList<Pair<BlockEntity,MagicBlockEntity>> ACTIVE_MAGIC_BLOCKS = new ArrayList<>();
+   public static final HashMap<Pair<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
    public static final HashMap<String,List<UUID>> PLAYER_ACHIEVEMENT_TRACKER = new HashMap<>();
    public static final HashMap<UUID,Integer> PLAYER_XP_TRACKER = new HashMap<>();
+   public static final HashMap<ServerPlayerEntity, Pair<Vec3d,Vec3d>> PLAYER_MOVEMENT_TRACKER = new HashMap<>();
    public static MinecraftServer SERVER = null;
    public static final boolean devMode = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
@@ -117,6 +107,13 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    public static boolean removeActiveAnchor(ServerWorld targetWorld, BlockPos pos){
       return ACTIVE_ANCHORS.get(targetWorld).removeAnchor(pos);
+   }
+   
+   public static boolean addActiveBlock(Pair<BlockEntity,ArcanaBlockEntity> pair){
+      List<Pair<BlockEntity,ArcanaBlockEntity>> existing = ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(p -> p.getRight().getUuid().equals(pair.getRight().getUuid())).toList();
+      existing.forEach(ACTIVE_ARCANA_BLOCKS::remove);
+      ACTIVE_ARCANA_BLOCKS.put(pair,30);
+      return existing.isEmpty();
    }
    
    public static void devPrint(String msg){

@@ -4,83 +4,91 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.RepeatTimer;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.entity.Entity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class EnsnarementArrows extends RunicArrow {
+	public static final String ID = "ensnarement_arrows";
    
    private static final String TXT = "item/runic_arrow";
    
    public EnsnarementArrows(){
-      id = "ensnarement_arrows";
+      id = ID;
       name = "Ensnarement Arrows";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC,ArcaneTome.TomeFilter.ARROWS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC,TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new EnsnarementArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      item = new EnsnarementArrowsItem(new Item.Settings().maxCount(64).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Ensnarement").formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(5046527),new ArrayList<>()))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.EFFECT_SLOWNESS};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Arrows - Ensnarement\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("CustomPotionColor",5046527);
-      tag.putInt("HideFlags",255);
-      stack.setCount(64);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Ensnarement Arrows:\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"restrain \",\"color\":\"dark_purple\"},{\"text\":\"a \"},{\"text\":\"target \",\"color\":\"yellow\"},{\"text\":\"from \"},{\"text\":\"moving \",\"color\":\"dark_purple\"},{\"text\":\"of their own will.\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"gray\"},{\"text\":\"Arrows \",\"color\":\"light_purple\"},{\"text\":\"have a \"},{\"text\":\"reduced effect\",\"color\":\"dark_purple\"},{\"text\":\" on \"},{\"text\":\"players\",\"color\":\"yellow\"},{\"text\":\".\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addRunicArrowLore(lore);
+      lore.add(Text.literal("Ensnarement Arrows:").formatted(Formatting.BOLD,Formatting.DARK_PURPLE));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.GRAY))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" restrain ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("a ").formatted(Formatting.GRAY))
+            .append(Text.literal("target ").formatted(Formatting.YELLOW))
+            .append(Text.literal("from ").formatted(Formatting.GRAY))
+            .append(Text.literal("moving ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("of their own will.").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.GRAY))
+            .append(Text.literal("Arrows ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("have a ").formatted(Formatting.GRAY))
+            .append(Text.literal("reduced effect").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(" on ").formatted(Formatting.GRAY))
+            .append(Text.literal("players").formatted(Formatting.YELLOW))
+            .append(Text.literal(".").formatted(Formatting.GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -114,38 +122,39 @@ public class EnsnarementArrows extends RunicArrow {
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){}
    
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      MagicItemIngredient c = new MagicItemIngredient(Items.COBWEB,64,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      MagicItemIngredient k = new MagicItemIngredient(Items.ENDER_PEARL,16,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient c = new ArcanaIngredient(Items.CRYING_OBSIDIAN,24);
+      ArcanaIngredient g = new ArcanaIngredient(Items.COBWEB,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
+      ArcanaIngredient k = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_SLOWNESS);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
       
-      MagicItemIngredient[][] ingredients = {
+      ArcanaIngredient[][] ingredients = {
             {a,a,c,a,a},
             {a,g,h,g,a},
             {k,h,m,h,k},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients,new ForgeRequirement().withFletchery());
-      
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("\" Ensnarement Arrows\\n\\nRarity: Exotic\\n\\nThese arrows unleash Arcane chains around the target creature.\\nThese chains fully stop the creature from moving, while still letting them shift due to environmental factors. Players are affected less.\"");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal(" Ensnarement Arrows\n\nRarity: Exotic\n\nThese arrows unleash Arcane chains around the target creature.\nThese chains fully stop the creature from moving, while still letting them shift due to environmental factors. Players are affected less.")));
       return list;
    }
    
-   public class EnsnarementArrowsItem extends MagicPolymerArrowItem {
-      public EnsnarementArrowsItem(Settings settings){
+   public class EnsnarementArrowsItem extends ArcanaPolymerArrowItem {
+      public EnsnarementArrowsItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -154,3 +163,4 @@ public class EnsnarementArrows extends RunicArrow {
       }
    }
 }
+

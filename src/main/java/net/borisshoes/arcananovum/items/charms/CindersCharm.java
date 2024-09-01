@@ -1,21 +1,20 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.LeftClickItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -25,26 +24,25 @@ import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.input.SingleStackRecipeInput;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -60,10 +58,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class CindersCharm extends EnergyItem implements LeftClickItem {
+	public static final String ID = "cinders_charm";
    
    private static final String TXT_ON = "item/cinders_charm_on";
    private static final String TXT_OFF = "item/cinders_charm_off";
@@ -80,46 +80,65 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
    private final double ro = farW / (2*Math.sin(ha));
    
    public CindersCharm(){
-      id = "cinders_charm";
+      id = ID;
       name = "Charm of Cinders";
       initEnergy = 100;
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.BLAZE_POWDER;
-      item = new CindersCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new CindersCharmItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Charm of Cinders").formatted(Formatting.BOLD,Formatting.GOLD))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT_ON));
       models.add(new Pair<>(vanillaItem,TXT_OFF));
       models.add(new Pair<>(vanillaItem,TXT_CREMATION_ON));
       models.add(new Pair<>(vanillaItem,TXT_CREMATION_OFF));
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.KILL_BLAZE,ResearchTasks.KILL_MAGMA_CUBE,ResearchTasks.EFFECT_FIRE_RESISTANCE,ResearchTasks.USE_FLINT_AND_STEEL,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Charm of Cinders\",\"italic\":false,\"color\":\"gold\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putBoolean("active",false);
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,ACTIVE_TAG, false);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"red\"},{\"text\":\"charm \",\"color\":\"gold\"},{\"text\":\"burns \",\"color\":\"dark_red\"},{\"text\":\"with \"},{\"text\":\"focused intensity\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"red\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Flames \",\"italic\":false,\"color\":\"gold\"},{\"text\":\"welcome you with a \",\"color\":\"red\"},{\"text\":\"warm embrace\"},{\"text\":\".\",\"color\":\"red\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Left Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" a block or creature to set it \",\"color\":\"red\"},{\"text\":\"ablaze\",\"color\":\"gold\"},{\"text\":\".\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Hold Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to \",\"color\":\"red\"},{\"text\":\"breathe \",\"color\":\"gold\"},{\"text\":\"a \",\"color\":\"red\"},{\"text\":\"cone of fire\",\"color\":\"gold\"},{\"text\":\" in front of you.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_red\"},{\"text\":\" to toggle \",\"color\":\"red\"},{\"text\":\"auto-smelting\",\"color\":\"gold\"},{\"text\":\" of picked up items.\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.RED))
+            .append(Text.literal("charm ").formatted(Formatting.GOLD))
+            .append(Text.literal("burns ").formatted(Formatting.DARK_RED))
+            .append(Text.literal("with ").formatted(Formatting.RED))
+            .append(Text.literal("focused intensity").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.RED)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Flames ").formatted(Formatting.GOLD))
+            .append(Text.literal("welcome you with a ").formatted(Formatting.RED))
+            .append(Text.literal("warm embrace").formatted(Formatting.GOLD))
+            .append(Text.literal(".").formatted(Formatting.RED)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Left Click").formatted(Formatting.DARK_RED))
+            .append(Text.literal(" a block or creature to set it ").formatted(Formatting.RED))
+            .append(Text.literal("ablaze").formatted(Formatting.GOLD))
+            .append(Text.literal(".").formatted(Formatting.RED)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Hold Right Click").formatted(Formatting.DARK_RED))
+            .append(Text.literal(" to ").formatted(Formatting.RED))
+            .append(Text.literal("breathe ").formatted(Formatting.GOLD))
+            .append(Text.literal("a ").formatted(Formatting.RED))
+            .append(Text.literal("cone of fire").formatted(Formatting.GOLD))
+            .append(Text.literal(" in front of you.").formatted(Formatting.RED)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right Click").formatted(Formatting.DARK_RED))
+            .append(Text.literal(" to toggle ").formatted(Formatting.RED))
+            .append(Text.literal("auto-smelting").formatted(Formatting.GOLD))
+            .append(Text.literal(" of picked up items.").formatted(Formatting.RED)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -158,18 +177,18 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
             }
             playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
-   
+            
             if(playerEntity instanceof ServerPlayerEntity player){
                PLAYER_DATA.get(player).addXP(50*cinderConsumption); // Add xp
             }
-   
+            
             return !playerEntity.isCreative();
          }else if (AbstractFireBlock.canPlaceAt(world, blockPos2, direction)) {
             SoundUtils.playSound(world,blockPos,SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
             BlockState blockState2 = AbstractFireBlock.getState(world, blockPos2);
             world.setBlockState(blockPos2, blockState2, 11);
             world.emitGameEvent(playerEntity, GameEvent.BLOCK_PLACE, blockPos);
-   
+            
             addEnergy(itemStack, -cinderConsumption);
             String message = "Cinders: ";
             for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
@@ -190,14 +209,14 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          SoundUtils.playSound(world,blockPos,SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
          world.setBlockState(blockPos, (BlockState)blockState.with(Properties.LIT, true), 11);
          world.emitGameEvent(playerEntity, GameEvent.BLOCK_CHANGE, blockPos);
-   
+         
          addEnergy(itemStack, -cinderConsumption);
          String message = "Cinders: ";
          for(int i=1; i<=getMaxEnergy(itemStack)/20; i++){
             message += getEnergy(itemStack) >= i*20 ? "✦ " : "✧ ";
          }
          playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
-   
+         
          if(playerEntity instanceof ServerPlayerEntity player){
             PLAYER_DATA.get(player).addXP(15*cinderConsumption); // Add xp
          }
@@ -206,19 +225,16 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
    }
    
-   public ItemStack smelt(ItemStack item, PlayerEntity player, ItemStack stack){
+   public ItemStack smelt(ItemStack charm, PlayerEntity player, ItemStack stack){
       try{
-         NbtCompound itemNbt = item.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         boolean cremation = ArcanaAugments.getAugmentOnItem(item,"cremation") >= 1;
+         boolean active = getBooleanProperty(charm,ACTIVE_TAG);
+         boolean cremation = ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.CREMATION.id) >= 1;
          Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
-         if(MagicItemUtils.isMagic(stack)) return null;
          int energyToConsume = (int)Math.ceil(stack.getCount() / 2.0);
-         if(magicNbt.getBoolean("active") && getEnergy(item) >= energyToConsume){
+         if(active && getEnergy(charm) >= energyToConsume){
             // Smelting registry and auto smelt
-            RecipeManager.MatchGetter<Inventory, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
-            SimpleInventory sInv = new SimpleInventory(stack);
-            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(sInv,player.getEntityWorld()).orElse(null);
+            RecipeManager.MatchGetter<SingleStackRecipeInput, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
+            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(new SingleStackRecipeInput(stack),player.getEntityWorld()).orElse(null);
             if(recipeEntry == null) return null;
             AbstractCookingRecipe recipe = recipeEntry.value();
             if(recipe == null) return null;
@@ -232,19 +248,19 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                if(inv.getOccupiedSlotWithRoomForStack(result) == -1 && inv.getEmptySlot() == -1) return null;
                
                player.addExperience(MathHelper.floor(recipe.getExperience()*stack.getCount()));
-   
-               int oldEnergy = getEnergy(item);
-               addEnergy(item, -energyToConsume);
-               int newEnergy = getEnergy(item);
+               
+               int oldEnergy = getEnergy(charm);
+               addEnergy(charm, -energyToConsume);
+               int newEnergy = getEnergy(charm);
                if(oldEnergy/20 != newEnergy/20){
                   String message = "Cinders: ";
-                  for(int i=1; i<=getMaxEnergy(item)/20; i++){
+                  for(int i=1; i<=getMaxEnergy(charm)/20; i++){
                      message += newEnergy >= i*20 ? "✦ " : "✧ ";
                   }
                   player.sendMessage(Text.literal(message.toString()).formatted(color), true);
                }
                stack = result;
-   
+               
                if(player instanceof ServerPlayerEntity serverPlayer){
                   PLAYER_DATA.get(serverPlayer).addXP(energyToConsume*4); // Add xp
                   if(recipeOutput.isOf(Items.GLASS)) ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.GLASSBLOWER.id,stack.getCount());
@@ -264,7 +280,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
-      DefaultParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
+      SimpleParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
       Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
       
       if(energy < 12) {
@@ -272,7 +288,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          return TypedActionResult.pass(itemStack);
       }
       addEnergy(itemStack,-3);
-   
+      
       if(energy/20 != getEnergy(itemStack)/20){
          energy = getEnergy(itemStack);
          StringBuilder message = new StringBuilder("Cinders: ");
@@ -281,14 +297,14 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          }
          playerEntity.sendMessage(Text.literal(message.toString()).formatted(color), true);
       }
-   
+      
       double mul = 1.5*range;
       Vec3d boxStart = playerEntity.getPos().subtract(mul,mul,mul);
       Vec3d boxEnd = playerEntity.getPos().add(mul,mul,mul);
       Box rangeBox = new Box(boxStart,boxEnd);
-   
+      
       SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS, 0.6f, (float) (Math.random() * .5 + .5));
-   
+      
       List<Entity> entities = serverWorld.getOtherEntities(playerEntity,rangeBox, e -> e instanceof LivingEntity);
       int ignited = 0;
       for(Entity e : entities){
@@ -298,7 +314,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
                entity.setOnFireFor((2*energy+60)/20);
                entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 5f : 2.5f);
                if(entity instanceof MobEntity) ignited++;
-            
+               
                if(playerEntity instanceof ServerPlayerEntity serverPlayer){
                   PLAYER_DATA.get(serverPlayer).addXP(5); // Add xp
                }
@@ -308,8 +324,8 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       if(playerEntity instanceof ServerPlayerEntity serverPlayer && ignited >= 12){
          ArcanaAchievements.grant(serverPlayer,ArcanaAchievements.PYROMANIAC.id);
       }
-   
-
+      
+      
       double angle = 2*Math.atan2((.5*(farW-closeW)),range);
       float yaw = playerEntity.getRotationClient().y;
       Vec3d rot = Vec3d.fromPolar(0,yaw);
@@ -360,7 +376,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
-      DefaultParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
+      SimpleParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
       Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
       
       if(energy < 50) {
@@ -378,7 +394,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          }
          player.sendMessage(Text.literal(message.toString()).formatted(color), true);
       }
-   
+      
       Vec3d startPos = player.getEyePos();
       Vec3d view = player.getRotationVecClient();
       Vec3d rayEnd = startPos.add(view.multiply(35));
@@ -398,7 +414,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             entity.setOnFireFor(consumedEnergy/20);
             entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
             ignited++;
-   
+            
             PLAYER_DATA.get(player).addXP(5); // Add xp
          }
       }
@@ -406,7 +422,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       if(ignited >= 12){
          ArcanaAchievements.grant(player,ArcanaAchievements.PYROMANIAC.id);
       }
-   
+      
       ParticleEffectUtils.pyroblastExplosion(serverWorld,particleType,center,explosionRange,0);
       ParticleEffectUtils.line(serverWorld,null,startPos.subtract(0,.3,0),center,particleType,(int)(center.distanceTo(startPos)*4),1,0,0);
       serverWorld.spawnParticles(particleType,center.getX(),center.getY(),center.getZ(),100,0.1,0.1,0.1,0.4);
@@ -419,7 +435,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
-      DefaultParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
+      SimpleParticleType particleType = cremation ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME;
       Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
       
       if(energy < 50) {
@@ -462,9 +478,9 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
       
       ParticleEffectUtils.webOfFireCast(serverWorld,particleType,player,hits,effectRange,0);
-   
+      
       addEnergy(itemStack,-energy);
-   
+      
       if(energy/20 != getEnergy(itemStack)/20){
          energy = getEnergy(itemStack);
          StringBuilder message = new StringBuilder("Cinders: ");
@@ -478,14 +494,10 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
    }
    
    private TypedActionResult<ItemStack> toggleActive(ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      boolean active = !magicNbt.getBoolean("active");
-      boolean cremation = ArcanaAugments.getAugmentOnItem(item,"cremation") >= 1;
+      boolean active = !getBooleanProperty(item,ACTIVE_TAG);
+      boolean cremation = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CREMATION.id) >= 1;
       Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
-      magicNbt.putBoolean("active",active);
-      itemNbt.put("arcananovum",magicNbt);
-      item.setNbt(itemNbt);
+      putProperty(item,ACTIVE_TAG, active);
       if(active){
          player.sendMessage(Text.literal("The Charm's Heat Intensifies").formatted(color,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_BLAZE_AMBIENT, .5f,1f);
@@ -519,55 +531,53 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      boolean active = magicTag.getBoolean("active");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").putBoolean("active",active);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,ACTIVE_TAG, active);
+      return buildItemLore(newStack,server);
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.MAGMA_CREAM,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.BLAZE_ROD,64,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.FIRE_CHARGE,64,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.NETHER_STAR,4,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.NETHERITE_INGOT,2,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.COAL_BLOCK,64,null);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
+      ArcanaIngredient b = new ArcanaIngredient(Items.BLAZE_ROD,24);
+      ArcanaIngredient c = new ArcanaIngredient(Items.FIRE_CHARGE,32);
+      ArcanaIngredient g = new ArcanaIngredient(Items.MAGMA_CREAM,32);
+      ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
+      ArcanaIngredient m = new ArcanaIngredient(Items.COAL_BLOCK,32);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
             {b,g,h,g,b},
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withAnvil());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Charm of Cinders\\n\\nRarity: Legendary\\n\\nHaving spent much time in the Nether has given me ample opportunity to study the fire dwelling creatures. \\nI believe I can replicate many of their abilities and even make my own.\"}");
-      list.add("{\"text\":\"   Charm of Cinders\\n\\nThis charm grants a variety of skills from base fire immunity, to a simple flint and steel, to flaming breath and even the precision needed to smelt items as I pick them up in an instant.\\n\\nLeft Clicking mimics a flint and steel and\"}");
-      list.add("{\"text\":\"   Charm of Cinders\\n\\ncan even set creatures ablaze.\\n\\nRight Click sends a cone of flame out of the charm igniting creatures.\\n\\nSneak Right Clicking toggles the auto-smelt ability for gathered items.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Charm of Cinders\n\nRarity: Sovereign\n\nHaving spent much time in the Nether has given me ample opportunity to study the fire dwelling creatures. \nI believe I can replicate many of their abilities and even make my own.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Charm of Cinders\n\nThis charm grants a variety of skills from base fire immunity, to a simple flint and steel, to flaming breath and even the precision needed to smelt items as I pick them up in an instant.\n\nLeft Clicking mimics a flint and steel and").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Charm of Cinders\n\ncan even set creatures ablaze.\n\nRight Click sends a cone of flame out of the charm igniting creatures.\n\nSneak Right Clicking toggles the auto-smelt ability for gathered items.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class CindersCharmItem extends MagicPolymerItem {
-      public CindersCharmItem(Settings settings){
+   public class CindersCharmItem extends ArcanaPolymerItem {
+      public CindersCharmItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(TXT_OFF).value();
-         NbtCompound magicNbt = itemStack.getNbt().getCompound("arcananovum");
-         boolean active = magicNbt.getBoolean("active");;
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(TXT_OFF).value();
+         boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
          boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
          if(cremation){
-            return active ? ArcanaRegistry.MODELS.get(TXT_CREMATION_ON).value() : ArcanaRegistry.MODELS.get(TXT_CREMATION_OFF).value();
+            return active ? ArcanaRegistry.getModelData(TXT_CREMATION_ON).value() : ArcanaRegistry.getModelData(TXT_CREMATION_OFF).value();
          }else{
-            return active ? ArcanaRegistry.MODELS.get(TXT_ON).value() : ArcanaRegistry.MODELS.get(TXT_OFF).value();
+            return active ? ArcanaRegistry.getModelData(TXT_ON).value() : ArcanaRegistry.getModelData(TXT_OFF).value();
          }
       }
       
@@ -626,7 +636,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean cremation = ArcanaAugments.getAugmentOnItem(stack,"cremation") >= 1;
          Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
@@ -654,3 +664,4 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
    }
 }
+

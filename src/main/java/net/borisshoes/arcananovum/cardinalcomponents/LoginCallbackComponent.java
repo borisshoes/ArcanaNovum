@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.callbacks.LoginCallbacks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    }
    
    @Override
-   public void readFromNbt(NbtCompound tag){
+   public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       try{
          callbacks.clear();
          NbtList callbacksTag = tag.getList("Callbacks", NbtElement.COMPOUND_TYPE);
@@ -55,7 +56,7 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    }
    
    @Override
-   public void writeToNbt(NbtCompound tag){
+   public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       try{
          NbtList callbacksTag = new NbtList();
          for(LoginCallback callback : callbacks){

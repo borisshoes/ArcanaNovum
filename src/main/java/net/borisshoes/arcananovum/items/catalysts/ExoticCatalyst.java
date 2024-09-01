@@ -1,99 +1,118 @@
 package net.borisshoes.arcananovum.items.catalysts;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class ExoticCatalyst extends MagicItem {
+public class ExoticCatalyst extends ArcanaItem {
+	public static final String ID = "exotic_catalyst";
    
    private static final String TXT = "item/exotic_catalyst";
    
    public ExoticCatalyst(){
-      id = "exotic_catalyst";
+      id = ID;
       name = "Exotic Augment Catalyst";
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MUNDANE, ArcaneTome.TomeFilter.CATALYSTS};
-      rarity = MagicRarity.MUNDANE;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.CATALYSTS};
+      rarity = ArcanaRarity.MUNDANE;
       vanillaItem = Items.DIAMOND;
-      item = new ExoticCatalystItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new ExoticCatalystItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Exotic Augment Catalyst").formatted(Formatting.BOLD,Formatting.AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_EMPOWERED_CATALYST,ResearchTasks.OBTAIN_DIAMOND,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Exotic Augment Catalyst\",\"italic\":false,\"color\":\"aqua\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Augment \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"Catalysts\",\"color\":\"blue\"},{\"text\":\" can be used to \",\"color\":\"gray\"},{\"text\":\"augment \"},{\"text\":\"your \",\"color\":\"gray\"},{\"text\":\"Magic Items\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Augments \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"require more \",\"color\":\"gray\"},{\"text\":\"powerful \",\"color\":\"green\"},{\"text\":\"Catalysts \",\"color\":\"blue\"},{\"text\":\"at higher levels\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Apply \",\"italic\":false,\"color\":\"green\"},{\"text\":\"these \",\"color\":\"gray\"},{\"text\":\"Catalysts \",\"color\":\"blue\"},{\"text\":\"in the \",\"color\":\"gray\"},{\"text\":\"Tinkering Menu\",\"color\":\"blue\"},{\"text\":\" of a \",\"color\":\"gray\"},{\"text\":\"Twilight Anvil\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("Augment ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("Catalysts").formatted(Formatting.BLUE))
+            .append(Text.literal(" can be used to ").formatted(Formatting.GRAY))
+            .append(Text.literal("augment ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("your ").formatted(Formatting.GRAY))
+            .append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Augments ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("require more ").formatted(Formatting.GRAY))
+            .append(Text.literal("powerful ").formatted(Formatting.GREEN))
+            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
+            .append(Text.literal("at higher levels").formatted(Formatting.GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Apply ").formatted(Formatting.GREEN))
+            .append(Text.literal("these ").formatted(Formatting.GRAY))
+            .append(Text.literal("Catalysts ").formatted(Formatting.BLUE))
+            .append(Text.literal("in the ").formatted(Formatting.GRAY))
+            .append(Text.literal("Tinkering Menu").formatted(Formatting.BLUE))
+            .append(Text.literal(" of a ").formatted(Formatting.GRAY))
+            .append(Text.literal("Twilight Anvil").formatted(Formatting.GREEN)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,32,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.CRYING_OBSIDIAN,32,null);
-      MagicItemIngredient d = new MagicItemIngredient(Items.DIAMOND,8,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.DIAMOND,16,null);
-      MagicItemIngredient l = new MagicItemIngredient(Items.NETHER_STAR,2,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.EMPOWERED_CATALYST,1);
-   
-      MagicItemIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {b,d,g,d,b},
-            {c,l,m,l,c},
-            {b,d,g,d,b},
-            {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil());
-   
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient c = new ArcanaIngredient(Items.OBSIDIAN,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.DIAMOND,6);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.EMPOWERED_CATALYST,1);
+      
+      ArcanaIngredient[][] ingredients = {
+            {a,a,c,a,a},
+            {a,g,h,g,a},
+            {c,h,m,h,c},
+            {a,g,h,g,a},
+            {a,a,c,a,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Exotic Augmentation\\n         Catalyst\\n\\nRarity: Mundane\\n\\nI think I've cracked it, higher and higher quality gemstones can channel more of the Matrix's power. But now the Matrix seems less malleable in its range of possible augments...\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Exotic Augmentation\n         Catalyst\n\nRarity: Mundane\n\nI think I've cracked it, higher and higher quality gemstones can channel more of the Matrix's power. But now the Matrix seems less malleable in its range of possible augments...").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class ExoticCatalystItem extends MagicPolymerItem {
-      public ExoticCatalystItem(Settings settings){
+   public class ExoticCatalystItem extends ArcanaPolymerItem {
+      public ExoticCatalystItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -102,3 +121,4 @@ public class ExoticCatalyst extends MagicItem {
       }
    }
 }
+

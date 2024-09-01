@@ -1,15 +1,15 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.StasisPearl;
 import net.borisshoes.arcananovum.mixins.EntityAccessor;
 import net.borisshoes.arcananovum.mixins.ThrownItemEntityAccessor;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
@@ -17,7 +17,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
@@ -26,13 +25,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity {
    
-   private final ItemStack pearlStack = new ItemStack(Items.ENDER_PEARL);
+   private final ItemStack pearlStack = ArcanaRegistry.STASIS_PEARL.getPrefItem();
    private String itemStackId;
    private int stasisTime;
    private boolean inStasis;
@@ -41,7 +39,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    
    public StasisPearlEntity(EntityType<? extends StasisPearlEntity> entityType, World world){
       super(entityType, world);
-      pearlStack.addEnchantment(Enchantments.MENDING,1);
+      //pearlStack.addEnchantment(MiscUtils.getEnchantment(Enchantments.MENDING),1);
    }
    
    public StasisPearlEntity(World world, LivingEntity owner, String itemUuid, NbtCompound augments){
@@ -55,8 +53,8 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    
    @Override
    public void modifyRawTrackedData(List<DataTracker.SerializedEntry<?>> data, ServerPlayerEntity player, boolean initial){
-      data.add(new DataTracker.SerializedEntry<>(ThrownItemEntityAccessor.getITEM().getId(),ThrownItemEntityAccessor.getITEM().getType(), pearlStack.copy()));
-      data.add(new DataTracker.SerializedEntry<>(EntityAccessor.getNO_GRAVITY().getId(), EntityAccessor.getNO_GRAVITY().getType(), inStasis));
+      data.add(new DataTracker.SerializedEntry<>(ThrownItemEntityAccessor.getITEM().id(),ThrownItemEntityAccessor.getITEM().dataType(), pearlStack.copy()));
+      data.add(new DataTracker.SerializedEntry<>(EntityAccessor.getNO_GRAVITY().id(), EntityAccessor.getNO_GRAVITY().dataType(), inStasis));
    }
    
    @Override
@@ -66,6 +64,8 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    
    public void setStasis(boolean stasis){
       inStasis = stasis;
+      ArcanaItem.putProperty(pearlStack, StasisPearl.ACTIVE_TAG,stasis);
+      ArcanaItem.putProperty(pearlStack, StasisPearl.PEARL_ID_TAG,stasis ? "-" : "");
       
       if(inStasis){
          this.savedVelocity = getVelocity();
@@ -104,7 +104,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
       if(server != null){
          // Update holder every second
          if(server.getTicks() % 20 == 0){
-            ServerPlayerEntity holder = MagicItemUtils.findHolder(server,itemStackId);
+            ServerPlayerEntity holder = ArcanaItemUtils.findHolder(server,itemStackId);
             if(holder != null && holder.networkHandler.isConnectionOpen()){
                setOwner(holder);
             }
@@ -123,7 +123,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
       // Find Holder of the item
       ServerPlayerEntity holder = null;
       if(itemStackId != null && getServer() != null){
-         holder = MagicItemUtils.findHolder(getServer(),itemStackId);
+         holder = ArcanaItemUtils.findHolder(getServer(),itemStackId);
          if(holder != null && holder.networkHandler.isConnectionOpen() && holder.getWorld() == this.getWorld() && !holder.isSleeping()) {
             setOwner(holder);
             
@@ -168,16 +168,5 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
       stasisTime = nbt.getInt("stasisTime");
       itemStackId = nbt.getString("stackUuid");
       savedVelocity = new Vec3d(nbt.getDouble("savedDX"),nbt.getDouble("savedDY"),nbt.getDouble("savedDZ"));
-   }
-   
-   
-   @Override
-   @Nullable
-   public Entity moveToWorld(ServerWorld destination) {
-      Entity entity = this.getOwner();
-      if (entity != null && entity.getWorld().getRegistryKey() != destination.getRegistryKey()) {
-         this.discard();
-      }
-      return super.moveToWorld(destination);
    }
 }

@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.ai.goals;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.NoPenaltyTargeting;
@@ -53,12 +53,12 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal
                         continue;
                      }
    
-                     boolean isMagic = MagicItemUtils.isMagic(item);
-                     if(!isMagic)
-                        continue; // Item not magic, skip
+                     boolean isArcane = ArcanaItemUtils.isArcane(item);
+                     if(!isArcane)
+                        continue; // Item not arcane, skip
                      
-                     MagicItem magicItem = MagicItemUtils.identifyItem(item);
-                     if(magicItem instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item,ArcanaRegistry.FELIDAE_CHARM.getItem())){
+                     ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+                     if(arcanaItem instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item,ArcanaRegistry.FELIDAE_CHARM.getItem())){
                         return true;
                      }
                   }

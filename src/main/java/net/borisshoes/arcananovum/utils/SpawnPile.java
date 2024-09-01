@@ -102,7 +102,7 @@ public class SpawnPile {
       BlockPos blockPos = BlockPos.ofFloored(this.x, (double)(this.getY(world, maxY) - 1), this.z);
       BlockState blockState = world.getBlockState(blockPos);
       FluidState fluidState = world.getFluidState(blockPos);
-      boolean invalid = blockState.isOf(Blocks.WITHER_ROSE) || blockState.isOf(Blocks.SWEET_BERRY_BUSH) || blockState.isOf(Blocks.CACTUS) || blockState.isOf(Blocks.POWDER_SNOW) || blockState.isIn(BlockTags.PREVENT_MOB_SPAWNING_INSIDE) || LandPathNodeMaker.inflictsFireDamage(blockState);
+      boolean invalid = blockState.isOf(Blocks.WITHER_ROSE) || blockState.isOf(Blocks.SWEET_BERRY_BUSH) || blockState.isOf(Blocks.CACTUS) || blockState.isOf(Blocks.POWDER_SNOW) || blockState.isIn(BlockTags.PREVENT_MOB_SPAWNING_INSIDE) || LandPathNodeMaker.isFireDamaging(blockState);
       return blockPos.getY() < maxY && fluidState.isEmpty() && !invalid;
    }
    

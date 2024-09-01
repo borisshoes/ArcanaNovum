@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.5-SNAPSHOT'
+    id 'fabric-loom' version '1.7-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -43,6 +43,8 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.6")))
+
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	
 	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
@@ -52,14 +54,12 @@ dependencies {
     modImplementation include("eu.pb4:polymer-resource-pack:${project.polymer_version}")
     modImplementation include("eu.pb4:polymer-virtual-entity:${project.polymer_version}")
     modImplementation include("eu.pb4:polymer-networking:${project.polymer_version}")
+    modImplementation include("eu.pb4:polymer-autohost:${project.polymer_version}")
     modImplementation include("xyz.nucleoid:server-translations-api:${project.translation_version}")
 
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-world:${project.cca_version}"
-    include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
-    include "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
-    include "dev.onyxstudios.cardinal-components-api:cardinal-components-world:${project.cca_version}"
+    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
+    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-world:${project.cca_version}")
 
     modImplementation "maven.modrinth:simple-voice-chat:fabric-${voicechat_version}"
 
@@ -77,7 +77,7 @@ processResources {
                 "loader_version": project.loader_version
     }
 }
-def targetJavaVersion = 17
+def targetJavaVersion = 21
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly

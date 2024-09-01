@@ -1,68 +1,99 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
-import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.UnbreakableComponent;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ArmorMaterials;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class WingsOfEnderia extends EnergyItem {
+	public static final String ID = "wings_of_enderia";
    
    private static final String TXT = "item/wings_of_enderia";
    
    public WingsOfEnderia(){
-      id = "wings_of_enderia";
+      id = ID;
       name = "Armored Wings of Enderia";
-      rarity = MagicRarity.MYTHICAL;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.EQUIPMENT};
+      rarity = ArcanaRarity.DIVINE;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 1;
       vanillaItem = Items.ELYTRA;
-      item = new WingsOfEnderiaItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new WingsOfEnderiaItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Armored Wings of Enderia").formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_WINGS_OF_ENDERIA};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      NbtCompound prot = new NbtCompound();
-      prot.putString("id","protection");
-      prot.putInt("lvl",4);
-      enchants.add(prot);
-      display.putString("Name","[{\"text\":\"Armored Wings of Enderia\",\"italic\":false,\"bold\":true,\"color\":\"dark_purple\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags", 255);
-      tag.putInt("Unbreakable",1);
-      
-      setBookLore(makeLore());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Armored Wings\",\"color\":\"dark_purple\"},{\"text\":\" will shield you from the \"},{\"text\":\"dangers \",\"color\":\"yellow\"},{\"text\":\"of the land.\",\"color\":\"light_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"Wings \",\"color\":\"dark_purple\"},{\"text\":\"act as a \"},{\"text\":\"Netherite Chestplate\",\"color\":\"dark_red\"},{\"text\":\" with \"},{\"text\":\"Protection IV\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"light_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"They store \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"energy \",\"color\":\"yellow\"},{\"text\":\"as you fly to \"},{\"text\":\"cushion impacts\",\"color\":\"dark_purple\"},{\"text\":\" and are \"},{\"text\":\"unbreakable\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public void finalizePrefItem(MinecraftServer server){
+      super.finalizePrefItem(server);
+      ItemStack curPrefItem = this.getPrefItem();
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
+            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.PROTECTION),4)
+      ).withShowInTooltip(false));
+      this.prefItem = buildItemLore(curPrefItem, server);
+   }
+   
+   @Override
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Armored Wings").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(" will shield you from the ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("dangers ").formatted(Formatting.YELLOW))
+            .append(Text.literal("of the land.").formatted(Formatting.LIGHT_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Wings ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("act as a ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Netherite Chestplate").formatted(Formatting.DARK_RED))
+            .append(Text.literal(" with ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Protection IV").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("They store ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("energy ").formatted(Formatting.YELLOW))
+            .append(Text.literal("as you fly to ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("cushion impacts").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(" and are ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("unbreakable").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -71,31 +102,22 @@ public class WingsOfEnderia extends EnergyItem {
    }
    
    @Override
-   public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      if(enchants != null) newTag.put("Enchantments", enchants);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
-   }
-   
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"     Armored Wings \\n       of Enderia\\n\\nRarity: Mythical\\n\\nThe first discovered Mythical Item. They offer unsurmounted protection equivalent to the strongest of armor.\\n\\nThe Wings themselves are hardened to the \"}");
-      list.add("{\"text\":\"     Armored Wings \\n       of Enderia\\n\\npoint of being impervious to structural damage.\\n\\nAs study of them furthers a new ability has been discovered.\\nThe Wings collect and store kinetic energy when in flight that can be re-emitted when\"}");
-      list.add("{\"text\":\"     Armored Wings \\n       of Enderia\\n\\nthe wearer suffers a large impact.\\n\\nThis effect seems to negate up to half of all fall damage and kinetic damage taken as long as the Wings have stored enough energy.\"}");
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("     Armored Wings \n       of Enderia\n\nRarity: Divine\n\nThe first discovered Divine Item. They offer unsurmounted protection equivalent to the strongest of armor.\n\nThe Wings themselves are hardened to the ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Armored Wings \n       of Enderia\n\npoint of being impervious to structural damage.\n\nAs study of them furthers a new ability has been discovered.\nThe Wings collect and store kinetic energy when in flight that can be re-emitted when").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Armored Wings \n       of Enderia\n\nthe wearer suffers a large impact.\n\nThis effect seems to negate up to half of all fall damage and kinetic damage taken as long as the Wings have stored enough energy.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class WingsOfEnderiaItem extends MagicPolymerArmorItem {
-      public WingsOfEnderiaItem(Settings settings){
+   public class WingsOfEnderiaItem extends ArcanaPolymerArmorItem {
+      public WingsOfEnderiaItem(Item.Settings settings){
          super(getThis(),ArmorMaterials.NETHERITE,Type.CHESTPLATE,settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -104,3 +126,4 @@ public class WingsOfEnderia extends EnergyItem {
       }
    }
 }
+

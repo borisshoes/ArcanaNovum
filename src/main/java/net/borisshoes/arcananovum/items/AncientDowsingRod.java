@@ -5,25 +5,30 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -36,47 +41,62 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AncientDowsingRod extends EnergyItem {
+	public static final String ID = "ancient_dowsing_rod";
    private static final String CHARGED_TXT = "item/ancient_dowsing_rod_charged";
    private static final String COOLDOWN_TXT = "item/ancient_dowsing_rod_cooldown";
    
    public AncientDowsingRod(){
-      id = "ancient_dowsing_rod";
+      id = ID;
       name = "Ancient Dowsing Rod";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.BLAZE_ROD;
-      item = new AncientDowsingRodItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new AncientDowsingRodItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Ancient Dowsing Rod").formatted(Formatting.BOLD,Formatting.DARK_RED))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,CHARGED_TXT));
       models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.RESONATE_BELL,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.ADVANCEMENT_FIND_BASTION};
       initEnergy = 100;
-   
-      ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Ancient Dowsing Rod\",\"italic\":false,\"bold\":true,\"color\":\"dark_red\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
       
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"Ancient civilizations\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" in the \",\"color\":\"red\"},{\"text\":\"nether \",\"color\":\"dark_red\"},{\"text\":\"had ways of finding \",\"color\":\"red\"},{\"text\":\"netherite\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"red\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"red\"},{\"text\":\"dowsing rod \",\"color\":\"dark_red\"},{\"text\":\"is based on \"},{\"text\":\"ancient designs\",\"color\":\"gold\"},{\"text\":\" to locate \"},{\"text\":\"netherite scrap\",\"color\":\"dark_red\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"gold\"},{\"text\":\" to search for \",\"color\":\"red\"},{\"text\":\"ancient debris\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"red\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("Ancient civilizations").formatted(Formatting.GOLD))
+            .append(Text.literal(" in the ").formatted(Formatting.RED))
+            .append(Text.literal("nether ").formatted(Formatting.DARK_RED))
+            .append(Text.literal("had ways of finding ").formatted(Formatting.RED))
+            .append(Text.literal("netherite").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.RED)));
+      lore.add(Text.literal("")
+            .append(Text.literal("This ").formatted(Formatting.RED))
+            .append(Text.literal("dowsing rod ").formatted(Formatting.DARK_RED))
+            .append(Text.literal("is based on ").formatted(Formatting.RED))
+            .append(Text.literal("ancient designs").formatted(Formatting.GOLD))
+            .append(Text.literal(" to locate ").formatted(Formatting.RED))
+            .append(Text.literal("netherite scrap").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.RED)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.GOLD))
+            .append(Text.literal(" to search for ").formatted(Formatting.RED))
+            .append(Text.literal("ancient debris").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.RED)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -91,40 +111,42 @@ public class AncientDowsingRod extends EnergyItem {
       return true;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient d = new MagicItemIngredient(Items.ANCIENT_DEBRIS,4,null);
-      MagicItemIngredient f = new MagicItemIngredient(Items.FIRE_CHARGE,64,null);
-      MagicItemIngredient s = new MagicItemIngredient(Items.NETHERITE_SCRAP,4,null);
-      MagicItemIngredient w = new MagicItemIngredient(Items.RED_NETHER_BRICKS,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.BELL,4,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.GOLD_INGOT,64,null);
-      MagicItemIngredient r = new MagicItemIngredient(Items.BLAZE_ROD,64,null);
-   
-      MagicItemIngredient[][] ingredients = {
-            {d,f,s,w,d},
-            {f,n,g,n,w},
-            {s,r,b,r,s},
-            {w,n,g,n,f},
-            {d,w,s,f,d}};
-      return new MagicItemRecipe(ingredients);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.GOLD_INGOT,16);
+      ArcanaIngredient b = new ArcanaIngredient(Items.RED_NETHER_BRICKS,12);
+      ArcanaIngredient c = new ArcanaIngredient(Items.FIRE_CHARGE,16);
+      ArcanaIngredient d = new ArcanaIngredient(Items.BLAZE_ROD,8);
+      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_SCRAP,1);
+      ArcanaIngredient h = new ArcanaIngredient(Items.ANCIENT_DEBRIS,1);
+      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE,1);
+      ArcanaIngredient m = new ArcanaIngredient(Items.BELL,1);
+      
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,d,b},
+            {b,g,h,g,d},
+            {h,l,m,l,h},
+            {d,g,h,g,b},
+            {b,d,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" Ancient Dowsing Rod\\n\\nRarity: Empowered\\n\\nModern Piglins seem to be incapable of finding Netherite, but their bastions contain fragments of it.\\nI recovered some pieces of a tool used by their ancestors, perhaps I can reconstruct it.\"}");
-      list.add("{\"text\":\" Ancient Dowsing Rod\\n\\nRight click the rod to send out a resonating signal that bounces of nearby Ancient Debris.\\n\\nThe sound's echo triggers a compass of flame to indicate how much debris is nearby. And a flaming arrow to show the nearest pile of debris.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal(" Ancient Dowsing Rod\n\nRarity: Empowered\n\nModern Piglins seem to be incapable of finding Netherite, but their bastions contain fragments of it.\nI recovered some pieces of a tool used by their ancestors, perhaps I can reconstruct it.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Ancient Dowsing Rod\n\nRight click the rod to send out a resonating signal that bounces of nearby Ancient Debris.\n\nThe sound's echo triggers a compass of flame to indicate how much debris is nearby. And a flaming arrow to show the nearest pile of debris.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class AncientDowsingRodItem extends MagicPolymerItem {
-      public AncientDowsingRodItem(Settings settings){
+   public class AncientDowsingRodItem extends ArcanaPolymerItem {
+      public AncientDowsingRodItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.MODELS.get(CHARGED_TXT).value() : ArcanaRegistry.MODELS.get(COOLDOWN_TXT).value();
+         return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.getModelData(CHARGED_TXT).value() : ArcanaRegistry.getModelData(COOLDOWN_TXT).value();
       }
       
       @Override
@@ -133,13 +155,13 @@ public class AncientDowsingRod extends EnergyItem {
       }
       
       @Override
-      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player){
-         return super.getPolymerItemStack(itemStack, context, player);
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType context, RegistryWrapper.WrapperLookup lookup, @Nullable ServerPlayerEntity player){
+         return super.getPolymerItemStack(itemStack, context, lookup, player);
       }
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld)) return;
          if(world.getServer().getTicks() % 20 == 0){
             addEnergy(stack, 1); // Recharge
@@ -245,7 +267,7 @@ public class AncientDowsingRod extends EnergyItem {
                }
                
             }else{
-               playerEntity.sendMessage(Text.translatable("Dowsing Rod Recharging: "+(curEnergy*100/getMaxEnergy(item))+"%").formatted(Formatting.GOLD),true);
+               playerEntity.sendMessage(Text.literal("Dowsing Rod Recharging: "+(curEnergy*100/getMaxEnergy(item))+"%").formatted(Formatting.GOLD),true);
                SoundUtils.playSongToPlayer(player,SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
             }
          }
@@ -254,3 +276,4 @@ public class AncientDowsingRod extends EnergyItem {
       }
    }
 }
+

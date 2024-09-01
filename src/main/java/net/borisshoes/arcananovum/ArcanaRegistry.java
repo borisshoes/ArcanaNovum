@@ -1,9 +1,12 @@
 package net.borisshoes.arcananovum;
 
+import com.mojang.serialization.Lifecycle;
+import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import eu.pb4.polymer.rsm.api.RegistrySyncUtils;
 import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
@@ -11,222 +14,283 @@ import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.blocks.*;
 import net.borisshoes.arcananovum.blocks.altars.*;
 import net.borisshoes.arcananovum.blocks.forge.*;
-import net.borisshoes.arcananovum.core.MagicBlock;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.core.polymer.NonMagicPolymerItem;
+import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
 import net.borisshoes.arcananovum.effects.*;
 import net.borisshoes.arcananovum.entities.*;
+import net.borisshoes.arcananovum.gui.arcanetome.ArcanaItemCompendiumEntry;
+import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
+import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
+import net.borisshoes.arcananovum.gui.arcanetome.TransmutationRecipesCompendiumEntry;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.arrows.*;
 import net.borisshoes.arcananovum.items.catalysts.*;
 import net.borisshoes.arcananovum.items.charms.*;
-import net.borisshoes.arcananovum.items.nonmagic.NebulousEssenceItem;
-import net.borisshoes.arcananovum.items.nonmagic.StardustItem;
-import net.borisshoes.arcananovum.materials.NonProtectiveArmorMaterial;
+import net.borisshoes.arcananovum.items.normal.*;
+import net.borisshoes.arcananovum.lootfunctions.ArcanaBlockEntityLootFunction;
+import net.borisshoes.arcananovum.lootfunctions.ArcaneNotesLootFunction;
 import net.borisshoes.arcananovum.recipes.ArcanaShieldDecoratorRecipe;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.item.ArmorMaterial;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
+import net.minecraft.loot.function.LootFunction;
+import net.minecraft.loot.function.LootFunctionType;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.SpecialRecipeSerializer;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.registry.*;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.*;
 
 import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcanaRegistry {
-   public static final HashMap<String, MagicItem> MAGIC_ITEMS = new HashMap<>();
-   public static final HashMap<String, Item> ITEMS = new HashMap<>();
-   public static final HashMap<String, Block> BLOCKS = new HashMap<>();
-   public static final HashMap<String, PolymerModelData> MODELS = new HashMap<>();
-   public static final HashMap<String, AreaEffectTracker> AREA_EFFECTS = new HashMap<>();
+   public static final Registry<ArcanaItem> ARCANA_ITEMS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"arcana_item")), Lifecycle.stable());
+   public static final Registry<Block> BLOCKS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"block")), Lifecycle.stable());
+   public static final Registry<Item> ITEMS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"item")), Lifecycle.stable());
+   public static final Registry<PolymerModelData> MODELS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"model")), Lifecycle.stable());
+   public static final Registry<AreaEffectTracker> AREA_EFFECTS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"area_effect")), Lifecycle.stable());
+   public static final ArrayList<CompendiumEntry> RECOMMENDED_LIST = new ArrayList<>();
    
-   //Armor Materials
-   public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new NonProtectiveArmorMaterial();
+   // Armor Materials
+   public static final RegistryEntry<ArmorMaterial> NON_PROTECTIVE_ARMOR_MATERIAL = registerArmorMaterial("nonprotective",new ArmorMaterial(Util.make(new EnumMap<>(ArmorItem.Type.class), map -> {
+      map.put(ArmorItem.Type.BOOTS, 0);
+      map.put(ArmorItem.Type.LEGGINGS, 0);
+      map.put(ArmorItem.Type.CHESTPLATE, 0);
+      map.put(ArmorItem.Type.HELMET, 0);
+      map.put(ArmorItem.Type.BODY, 0);
+   }), 0, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, () -> Ingredient.ofItems(Items.LEATHER), List.of(new ArmorMaterial.Layer(Identifier.of(MOD_ID,"nonprotective"))), 0, 0));
    
-   //Registering Banner Recipe
+   // Registering Banner Recipe
    public static final SpecialRecipeSerializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_SERIALIZER;
    public static final RecipeType<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION;
    static {
-      ARCANA_SHIELD_DECORATION = Registry.register(Registries.RECIPE_TYPE, new Identifier(MOD_ID, "arcana_shield_decoration"), new RecipeType<ArcanaShieldDecoratorRecipe>() {
+      ARCANA_SHIELD_DECORATION = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "arcana_shield_decoration"), new RecipeType<ArcanaShieldDecoratorRecipe>() {
          @Override
          public String toString() {return "arcana_shield_decoration_recipe";}
       });
-      ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, new Identifier(MOD_ID, "arcana_shield_decoration"), new SpecialRecipeSerializer<>(ArcanaShieldDecoratorRecipe::new));
+      ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "arcana_shield_decoration"), new ArcanaShieldDecoratorRecipe.ShieldRecipeSerializer(ArcanaShieldDecoratorRecipe::new));
    }
    
    // Entities
    public static final EntityType<RunicArrowEntity> RUNIC_ARROW_ENTITY = registerEntity( "runic_arrow",
-         FabricEntityTypeBuilder.<RunicArrowEntity>create(SpawnGroup.MISC, (RunicArrowEntity::new)).dimensions(EntityDimensions.fixed(0.5f,0.5f)).trackRangeChunks(4).trackedUpdateRate(20).build()
+         EntityType.Builder.<RunicArrowEntity>create(RunicArrowEntity::new,SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20).build()
    );
    public static final EntityType<ArbalestArrowEntity> ARBALEST_ARROW_ENTITY = registerEntity( "arbalest_arrow",
-         FabricEntityTypeBuilder.<ArbalestArrowEntity>create(SpawnGroup.MISC, (ArbalestArrowEntity::new)).dimensions(EntityDimensions.fixed(0.5f,0.5f)).trackRangeChunks(4).trackedUpdateRate(20).build()
+         EntityType.Builder.<ArbalestArrowEntity>create(ArbalestArrowEntity::new, SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20).build()
    );
    public static final EntityType<StasisPearlEntity> STASIS_PEARL_ENTITY = registerEntity( "stasis_pearl",
-         FabricEntityTypeBuilder.<StasisPearlEntity>create(SpawnGroup.MISC, (StasisPearlEntity::new)).dimensions(EntityDimensions.fixed(0.25f, 0.25f)).trackRangeChunks(4).trackedUpdateRate(10).build()
+         EntityType.Builder.<StasisPearlEntity>create(StasisPearlEntity::new, SpawnGroup.MISC).dimensions(0.25f, 0.25f).maxTrackingRange(4).trackingTickInterval(10).build()
    );
    public static final EntityType<DragonWizardEntity> DRAGON_WIZARD_ENTITY = registerEntity( "dragon_wizard",
-         FabricEntityTypeBuilder.<DragonWizardEntity>create(SpawnGroup.MISC, (DragonWizardEntity::new)).dimensions(EntityDimensions.fixed(0.6f, 1.95f)).trackRangeChunks(8).build()
+         EntityType.Builder.<DragonWizardEntity>create(DragonWizardEntity::new, SpawnGroup.MISC).dimensions(0.6f, 1.95f).maxTrackingRange(8).build()
    );
    public static final EntityType<DragonPhantomEntity> DRAGON_PHANTOM_ENTITY = registerEntity( "dragon_phantom",
-         FabricEntityTypeBuilder.<DragonPhantomEntity>create(SpawnGroup.MISC, (DragonPhantomEntity::new)).dimensions(EntityDimensions.fixed(0.9f, 0.5f)).trackRangeChunks(8).build()
+         EntityType.Builder.<DragonPhantomEntity>create(DragonPhantomEntity::new, SpawnGroup.MISC).dimensions(0.9f, 0.5f).maxTrackingRange(8).build()
    );
    public static final EntityType<NulConstructEntity> NUL_CONSTRUCT_ENTITY = registerEntity( "nul_construct",
-         FabricEntityTypeBuilder.<NulConstructEntity>create(SpawnGroup.MONSTER, (NulConstructEntity::new)).dimensions(EntityDimensions.fixed(0.9f, 3.5f)).trackRangeChunks(10).fireImmune().build()
+         EntityType.Builder.<NulConstructEntity>create(NulConstructEntity::new, SpawnGroup.MONSTER).dimensions(0.9f, 3.5f).maxTrackingRange(10).makeFireImmune().build()
    );
    
    // Status Effects
-   public static final StatusEffect DAMAGE_AMP_EFFECT = registerStatusEffect("damage_amp",new DamageAmpEffect());
-   public static final StatusEffect GREATER_INVISIBILITY_EFFECT = registerStatusEffect("greater_invisibility",new GreaterInvisibilityEffect());
-   public static final StatusEffect GREATER_BLINDNESS_EFFECT = registerStatusEffect("greater_blindness",new GreaterBlindnessEffect());
-   public static final StatusEffect DEATH_WARD_EFFECT = registerStatusEffect("death_ward",new DeathWardEffect());
-   public static final StatusEffect ENSNAREMENT_EFFECT = registerStatusEffect("ensnarement",new EnsnarementEffect());
+   public static final RegistryEntry<StatusEffect> DAMAGE_AMP_EFFECT = registerStatusEffect("damage_amp",new DamageAmpEffect());
+   public static final RegistryEntry<StatusEffect> GREATER_INVISIBILITY_EFFECT = registerStatusEffect("greater_invisibility",new GreaterInvisibilityEffect());
+   public static final RegistryEntry<StatusEffect> GREATER_BLINDNESS_EFFECT = registerStatusEffect("greater_blindness",new GreaterBlindnessEffect());
+   public static final RegistryEntry<StatusEffect> DEATH_WARD_EFFECT = registerStatusEffect("death_ward",new DeathWardEffect());
+   public static final RegistryEntry<StatusEffect> ENSNAREMENT_EFFECT = registerStatusEffect("ensnarement",new EnsnarementEffect());
    
    // Area Effect Trackers
    public static final AreaEffectTracker SMOKE_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new SmokeArrowAreaEffectTracker());
    public static final AreaEffectTracker AFTERSHOCK_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AftershockAreaEffectTracker());
    public static final AreaEffectTracker ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AlchemicalArrowAreaEffectTracker());
    
-   // Non-magic Items
-   public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence",new NebulousEssenceItem(new FabricItemSettings().maxCount(64).fireproof()));
-   public static final Item STARDUST = registerItem("stardust",new StardustItem(new FabricItemSettings().maxCount(64).fireproof()));;
+   // Normal Items
+   public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence",new NebulousEssenceItem(new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
+         .component(DataComponentTypes.ITEM_NAME, Text.literal("Nebulous Essence").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+         .component(DataComponentTypes.LORE, NebulousEssenceItem.getDefaultLore())
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item STARDUST = registerItem("stardust",new StardustItem(new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
+         .component(DataComponentTypes.ITEM_NAME, Text.literal("Stardust").formatted(Formatting.YELLOW,Formatting.BOLD))
+         .component(DataComponentTypes.LORE, StardustItem.getDefaultLore())
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item ARCANE_NOTES = registerItem("arcane_notes",new ArcaneNotesItem(new Item.Settings().maxCount(1).fireproof().rarity(Rarity.EPIC)
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item MUNDANE_ARCANE_PAPER = registerItem("mundane_arcane_paper",new MundaneArcanePaper(new Item.Settings().maxCount(64).fireproof().rarity(Rarity.UNCOMMON)
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item EMPOWERED_ARCANE_PAPER = registerItem("empowered_arcane_paper",new EmpoweredArcanePaper(new Item.Settings().maxCount(64).fireproof().rarity(Rarity.UNCOMMON)
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item EXOTIC_ARCANE_PAPER = registerItem("exotic_arcane_paper",new ExoticArcanePaper(new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item SOVEREIGN_ARCANE_PAPER = registerItem("sovereign_arcane_paper",new SovereignArcanePaper(new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item DIVINE_ARCANE_PAPER = registerItem("divine_arcane_paper",new DivineArcanePaper(new Item.Settings().maxCount(64).fireproof().rarity(Rarity.EPIC)
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   );
+   public static final Item GRAPHICAL_ITEM = registerItem("graphical_item",new GraphicalItem(new Item.Settings().maxCount(64)));
    
    // 1.0 Items
-   public static final MagicItem LEADERSHIP_CHARM = ArcanaRegistry.register(new LeadershipCharm());
-   public static final MagicItem WINGS_OF_ENDERIA = ArcanaRegistry.register(new WingsOfEnderia());
-   public static final MagicItem ARCANE_TOME = ArcanaRegistry.register(new ArcaneTome());
-   public static final MagicItem EXOTIC_MATTER = ArcanaRegistry.register(new ExoticMatter());
-   public static final MagicItem LIGHT_CHARM = ArcanaRegistry.register(new LightCharm());
-   public static final MagicItem FEASTING_CHARM = ArcanaRegistry.register(new FeastingCharm());
-   public static final MagicItem SOULSTONE = ArcanaRegistry.register(new Soulstone());
-   public static final MagicItem ESSENCE_EGG = ArcanaRegistry.register(new EssenceEgg());
-   public static final MagicItem BRAIN_JAR = ArcanaRegistry.register(new BrainJar());
-   public static final MagicItem SPAWNER_HARNESS = ArcanaRegistry.register(new SpawnerHarness());
-   public static final MagicItem SHIELD_OF_FORTITUDE = ArcanaRegistry.register(new ShieldOfFortitude());
-   public static final MagicItem CONTINUUM_ANCHOR = ArcanaRegistry.register(new ContinuumAnchor());
-   public static final MagicItem SOJOURNER_BOOTS = ArcanaRegistry.register(new SojournerBoots());
+   public static final ArcanaItem LEADERSHIP_CHARM = ArcanaRegistry.register(new LeadershipCharm());
+   public static final ArcanaItem WINGS_OF_ENDERIA = ArcanaRegistry.register(new WingsOfEnderia());
+   public static final ArcanaItem ARCANE_TOME = ArcanaRegistry.register(new ArcaneTome());
+   public static final ArcanaItem EXOTIC_MATTER = ArcanaRegistry.register(new ExoticMatter());
+   public static final ArcanaItem LIGHT_CHARM = ArcanaRegistry.register(new LightCharm());
+   public static final ArcanaItem FEASTING_CHARM = ArcanaRegistry.register(new FeastingCharm());
+   public static final ArcanaItem SOULSTONE = ArcanaRegistry.register(new Soulstone());
+   public static final ArcanaItem ESSENCE_EGG = ArcanaRegistry.register(new EssenceEgg());
+   public static final ArcanaItem BRAIN_JAR = ArcanaRegistry.register(new BrainJar());
+   public static final ArcanaItem SPAWNER_HARNESS = ArcanaRegistry.register(new SpawnerHarness());
+   public static final ArcanaItem SHIELD_OF_FORTITUDE = ArcanaRegistry.register(new ShieldOfFortitude());
+   public static final ArcanaItem CONTINUUM_ANCHOR = ArcanaRegistry.register(new ContinuumAnchor());
+   public static final ArcanaItem SOJOURNER_BOOTS = ArcanaRegistry.register(new SojournerBoots());
    
    // 1.1 Items
-   public static final MagicItem PICKAXE_OF_CEPTYUS = ArcanaRegistry.register(new PickaxeOfCeptyus());
-   public static final MagicItem RUNIC_MATRIX = ArcanaRegistry.register(new RunicMatrix());
-   public static final MagicItem TEMPORAL_MOMENT = ArcanaRegistry.register(new TemporalMoment());
-   public static final MagicItem ANCIENT_DOWSING_ROD = ArcanaRegistry.register(new AncientDowsingRod());
-   public static final MagicItem FELIDAE_CHARM = ArcanaRegistry.register(new FelidaeCharm());
-   public static final MagicItem MAGNETISM_CHARM = ArcanaRegistry.register(new MagnetismCharm());
-   public static final MagicItem FRACTAL_SPONGE = ArcanaRegistry.register(new FractalSponge());
-   public static final MagicItem IGNEOUS_COLLIDER = ArcanaRegistry.register(new IgneousCollider());
-   public static final MagicItem PEARL_OF_RECALL = ArcanaRegistry.register(new PearlOfRecall());
-   public static final MagicItem BLINK_ARROWS = ArcanaRegistry.register(new BlinkArrows());
-   public static final MagicItem SHULKER_CORE = ArcanaRegistry.register(new ShulkerCore());
-   public static final MagicItem STASIS_PEARL = ArcanaRegistry.register(new StasisPearl());
-   public static final MagicItem LEVITATION_HARNESS = ArcanaRegistry.register(new LevitationHarness());
-   public static final MagicItem RUNIC_BOW = ArcanaRegistry.register(new RunicBow());
-   public static final MagicItem SHADOW_STALKERS_GLAIVE = ArcanaRegistry.register(new ShadowStalkersGlaive());
+   public static final ArcanaItem PICKAXE_OF_CEPTYUS = ArcanaRegistry.register(new PickaxeOfCeptyus());
+   public static final ArcanaItem RUNIC_MATRIX = ArcanaRegistry.register(new RunicMatrix());
+   public static final ArcanaItem TEMPORAL_MOMENT = ArcanaRegistry.register(new TemporalMoment());
+   public static final ArcanaItem ANCIENT_DOWSING_ROD = ArcanaRegistry.register(new AncientDowsingRod());
+   public static final ArcanaItem FELIDAE_CHARM = ArcanaRegistry.register(new FelidaeCharm());
+   public static final ArcanaItem MAGNETISM_CHARM = ArcanaRegistry.register(new MagnetismCharm());
+   public static final ArcanaItem FRACTAL_SPONGE = ArcanaRegistry.register(new FractalSponge());
+   public static final ArcanaItem IGNEOUS_COLLIDER = ArcanaRegistry.register(new IgneousCollider());
+   public static final ArcanaItem PEARL_OF_RECALL = ArcanaRegistry.register(new PearlOfRecall());
+   public static final ArcanaItem BLINK_ARROWS = ArcanaRegistry.register(new BlinkArrows());
+   public static final ArcanaItem SHULKER_CORE = ArcanaRegistry.register(new ShulkerCore());
+   public static final ArcanaItem STASIS_PEARL = ArcanaRegistry.register(new StasisPearl());
+   public static final ArcanaItem LEVITATION_HARNESS = ArcanaRegistry.register(new LevitationHarness());
+   public static final ArcanaItem RUNIC_BOW = ArcanaRegistry.register(new RunicBow());
+   public static final ArcanaItem SHADOW_STALKERS_GLAIVE = ArcanaRegistry.register(new ShadowStalkersGlaive());
    
    // 1.3 Items
-   public static final MagicItem TETHER_ARROWS = ArcanaRegistry.register(new TetherArrows());
-   public static final MagicItem DETONATION_ARROWS = ArcanaRegistry.register(new DetonationArrows());
-   public static final MagicItem CONCUSSION_ARROWS = ArcanaRegistry.register(new ConcussionArrows());
-   public static final MagicItem SMOKE_ARROWS = ArcanaRegistry.register(new SmokeArrows());
-   public static final MagicItem TELESCOPING_BEACON = ArcanaRegistry.register(new TelescopingBeacon());
-   public static final MagicItem EXPULSION_ARROWS = ArcanaRegistry.register(new ExpulsionArrows());
-   public static final MagicItem GRAVITON_ARROWS = ArcanaRegistry.register(new GravitonArrows());
-   public static final MagicItem SIPHONING_ARROWS = ArcanaRegistry.register(new SiphoningArrows());
-   public static final MagicItem STORM_ARROWS = ArcanaRegistry.register(new StormArrows());
-   public static final MagicItem ARCANE_FLAK_ARROWS = ArcanaRegistry.register(new ArcaneFlakArrows());
-   public static final MagicItem OVERFLOWING_QUIVER = ArcanaRegistry.register(new OverflowingQuiver());
-   public static final MagicItem CINDERS_CHARM = ArcanaRegistry.register(new CindersCharm());
-   public static final MagicItem PHOTONIC_ARROWS = ArcanaRegistry.register(new PhotonicArrows());
-   public static final MagicItem SPAWNER_INFUSER = ArcanaRegistry.register(new SpawnerInfuser());
-   public static final MagicItem RUNIC_QUIVER = ArcanaRegistry.register(new RunicQuiver());
+   public static final ArcanaItem TETHER_ARROWS = ArcanaRegistry.register(new TetherArrows());
+   public static final ArcanaItem DETONATION_ARROWS = ArcanaRegistry.register(new DetonationArrows());
+   public static final ArcanaItem CONCUSSION_ARROWS = ArcanaRegistry.register(new ConcussionArrows());
+   public static final ArcanaItem SMOKE_ARROWS = ArcanaRegistry.register(new SmokeArrows());
+   public static final ArcanaItem TELESCOPING_BEACON = ArcanaRegistry.register(new TelescopingBeacon());
+   public static final ArcanaItem EXPULSION_ARROWS = ArcanaRegistry.register(new ExpulsionArrows());
+   public static final ArcanaItem GRAVITON_ARROWS = ArcanaRegistry.register(new GravitonArrows());
+   public static final ArcanaItem SIPHONING_ARROWS = ArcanaRegistry.register(new SiphoningArrows());
+   public static final ArcanaItem STORM_ARROWS = ArcanaRegistry.register(new StormArrows());
+   public static final ArcanaItem ARCANE_FLAK_ARROWS = ArcanaRegistry.register(new ArcaneFlakArrows());
+   public static final ArcanaItem OVERFLOWING_QUIVER = ArcanaRegistry.register(new OverflowingQuiver());
+   public static final ArcanaItem CINDERS_CHARM = ArcanaRegistry.register(new CindersCharm());
+   public static final ArcanaItem PHOTONIC_ARROWS = ArcanaRegistry.register(new PhotonicArrows());
+   public static final ArcanaItem SPAWNER_INFUSER = ArcanaRegistry.register(new SpawnerInfuser());
+   public static final ArcanaItem RUNIC_QUIVER = ArcanaRegistry.register(new RunicQuiver());
    
    // 1.4 Items
-   public static final MagicItem CATALYTIC_MATRIX = ArcanaRegistry.register(new CatalyticMatrix()); // Technically a 2.0 item, but registry order is a thing
-   public static final MagicItem MUNDANE_CATALYST = ArcanaRegistry.register(new MundaneCatalyst());
-   public static final MagicItem EMPOWERED_CATALYST = ArcanaRegistry.register(new EmpoweredCatalyst());
-   public static final MagicItem EXOTIC_CATALYST = ArcanaRegistry.register(new ExoticCatalyst());
-   public static final MagicItem LEGENDARY_CATALYST = ArcanaRegistry.register(new LegendaryCatalyst());
-   public static final MagicItem MYTHICAL_CATALYST = ArcanaRegistry.register(new MythicalCatalyst());
-   public static final MagicItem NUL_MEMENTO = ArcanaRegistry.register(new NulMemento());
+   public static final ArcanaItem CATALYTIC_MATRIX = ArcanaRegistry.register(new CatalyticMatrix()); // Technically a 2.0 item, but registry order is a thing
+   public static final ArcanaItem MUNDANE_CATALYST = ArcanaRegistry.register(new MundaneCatalyst());
+   public static final ArcanaItem EMPOWERED_CATALYST = ArcanaRegistry.register(new EmpoweredCatalyst());
+   public static final ArcanaItem EXOTIC_CATALYST = ArcanaRegistry.register(new ExoticCatalyst());
+   public static final ArcanaItem SOVEREIGN_CATALYST = ArcanaRegistry.register(new SovereignCatalyst());
+   public static final ArcanaItem DIVINE_CATALYST = ArcanaRegistry.register(new DivineCatalyst());
+   public static final ArcanaItem NUL_MEMENTO = ArcanaRegistry.register(new NulMemento());
    
    // 2.0 Items
-   public static final MagicItem STARLIGHT_FORGE = ArcanaRegistry.register(new StarlightForge());
-   public static final MagicItem CHEST_TRANSLOCATOR = ArcanaRegistry.register(new ChestTranslocator());
-   public static final MagicItem CONTAINMENT_CIRCLET = ArcanaRegistry.register(new ContainmentCirclet());
-   public static final MagicItem WILD_GROWTH_CHARM = ArcanaRegistry.register(new WildGrowthCharm());
-   public static final MagicItem EVERLASTING_ROCKET = ArcanaRegistry.register(new EverlastingRocket());
-   public static final MagicItem TWILIGHT_ANVIL = ArcanaRegistry.register(new TwilightAnvil());
-   public static final MagicItem RADIANT_FLETCHERY = ArcanaRegistry.register(new RadiantFletchery());
-   public static final MagicItem ARCANISTS_BELT = ArcanaRegistry.register(new ArcanistsBelt());
-   public static final MagicItem PLANESHIFTER = ArcanaRegistry.register(new Planeshifter());
-   public static final MagicItem STELLAR_CORE = ArcanaRegistry.register(new StellarCore());
-   public static final MagicItem MIDNIGHT_ENCHANTER = ArcanaRegistry.register(new MidnightEnchanter());
-   public static final MagicItem STORMCALLER_ALTAR = ArcanaRegistry.register(new StormcallerAltar());
-   public static final MagicItem CELESTIAL_ALTAR = ArcanaRegistry.register(new CelestialAltar());
-   public static final MagicItem ALCHEMICAL_ARBALEST = ArcanaRegistry.register(new AlchemicalArbalest());
-   public static final MagicItem ARCANE_SINGULARITY = ArcanaRegistry.register(new ArcaneSingularity());
-   public static final MagicItem STARPATH_ALTAR = ArcanaRegistry.register(new StarpathAltar());
+   public static final ArcanaItem STARLIGHT_FORGE = ArcanaRegistry.register(new StarlightForge());
+   public static final ArcanaItem CHEST_TRANSLOCATOR = ArcanaRegistry.register(new ChestTranslocator());
+   public static final ArcanaItem CONTAINMENT_CIRCLET = ArcanaRegistry.register(new ContainmentCirclet());
+   public static final ArcanaItem WILD_GROWTH_CHARM = ArcanaRegistry.register(new WildGrowthCharm());
+   public static final ArcanaItem EVERLASTING_ROCKET = ArcanaRegistry.register(new EverlastingRocket());
+   public static final ArcanaItem TWILIGHT_ANVIL = ArcanaRegistry.register(new TwilightAnvil());
+   public static final ArcanaItem RADIANT_FLETCHERY = ArcanaRegistry.register(new RadiantFletchery());
+   public static final ArcanaItem ARCANISTS_BELT = ArcanaRegistry.register(new ArcanistsBelt());
+   public static final ArcanaItem PLANESHIFTER = ArcanaRegistry.register(new Planeshifter());
+   public static final ArcanaItem STELLAR_CORE = ArcanaRegistry.register(new StellarCore());
+   public static final ArcanaItem MIDNIGHT_ENCHANTER = ArcanaRegistry.register(new MidnightEnchanter());
+   public static final ArcanaItem STORMCALLER_ALTAR = ArcanaRegistry.register(new StormcallerAltar());
+   public static final ArcanaItem CELESTIAL_ALTAR = ArcanaRegistry.register(new CelestialAltar());
+   public static final ArcanaItem ALCHEMICAL_ARBALEST = ArcanaRegistry.register(new AlchemicalArbalest());
+   public static final ArcanaItem ARCANE_SINGULARITY = ArcanaRegistry.register(new ArcaneSingularity());
+   public static final ArcanaItem STARPATH_ALTAR = ArcanaRegistry.register(new StarpathAltar());
    
    // 2.1 Items
-   public static final MagicItem AQUATIC_EVERSOURCE = ArcanaRegistry.register(new AquaticEversource());
-   public static final MagicItem MAGMATIC_EVERSOURCE = ArcanaRegistry.register(new MagmaticEversource());
-   public static final MagicItem TRACKING_ARROWS = ArcanaRegistry.register(new TrackingArrows());
-   public static final MagicItem ENSNAREMENT_ARROWS = ArcanaRegistry.register(new EnsnarementArrows());
-   public static final MagicItem TOTEM_OF_VENGEANCE = ArcanaRegistry.register(new TotemOfVengeance());
-   public static final MagicItem TRANSMUTATION_ALTAR = ArcanaRegistry.register(new TransmutationAltar());
-   public static final MagicItem AEQUALIS_SCIENTIA = ArcanaRegistry.register(new AequalisScientia());
+   public static final ArcanaItem AQUATIC_EVERSOURCE = ArcanaRegistry.register(new AquaticEversource());
+   public static final ArcanaItem MAGMATIC_EVERSOURCE = ArcanaRegistry.register(new MagmaticEversource());
+   public static final ArcanaItem TRACKING_ARROWS = ArcanaRegistry.register(new TrackingArrows());
+   public static final ArcanaItem ENSNAREMENT_ARROWS = ArcanaRegistry.register(new EnsnarementArrows());
+   public static final ArcanaItem TOTEM_OF_VENGEANCE = ArcanaRegistry.register(new TotemOfVengeance());
+   public static final ArcanaItem TRANSMUTATION_ALTAR = ArcanaRegistry.register(new TransmutationAltar());
+   public static final ArcanaItem AEQUALIS_SCIENTIA = ArcanaRegistry.register(new AequalisScientia());
    
-   public static final BlockEntityType<? extends BlockEntity> IGNEOUS_COLLIDER_BLOCK_ENTITY = registerBlockEntity(IGNEOUS_COLLIDER.getId(), FabricBlockEntityTypeBuilder.create(IgneousColliderBlockEntity::new,((MagicBlock) IGNEOUS_COLLIDER).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> FRACTAL_SPONGE_BLOCK_ENTITY = registerBlockEntity(FRACTAL_SPONGE.getId(), FabricBlockEntityTypeBuilder.create(FractalSpongeBlockEntity::new,((MagicBlock) FRACTAL_SPONGE).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> CONTINUUM_ANCHOR_BLOCK_ENTITY = registerBlockEntity(CONTINUUM_ANCHOR.getId(), FabricBlockEntityTypeBuilder.create(ContinuumAnchorBlockEntity::new,((MagicBlock) CONTINUUM_ANCHOR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> SPAWNER_INFUSER_BLOCK_ENTITY = registerBlockEntity(SPAWNER_INFUSER.getId(), FabricBlockEntityTypeBuilder.create(SpawnerInfuserBlockEntity::new,((MagicBlock) SPAWNER_INFUSER).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> CELESTIAL_ALTAR_BLOCK_ENTITY = registerBlockEntity(CELESTIAL_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(CelestialAltarBlockEntity::new,((MagicBlock) CELESTIAL_ALTAR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STARPATH_ALTAR_BLOCK_ENTITY = registerBlockEntity(STARPATH_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(StarpathAltarBlockEntity::new,((MagicBlock) STARPATH_ALTAR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STORMCALLER_ALTAR_BLOCK_ENTITY = registerBlockEntity(STORMCALLER_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(StormcallerAltarBlockEntity::new,((MagicBlock) STORMCALLER_ALTAR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> ARCANE_SINGULARITY_BLOCK_ENTITY = registerBlockEntity(ARCANE_SINGULARITY.getId(), FabricBlockEntityTypeBuilder.create(ArcaneSingularityBlockEntity::new,((MagicBlock) ARCANE_SINGULARITY).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> MIDNIGHT_ENCHANTER_BLOCK_ENTITY = registerBlockEntity(MIDNIGHT_ENCHANTER.getId(), FabricBlockEntityTypeBuilder.create(MidnightEnchanterBlockEntity::new,((MagicBlock) MIDNIGHT_ENCHANTER).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> RADIANT_FLETCHERY_BLOCK_ENTITY = registerBlockEntity(RADIANT_FLETCHERY.getId(), FabricBlockEntityTypeBuilder.create(RadiantFletcheryBlockEntity::new,((MagicBlock) RADIANT_FLETCHERY).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STARLIGHT_FORGE_BLOCK_ENTITY = registerBlockEntity(STARLIGHT_FORGE.getId(), FabricBlockEntityTypeBuilder.create(StarlightForgeBlockEntity::new,((MagicBlock) STARLIGHT_FORGE).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STELLAR_CORE_BLOCK_ENTITY = registerBlockEntity(STELLAR_CORE.getId(), FabricBlockEntityTypeBuilder.create(StellarCoreBlockEntity::new,((MagicBlock) STELLAR_CORE).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> TWILIGHT_ANVIL_BLOCK_ENTITY = registerBlockEntity(TWILIGHT_ANVIL.getId(), FabricBlockEntityTypeBuilder.create(TwilightAnvilBlockEntity::new,((MagicBlock) TWILIGHT_ANVIL).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(TransmutationAltarBlockEntity::new,((MagicBlock) TRANSMUTATION_ALTAR).getBlock()).build());
+   
+   // Block Entities
+   public static final BlockEntityType<? extends BlockEntity> IGNEOUS_COLLIDER_BLOCK_ENTITY = registerBlockEntity(IGNEOUS_COLLIDER.getId(), BlockEntityType.Builder.create(IgneousColliderBlockEntity::new,((ArcanaBlock) IGNEOUS_COLLIDER).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> FRACTAL_SPONGE_BLOCK_ENTITY = registerBlockEntity(FRACTAL_SPONGE.getId(), BlockEntityType.Builder.create(FractalSpongeBlockEntity::new,((ArcanaBlock) FRACTAL_SPONGE).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> CONTINUUM_ANCHOR_BLOCK_ENTITY = registerBlockEntity(CONTINUUM_ANCHOR.getId(), BlockEntityType.Builder.create(ContinuumAnchorBlockEntity::new,((ArcanaBlock) CONTINUUM_ANCHOR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> SPAWNER_INFUSER_BLOCK_ENTITY = registerBlockEntity(SPAWNER_INFUSER.getId(), BlockEntityType.Builder.create(SpawnerInfuserBlockEntity::new,((ArcanaBlock) SPAWNER_INFUSER).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> CELESTIAL_ALTAR_BLOCK_ENTITY = registerBlockEntity(CELESTIAL_ALTAR.getId(), BlockEntityType.Builder.create(CelestialAltarBlockEntity::new,((ArcanaBlock) CELESTIAL_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STARPATH_ALTAR_BLOCK_ENTITY = registerBlockEntity(STARPATH_ALTAR.getId(), BlockEntityType.Builder.create(StarpathAltarBlockEntity::new,((ArcanaBlock) STARPATH_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STORMCALLER_ALTAR_BLOCK_ENTITY = registerBlockEntity(STORMCALLER_ALTAR.getId(), BlockEntityType.Builder.create(StormcallerAltarBlockEntity::new,((ArcanaBlock) STORMCALLER_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> ARCANE_SINGULARITY_BLOCK_ENTITY = registerBlockEntity(ARCANE_SINGULARITY.getId(), BlockEntityType.Builder.create(ArcaneSingularityBlockEntity::new,((ArcanaBlock) ARCANE_SINGULARITY).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> MIDNIGHT_ENCHANTER_BLOCK_ENTITY = registerBlockEntity(MIDNIGHT_ENCHANTER.getId(), BlockEntityType.Builder.create(MidnightEnchanterBlockEntity::new,((ArcanaBlock) MIDNIGHT_ENCHANTER).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> RADIANT_FLETCHERY_BLOCK_ENTITY = registerBlockEntity(RADIANT_FLETCHERY.getId(), BlockEntityType.Builder.create(RadiantFletcheryBlockEntity::new,((ArcanaBlock) RADIANT_FLETCHERY).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STARLIGHT_FORGE_BLOCK_ENTITY = registerBlockEntity(STARLIGHT_FORGE.getId(), BlockEntityType.Builder.create(StarlightForgeBlockEntity::new,((ArcanaBlock) STARLIGHT_FORGE).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STELLAR_CORE_BLOCK_ENTITY = registerBlockEntity(STELLAR_CORE.getId(), BlockEntityType.Builder.create(StellarCoreBlockEntity::new,((ArcanaBlock) STELLAR_CORE).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> TWILIGHT_ANVIL_BLOCK_ENTITY = registerBlockEntity(TWILIGHT_ANVIL.getId(), BlockEntityType.Builder.create(TwilightAnvilBlockEntity::new,((ArcanaBlock) TWILIGHT_ANVIL).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), BlockEntityType.Builder.create(TransmutationAltarBlockEntity::new,((ArcanaBlock) TRANSMUTATION_ALTAR).getBlock()).build());
+   
+   
+   // Custom Tags
+   public static final TagKey<Item> VILLAGE_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"village_research_items"));
+   public static final TagKey<Item> WORKSHOP_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"workshop_research_items"));
+   public static final TagKey<Item> NUL_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"nul_research_items"));
+   public static final TagKey<Item> EQUAYUS_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"equayus_research_items"));
+   public static final TagKey<Item> ENDERIA_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"enderia_research_items"));
+   
+   
+   // Loot Functions / Item Modifiers
+   public static final LootFunctionType<? extends LootFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
+   public static final LootFunctionType<? extends LootFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
+   
    
    
    public static void initialize(){
       PolymerResourcePackUtils.addModAssets(MOD_ID);
+      RegistrySyncUtils.setServerEntry(Registries.ARMOR_MATERIAL, NON_PROTECTIVE_ARMOR_MATERIAL.value());
       
-      for(Map.Entry<String, MagicItem> entry : MAGIC_ITEMS.entrySet()){
-         String id = entry.getKey();
-         MagicItem magicItem = entry.getValue();
-         magicItem.finalizePrefItem();
-         registerItem(id, magicItem.getItem());
+      for(Map.Entry<RegistryKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.getEntrySet()){
+         String id = entry.getKey().getValue().getPath();
+         ArcanaItem arcanaItem = entry.getValue();
+         arcanaItem.initializePrefItem();
+         registerItem(id, arcanaItem.getItem());
          //System.out.println("  \"item.arcananovum."+id+"\": \"\",");
          
-         if(magicItem instanceof MagicBlock magicBlock){
-            registerBlock(id, magicBlock.getBlock());
+         if(arcanaItem instanceof ArcanaBlock arcanaBlock){
+            registerBlock(id, arcanaBlock.getBlock());
          }
          
-         if(magicItem.getModels() != null){
+         if(arcanaItem.getModels() != null){
             List<String> reused = new ArrayList<>();
             List<String> found = new ArrayList<>();
-            for(Pair<Item,String> model: magicItem.getModels()){
+            for(Pair<Item,String> model: arcanaItem.getModels()){
                String str = model.getRight();
                if(found.contains(str)){
                   reused.add(str);
@@ -234,17 +298,18 @@ public class ArcanaRegistry {
                found.add(str);
             }
             
-            for(Pair<Item,String> model: magicItem.getModels()){
+            for(Pair<Item,String> model: arcanaItem.getModels()){
                String modelStr = model.getRight();
+               Identifier identifier = Identifier.of(MOD_ID,modelStr);
                if(reused.contains(modelStr)){
-                  MODELS.put(modelStr+"@"+model.getLeft().getTranslationKey(),PolymerResourcePackUtils.requestModel(model.getLeft(), new Identifier(MOD_ID, modelStr)));
+                  Registry.register(MODELS, Identifier.of(MOD_ID,modelStr+"-"+model.getLeft().getTranslationKey()), PolymerResourcePackUtils.requestModel(model.getLeft(), identifier));
                }else{
-                  MODELS.put(modelStr,PolymerResourcePackUtils.requestModel(model.getLeft(), new Identifier(MOD_ID, modelStr)));
+                  Registry.register(MODELS, identifier, PolymerResourcePackUtils.requestModel(model.getLeft(), identifier));
                }
             }
          }
       }
-      for(Map.Entry<String, MagicItem> entry : MAGIC_ITEMS.entrySet()){
+      for(Map.Entry<RegistryKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.getEntrySet()){
          if(entry.getValue() instanceof MultiblockCore mc){
             mc.loadMultiblock(); // Must be done after all blocks are registered
          }
@@ -253,133 +318,191 @@ public class ArcanaRegistry {
       FabricDefaultAttributeRegistry.register(DRAGON_WIZARD_ENTITY, DragonWizardEntity.createWizardAttributes());
       FabricDefaultAttributeRegistry.register(DRAGON_PHANTOM_ENTITY, DragonPhantomEntity.createPhantomAttributes());
       FabricDefaultAttributeRegistry.register(NUL_CONSTRUCT_ENTITY, NulConstructEntity.createConstructAttributes());
+      
+      ResearchTasks.registerResearchTasks();
+      
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/plains/houses"),Identifier.of(MOD_ID,"village/plains_arcanists_house"),5);
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/desert/houses"),Identifier.of(MOD_ID,"village/desert_arcanists_house"),7);
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/savanna/houses"),Identifier.of(MOD_ID,"village/savanna_arcanists_house"),7);
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/taiga/houses"),Identifier.of(MOD_ID,"village/taiga_arcanists_house"),5);
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/snowy/houses"),Identifier.of(MOD_ID,"village/snowy_arcanists_house"),4);
+      
+      RECOMMENDED_LIST.addAll(Arrays.asList(
+            getCryingObsidianEntry(),
+            MundaneArcanePaper.getCompendiumEntry(),
+            EmpoweredArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(ARCANE_TOME),
+            new ArcanaItemCompendiumEntry(STARLIGHT_FORGE),
+            new ArcanaItemCompendiumEntry(MAGNETISM_CHARM),
+            new ArcanaItemCompendiumEntry(LIGHT_CHARM),
+            new ArcanaItemCompendiumEntry(FEASTING_CHARM),
+            new ArcanaItemCompendiumEntry(WILD_GROWTH_CHARM),
+            new ArcanaItemCompendiumEntry(FELIDAE_CHARM),
+            new ArcanaItemCompendiumEntry(CINDERS_CHARM),
+            new ArcanaItemCompendiumEntry(TELESCOPING_BEACON),
+            new ArcanaItemCompendiumEntry(ANCIENT_DOWSING_ROD),
+            new ArcanaItemCompendiumEntry(CHEST_TRANSLOCATOR),
+            new ArcanaItemCompendiumEntry(AQUATIC_EVERSOURCE),
+            new ArcanaItemCompendiumEntry(CONTAINMENT_CIRCLET),
+            new ArcanaItemCompendiumEntry(EVERLASTING_ROCKET),
+            new ArcanaItemCompendiumEntry(SOULSTONE),
+            new ArcanaItemCompendiumEntry(ESSENCE_EGG),
+            new ArcanaItemCompendiumEntry(TWILIGHT_ANVIL),
+            new ArcanaItemCompendiumEntry(MIDNIGHT_ENCHANTER),
+            NebulousEssenceItem.getCompendiumEntry(),
+            ExoticArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(BRAIN_JAR),
+            new ArcanaItemCompendiumEntry(ARCANISTS_BELT),
+            new ArcanaItemCompendiumEntry(MAGMATIC_EVERSOURCE),
+            new ArcanaItemCompendiumEntry(OVERFLOWING_QUIVER),
+            new ArcanaItemCompendiumEntry(TEMPORAL_MOMENT),
+            new ArcanaItemCompendiumEntry(PLANESHIFTER),
+            new ArcanaItemCompendiumEntry(PEARL_OF_RECALL),
+            new ArcanaItemCompendiumEntry(STASIS_PEARL),
+            new ArcanaItemCompendiumEntry(SPAWNER_HARNESS),
+            new ArcanaItemCompendiumEntry(FRACTAL_SPONGE),
+            new ArcanaItemCompendiumEntry(IGNEOUS_COLLIDER),
+            new ArcanaItemCompendiumEntry(RADIANT_FLETCHERY),
+            new ArcanaItemCompendiumEntry(STELLAR_CORE),
+            StardustItem.getCompendiumEntry(),
+            SovereignArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(ARCANE_SINGULARITY),
+            new ArcanaItemCompendiumEntry(STORMCALLER_ALTAR),
+            new ArcanaItemCompendiumEntry(CELESTIAL_ALTAR),
+            new ArcanaItemCompendiumEntry(STARPATH_ALTAR),
+            new ArcanaItemCompendiumEntry(TRANSMUTATION_ALTAR),
+            new TransmutationRecipesCompendiumEntry(),
+            DivineArcanePaper.getCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(EXOTIC_MATTER),
+            new ArcanaItemCompendiumEntry(CONTINUUM_ANCHOR),
+            new ArcanaItemCompendiumEntry(SPAWNER_INFUSER),
+            new ArcanaItemCompendiumEntry(SHULKER_CORE),
+            new ArcanaItemCompendiumEntry(LEVITATION_HARNESS),
+            new ArcanaItemCompendiumEntry(SOJOURNER_BOOTS),
+            new ArcanaItemCompendiumEntry(SHIELD_OF_FORTITUDE),
+            new ArcanaItemCompendiumEntry(SHADOW_STALKERS_GLAIVE),
+            new ArcanaItemCompendiumEntry(TOTEM_OF_VENGEANCE),
+            new ArcanaItemCompendiumEntry(ALCHEMICAL_ARBALEST),
+            new ArcanaItemCompendiumEntry(RUNIC_MATRIX),
+            new ArcanaItemCompendiumEntry(RUNIC_BOW),
+            new ArcanaItemCompendiumEntry(RUNIC_QUIVER),
+            new ArcanaItemCompendiumEntry(TETHER_ARROWS),
+            new ArcanaItemCompendiumEntry(DETONATION_ARROWS),
+            new ArcanaItemCompendiumEntry(SMOKE_ARROWS),
+            new ArcanaItemCompendiumEntry(CONCUSSION_ARROWS),
+            new ArcanaItemCompendiumEntry(SIPHONING_ARROWS),
+            new ArcanaItemCompendiumEntry(ARCANE_FLAK_ARROWS),
+            new ArcanaItemCompendiumEntry(BLINK_ARROWS),
+            new ArcanaItemCompendiumEntry(ENSNAREMENT_ARROWS),
+            new ArcanaItemCompendiumEntry(EXPULSION_ARROWS),
+            new ArcanaItemCompendiumEntry(GRAVITON_ARROWS),
+            new ArcanaItemCompendiumEntry(STORM_ARROWS),
+            new ArcanaItemCompendiumEntry(TRACKING_ARROWS),
+            new ArcanaItemCompendiumEntry(PHOTONIC_ARROWS),
+            new ArcanaItemCompendiumEntry(WINGS_OF_ENDERIA),
+            new ArcanaItemCompendiumEntry(PICKAXE_OF_CEPTYUS),
+            new ArcanaItemCompendiumEntry(LEADERSHIP_CHARM),
+            new ArcanaItemCompendiumEntry(CATALYTIC_MATRIX),
+            new ArcanaItemCompendiumEntry(MUNDANE_CATALYST),
+            new ArcanaItemCompendiumEntry(EMPOWERED_CATALYST),
+            new ArcanaItemCompendiumEntry(EXOTIC_CATALYST),
+            new ArcanaItemCompendiumEntry(SOVEREIGN_CATALYST),
+            new ArcanaItemCompendiumEntry(DIVINE_CATALYST),
+            new ArcanaItemCompendiumEntry(AEQUALIS_SCIENTIA),
+            new ArcanaItemCompendiumEntry(NUL_MEMENTO)));
    }
    
-   private static MagicItem register(MagicItem magicItem){
-      MAGIC_ITEMS.put(magicItem.getId(),magicItem);
-      return magicItem;
+   public static void onServerInitialize(MinecraftServer server){
+      ARCANA_ITEMS.getEntrySet().forEach(entry -> entry.getValue().finalizePrefItem(server));
+   }
+   
+   private static ArcanaItem register(ArcanaItem arcanaItem){
+      Registry.register(ARCANA_ITEMS,Identifier.of(MOD_ID, arcanaItem.getId()), arcanaItem);
+      return arcanaItem;
    }
    
    private static Item registerItem(String id, Item item) {
-      if(item instanceof NonMagicPolymerItem nmpi){
+      if(item instanceof NormalPolymerItem nmpi){
          if(nmpi.getModels() != null){
             for(Pair<Item,String> model: nmpi.getModels()){
                String modelStr = model.getRight();
-               MODELS.put(modelStr,PolymerResourcePackUtils.requestModel(model.getLeft(), new Identifier(MOD_ID, modelStr)));
+               Identifier identifier = Identifier.of(MOD_ID,modelStr);
+               Registry.register(MODELS, identifier, PolymerResourcePackUtils.requestModel(model.getLeft(), identifier));
             }
          }
       }
-      
-      ITEMS.put(id, Registry.register(Registries.ITEM, new Identifier(MOD_ID, id), item));
+      Identifier identifier = Identifier.of(MOD_ID,id);
+      Registry.register(ITEMS, identifier, Registry.register(Registries.ITEM, identifier, item));
       return item;
    }
    
    private static void registerBlock(String id, Block block) {
-      BLOCKS.put(id, block);
-      Registry.register(Registries.BLOCK, new Identifier(MOD_ID, id), block);
+      Identifier identifier = Identifier.of(MOD_ID,id);
+      Registry.register(BLOCKS, identifier, Registry.register(Registries.BLOCK, identifier, block));
    }
    
    public static BlockEntityType<? extends BlockEntity> registerBlockEntity(String id, BlockEntityType<? extends BlockEntity> blockEntityType) {
-      Registry.register(Registries.BLOCK_ENTITY_TYPE, new Identifier(MOD_ID, id), blockEntityType);
+      Registry.register(Registries.BLOCK_ENTITY_TYPE, Identifier.of(MOD_ID, id), blockEntityType);
       PolymerBlockUtils.registerBlockEntity(blockEntityType);
       return blockEntityType;
    }
    
    public static <T extends Entity> EntityType<T> registerEntity(String id, EntityType<T> build){
-      Registry.register(Registries.ENTITY_TYPE, new Identifier(MOD_ID,id), build);
+      Registry.register(Registries.ENTITY_TYPE, Identifier.of(MOD_ID,id), build);
       PolymerEntityUtils.registerType(build);
-      //System.out.println("  \""+build.getTranslationKey()+"\": \"\",");
       return build;
    }
    
-   public static StatusEffect registerStatusEffect(String id, StatusEffect effect){
-      Registry.register(Registries.STATUS_EFFECT, new Identifier(MOD_ID,id), effect);
-      //System.out.println("  \""+effect.getTranslationKey()+"\": \"\",");
-      return effect;
+   public static RegistryEntry<StatusEffect> registerStatusEffect(String id, StatusEffect effect){
+      return Registry.registerReference(Registries.STATUS_EFFECT, Identifier.of(MOD_ID,id), effect);
+   }
+   
+   private static RegistryEntry<ArmorMaterial> registerArmorMaterial(String id, ArmorMaterial material){
+      return Registry.registerReference(Registries.ARMOR_MATERIAL, Identifier.of(MOD_ID,id), material);
    }
    
    private static AreaEffectTracker registerAreaEffectTracker(AreaEffectTracker tracker){
-      AREA_EFFECTS.put(tracker.getType(),tracker);
+      Registry.register(AREA_EFFECTS,tracker.getId(),tracker);
       return tracker;
    }
    
-   public static Item getItem(String id) {
-      return ITEMS.getOrDefault(id, Items.AIR);
+   private static LootFunctionType<? extends LootFunction> registerLootFunction(String id, MapCodec<? extends LootFunction> codec){
+      return Registry.register(Registries.LOOT_FUNCTION_TYPE, Identifier.of(MOD_ID,id), new LootFunctionType<>(codec));
    }
    
-   public static final ArrayList<MagicItem> RECOMMENDED_LIST = new ArrayList<>(Arrays.asList(
-         ARCANE_TOME,
-         STARLIGHT_FORGE,
-         MAGNETISM_CHARM,
-         LIGHT_CHARM,
-         FEASTING_CHARM,
-         WILD_GROWTH_CHARM,
-         FELIDAE_CHARM,
-         CINDERS_CHARM,
-         TELESCOPING_BEACON,
-         ANCIENT_DOWSING_ROD,
-         CHEST_TRANSLOCATOR,
-         AQUATIC_EVERSOURCE,
-         CONTAINMENT_CIRCLET,
-         EVERLASTING_ROCKET,
-         SOULSTONE,
-         ESSENCE_EGG,
-         TWILIGHT_ANVIL,
-         BRAIN_JAR,
-         ARCANISTS_BELT,
-         MAGMATIC_EVERSOURCE,
-         OVERFLOWING_QUIVER,
-         TEMPORAL_MOMENT,
-         PLANESHIFTER,
-         PEARL_OF_RECALL,
-         STASIS_PEARL,
-         SPAWNER_HARNESS,
-         FRACTAL_SPONGE,
-         IGNEOUS_COLLIDER,
-         RADIANT_FLETCHERY,
-         STELLAR_CORE,
-         MIDNIGHT_ENCHANTER,
-         ARCANE_SINGULARITY,
-         STORMCALLER_ALTAR,
-         CELESTIAL_ALTAR,
-         TRANSMUTATION_ALTAR,
-         STARPATH_ALTAR,
-         EXOTIC_MATTER,
-         CONTINUUM_ANCHOR,
-         SPAWNER_INFUSER,
-         SHULKER_CORE,
-         LEVITATION_HARNESS,
-         SOJOURNER_BOOTS,
-         SHIELD_OF_FORTITUDE,
-         SHADOW_STALKERS_GLAIVE,
-         TOTEM_OF_VENGEANCE,
-         ALCHEMICAL_ARBALEST,
-         RUNIC_MATRIX,
-         RUNIC_BOW,
-         RUNIC_QUIVER,
-         TETHER_ARROWS,
-         DETONATION_ARROWS,
-         SMOKE_ARROWS,
-         CONCUSSION_ARROWS,
-         SIPHONING_ARROWS,
-         ARCANE_FLAK_ARROWS,
-         BLINK_ARROWS,
-         ENSNAREMENT_ARROWS,
-         EXPULSION_ARROWS,
-         GRAVITON_ARROWS,
-         STORM_ARROWS,
-         TRACKING_ARROWS,
-         PHOTONIC_ARROWS,
-         WINGS_OF_ENDERIA,
-         PICKAXE_OF_CEPTYUS,
-         LEADERSHIP_CHARM,
-         CATALYTIC_MATRIX,
-         MUNDANE_CATALYST,
-         EMPOWERED_CATALYST,
-         EXOTIC_CATALYST,
-         LEGENDARY_CATALYST,
-         MYTHICAL_CATALYST,
-         AEQUALIS_SCIENTIA,
-         NUL_MEMENTO
-   ));
+   public static PolymerModelData getModelData(String id){
+      return MODELS.get(Identifier.of(MOD_ID,id));
+   }
+   
+   public static ArcanaItem getArcanaItem(String id){
+      return ARCANA_ITEMS.get(Identifier.of(MOD_ID,id));
+   }
+   
+   private static IngredientCompendiumEntry getCryingObsidianEntry(){
+      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
+            .withName(Text.literal("Water").formatted(Formatting.BLUE))
+            .withLore(List.of(Text.literal("Throw the ingredients into water").formatted(Formatting.AQUA)));
+      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
+            .withName(Text.literal("In World Recipe").formatted(Formatting.GRAY,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Do this in the World").formatted(Formatting.DARK_PURPLE)));
+      ExplainIngredient o = new ExplainIngredient(Items.OBSIDIAN,1,"Obsidian")
+            .withName(Text.literal("Obsidian").formatted(Formatting.DARK_PURPLE));
+      ExplainIngredient r = new ExplainIngredient(Items.REDSTONE,16,"Redstone Dust")
+            .withName(Text.literal("Redstone Dust").formatted(Formatting.RED))
+            .withLore(List.of(Text.literal("Use Redstone OR Glowstone Dust").formatted(Formatting.GOLD)));
+      ExplainIngredient g = new ExplainIngredient(Items.GLOWSTONE_DUST,4,"Glowstone Dust")
+            .withName(Text.literal("Glowstone Dust").formatted(Formatting.YELLOW))
+            .withLore(List.of(Text.literal("Use Redstone OR Glowstone Dust").formatted(Formatting.GOLD)));
+      
+      ExplainIngredient[][] ingredients = {
+            {a,a,a,a,a},
+            {a,r,a,g,a},
+            {a,w,o,w,a},
+            {a,w,w,w,a},
+            {a,a,a,a,a}};
+      
+      ItemStack displayStack = new ItemStack(Items.CRYING_OBSIDIAN);
+      displayStack.set(DataComponentTypes.RARITY,Rarity.UNCOMMON);
+      return new IngredientCompendiumEntry("Crying Obsidian", displayStack, new ExplainRecipe(ingredients));
+   }
 }

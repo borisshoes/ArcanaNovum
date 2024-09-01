@@ -5,36 +5,35 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.BeaconMiningLaserCallback;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
@@ -43,81 +42,99 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class TelescopingBeacon extends MagicItem {
+public class TelescopingBeacon extends ArcanaItem {
+	public static final String ID = "telescoping_beacon";
+   
+   public static final String BLOCKS_TAG = "blocks";
+   public static final String BEACON_TAG = "beacon";
+   public static final String DATA_TAG = "data";
    
    private static final String FULL_TXT = "item/telescoping_beacon";
    private static final String EMPTY_TXT = "item/telescoping_beacon_empty";
    
    public TelescopingBeacon(){
-      id = "telescoping_beacon";
+      id = ID;
       name = "Telescoping Beacon";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.BLOCKS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.BEACON;
-      item = new TelescopingBeaconItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new TelescopingBeaconItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Telescoping Beacon").formatted(Formatting.BOLD,Formatting.AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,FULL_TXT));
       models.add(new Pair<>(vanillaItem,EMPTY_TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_PISTON};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Telescoping Beacon\",\"italic\":false,\"color\":\"aqua\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
-      NbtCompound magicTag = tag.getCompound("arcananovum");
-      NbtList blocks = new NbtList();
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       NbtCompound initBlocks = new NbtCompound();
-      initBlocks.putString("id","minecraft:iron_block");
+      initBlocks.putString("id",Registries.BLOCK.getId(Blocks.IRON_BLOCK).toString());
       initBlocks.putInt("count",164);
+      NbtList blocks = new NbtList();
       blocks.add(initBlocks);
-      magicTag.put("blocks",blocks);
-      magicTag.putBoolean("beacon",true);
-      stack.setNbt(tag);
+      putProperty(stack,BLOCKS_TAG,blocks);
+      putProperty(stack,BEACON_TAG,true);
+      putProperty(stack,DATA_TAG,new NbtCompound());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"beacon \",\"color\":\"aqua\"},{\"text\":\"automatically \",\"color\":\"blue\"},{\"text\":\"deploys a \"},{\"text\":\"fully powered\",\"color\":\"aqua\"},{\"text\":\" base when placed.\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Using \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"the item again on a \",\"color\":\"dark_aqua\"},{\"text\":\"fully powered\",\"color\":\"aqua\"},{\"text\":\" base \",\"color\":\"dark_aqua\"},{\"text\":\"re-captures\"},{\"text\":\" the construct.\",\"color\":\"dark_aqua\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"There must be \",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\"adequate space\",\"color\":\"aqua\"},{\"text\":\" to \"},{\"text\":\"deploy \",\"color\":\"blue\"},{\"text\":\"the \"},{\"text\":\"beacon\",\"color\":\"aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\"}]"));
-      
-      if(itemStack != null){
-         NbtCompound itemNbt = itemStack.getNbt();
-         NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-         boolean ready = magicTag.getBoolean("beacon");
-         if(ready){
-            NbtList blocks = magicTag.getList("blocks", NbtElement.COMPOUND_TYPE);
-            int blockCount = 0;
-            for(int i = 0; i < blocks.size(); i++){
-               NbtCompound blockType = blocks.getCompound(i);
-               int count = blockType.getInt("count");
-               blockCount+=count;
-            }
-            int tier = blocksToTier(blockCount);
-            loreList.add(NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ready - Tier "+tier+"\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-         }else{
-            loreList.add(NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Empty\",\"color\":\"gray\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("This ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("beacon ").formatted(Formatting.AQUA))
+            .append(Text.literal("automatically ").formatted(Formatting.BLUE))
+            .append(Text.literal("deploys a ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("fully powered").formatted(Formatting.AQUA))
+            .append(Text.literal(" base when placed.").formatted(Formatting.DARK_AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Using ").formatted(Formatting.BLUE))
+            .append(Text.literal("the item again on a ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("fully powered").formatted(Formatting.AQUA))
+            .append(Text.literal(" base ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("re-captures").formatted(Formatting.BLUE))
+            .append(Text.literal(" the construct.").formatted(Formatting.DARK_AQUA)));
+      lore.add(Text.literal("")
+            .append(Text.literal("There must be ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("adequate space").formatted(Formatting.AQUA))
+            .append(Text.literal(" to ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("deploy ").formatted(Formatting.BLUE))
+            .append(Text.literal("the ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("beacon").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
+      lore.add(Text.literal(""));
+      if(itemStack != null && getBooleanProperty(itemStack,BEACON_TAG)){
+         NbtList blocks = getListProperty(itemStack,BLOCKS_TAG,NbtElement.COMPOUND_TYPE);
+         int blockCount = 0;
+         for(int i = 0; i < blocks.size(); i++){
+            NbtCompound blockType = blocks.getCompound(i);
+            int count = blockType.getInt("count");
+            blockCount+=count;
          }
+         int tier = blocksToTier(blockCount);
+         lore.add(Text.literal("")
+               .append(Text.literal("Construct Status - ").formatted(Formatting.BLUE))
+               .append(Text.literal("Ready - Tier "+tier).formatted(Formatting.AQUA)));
       }else{
-         loreList.add(NbtString.of("[{\"text\":\"Construct Status - \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Ready - Tier 4\",\"color\":\"aqua\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
+         lore.add(Text.literal("")
+               .append(Text.literal("Construct Status - ").formatted(Formatting.BLUE))
+               .append(Text.literal("Empty").formatted(Formatting.GRAY)));
       }
-      
-      return loreList;
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -127,23 +144,14 @@ public class TelescopingBeacon extends MagicItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtElement blocksNbt = magicTag.getList("blocks",NbtElement.COMPOUND_TYPE).copy();
-      boolean hasData = magicTag.contains("data");
-      NbtCompound dataTag = new NbtCompound();
-      if(hasData){
-         dataTag = magicTag.getCompound("data").copy();
-      }
-      boolean ready = magicTag.getBoolean("beacon");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      if(hasData){
-         newTag.getCompound("arcananovum").put("data",dataTag);
-      }
-      newTag.getCompound("arcananovum").put("blocks",blocksNbt);
-      newTag.getCompound("arcananovum").putBoolean("beacon",ready);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      NbtList blocksNbt = getListProperty(stack,BLOCKS_TAG,NbtElement.COMPOUND_TYPE).copy();
+      boolean ready = getBooleanProperty(stack,BEACON_TAG);
+      NbtCompound data = getCompoundProperty(stack,DATA_TAG).copy();
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(stack,DATA_TAG,data);
+      putProperty(newStack,BLOCKS_TAG,blocksNbt);
+      putProperty(newStack,BEACON_TAG,ready);
+      return buildItemLore(newStack,server);
    }
    
    private static List<Pair<BlockPos,BlockState>> getBaseBlocks(World world, BlockPos pos) {
@@ -186,7 +194,7 @@ public class TelescopingBeacon extends MagicItem {
             //log("Hit bottom of world, Failed");
             return false;
          }
-      
+         
          for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX) {
             for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ) {
                BlockPos blockPos = new BlockPos(curX, curY, curZ);
@@ -198,7 +206,7 @@ public class TelescopingBeacon extends MagicItem {
                }
             }
          }
-      
+         
       }
       return true;
    }
@@ -213,7 +221,7 @@ public class TelescopingBeacon extends MagicItem {
             NbtCompound blockType = blockTypes.getCompound(i);
             int count = blockType.getInt("count");
             String id = blockType.getString("id");
-            Block block = Registries.BLOCK.getOrEmpty(new Identifier(id)).orElse(null);
+            Block block = Registries.BLOCK.getOrEmpty(Identifier.of(id)).orElse(null);
             if(block == null){
                log(1,"Unknown Block Type Stored In Telescoping Beacon: "+id);
                return;
@@ -228,18 +236,18 @@ public class TelescopingBeacon extends MagicItem {
                blockTotals.put(block,count);
             }
          }
-   
+         
          int beaconX = pos.getX();
          int beaconY = pos.getY();
          int beaconZ = pos.getZ();
-   
+         
          int index = 0;
          for(int curLevel = 1; curLevel <= tier; curLevel++) {
             int curY = beaconY - curLevel;
             if (curY < world.getBottomY()) {
                return;
             }
-      
+            
             for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX) {
                for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ) {
                   BlockState blockState = blocks.get(index);
@@ -253,24 +261,24 @@ public class TelescopingBeacon extends MagicItem {
             BlockState placeState = world.getBlockState(pos);
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if(placeState.isOf(Blocks.BEACON) && (blockEntity instanceof BeaconBlockEntity beaconBlock)){
-               beaconBlock.readNbt(data);
+               beaconBlock.read(data,player.getServer().getRegistryManager());
             }
          }
          if(mining){
             ArcanaNovum.addTickTimerCallback(player.getServerWorld(),new BeaconMiningLaserCallback(player.getServerWorld(),pos,pos.up()));
          }
          
-
-         player.teleport(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
+         
+         player.requestTeleport(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
          PLAYER_DATA.get(player).addXP(index); // Add xp
-   
+         
          
          for(int i = 0; i <= tier; i++){
             int j = i;
             ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
          }
          PLAYER_DATA.get(player).addXP(10); // Add xp
-   
+         
          if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){
             BlockState blockType = blocks.get(0);
             if(blockType.isOf(Blocks.DIAMOND_BLOCK)){
@@ -298,41 +306,42 @@ public class TelescopingBeacon extends MagicItem {
       return tiers.length;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.PISTON,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.OBSIDIAN,32,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.NETHER_STAR,1,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.NETHERITE_INGOT,1,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.IRON_BLOCK,64,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.BEACON,1,null, true);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,8);
+      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,8);
+      ArcanaIngredient c = new ArcanaIngredient(Items.PISTON,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BLOCK,32, true);
+      ArcanaIngredient m = new ArcanaIngredient(Items.BEACON,1, true);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
-            {b,g,h,g,b},
+            {b,c,h,c,b},
             {c,h,m,h,c},
-            {b,g,h,g,b},
+            {b,c,h,c,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients);
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\" Telescoping Beacon\\n\\nRarity: Empowered\\n\\nA fully powered beacon is a rather large construct. Breaking them down and setting them up is a lot of effort. Through a combination of pistons and a Netherite reinforced chassis, this beacon\"}");
-      list.add("{\"text\":\" Telescoping Beacon\\n\\ncan expand and contract with the press of a button.\\n\\nCollecting it will store enough metallic blocks to redeploy at the highest possible tier without collecting extra.\\n\\nThere must be enough\"}");
-      list.add("{\"text\":\" Telescoping Beacon\\n\\nroom for the beacon and its base to deploy in order to activate.\\n\\nThe beacon expands upwards from the location of placement.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal(" Telescoping Beacon\n\nRarity: Empowered\n\nA fully powered beacon is a rather large construct. Breaking them down and setting them up is a lot of effort. Through a combination of pistons and a Netherite reinforced chassis, this beacon").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Telescoping Beacon\n\ncan expand and contract with the press of a button.\n\nCollecting it will store enough metallic blocks to redeploy at the highest possible tier without collecting extra.\n\nThere must be enough").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Telescoping Beacon\n\nroom for the beacon and its base to deploy in order to activate.\n\nThe beacon expands upwards from the location of placement.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class TelescopingBeaconItem extends MagicPolymerItem {
-      public TelescopingBeaconItem(Settings settings){
+   public class TelescopingBeaconItem extends ArcanaPolymerItem {
+      public TelescopingBeaconItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(FULL_TXT).value();
-         boolean hasBeacon = itemStack.getNbt().getCompound("arcananovum").getBoolean("beacon");
-         return hasBeacon ? ArcanaRegistry.MODELS.get(FULL_TXT).value() : ArcanaRegistry.MODELS.get(EMPTY_TXT).value();
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(FULL_TXT).value();
+         boolean hasBeacon = getBooleanProperty(itemStack,BEACON_TAG);
+         return hasBeacon ? ArcanaRegistry.getModelData(FULL_TXT).value() : ArcanaRegistry.getModelData(EMPTY_TXT).value();
       }
       
       @Override
@@ -346,10 +355,8 @@ public class TelescopingBeacon extends MagicItem {
          Hand hand = context.getHand();
          World world = context.getWorld();
          ItemStack stack = context.getStack();
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-         NbtList blocks = magicNbt.getList("blocks", NbtElement.COMPOUND_TYPE);
-         boolean hasBeacon = magicNbt.getBoolean("beacon");
+         NbtList blocks = getListProperty(stack,BLOCKS_TAG, NbtElement.COMPOUND_TYPE);
+         boolean hasBeacon = getBooleanProperty(stack,BEACON_TAG);
          if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.SUCCESS;
          
          Direction side = context.getSide();
@@ -368,24 +375,24 @@ public class TelescopingBeacon extends MagicItem {
             if(hasSpace(world, placePos, tier) && world.getBlockState(placePos).canReplace(new ItemPlacementContext(playerEntity, hand, stack, new BlockHitResult(context.getHitPos(),context.getSide(),context.getBlockPos(),context.hitsInsideBlock())))){
                boolean careful = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CAREFUL_RECONSTRUCTION.id) >= 1;
                boolean mining = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MINING_LASER.id) >= 1;
-               if(careful && magicNbt.contains("data",NbtElement.COMPOUND_TYPE)){
-                  placeBeacon(player, world, placePos, tier, blocks,magicNbt.getCompound("data"),mining);
+               if(careful && !getCompoundProperty(stack,DATA_TAG).isEmpty()){
+                  placeBeacon(player, world, placePos, tier, blocks,getCompoundProperty(stack,DATA_TAG),mining);
                }else{
                   placeBeacon(player, world, placePos, tier, blocks,null,mining);
                }
                
-               magicNbt.put("blocks",new NbtList());
-               magicNbt.putBoolean("beacon",false);
+               putProperty(stack,BLOCKS_TAG,new NbtList());
+               putProperty(stack,BEACON_TAG,false);
                buildItemLore(stack,player.getServer());
             }else{
-               playerEntity.sendMessage(Text.translatable("The Beacon cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
+               playerEntity.sendMessage(Text.literal("The Beacon cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
             }
          }else{ // Capture beacon
             BlockState placeState = world.getBlockState(placePos);
             BlockEntity blockEntity = world.getBlockEntity(placePos);
             if(!placeState.isOf(Blocks.BEACON) || !(blockEntity instanceof BeaconBlockEntity beaconBlock)){
-               playerEntity.sendMessage(Text.translatable("No Beacon Present").formatted(Formatting.RED,Formatting.ITALIC),true);
+               playerEntity.sendMessage(Text.literal("No Beacon Present").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
                return ActionResult.SUCCESS;
             }
@@ -427,11 +434,13 @@ public class TelescopingBeacon extends MagicItem {
                   }
                }
             }
-            magicNbt.put("blocks",blocks);
-            magicNbt.putBoolean("beacon",true);
+            putProperty(stack,BLOCKS_TAG,blocks);
+            putProperty(stack,BEACON_TAG,true);
             
             if(careful){
-               magicNbt.put("data",beaconBlock.createNbt());
+               putProperty(stack,DATA_TAG,beaconBlock.createNbt(player.getServer().getRegistryManager()));
+            }else{
+               putProperty(stack,DATA_TAG,new NbtCompound());
             }
             
             world.setBlockState(placePos, Blocks.AIR.getDefaultState(), 3);
@@ -452,3 +461,4 @@ public class TelescopingBeacon extends MagicItem {
       }
    }
 }
+

@@ -1,104 +1,123 @@
 package net.borisshoes.arcananovum.items;
 
-import com.google.common.collect.Multimap;
-import eu.pb4.polymer.core.mixin.client.item.packet.CreativeInventoryActionC2SPacketMixin;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryListener;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.*;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ArmorMaterials;
-import net.minecraft.item.DyeableItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
-import net.minecraft.potion.PotionUtil;
+import net.minecraft.item.*;
+import net.minecraft.item.trim.ArmorTrim;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class SojournerBoots extends EnergyItem {
+	public static final String ID = "sojourner_boots";
    
    private static final String TXT = "item/sojourner_boots";
    
+   public static final String SPEED_TAG = "sojourn_speed";
+   public static final String STEP_TAG = "sojourn_step";
+   public static final String ARMOR_TAG = "sojourn_armor";
+   
    public SojournerBoots(){
-      id = "sojourner_boots";
+      id = ID;
       name = "Sojourner's Boots";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.EQUIPMENT};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.LEATHER_BOOTS;
-      item = new SojournerBootsItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new SojournerBootsItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Sojourner's Boots").formatted(Formatting.BOLD,Formatting.DARK_GREEN))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.DYED_COLOR,new DyedColorComponent(0x33A900,false))
+            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
+            .attributeModifiers(new AttributeModifiersComponent(List.of(
+                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
+                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().getProtection(ArmorItem.Type.BOOTS), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
+                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().toughness(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
+                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().knockbackResistance(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
+            ),false))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_ADVENTURING_TIME,ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_SWIFTNESS,ResearchTasks.EFFECT_JUMP_BOOST,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Sojourner\\'s Boots\",\"italic\":false,\"color\":\"dark_green\",\"bold\":true}]");
-      display.putInt("color",3385600);
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags", 255);
-      tag.putInt("Unbreakable",1);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putBoolean("active",false);
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,ACTIVE_TAG,true);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"shall take you to see the \"},{\"text\":\"world\",\"color\":\"dark_aqua\"},{\"text\":\"...\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Merely \",\"italic\":false,\"color\":\"green\"},{\"text\":\"wearing \",\"color\":\"blue\"},{\"text\":\"them makes you want to go on an \"},{\"text\":\"adventure\",\"color\":\"dark_aqua\"},{\"text\":\".\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"are \"},{\"text\":\"unbreakable \",\"color\":\"blue\"},{\"text\":\"and equal to \"},{\"text\":\"unenchanted netherite\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"green\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Wearing them gives \",\"italic\":false,\"color\":\"green\"},{\"text\":\"ramping move speed\",\"color\":\"dark_aqua\"},{\"text\":\" and \"},{\"text\":\"uphill step assist\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" the \",\"color\":\"green\"},{\"text\":\"Boots \",\"color\":\"dark_green\"},{\"text\":\"to \",\"color\":\"green\"},{\"text\":\"toggle \"},{\"text\":\"their \",\"color\":\"green\"},{\"text\":\"step assist\",\"color\":\"blue\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.GREEN))
+            .append(Text.literal("Boots ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("shall take you to see the ").formatted(Formatting.GREEN))
+            .append(Text.literal("world").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("...").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Merely ").formatted(Formatting.GREEN))
+            .append(Text.literal("wearing ").formatted(Formatting.BLUE))
+            .append(Text.literal("them makes you want to go on an ").formatted(Formatting.GREEN))
+            .append(Text.literal("adventure").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.GREEN))
+            .append(Text.literal("Boots ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("are ").formatted(Formatting.GREEN))
+            .append(Text.literal("unbreakable ").formatted(Formatting.BLUE))
+            .append(Text.literal("and equal to ").formatted(Formatting.GREEN))
+            .append(Text.literal("unenchanted netherite").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Wearing them gives ").formatted(Formatting.GREEN))
+            .append(Text.literal("ramping move speed").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" and ").formatted(Formatting.GREEN))
+            .append(Text.literal("uphill step assist").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.GREEN)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" the ").formatted(Formatting.GREEN))
+            .append(Text.literal("Boots ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("to ").formatted(Formatting.GREEN))
+            .append(Text.literal("toggle ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("their ").formatted(Formatting.GREEN))
+            .append(Text.literal("step assist").formatted(Formatting.BLUE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -109,136 +128,103 @@ public class SojournerBoots extends EnergyItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtList enchants = itemNbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      if(enchants != null) newTag.put("Enchantments", enchants);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,ACTIVE_TAG,active);
+      return buildItemLore(newStack,server);
    }
    
-   // Holy fuck, the fact that doing this server-side is so unbelievably difficult is absurd.
-   // This can be done in a SINGLE line of code client-side...
-   public void attemptStepAssist(ItemStack stack, ServerPlayerEntity player, Vec3d playerVel){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      boolean active = magicNbt.getBoolean("active");
-      if(!player.isSneaking() && active){
-         ServerWorld world = player.getServerWorld();
-         Vec3d playerPos = player.getPos();
-         double maxHeight = 1.3 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS.id));
-         double height = findHeight(player,playerVel, maxHeight);
-         
-         if(height > 0.55){
-            Set<PositionFlag> set = new HashSet<>();
-            set.add(PositionFlag.X);
-            set.add(PositionFlag.Y);
-            set.add(PositionFlag.Z);
-            
-            player.networkHandler.requestTeleport(playerPos.getX(), playerPos.getY()+height+0.1, playerPos.getZ(), player.getYaw(), player.getPitch(), set);
-            PLAYER_DATA.get(player).addXP(2); // Add xp
-         }
-      }
-   }
-   
-   private double findHeight(ServerPlayerEntity player, Vec3d velocity, double maxHeight){
-      ServerWorld world = player.getServerWorld();
-      Vec3d predictXZ = player.getRotationVector().multiply(1,0,1).normalize().multiply(0.2);
-      if(velocity.multiply(1,0,1).normalize().dotProduct(player.getRotationVector().multiply(1,0,1).normalize()) < -0.5) return -1;
+   public void rebuildAttributes(ItemStack stack){
+      if(!stack.isOf(this.item)) return;
+      boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+      AttributeModifiersComponent modifiers = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+      List<AttributeModifiersComponent.Entry> attributeList = new ArrayList<>();
       
-      for(double y = 0; y < maxHeight; y += 0.05){
-         boolean noCollisions = true;
-         Box predictBox = player.getBoundingBox().offset(predictXZ.x,y,predictXZ.z);
-         for (VoxelShape voxelShape : world.getBlockCollisions(player, predictBox)) {
-            if (!voxelShape.isEmpty()){
-               noCollisions = false;
-               break;
-            }
-         }
-         if(!noCollisions) continue;
-         Box jumpBox = player.getBoundingBox().offset(0,y,0);
-         for (VoxelShape voxelShape : world.getBlockCollisions(player, jumpBox)) {
-            if (!voxelShape.isEmpty()){
-               noCollisions = false;
-               break;
-            }
-         }
-         if(!noCollisions) continue;
-         Box midpointBox = player.getBoundingBox().offset(predictXZ.x/2.0,y,predictXZ.z/2.0);
-         for (VoxelShape voxelShape : world.getBlockCollisions(player, midpointBox)) {
-            if (!voxelShape.isEmpty()){
-               noCollisions = false;
-               break;
-            }
-         }
+      // Strip old step and speed stats
+      for(AttributeModifiersComponent.Entry entry : modifiers.modifiers()){
+         EntityAttributeModifier modifier = entry.modifier();
          
-         if(noCollisions){
-            return y;
+         if(modifier.id().toString().contains(SPEED_TAG) || modifier.id().toString().contains(STEP_TAG)){
+            continue;
          }
+         attributeList.add(entry);
       }
-      return -1;
+      
+      if(active){
+         double height = 0.65 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS.id));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_STEP_HEIGHT,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,STEP_TAG),height,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.FEET));
+      }
+      
+      attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_MOVEMENT_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,SPEED_TAG),getEnergy(stack)/100.0,EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),AttributeModifierSlot.FEET));
+      
+      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,false);
+      stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
    }
    
    @Override
    public ItemStack forgeItem(Inventory inv){
-      ItemStack toolStack = inv.getStack(12); // Should be the Boots
-      ItemStack newMagicItem = getNewItem();
-      NbtCompound nbt = toolStack.getNbt();
-      if(nbt == null) return newMagicItem;
-      NbtCompound newNbt = newMagicItem.getOrCreateNbt();
-      if(nbt.contains("Enchantments")){
-         NbtList enchants = nbt.getList("Enchantments", NbtElement.COMPOUND_TYPE);
-         newNbt.put("Enchantments",enchants);
+      ItemStack bootStack = inv.getStack(12); // Should be the Boots
+      ItemStack newArcanaItem = getNewItem();
+   
+      if(bootStack.hasEnchantments()){
+         EnchantmentHelper.set(newArcanaItem,bootStack.getEnchantments());
       }
-      if(nbt.contains("Trim")) newNbt.put("Trim",nbt.getCompound("Trim"));
-      if(nbt.contains("ArcanaStats")){
-         double percentile = nbt.getDouble("ArcanaStats");
-         newNbt.putDouble("ArcanaStats",percentile);
-         EnhancedStatUtils.enhanceItem(newMagicItem,percentile);
+      
+      ArmorTrim trim = bootStack.get(DataComponentTypes.TRIM);
+      if(trim != null){
+         newArcanaItem.set(DataComponentTypes.TRIM, trim);
       }
-      return newMagicItem;
+      
+      if(hasProperty(bootStack,EnhancedStatUtils.ENHANCED_STAT_TAG)){
+         EnhancedStatUtils.enhanceItem(newArcanaItem,getDoubleProperty(bootStack,EnhancedStatUtils.ENHANCED_STAT_TAG));
+      }
+      
+      return newArcanaItem;
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Sojourner's Boots\\n\\nRarity: Legendary\\n\\nInstead on focusing of the combative properties of the Wings of Enderia, I tried to see how I could take inspiration from its storage of energy to enhance the wearer while also keeping the desirable\\n\"}");
-      list.add("{\"text\":\"  Sojourner's Boots\\n\\nbasic protection of the netherite boots I am trying to infuse.\\n\\nThe result are a pair of boots equal to unenchanted netherite, although I believe I can add enchantments through books with an anvil.\\n\"}");
-      list.add("{\"text\":\"  Sojourner's Boots\\n\\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 500%. On top of that, the momentum carries me up short hills without effort.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Sojourner's Boots\n\nRarity: Sovereign\n\nInstead on focusing of the combative properties of the Wings of Enderia, I tried to see how I could take inspiration from its storage of energy to enhance the wearer while also keeping the desirable\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Sojourner's Boots\n\nbasic protection of the netherite boots I am trying to infuse.\n\nThe result are a pair of boots equal to unenchanted netherite, although I believe I can add enchantments through books with an anvil.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Sojourner's Boots\n\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 500%. On top of that, the momentum carries me up short hills without effort.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient b = new MagicItemIngredient(Items.NETHERITE_BOOTS,1,null, true);
-      MagicItemIngredient o = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
-      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,4,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.GRASS_BLOCK,64,null);
-      MagicItemIngredient t = new MagicItemIngredient(Items.TERRACOTTA,64,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.PACKED_MUD,64,null);
-      MagicItemIngredient z = new MagicItemIngredient(Items.SAND,64,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.OBSIDIAN,32);
+      ArcanaIngredient b = new ArcanaIngredient(Items.TUFF,16);
+      ArcanaIngredient c = new ArcanaIngredient(Items.NETHER_STAR,2);
+      ArcanaIngredient d = new ArcanaIngredient(Items.RED_SAND,16);
+      ArcanaIngredient f = new ArcanaIngredient(Items.ROOTED_DIRT,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
+      ArcanaIngredient h = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_SWIFTNESS);
+      ArcanaIngredient j = new ArcanaIngredient(Items.PACKED_MUD,16);
+      ArcanaIngredient l = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_LEAPING);
+      ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_BOOTS,1, true);
+      ArcanaIngredient p = new ArcanaIngredient(Items.GRASS_BLOCK,16);
+      ArcanaIngredient t = new ArcanaIngredient(Items.GRAVEL,16);
+      ArcanaIngredient v = new ArcanaIngredient(Items.SAND,16);
+      ArcanaIngredient x = new ArcanaIngredient(Items.TERRACOTTA,16);
       
-      ItemStack p1 = new ItemStack(Items.POTION);
-      MagicItemIngredient x = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(p1, Potions.STRONG_SWIFTNESS).getNbt());
-      ItemStack p2 = new ItemStack(Items.POTION);
-      MagicItemIngredient l = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(p2, Potions.STRONG_LEAPING).getNbt());
-      
-      MagicItemIngredient[][] ingredients = {
-            {s,o,z,o,s},
-            {o,n,x,n,o},
-            {m,l,b,l,t},
-            {o,n,x,n,o},
-            {s,o,g,o,s}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withAnvil().withEnchanter().withCore());
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,d,a},
+            {f,g,h,g,j},
+            {c,l,m,l,c},
+            {p,g,h,g,t},
+            {a,v,c,x,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withAnvil());
    }
    
-   public class SojournerBootsItem extends MagicPolymerArmorItem implements DyeableItem {
-      public SojournerBootsItem(Settings settings){
+   public class SojournerBootsItem extends ArcanaPolymerArmorItem {
+      public SojournerBootsItem(Item.Settings settings){
          super(getThis(),ArmorMaterials.NETHERITE,Type.BOOTS,settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -250,10 +236,8 @@ public class SojournerBoots extends EnergyItem {
       public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
          if(user.isSneaking()){
             ItemStack stack = user.getStackInHand(hand);
-            NbtCompound itemNbt = stack.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            boolean active = !magicNbt.getBoolean("active");
-            magicNbt.putBoolean("active",active);
+            boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
+            putProperty(stack,ACTIVE_TAG,active);
             
             if(active){
                user.sendMessage(Text.literal("The Boots become energized with Arcana").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
@@ -263,6 +247,8 @@ public class SojournerBoots extends EnergyItem {
                SoundUtils.playSongToPlayer((ServerPlayerEntity)user, SoundEvents.BLOCK_BEACON_DEACTIVATE, 2,.8f);
             }
             
+            rebuildAttributes(stack);
+            
             return TypedActionResult.success(stack);
          }else{
             return super.use(world,user,hand);
@@ -271,7 +257,7 @@ public class SojournerBoots extends EnergyItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          try{
             if(stack == player.getEquippedStack(EquipmentSlot.FEET)){
@@ -282,7 +268,7 @@ public class SojournerBoots extends EnergyItem {
                      addEnergy(stack,2*(1+sprintLvl));
                      int newEnergy = getEnergy(stack);
                      if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
-                        player.sendMessage(Text.translatable("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
+                        player.sendMessage(Text.literal("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                      PLAYER_DATA.get(player).addXP(1); // Add xp
                   }
                   if(getEnergy(stack) >= getMaxEnergy(stack)){
@@ -291,21 +277,8 @@ public class SojournerBoots extends EnergyItem {
                }else{
                   addEnergy(stack,-10);
                }
-               NbtCompound nbt = stack.getNbt();
-               ArrayList<Pair<EntityAttribute, EntityAttributeModifier>> newAttrs = new ArrayList<>();
-               Multimap<EntityAttribute, EntityAttributeModifier> attributes = (nbt != null && nbt.contains("AttributeModifiers", NbtElement.LIST_TYPE)) ? stack.getAttributeModifiers(EquipmentSlot.FEET) : getAttributeModifiers(stack,EquipmentSlot.FEET);
-               for(Map.Entry<EntityAttribute, EntityAttributeModifier> entry : attributes.entries()){
-                  if(entry.getValue().toNbt().getString("Name").equals("Sojourner Speed")) continue;
-                  newAttrs.add(new Pair<>(entry.getKey(),entry.getValue()));
-                  //System.out.println(entry.getValue().getName()+" "+entry.getValue().getValue());
-               }
                
-               nbt.remove("AttributeModifiers");
-               for(Pair<EntityAttribute, EntityAttributeModifier> newAttr : newAttrs){
-                  stack.addAttributeModifier(newAttr.getLeft(),newAttr.getRight(),EquipmentSlot.FEET);
-               }
-               
-               stack.addAttributeModifier(EntityAttributes.GENERIC_MOVEMENT_SPEED, new EntityAttributeModifier(UUID.randomUUID(), "Sojourner Speed", getEnergy(stack)/100.0, EntityAttributeModifier.Operation.MULTIPLY_BASE),EquipmentSlot.FEET);
+               rebuildAttributes(stack);
             }else{
                if(getEnergy(stack) != 0){
                   setEnergy(stack, 0);
@@ -317,3 +290,4 @@ public class SojournerBoots extends EnergyItem {
       }
    }
 }
+

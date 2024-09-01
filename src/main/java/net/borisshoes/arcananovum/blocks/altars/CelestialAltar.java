@@ -1,41 +1,38 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicBlock;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.MapColor;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.collection.DefaultedList;
@@ -46,45 +43,69 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class CelestialAltar extends MagicBlock implements MultiblockCore {
+public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
+	public static final String ID = "celestial_altar";
    
    private Multiblock multiblock;
    
    public CelestialAltar(){
-      id = "celestial_altar";
+      id = ID;
       name = "Celestial Altar";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.BLOCKS, ArcaneTome.TomeFilter.ALTARS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.PEARLESCENT_FROGLIGHT;
-      block = new CelestialAltarBlock(FabricBlockSettings.create().mapColor(MapColor.PINK).strength(.3f,1200.0f).luminance(state -> 15).sounds(BlockSoundGroup.FROGLIGHT));
-      item = new CelestialAltarItem(this.block,new FabricItemSettings().maxCount(1).fireproof());
+      block = new CelestialAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.PINK).strength(.3f,1200.0f).luminance(state -> 15).sounds(BlockSoundGroup.FROGLIGHT));
+      item = new CelestialAltarItem(this.block,new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Celestial Altar").formatted(Formatting.BOLD,Formatting.BLUE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Celestial Altar\",\"italic\":false,\"color\":\"blue\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addAltarLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Celestial Altar:\",\"italic\":false,\"color\":\"blue\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"blue\"},{\"text\":\"glistens \",\"color\":\"yellow\"},{\"text\":\"in the \"},{\"text\":\"light \",\"color\":\"yellow\"},{\"text\":\"of the \"},{\"text\":\"Sun \",\"color\":\"yellow\"},{\"text\":\"and \"},{\"text\":\"Moon\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"blue\"},{\"text\":\"lets you change the \"},{\"text\":\"time of day\",\"color\":\"yellow\"},{\"text\":\" \",\"color\":\"yellow\"},{\"text\":\"and the \"},{\"text\":\"phase\",\"color\":\"blue\"},{\"text\":\" of the \"},{\"text\":\"Moon\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Altar \",\"color\":\"blue\"},{\"text\":\"requires a \"},{\"text\":\"Nether Star\",\"color\":\"yellow\"},{\"text\":\" to \"},{\"text\":\"activate\",\"color\":\"blue\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addAltarLore(lore);
+      lore.add(Text.literal("Celestial Altar:").formatted(Formatting.BOLD,Formatting.BLUE));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Altar ").formatted(Formatting.BLUE))
+            .append(Text.literal("glistens ").formatted(Formatting.YELLOW))
+            .append(Text.literal("in the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("light ").formatted(Formatting.YELLOW))
+            .append(Text.literal("of the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Sun ").formatted(Formatting.YELLOW))
+            .append(Text.literal("and ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Moon").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Altar ").formatted(Formatting.BLUE))
+            .append(Text.literal("lets you change the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("time of day").formatted(Formatting.YELLOW))
+            .append(Text.literal(" and the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("phase").formatted(Formatting.BLUE))
+            .append(Text.literal(" of the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Moon").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Altar ").formatted(Formatting.BLUE))
+            .append(Text.literal("requires a ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Nether Star").formatted(Formatting.YELLOW))
+            .append(Text.literal(" to ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("activate").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -97,33 +118,36 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       return multiblock;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient p = new MagicItemIngredient(Items.GLOWSTONE,64,null);
-      MagicItemIngredient a = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.LAPIS_BLOCK,16,null);
-      MagicItemIngredient r = new MagicItemIngredient(Items.GOLD_BLOCK,16,null);
-      MagicItemIngredient d = new MagicItemIngredient(Items.SEA_LANTERN,64,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.OBSIDIAN,64,null);
-      MagicItemIngredient l = new MagicItemIngredient(Items.NETHER_STAR,8,null);
-      MagicItemIngredient m = new MagicItemIngredient(Items.PEARLESCENT_FROGLIGHT,64,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient p = new ArcanaIngredient(Items.SEA_LANTERN,4);
+      ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,32);
+      ArcanaIngredient b = new ArcanaIngredient(Items.GOLD_BLOCK,4);
+      ArcanaIngredient r = new ArcanaIngredient(Items.LAPIS_BLOCK,4);
+      ArcanaIngredient d = new ArcanaIngredient(Items.GLOWSTONE,4);
+      ArcanaIngredient g = new ArcanaIngredient(Items.OBSIDIAN,32);
+      ArcanaIngredient k = new ArcanaIngredient(ArcanaRegistry.STARDUST,12);
+      ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,2);
+      ArcanaIngredient m = new ArcanaIngredient(Items.PEARLESCENT_FROGLIGHT,16);
       
-      MagicItemIngredient[][] ingredients = {
+      ArcanaIngredient[][] ingredients = {
             {a,b,b,d,d},
             {b,g,b,d,d},
-            {g,l,m,l,g},
+            {k,l,m,l,k},
             {p,p,r,g,r},
             {p,p,r,r,a}};
-      return new MagicItemRecipe(ingredients);
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"     Celestial Altar\\n\\nRarity: Exotic\\n\\nLeylines across the world have their influence extend into the orbit of the planet. If I can provide a sufficient energy source to the structure, I should be able to accelerate the planet, or the moon! \"}");
-      list.add("{\"text\":\"     Celestial Altar\\n\\nA Nether Star should be sufficient to let this altar change the time of day and the phase of the moon by accelerating the planet and moon's orbital periods for a brief moment before the Star is depleted and the orbits normalize.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("     Celestial Altar\n\nRarity: Exotic\n\nLeylines across the world have their influence extend into the orbit of the planet. If I can provide a sufficient energy source to the structure, I should be able to accelerate the planet, or the moon! ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Celestial Altar\n\nA Nether Star should be sufficient to let this altar change the time of day and the phase of the moon by accelerating the planet and moon's orbital periods for a brief moment before the Star is depleted and the orbits normalize.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class CelestialAltarItem extends MagicPolymerBlockItem {
+   public class CelestialAltarItem extends ArcanaPolymerBlockItem {
       public CelestialAltarItem(Block block, Settings settings){
          super(getThis(),block, settings);
       }
@@ -134,24 +158,16 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       }
    }
    
-   public class CelestialAltarBlock extends MagicPolymerBlockEntity {
+   public class CelestialAltarBlock extends ArcanaPolymerBlockEntity {
       public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
-      public CelestialAltarBlock(Settings settings){
+      
+      public CelestialAltarBlock(AbstractBlock.Settings settings){
          super(settings);
       }
       
       @Override
-      public Block getPolymerBlock(BlockState state) {
-         return Blocks.PEARLESCENT_FROGLIGHT;
-      }
-      
-      @Nullable
-      public static CelestialAltarBlockEntity getEntity(World world, BlockPos pos) {
-         BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof CelestialAltarBlock)) {
-            return null;
-         }
-         return world.getBlockEntity(pos) instanceof CelestialAltarBlockEntity altar ? altar : null;
+      public BlockState getPolymerBlockState(BlockState state){
+         return Blocks.PEARLESCENT_FROGLIGHT.getDefaultState();
       }
       
       @Nullable
@@ -175,6 +191,15 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
          return state.rotate(mirror.getRotation(state.get(HORIZONTAL_FACING)));
       }
       
+      @Nullable
+      public static CelestialAltarBlockEntity getEntity(World world, BlockPos pos) {
+         BlockState state = world.getBlockState(pos);
+         if (!(state.getBlock() instanceof CelestialAltarBlock)) {
+            return null;
+         }
+         return world.getBlockEntity(pos) instanceof CelestialAltarBlockEntity altar ? altar : null;
+      }
+      
       @Override
       public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
          return new CelestialAltarBlockEntity(pos, state);
@@ -187,18 +212,16 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockHitResult hit){
-         if(hand != Hand.MAIN_HAND) return ActionResult.PASS;
+      protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, BlockHitResult hit){
          CelestialAltarBlockEntity altar = (CelestialAltarBlockEntity) world.getBlockEntity(pos);
          if(altar != null){
             if(playerEntity instanceof ServerPlayerEntity player){
-               Multiblock.MultiblockCheck check = new Multiblock.MultiblockCheck(player.getServerWorld(),pos,state,new BlockPos(-5,0,-5),world.getBlockState(pos).get(HORIZONTAL_FACING));
-               if(multiblock.matches(check)){
+               if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getStackInHand(hand).getItem(),1);
+                  player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(check);
+                  multiblock.displayStructure(altar.getMultiblockCheck());
                }
             }
          }
@@ -206,24 +229,12 @@ public class CelestialAltar extends MagicBlock implements MultiblockCore {
       }
       
       @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-         if (state.isOf(newState.getBlock())) {
-            return;
-         }
-         BlockEntity blockEntity = world.getBlockEntity(pos);
-         if(!(blockEntity instanceof MagicBlockEntity mbe)) return;
-         DefaultedList<ItemStack> drops = DefaultedList.of();
-         drops.add(getDroppedBlockItem(state,world,null,blockEntity));
-         ItemScatterer.spawn(world, pos, drops);
-         super.onStateReplaced(state, world, pos, newState, moved);
-      }
-      
-      @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
          BlockEntity entity = world.getBlockEntity(pos);
          if (placer instanceof ServerPlayerEntity player && entity instanceof CelestialAltarBlockEntity altar) {
-            initializeMagicBlock(stack,altar);
+            initializeArcanaBlock(stack,altar);
          }
       }
    }
 }
+

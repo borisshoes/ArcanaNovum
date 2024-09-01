@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.midnightenchanter;
 import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
+import net.minecraft.item.ItemStack;
 
 public class MidnightEnchanterInventoryListener  implements InventoryChangedListener {
    private final MidnightEnchanterGui gui;
@@ -18,8 +19,9 @@ public class MidnightEnchanterInventoryListener  implements InventoryChangedList
    public void onInventoryChanged(Inventory inv){
       if(!updating){
          setUpdating();
+         ItemStack mainStack = inv.getStack(0);
          gui.buildGui();
-         gui.setItem(inv.getStack(0));
+         gui.setItem(mainStack);
          //Update gui
          finishUpdate();
       }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.gui.midnightenchanter;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -13,11 +14,12 @@ public class MidnightEnchanterSlot extends Slot {
    
    @Override
    public boolean canInsert(ItemStack stack){
-      return stack.isEnchantable() || !EnchantmentHelper.get(stack).isEmpty() || stack.hasEnchantments();
+      boolean sizeLimit = stack.getCount() <= 1 && (!ItemStack.areItemsAndComponentsEqual(this.getStack(), stack) || stack.getCount() + this.getStack().getCount() <= 1);
+      return ((EnchantmentHelper.canHaveEnchantments(stack) || EnchantmentHelper.hasEnchantments(stack)) && (sizeLimit) || stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER));
    }
    
    @Override
    public int getMaxItemCount() {
-      return 1;
+      return 64;
    }
 }

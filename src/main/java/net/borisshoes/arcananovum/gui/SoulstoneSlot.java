@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.gui;
 
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
@@ -23,7 +23,7 @@ public class SoulstoneSlot extends Slot {
    
    @Override
    public boolean canInsert(ItemStack stack){
-      if(MagicItemUtils.identifyItem(stack) instanceof Soulstone){
+      if(ArcanaItemUtils.identifyItem(stack) instanceof Soulstone){
          if(attuned){
             String attunedType = Soulstone.getType(stack);
             if(attunedType.equals("unattuned")){

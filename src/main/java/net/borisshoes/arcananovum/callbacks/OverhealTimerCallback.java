@@ -7,8 +7,6 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 
-import java.util.UUID;
-
 public class OverhealTimerCallback  extends TickTimerCallback{
    private final float hearts;
    
@@ -33,7 +31,7 @@ public class OverhealTimerCallback  extends TickTimerCallback{
             if(player1.getAbsorptionAmount() != 0){
                SoundUtils.playSongToPlayer(player1, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
             }
-            MiscUtils.removeMaxAbsorption(player1, SiphoningArrows.EFFECT_UUID,hearts);
+            MiscUtils.removeMaxAbsorption(player1, SiphoningArrows.EFFECT_ID,hearts);
             player1.setAbsorptionAmount(removed);
          }
       }catch(Exception e){

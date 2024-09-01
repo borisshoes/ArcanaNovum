@@ -9,11 +9,11 @@ import org.jetbrains.annotations.Nullable;
 public class LoreGui extends BookGui {
    
    private final ArcaneTome tome;
-   private final ArcaneTome.TomeMode returnMode;
+   private final TomeGui.TomeMode returnMode;
    private final String returnItem;
    private final TomeGui.CompendiumSettings settings;
    
-   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, ArcaneTome.TomeMode returnMode, TomeGui.CompendiumSettings settings){
+   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings){
       super(player, book);
       this.tome = tome;
       this.returnMode = returnMode;
@@ -21,7 +21,7 @@ public class LoreGui extends BookGui {
       this.settings = settings;
    }
    
-   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, ArcaneTome.TomeMode returnMode, TomeGui.CompendiumSettings settings, String returnItem){
+   public LoreGui(ServerPlayerEntity player, BookElementBuilder book, @Nullable ArcaneTome tome, TomeGui.TomeMode returnMode, TomeGui.CompendiumSettings settings, String returnItem){
       super(player, book);
       this.tome = tome;
       this.returnMode = returnMode;

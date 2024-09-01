@@ -10,8 +10,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 
-import java.util.UUID;
-
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShieldLoginCallback extends LoginCallback{
@@ -43,7 +41,7 @@ public class ShieldLoginCallback extends LoginCallback{
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);
          }
-         MiscUtils.removeMaxAbsorption(player, ShieldOfFortitude.EFFECT_UUID,hearts);
+         MiscUtils.removeMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,hearts);
          player.setAbsorptionAmount(removed);
       }
    }

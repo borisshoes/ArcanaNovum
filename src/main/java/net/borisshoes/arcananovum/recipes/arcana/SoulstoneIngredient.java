@@ -2,12 +2,12 @@ package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-public class SoulstoneIngredient extends MagicItemIngredient{
+public class SoulstoneIngredient extends ArcanaIngredient {
    
    private final int souls;
    private final String type;
@@ -16,7 +16,7 @@ public class SoulstoneIngredient extends MagicItemIngredient{
    private final boolean allowBosses;
    
    public SoulstoneIngredient(int souls, boolean repeatable, boolean consume, boolean allowBosses, @Nullable String type){
-      super(ArcanaRegistry.SOULSTONE.getPrefItem().getItem(), 1, null);
+      super(ArcanaRegistry.SOULSTONE.getPrefItem().getItem(), 1, true);
       this.souls = souls;
       this.repeatable = repeatable;
       this.consume = consume;
@@ -25,19 +25,22 @@ public class SoulstoneIngredient extends MagicItemIngredient{
    }
    
    @Override
-   public MagicItemIngredient copyWithCount(int newCount){
+   public ArcanaIngredient copyWithCount(int newCount){
       return new SoulstoneIngredient(souls,repeatable,consume,allowBosses,type);
    }
    
    @Override
    public boolean validStack(ItemStack stack){
-      if(MagicItemUtils.identifyItem(stack) instanceof Soulstone){
+      if(ArcanaItemUtils.identifyItem(stack) instanceof Soulstone){
          if(type != null){
             if(!type.equals(Soulstone.getType(stack)))
                return false;
          }
+
          if(!allowBosses){
-            if((Soulstone.getType(stack).equals("minecraft:ender_dragon") || Soulstone.getType(stack).equals("minecraft:wither")))
+            if((Soulstone.getType(stack).equals(EntityType.getId(EntityType.ENDER_DRAGON).toString()) ||
+                  Soulstone.getType(stack).equals(EntityType.getId(ArcanaRegistry.NUL_CONSTRUCT_ENTITY).toString()) ||
+                  Soulstone.getType(stack).equals(EntityType.getId(EntityType.WITHER).toString())))
                return false;
          }
          return Soulstone.getSouls(stack) >= souls;

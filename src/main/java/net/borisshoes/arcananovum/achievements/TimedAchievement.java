@@ -2,7 +2,7 @@ package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -22,8 +22,8 @@ public class TimedAchievement extends ArcanaAchievement{
    private boolean active;
    private NbtCompound data;
    
-   public TimedAchievement(String name, String id, ItemStack displayItem, MagicItem magicItem, int xpReward, int pointsReward, String[] description, int goal, int timeFrame){
-      super(name, id, 1, displayItem, magicItem, xpReward, pointsReward, description);
+   public TimedAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description, int goal, int timeFrame){
+      super(name, id, 1, displayItem, arcanaItem, xpReward, pointsReward, description);
       this.progress = 0;
       this.goal = goal;
       this.timeFrame = timeFrame;
@@ -118,7 +118,7 @@ public class TimedAchievement extends ArcanaAchievement{
    @Override
    public MutableText[] getStatusDisplay(ServerPlayerEntity player){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      TimedAchievement achievement = (TimedAchievement) profile.getAchievement(getMagicItem().getId(), id);
+      TimedAchievement achievement = (TimedAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       if(achievement == null) return null;
    
       if(achievement.isAcquired()){
@@ -131,6 +131,6 @@ public class TimedAchievement extends ArcanaAchievement{
    
    @Override
    public TimedAchievement makeNew(){
-      return new TimedAchievement(name, id, getDisplayItem(), getMagicItem(), xpReward, pointsReward, getDescription(), goal, timeFrame);
+      return new TimedAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription(), goal, timeFrame);
    }
 }

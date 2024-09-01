@@ -4,17 +4,22 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.recipes.arcana.*;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.advancement.criterion.Criteria;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.LivingEntity;
@@ -22,20 +27,19 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.TypedActionResult;
@@ -45,47 +49,81 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class TotemOfVengeance extends MagicItem {
+public class TotemOfVengeance extends ArcanaItem {
+	public static final String ID = "totem_of_vengeance";
    
    private static final String TXT = "item/totem_of_vengeance";
    
    public TotemOfVengeance(){
-      id = "totem_of_vengeance";
+      id = ID;
       name = "Totem Of Vengeance";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS,ArcaneTome.TomeFilter.EQUIPMENT};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.ITEMS,TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.TOTEM_OF_UNDYING;
-      item = new TotemOfVengeanceItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new TotemOfVengeanceItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Totem of Vengeance").formatted(Formatting.BOLD,Formatting.DARK_RED))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_TOTEM_OF_UNDYING,ResearchTasks.KILL_EVOKER,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.EFFECT_STRENGTH,ResearchTasks.EFFECT_FIRE_RESISTANCE,ResearchTasks.EFFECT_SWIFTNESS};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Totem of Vengeance\",\"italic\":false,\"bold\":true,\"color\":\"dark_red\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"This \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Totem's \",\"color\":\"dark_red\"},{\"text\":\"benevolent protection\",\"color\":\"green\"},{\"text\":\" has been \"},{\"text\":\"twisted \",\"color\":\"red\"},{\"text\":\"by \"},{\"text\":\"violence\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Once \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"regenerative magic\",\"color\":\"green\"},{\"text\":\" is now \"},{\"text\":\"fueled \",\"color\":\"red\"},{\"text\":\"by \"},{\"text\":\"rage \",\"color\":\"dark_red\"},{\"text\":\"for that which hunts you.\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Upon \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"fatal damage\",\"color\":\"red\"},{\"text\":\", you become \"},{\"text\":\"Death Warded\",\"color\":\"dark_red\"},{\"text\":\" for a \"},{\"text\":\"brief duration\",\"color\":\"green\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"You will be \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"unable \",\"color\":\"red\"},{\"text\":\"to drop to \"},{\"text\":\"zero health\",\"color\":\"green\"},{\"text\":\" and gain an \"},{\"text\":\"offensive boost\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"If you do not get \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"revenge \",\"color\":\"dark_red\"},{\"text\":\"before the protection \"},{\"text\":\"fades\",\"color\":\"red\"},{\"text\":\", you will \"},{\"text\":\"perish\",\"color\":\"dark_red\"},{\"text\":\".\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Totem's ").formatted(Formatting.DARK_RED))
+            .append(Text.literal("benevolent protection").formatted(Formatting.GREEN))
+            .append(Text.literal(" has been ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("twisted ").formatted(Formatting.RED))
+            .append(Text.literal("by ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("violence").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Once ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("regenerative magic").formatted(Formatting.GREEN))
+            .append(Text.literal(" is now ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("fueled ").formatted(Formatting.RED))
+            .append(Text.literal("by ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("rage ").formatted(Formatting.DARK_RED))
+            .append(Text.literal("for that which hunts you.").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Upon ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("fatal damage").formatted(Formatting.RED))
+            .append(Text.literal(", you become ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Death Warded").formatted(Formatting.DARK_RED))
+            .append(Text.literal(" for a ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("brief duration").formatted(Formatting.GREEN))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("You will be ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("unable ").formatted(Formatting.RED))
+            .append(Text.literal("to drop to ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("zero health").formatted(Formatting.GREEN))
+            .append(Text.literal(" and gain an ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("offensive boost").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("If you do not get ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("revenge ").formatted(Formatting.DARK_RED))
+            .append(Text.literal("before the protection ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("fades").formatted(Formatting.RED))
+            .append(Text.literal(", you will ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("perish").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public boolean tryUseTotem(ItemStack stack, LivingEntity living, DamageSource source){
@@ -121,49 +159,47 @@ public class TotemOfVengeance extends MagicItem {
    }
    
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.NETHER_STAR,1,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.CRYING_OBSIDIAN,16,null);
-      ItemStack potion2 = new ItemStack(Items.POTION);
-      MagicItemIngredient c = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion2, Potions.STRONG_TURTLE_MASTER).getNbt());
-      MagicItemIngredient f = new MagicItemIngredient(Items.OBSIDIAN,16,null);
-      ItemStack potion6 = new ItemStack(Items.POTION);
-      MagicItemIngredient g = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion6, Potions.STRONG_STRENGTH).getNbt());
-      MagicItemIngredient h = new MagicItemIngredient(Items.TOTEM_OF_UNDYING,1,null, true);
-      ItemStack potion8 = new ItemStack(Items.POTION);
-      MagicItemIngredient i = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion8, Potions.STRONG_SWIFTNESS).getNbt());
-      ItemStack potion10 = new ItemStack(Items.POTION);
-      MagicItemIngredient k = new MagicItemIngredient(Items.POTION,1, PotionUtil.setPotion(potion10, Potions.LONG_FIRE_RESISTANCE).getNbt());
-      SoulstoneIngredient m = new SoulstoneIngredient(100,false,false,true,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      SoulstoneIngredient r = new SoulstoneIngredient(100,false,false,true,null);
+      ArcanaIngredient p = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_TURTLE_MASTER);
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,12);
+      ArcanaIngredient t = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_SWIFTNESS);
+      ArcanaIngredient v = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_STRENGTH);
+      ArcanaIngredient g = new ArcanaIngredient(Items.NETHER_STAR,1);
+      ArcanaIngredient x = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.LONG_FIRE_RESISTANCE);
+      ArcanaIngredient k = new ArcanaIngredient(Items.CRYING_OBSIDIAN,8);
+      ArcanaIngredient m = new ArcanaIngredient(Items.TOTEM_OF_UNDYING,1, true);
       
-      MagicItemIngredient[][] ingredients = {
-            {a,b,c,b,a},
-            {f,g,h,i,f},
-            {k,h,m,h,k},
-            {f,i,h,g,f},
-            {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients,new ForgeRequirement().withSingularity());
-      
+      ArcanaIngredient[][] ingredients = {
+            {a,b,b,b,a},
+            {a,g,b,g,a},
+            {k,b,m,b,k},
+            {p,k,r,k,t},
+            {a,v,k,x,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withEnchanter());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("\" Totem of Vengeance\\n\\nRarity: Legendary\\n\\nTotems of Undying are some of the oldest yet most advanced Arcana I have seen. Ancient, yet powerful.\\nI wonder if I can push their capabilities further, perhaps even to the point of immortality?\"");
-      list.add("\" Totem of Vengeance\\n\\nMy experiments have yielded disturbing results. The Totems gain their power through soul magic, and the only way to enhance them further is with more soul energy. However, this enhancement begins to twist the Arcana within into something sinister.\"");
-      list.add("\" Totem of Vengeance\\n\\nMy new Totem has become overwhelmed by the violence of stolen souls and now seeks vengeance. It will not stop until the soul energy is expended or it succeeds in its task.\\nIf it runs out of souls, it will consume mine in the process. \"");
-      list.add("\" Totem of Vengeance\\n\\nUpon taking fatal damage, the Totem prevents me from losing my last bit of health until I get my revenge or the totem expires.\\n\\nUpon expiration my soul is consumed by an unstoppable force.\"");
-      list.add("\" Totem of Vengeance\\n\\nDuring my vengeful rage I become faster and stronger to aid in tracking down the creature that killed me.\\nIf I die to environmental causes, there is nothing to get revenge on and the Totem will inevitably claim my soul.\"");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal(" Totem of Vengeance\n\nRarity: Sovereign\n\nTotems of Undying are some of the oldest yet most advanced Arcana I have seen. Ancient, yet powerful.\nI wonder if I can push their capabilities further, perhaps even to the point of immortality?")));
+      list.add(List.of(Text.literal(" Totem of Vengeance\n\nMy experiments have yielded disturbing results. The Totems gain their power through soul magic, and the only way to enhance them further is with more soul energy. However, this enhancement begins to twist the Arcana within into something sinister.")));
+      list.add(List.of(Text.literal(" Totem of Vengeance\n\nMy new Totem has become overwhelmed by the violence of stolen souls and now seeks vengeance. It will not stop until the soul energy is expended or it succeeds in its task.\nIf it runs out of souls, it will consume mine in the process. ")));
+      list.add(List.of(Text.literal(" Totem of Vengeance\n\nUpon taking fatal damage, the Totem prevents me from losing my last bit of health until I get my revenge or the totem expires.\n\nUpon expiration my soul is consumed by an unstoppable force.")));
+      list.add(List.of(Text.literal(" Totem of Vengeance\n\nDuring my vengeful rage I become faster and stronger to aid in tracking down the creature that killed me.\nIf I die to environmental causes, there is nothing to get revenge on and the Totem will inevitably claim my soul.")));
       return list;
    }
    
-   public class TotemOfVengeanceItem extends MagicPolymerItem {
-      public TotemOfVengeanceItem(Settings settings){
+   public class TotemOfVengeanceItem extends ArcanaPolymerItem {
+      public TotemOfVengeanceItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -173,7 +209,7 @@ public class TotemOfVengeance extends MagicItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
       }
@@ -184,3 +220,4 @@ public class TotemOfVengeance extends MagicItem {
       }
    }
 }
+

@@ -2,8 +2,7 @@ package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -31,17 +30,17 @@ public abstract class ArcanaAchievement {
    // 3 - timed achievement, two booleans, three ints stored and one compound
    private boolean acquired;
    private final ItemStack displayItem;
-   private final MagicItem magicItem;
+   private final ArcanaItem arcanaItem;
    private final String[] description;
    public final int xpReward;
    public final int pointsReward;
    
-   protected ArcanaAchievement(String name, String id, int type, ItemStack displayItem, MagicItem magicItem, int xpReward, int pointsReward, String[] description){
+   protected ArcanaAchievement(String name, String id, int type, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description){
       this.name = name;
       this.id = id;
       this.type = type;
       this.displayItem = displayItem;
-      this.magicItem = magicItem;
+      this.arcanaItem = arcanaItem;
       this.description = description;
       this.xpReward = xpReward;
       this.pointsReward = pointsReward;
@@ -60,8 +59,8 @@ public abstract class ArcanaAchievement {
       return displayItem;
    }
    
-   public MagicItem getMagicItem(){
-      return magicItem;
+   public ArcanaItem getArcanaItem(){
+      return arcanaItem;
    }
    
    public String[] getDescription(){
@@ -163,7 +162,7 @@ public abstract class ArcanaAchievement {
       boolean abyssCheck = true;
       for(ArcanaAchievement achievement : ArcanaAchievements.registry.values()){
          if(ArcanaAchievements.excludedAchievements.contains(achievement)) continue;
-         if(!profile.hasAcheivement(achievement.getMagicItem().getId(),achievement.id)){
+         if(!profile.hasAcheivement(achievement.getArcanaItem().getId(),achievement.id)){
             abyssCheck = false;
             break;
          }

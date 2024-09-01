@@ -10,10 +10,11 @@ import net.minecraft.server.command.ServerCommandSource;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
+import static com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg;
+import static com.mojang.brigadier.arguments.DoubleArgumentType.getDouble;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static com.mojang.brigadier.arguments.StringArgumentType.getString;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
+import static com.mojang.brigadier.arguments.StringArgumentType.*;
 import static net.borisshoes.arcananovum.ArcanaNovum.devMode;
 import static net.minecraft.command.argument.EntityArgumentType.*;
 import static net.minecraft.server.command.CommandManager.argument;
@@ -33,6 +34,11 @@ public class CommandRegisterCallback {
             .then(literal("show").executes(ArcanaCommands::showItem))
             .then(literal("uuids").requires(source -> source.hasPermissionLevel(2))
                   .then(argument("player",player()).executes(context -> ArcanaCommands.uuidCommand(context,getPlayer(context,"player")))))
+            .then(literal("enhance").requires(source -> source.hasPermissionLevel(2))
+                  .then((argument("percentage", doubleArg())
+                        .executes(context -> ArcanaCommands.enhanceCommand(context,getDouble(context,"percentage"),null)))
+                        .then(argument("target",player())
+                              .executes(context -> ArcanaCommands.enhanceCommand(context,getDouble(context,"percentage"),getPlayer(context,"target"))))))
             .then(literal("xp").requires(source -> source.hasPermissionLevel(2))
                   .then(literal("add")
                         .then(argument("targets", players())
@@ -76,6 +82,19 @@ public class CommandRegisterCallback {
                         .then(argument("id", string()).suggests(ArcanaCommands::getAchievementSuggestions)
                               .then(argument("target", player())
                                     .executes(context -> ArcanaCommands.getAchievement(context,getString(context, "id"),getPlayer(context,"target")))))))
+            .then(literal("research").requires(source -> source.hasPermissionLevel(2))
+                  .then(literal("grant")
+                        .then(argument("id", string()).suggests(ArcanaCommands::getResearchSuggestions)
+                              .then(argument("targets", players())
+                                    .executes(context -> ArcanaCommands.setResearch(context,getString(context, "id"),true,getPlayers(context,"targets"))))))
+                  .then(literal("revoke")
+                        .then(argument("id", string()).suggests(ArcanaCommands::getResearchSuggestions)
+                              .then(argument("targets", players())
+                                    .executes(context -> ArcanaCommands.setResearch(context,getString(context, "id"),false,getPlayers(context,"targets"))))))
+                  .then(literal("query")
+                        .then(argument("id", string()).suggests(ArcanaCommands::getResearchSuggestions)
+                              .then(argument("target", player())
+                                    .executes(context -> ArcanaCommands.getResearch(context,getString(context, "id"),getPlayer(context,"target")))))))
             .then(literal("augment").requires(source -> source.hasPermissionLevel(2))
                   .then(literal("apply")
                         .then(argument("id", string()).suggests(ArcanaCommands::getAugmentSuggestions)
@@ -125,6 +144,21 @@ public class CommandRegisterCallback {
                .then(literal("makerecipe").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::makeCraftingRecipe))
                .then(literal("boss")
                      .then(literal("test").requires(source -> source.hasPermissionLevel(2)).executes(ArcanaCommands::testBoss)))
+               .then(literal("item").requires(source -> source.hasPermissionLevel(2))
+                     .then(literal("name")
+                           .then(literal("set")
+                                 .then(argument("name",greedyString()).executes(ctx -> ArcanaCommands.setItemName(ctx, getString(ctx,"name")))))
+                           .then(literal("get").executes(ArcanaCommands::getItemName)))
+                     .then(literal("lore")
+                           .then(literal("set")
+                                 .then(argument("index",integer(0))
+                                       .then(argument("lore",greedyString()).executes(ctx -> ArcanaCommands.setItemLore(ctx, getInteger(ctx,"index"), getString(ctx, "lore"))))))
+                           .then(literal("get")
+                                 .then(argument("index",integer(0)).executes(ctx -> ArcanaCommands.getItemLore(ctx, getInteger(ctx,"index")))))
+                           .then(literal("remove")
+                                 .then(argument("index",integer(0)).executes(ctx -> ArcanaCommands.removeItemLore(ctx, getInteger(ctx,"index")))))
+                           .then(literal("add")
+                                 .then(argument("lore",greedyString()).executes(ctx -> ArcanaCommands.setItemLore(ctx, -1, getString(ctx, "lore")))))))
          );
       }
    }

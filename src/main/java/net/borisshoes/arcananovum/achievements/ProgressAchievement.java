@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.achievements;
 
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -17,8 +17,8 @@ public class ProgressAchievement extends ArcanaAchievement{
    private int goal;
    private int progress;
    
-   public ProgressAchievement(String name, String id, ItemStack displayItem, MagicItem magicItem, int xpReward, int pointsReward, String[] description, int goal){
-      super(name, id, 1, displayItem, magicItem, xpReward, pointsReward, description);
+   public ProgressAchievement(String name, String id, ItemStack displayItem, ArcanaItem arcanaItem, int xpReward, int pointsReward, String[] description, int goal){
+      super(name, id, 1, displayItem, arcanaItem, xpReward, pointsReward, description);
       this.progress = 0;
       this.goal = goal;
       setAcquired(false);
@@ -65,7 +65,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    @Override
    public MutableText[] getStatusDisplay(ServerPlayerEntity player){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(getMagicItem().getId(), id);
+      ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
       MutableText[] text = new MutableText[achievement != null && achievement.isAcquired() ? 2 : 1];
       text[0] = Text.literal("")
@@ -82,6 +82,6 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    @Override
    public ProgressAchievement makeNew(){
-      return new ProgressAchievement(name, id, getDisplayItem(), getMagicItem(), xpReward, pointsReward, getDescription(), goal);
+      return new ProgressAchievement(name, id, getDisplayItem(), getArcanaItem(), xpReward, pointsReward, getDescription(), goal);
    }
 }

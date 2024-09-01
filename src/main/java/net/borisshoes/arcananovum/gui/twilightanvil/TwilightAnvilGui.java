@@ -4,6 +4,7 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -11,19 +12,17 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.gui.WatchedGui;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
@@ -32,13 +31,14 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.TreeMap;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
+public class TwilightAnvilGui extends SimpleGui {
    private final TwilightAnvilBlockEntity blockEntity;
    private TinkerInventory inv;
    private TinkerInventoryListener listener;
@@ -89,7 +89,8 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             if(outputSet.levelCost() > 40){
                ArcanaAchievements.grant(player,ArcanaAchievements.BEYOND_IRONS_LIMIT.id);
             }
-            if(EnhancedStatUtils.isEnhanced(outputSet.output()) && outputSet.output().getNbt().getDouble("ArcanaStats") >= 1){
+
+            if(EnhancedStatUtils.isEnhanced(outputSet.output()) && ArcanaItem.getDoubleProperty(outputSet.output(),EnhancedStatUtils.ENHANCED_STAT_TAG) >= 1){
                ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP.id);
             }
             PLAYER_DATA.get(player).addXP(Math.min(1000,points));
@@ -108,11 +109,11 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                inv.setStack(1, ItemStack.EMPTY);
             }
             setSlot(14,ItemStack.EMPTY);
-            GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideFlags();
+            GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideDefaultTooltip();
             xpItem.setName((Text.literal("")
                   .append(Text.literal("XP Cost").formatted(Formatting.GREEN))));
-            xpItem.addLoreLine((Text.literal("")
-                  .append(Text.literal("XP Cost will be shown here").formatted(Formatting.DARK_GREEN))));
+            xpItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                  .append(Text.literal("XP Cost will be shown here").formatted(Formatting.DARK_GREEN)))));
             setSlot(16,xpItem);
             
             block: {
@@ -137,20 +138,20 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
          }
       }else if(mode == 2 && inv != null){ // Augmenting
          ItemStack item = inv.getStack(0);
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          
          if(tinkerSlotType == 1){
             StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getServerWorld(),blockEntity.getPos());
             if(forge != null){
-               item = forge.getBlockEntityAsItem(forge,forge.getWorld());
-               magicItem = MagicItemUtils.identifyItem(item);
+               item = ArcanaBlockEntity.getBlockEntityAsItem(forge,forge.getWorld());
+               arcanaItem = ArcanaItemUtils.identifyItem(item);
                setSlot(4,GuiElementBuilder.from(item));
             }else{
                close();
             }
          }else if(tinkerSlotType == 2){
-            item = blockEntity.getBlockEntityAsItem(blockEntity,blockEntity.getWorld());
-            magicItem = MagicItemUtils.identifyItem(item);
+            item = ArcanaBlockEntity.getBlockEntityAsItem(blockEntity,blockEntity.getWorld());
+            arcanaItem = ArcanaItemUtils.identifyItem(item);
             setSlot(4,GuiElementBuilder.from(item));
          }
          
@@ -169,15 +170,19 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             tinkerSlotType = 0;
             redrawGui(inv);
          }else if(index == 31){
-            if(magicItem != null){
-               MiscUtils.returnItems(inv,player);
-               blockEntity.openGui(4,player,magicItem.getId());
+            if(arcanaItem != null){
+               if(PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+                  MiscUtils.returnItems(inv,player);
+                  blockEntity.openGui(4,player, arcanaItem.getId());
+               }else{
+                  player.sendMessage(Text.literal("You must research this item first!").formatted(Formatting.RED),false);
+               }
             }else{
                player.sendMessage(Text.literal("Insert an Item to Tinker").formatted(Formatting.RED),false);
             }
          }else if(index >= 10 && index <= 25){
-            if(magicItem != null){
-               List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
+            if(arcanaItem != null){
+               List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
                int[] augmentSlots = dynamicSlots[augments.size()];
                ArcanaAugment augment = null;
                for(int i = 0; i < augmentSlots.length; i++){
@@ -190,13 +195,11 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                if(augment != null){
                   IArcanaProfileComponent profile = PLAYER_DATA.get(player);
                   int augmentLvl = profile.getAugmentLevel(augment.id);
-                  MagicRarity[] tiers = augment.getTiers();
+                  ArcanaRarity[] tiers = augment.getTiers();
                   int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment.id);
-                  if(curItemLevel == -2){
-                     ArcanaNovum.log(3, "Magic item errored in Tinker's Screen: " + magicItem.getId());
-                  }else if(curItemLevel == -1) curItemLevel = 0;
+                  if(curItemLevel == -1) curItemLevel = 0;
                   
-                  boolean generic = magicItem.getId().equals(ArcanaRegistry.ARCANE_TOME.getId());
+                  boolean generic = arcanaItem.getId().equals(ArcaneTome.ID);
                   
                   if(generic){
                      player.sendMessage(Text.literal("These augments are active by default").formatted(Formatting.AQUA), false);
@@ -210,7 +213,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                      player.sendMessage(Text.literal("This augment is incompatible with existing augments").formatted(Formatting.RED), false);
                   }else{ // Item level = 0 | (Item level != max & < player level): Augment Catalyst
                      if(attemptAugment(item, augment, curItemLevel + 1)){
-                        PLAYER_DATA.get(player).addXP(tiers[curItemLevel] == MagicRarity.MYTHICAL ? 10000 : MagicRarity.getCraftXp(tiers[curItemLevel])/10);
+                        PLAYER_DATA.get(player).addXP(tiers[curItemLevel] == ArcanaRarity.DIVINE ? 10000 : ArcanaRarity.getCraftXp(tiers[curItemLevel])/10);
                         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(curItemLevel+1)/(tiers.length-1))));
                      }
                   }
@@ -219,12 +222,12 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
          }
       }else if(mode == 4){ // Unlock augments
          ItemStack item = this.getSlot(4).getItemStack();
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          
          if(index == 4){
             close();
          }else if(index >= 28 && index <= 35){
-            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
+            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
             int[] augmentSlots = dynamicSlots[augments.size()];
             ArcanaAugment augment = null;
             for(int i = 0; i < augmentSlots.length; i++){
@@ -237,14 +240,14 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             if(augment != null){
                IArcanaProfileComponent profile = PLAYER_DATA.get(player);
                int augmentLvl = profile.getAugmentLevel(augment.id);
-               MagicRarity[] tiers = augment.getTiers();
+               ArcanaRarity[] tiers = augment.getTiers();
                if(augmentLvl >= tiers.length) return true;
                int cost = tiers[augmentLvl].rarity+1;
                int unallocated = profile.getTotalSkillPoints() - profile.getSpentSkillPoints();
                if(cost <= unallocated){
                   profile.setAugmentLevel(augment.id,augmentLvl+1);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(augmentLvl+1)/(tiers.length-1))));
-                  blockEntity.openGui(4,player,magicItem.getId());
+                  blockEntity.openGui(4,player, arcanaItem.getId());
                }else{
                   player.sendMessage(Text.literal("Not Enough Skill Points").formatted(Formatting.RED),false);
                }
@@ -257,18 +260,18 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,new GuiElementBuilder(Items.BLUE_STAINED_GLASS_PANE).setName(Text.literal("Twilight Anvil").formatted(Formatting.DARK_PURPLE)));
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.LAPIS_COLOR)).setName(Text.literal("Twilight Anvil").formatted(Formatting.DARK_PURPLE)));
       }
       
-      GuiElementBuilder equipmentItem = new GuiElementBuilder(Items.NAME_TAG).hideFlags();
+      GuiElementBuilder equipmentItem = new GuiElementBuilder(Items.NAME_TAG).hideDefaultTooltip();
       equipmentItem.setName((Text.literal("")
             .append(Text.literal("Rename Items").formatted(Formatting.AQUA))));
       setSlot(0,equipmentItem);
       
-      GuiElementBuilder magicItem = new GuiElementBuilder(Items.END_CRYSTAL).hideFlags();
-      magicItem.setName((Text.literal("")
-            .append(Text.literal("Augment Magic Items").formatted(Formatting.LIGHT_PURPLE))));
-      setSlot(2,magicItem);
+      GuiElementBuilder arcanaItem = new GuiElementBuilder(Items.END_CRYSTAL).hideDefaultTooltip();
+      arcanaItem.setName((Text.literal("")
+            .append(Text.literal("Augment Arcana Items").formatted(Formatting.LIGHT_PURPLE))));
+      setSlot(2,arcanaItem);
       
       GuiElementBuilder anvilItem = new GuiElementBuilder(Items.ANVIL);
       anvilItem.setName((Text.literal("")
@@ -279,21 +282,25 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
    }
    
    public void buildAnvilGui(){
-      for(int i = 0; i < getSize(); i++){
-         clearSlot(i);
-         setSlot(i, new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.empty()));
-      }
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
-      GuiElementBuilder itemsPane = new GuiElementBuilder(Items.WHITE_STAINED_GLASS_PANE).hideFlags();
+      GuiElementBuilder itemsPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL, ArcanaColors.LAPIS_COLOR)).hideDefaultTooltip();
       itemsPane.setName((Text.literal("")
             .append(Text.literal("<- Place Items Here ->").formatted(Formatting.LIGHT_PURPLE))));
       setSlot(11,itemsPane);
+      setSlot(13,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(4,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(22,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(24,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
-      GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideFlags();
+      
+      GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideDefaultTooltip();
       xpItem.setName((Text.literal("")
             .append(Text.literal("XP Cost").formatted(Formatting.GREEN))));
-      xpItem.addLoreLine((Text.literal("")
-            .append(Text.literal("XP Cost will be shown here").formatted(Formatting.DARK_GREEN))));
+      xpItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("XP Cost will be shown here").formatted(Formatting.DARK_GREEN)))));
       setSlot(16,xpItem);
       
       inv = new TinkerInventory();
@@ -308,49 +315,37 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
    
    public void buildTinkerGui(){
       tinkerSlotType = 0;
-      for(int i = 0; i < getSize(); i++){
-         clearSlot(i);
-         setSlot(i,new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).setName(Text.literal("Insert a Magic Item to Augment it").formatted(Formatting.DARK_PURPLE)));
-      }
+      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.literal("Insert an Arcana Item to Augment it").formatted(Formatting.DARK_PURPLE));
       
-      ItemStack itemPage = new ItemStack(Items.ANVIL);
-      NbtCompound tag = itemPage.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Item Page\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Click \",\"italic\":false,\"color\":\"green\"},{\"text\":\"to go to the Item Page and unlock Augments!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
-      setSlot(31,GuiElementBuilder.from(itemPage));
+      GuiElementBuilder itemPage = new GuiElementBuilder(Items.ANVIL).hideDefaultTooltip();
+      itemPage.setName(Text.literal("Item Page").formatted(Formatting.DARK_PURPLE));
+      itemPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.GREEN))
+            .append(Text.literal("to go to the Item Page and unlock Augments!").formatted(Formatting.LIGHT_PURPLE))));
+      setSlot(31,itemPage);
       
-      ItemStack augmentPane = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
-      tag = augmentPane.getOrCreateNbt();
-      display = new NbtCompound();
-      loreList = new NbtList();
-      display.putString("Name","[{\"text\":\"Augments:\",\"italic\":false,\"color\":\"dark_purple\"}]");
-      loreList.add(NbtString.of("[{\"text\":\"Unlocked augments can be applied to enhance Magic Items!\",\"color\":\"light_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      display.put("Lore",loreList);
-      tag.put("display",display);
-      tag.putInt("HideFlags",103);
       
-      GuiElementBuilder tinkerAnvil = new GuiElementBuilder(ArcanaRegistry.TWILIGHT_ANVIL.getItem()).hideFlags();
+      GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
+      augmentPane.setName(Text.literal("Augments:").formatted(Formatting.DARK_PURPLE));
+      augmentPane.addLoreLine(TextUtils.removeItalics(Text.literal("Unlocked augments can be applied to enhance Arcana Items!").formatted(Formatting.LIGHT_PURPLE)));
+      
+      GuiElementBuilder tinkerAnvil = GuiElementBuilder.from(ArcanaRegistry.TWILIGHT_ANVIL.getPrefItemNoLore()).hideDefaultTooltip();
       tinkerAnvil.setName(Text.literal("Augment This Twilight Anvil").formatted(Formatting.BLUE));
-      tinkerAnvil.addLoreLine((Text.literal("")
+      tinkerAnvil.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" to augment this Twilight Anvil").formatted(Formatting.DARK_PURPLE))));
+            .append(Text.literal(" to augment this Twilight Anvil").formatted(Formatting.DARK_PURPLE)))));
       setSlot(0,tinkerAnvil);
       
-      GuiElementBuilder tinkerForge = new GuiElementBuilder(ArcanaRegistry.STARLIGHT_FORGE.getItem()).hideFlags();
+      GuiElementBuilder tinkerForge = GuiElementBuilder.from(ArcanaRegistry.STARLIGHT_FORGE.getPrefItemNoLore()).hideDefaultTooltip();
       tinkerForge.setName(Text.literal("Augment This Starlight Forge").formatted(Formatting.BLUE));
-      tinkerForge.addLoreLine((Text.literal("")
+      tinkerForge.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Click").formatted(Formatting.AQUA))
-            .append(Text.literal(" to augment this Starlight Forge").formatted(Formatting.DARK_PURPLE))));
+            .append(Text.literal(" to augment this Starlight Forge").formatted(Formatting.DARK_PURPLE)))));
       setSlot(8,tinkerForge);
       
       for(int i = 0; i < 7; i++){
-         setSlot(10+i,GuiElementBuilder.from(augmentPane));
-         setSlot(19+i,GuiElementBuilder.from(augmentPane));
+         setSlot(10+i,augmentPane);
+         setSlot(19+i,augmentPane);
       }
       
       inv = new TinkerInventory();
@@ -358,19 +353,19 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
       inv.addListener(listener);
       setSlotRedirect(4, new Slot(inv,0,0,0));
       
-      setTitle(Text.literal("Augment Magic Items"));
+      setTitle(Text.literal("Augment Arcana Items"));
    }
    
    private boolean attemptAugment(ItemStack item, ArcanaAugment augment, int level){
       PlayerInventory playerInv = player.getInventory();
-      MagicRarity tier = augment.getTiers()[level-1];
+      ArcanaRarity tier = augment.getTiers()[level-1];
       
       int catalystSlot = -1;
       boolean creative = player.isCreative();
       for(int i=0; i<playerInv.size(); i++){
          ItemStack cata = playerInv.getStack(i);
-         MagicItem magicItem = MagicItemUtils.identifyItem(cata);
-         if(magicItem != null && magicItem.getId().equals(MagicRarity.getAugmentCatalyst(tier).getId())){
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(cata);
+         if(arcanaItem != null && arcanaItem.getId().equals(ArcanaRarity.getAugmentCatalyst(tier).getId())){
             //Found catalyst
             catalystSlot = i;
             break;
@@ -385,7 +380,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                inv.setStack(0,item);
                return true;
             }else{
-               ArcanaNovum.log(3,"Error applying augment "+augment.id+" to "+MagicItemUtils.identifyItem(item).getId());
+               ArcanaNovum.log(3,"Error applying augment "+augment.id+" to "+ ArcanaItemUtils.identifyItem(item).getId());
             }
          }if(tinkerSlotType == 1){
             StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getServerWorld(),blockEntity.getPos());
@@ -412,39 +407,39 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
    
    public void redrawGui(Inventory inv){
       ItemStack item = inv.getStack(0);
-      MagicItem magicItem = MagicItemUtils.identifyItem(item);
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
       
       if(mode == 2){ // Tinkering
          if(tinkerSlotType == 1){
             StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getServerWorld(),blockEntity.getPos());
             if(forge != null){
-               item = forge.getBlockEntityAsItem(forge,forge.getWorld());
-               magicItem = MagicItemUtils.identifyItem(item);
+               item = ArcanaBlockEntity.getBlockEntityAsItem(forge,forge.getWorld());
+               arcanaItem = ArcanaItemUtils.identifyItem(item);
                setSlot(4,GuiElementBuilder.from(item));
             }else{
                close();
             }
          }else if(tinkerSlotType == 2){
-            item = blockEntity.getBlockEntityAsItem(blockEntity,blockEntity.getWorld());
-            magicItem = MagicItemUtils.identifyItem(item);
+            item = ArcanaBlockEntity.getBlockEntityAsItem(blockEntity,blockEntity.getWorld());
+            arcanaItem = ArcanaItemUtils.identifyItem(item);
             setSlot(4,GuiElementBuilder.from(item));
          }
          
-         GuiElementBuilder augmentPane = new GuiElementBuilder(magicItem == null ? Items.BLACK_STAINED_GLASS_PANE : Items.WHITE_STAINED_GLASS_PANE).hideFlags();
+         GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, arcanaItem == null ? ArcanaColors.DARK_COLOR : ArcanaColors.LIGHT_COLOR)).hideDefaultTooltip();
          augmentPane.setName((Text.literal("")
-               .append(Text.literal("Unlocked augments can be applied to enhance Magic Items!").formatted(Formatting.LIGHT_PURPLE))));
+               .append(Text.literal("Unlocked augments can be applied to enhance Arcana Items!").formatted(Formatting.LIGHT_PURPLE))));
          
          for(int i = 0; i < 7; i++){
             setSlot(10+i,augmentPane);
             setSlot(19+i,augmentPane);
          }
          
-         if(magicItem != null){
+         if(arcanaItem != null){
             IArcanaProfileComponent profile = PLAYER_DATA.get(player);
             
-            boolean generic = magicItem.getId().equals(ArcanaRegistry.ARCANE_TOME.getId());
+            boolean generic = arcanaItem.getId().equals(ArcaneTome.ID);
             
-            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(magicItem);
+            List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
             int[] augmentSlots = dynamicSlots[augments.size()];
             for(int i = 0; i < augmentSlots.length; i++){
                ArcanaAugment augment = augments.get(i);
@@ -452,110 +447,108 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
                clearSlot(19+augmentSlots[i]);
                
                int augmentLvl = profile.getAugmentLevel(augment.id);
-               MagicRarity[] tiers = augment.getTiers();
+               ArcanaRarity[] tiers = augment.getTiers();
                
-               GuiElementBuilder augmentItem1 = new GuiElementBuilder(augment.getDisplayItem().getItem());
-               augmentItem1.hideFlags().setName(Text.literal(augment.name).formatted(Formatting.DARK_PURPLE)).addLoreLine(augment.getTierDisplay());
+               GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
+               augmentItem1.hideDefaultTooltip().setName(Text.literal(augment.name).formatted(Formatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
                
                for(String s : augment.getDescription()){
-                  augmentItem1.addLoreLine(Text.literal(s).formatted(Formatting.GRAY));
+                  augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal(s).formatted(Formatting.GRAY)));
                }
                if(augmentLvl > 0) augmentItem1.glow();
                
                int curItemLevel = ArcanaAugments.getAugmentOnItem(item,augment.id);
-               if(curItemLevel == -2){
-                  ArcanaNovum.log(3,"Magic item errored in Tinker's Screen: "+magicItem.getId());
-               }else if(curItemLevel == -1) curItemLevel = 0;
+               if(curItemLevel == -1) curItemLevel = 0;
                
                GuiElementBuilder augmentItem2;
                if(generic){ // Generic
                   augmentItem2 = new GuiElementBuilder(Items.TINTED_GLASS);
-                  augmentItem2.hideFlags().glow().setName(
+                  augmentItem2.hideDefaultTooltip().glow().setName(
                         Text.literal("Generic Augmentation").formatted(Formatting.DARK_PURPLE));
-                  augmentItem2.addLoreLine(Text.literal("")
-                        .append(Text.literal("These augments are always active").formatted(Formatting.AQUA)));
-                  augmentItem2.addLoreLine(Text.literal("")
-                        .append(Text.literal("You do not need to augment your Tome to receive their boons").formatted(Formatting.AQUA)));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("These augments are always active").formatted(Formatting.AQUA))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("You do not need to augment your Tome to receive their boons").formatted(Formatting.AQUA))));
                }else if(curItemLevel >= tiers.length){ // Item Level = max: End Crystal
                   augmentItem2 = new GuiElementBuilder(Items.END_CRYSTAL);
-                  augmentItem2.hideFlags().glow().setName(
+                  augmentItem2.hideDefaultTooltip().glow().setName(
                         Text.literal("Level ").formatted(Formatting.DARK_PURPLE)
                               .append(Text.literal(""+curItemLevel).formatted(Formatting.LIGHT_PURPLE)));
-                  augmentItem2.addLoreLine(Text.literal("")
-                        .append(Text.literal("Max Level").formatted(Formatting.AQUA)));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("Max Level").formatted(Formatting.AQUA))));
                }else if(augmentLvl == 0 && curItemLevel == 0){ // Item & player lvl = 0: Obsidian
                   augmentItem2 = new GuiElementBuilder(Items.OBSIDIAN);
-                  augmentItem2.hideFlags().glow().setName(
+                  augmentItem2.hideDefaultTooltip().glow().setName(
                         Text.literal("Not Augmented").formatted(Formatting.DARK_PURPLE));
-                  augmentItem2.addLoreLine(Text.literal("")
-                        .append(Text.literal("Augment Locked!").formatted(Formatting.DARK_RED)));
-                  augmentItem2.addLoreLine(Text.literal(""));
-                  augmentItem2.addLoreLine(Text.literal("")
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("Augment Locked!").formatted(Formatting.DARK_RED))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Spend ").formatted(Formatting.DARK_AQUA))
                         .append(Text.literal("Skill Points").formatted(Formatting.AQUA))
-                        .append(Text.literal(" to unlock this augment").formatted(Formatting.DARK_AQUA)));
-                  augmentItem2.addLoreLine(Text.literal("")
-                        .append(Text.literal("Unlock augments on the item's page").formatted(Formatting.DARK_AQUA)));
+                        .append(Text.literal(" to unlock this augment").formatted(Formatting.DARK_AQUA))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("Unlock augments on the item's page").formatted(Formatting.DARK_AQUA))));
                }else if(curItemLevel >= augmentLvl){ // Item level != max & >= player level: Obsidian
                   augmentItem2 = new GuiElementBuilder(Items.OBSIDIAN);
-                  augmentItem2.hideFlags().glow().setName(
+                  augmentItem2.hideDefaultTooltip().glow().setName(
                         Text.literal("Current Level: ").formatted(Formatting.DARK_PURPLE)
                               .append(Text.literal(""+curItemLevel).formatted(Formatting.LIGHT_PURPLE)));
-                  augmentItem2.addLoreLine(Text.literal("")
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("You have only unlocked level ").formatted(Formatting.DARK_RED))
-                        .append(Text.literal(""+augmentLvl).formatted(Formatting.RED)));
-                  augmentItem2.addLoreLine(Text.literal(""));
-                  augmentItem2.addLoreLine(Text.literal("")
+                        .append(Text.literal(""+augmentLvl).formatted(Formatting.RED))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Spend ").formatted(Formatting.DARK_AQUA))
                         .append(Text.literal("Skill Points").formatted(Formatting.AQUA))
-                        .append(Text.literal(" to unlock higher levels").formatted(Formatting.DARK_AQUA)));
-                  augmentItem2.addLoreLine(Text.literal("")
-                        .append(Text.literal("Unlock augments on the item's page").formatted(Formatting.DARK_AQUA)));
+                        .append(Text.literal(" to unlock higher levels").formatted(Formatting.DARK_AQUA))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("Unlock augments on the item's page").formatted(Formatting.DARK_AQUA))));
                }else if(ArcanaAugments.isIncompatible(item,augment.id)){ // Incompatible augment: Structure Void
                   augmentItem2 = new GuiElementBuilder(Items.STRUCTURE_VOID);
-                  augmentItem2.hideFlags().glow().setName(
+                  augmentItem2.hideDefaultTooltip().glow().setName(
                         Text.literal("Incompatible Augment").formatted(Formatting.DARK_PURPLE));
-                  augmentItem2.addLoreLine(Text.literal("")
-                        .append(Text.literal("This augment is incompatible with present augments").formatted(Formatting.DARK_RED)));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("This augment is incompatible with present augments").formatted(Formatting.DARK_RED))));
                }else if(curItemLevel == 0 || curItemLevel == -1){ // Item level = 0: Augment Catalyst
-                  augmentItem2 = new GuiElementBuilder(MagicRarity.getAugmentCatalyst(tiers[0]).getPrefItem().getItem());
-                  augmentItem2.hideFlags().setName(
+                  augmentItem2 = GuiElementBuilder.from(ArcanaRarity.getAugmentCatalyst(tiers[0]).getPrefItemNoLore());
+                  augmentItem2.hideDefaultTooltip().setName(
                         Text.literal("Not Augmented").formatted(Formatting.DARK_PURPLE));
-                  augmentItem2.addLoreLine(Text.literal("")
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Level: ").formatted(Formatting.BLUE))
                         .append(Text.literal("1").formatted(Formatting.DARK_AQUA))
                         .append(Text.literal(" (").formatted(Formatting.BLUE))
-                        .append(MagicRarity.getColoredLabel(tiers[0],false))
-                        .append(Text.literal(")").formatted(Formatting.BLUE)));
-                  augmentItem2.addLoreLine(Text.literal(""));
-                  augmentItem2.addLoreLine(Text.literal("")
+                        .append(ArcanaRarity.getColoredLabel(tiers[0],false))
+                        .append(Text.literal(")").formatted(Formatting.BLUE))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Applying augments requires an ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal("Augment Catalyst").formatted(MagicRarity.getColor(tiers[0]))));
-                  augmentItem2.addLoreLine(Text.literal("")
+                        .append(Text.literal("Augment Catalyst").formatted(ArcanaRarity.getColor(tiers[0])))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Click").formatted(Formatting.AQUA))
                         .append(Text.literal(" to consume a ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal("Catalyst").formatted(MagicRarity.getColor(tiers[0])))
-                        .append(Text.literal(" to augment your item").formatted(Formatting.DARK_AQUA)));
+                        .append(Text.literal("Catalyst").formatted(ArcanaRarity.getColor(tiers[0])))
+                        .append(Text.literal(" to augment your item").formatted(Formatting.DARK_AQUA))));
                }else{ // Item level != max & < player level: Augment Catalyst
-                  augmentItem2 = new GuiElementBuilder(MagicRarity.getAugmentCatalyst(tiers[curItemLevel]).getPrefItem().getItem());
-                  augmentItem2.hideFlags().setName(
+                  augmentItem2 = GuiElementBuilder.from(ArcanaRarity.getAugmentCatalyst(tiers[curItemLevel]).getPrefItemNoLore());
+                  augmentItem2.hideDefaultTooltip().setName(
                         Text.literal("Current Level: ").formatted(Formatting.DARK_PURPLE)
                               .append(Text.literal(""+curItemLevel).formatted(Formatting.LIGHT_PURPLE)));
-                  augmentItem2.addLoreLine(Text.literal("")
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Next Level: ").formatted(Formatting.BLUE))
                         .append(Text.literal((curItemLevel+1)+"").formatted(Formatting.DARK_AQUA))
                         .append(Text.literal(" (").formatted(Formatting.BLUE))
-                        .append(MagicRarity.getColoredLabel(tiers[curItemLevel],false))
-                        .append(Text.literal(")").formatted(Formatting.BLUE)));
-                  augmentItem2.addLoreLine(Text.literal(""));
-                  augmentItem2.addLoreLine(Text.literal("")
+                        .append(ArcanaRarity.getColoredLabel(tiers[curItemLevel],false))
+                        .append(Text.literal(")").formatted(Formatting.BLUE))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Applying augments requires an ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal("Augment Catalyst").formatted(MagicRarity.getColor(tiers[curItemLevel]))));
-                  augmentItem2.addLoreLine(Text.literal("")
+                        .append(Text.literal("Augment Catalyst").formatted(ArcanaRarity.getColor(tiers[curItemLevel])))));
+                  augmentItem2.addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Click").formatted(Formatting.AQUA))
                         .append(Text.literal(" to consume a ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.literal("Catalyst").formatted(MagicRarity.getColor(tiers[curItemLevel])))
-                        .append(Text.literal(" to augment your item").formatted(Formatting.DARK_AQUA)));
+                        .append(Text.literal("Catalyst").formatted(ArcanaRarity.getColor(tiers[curItemLevel])))
+                        .append(Text.literal(" to augment your item").formatted(Formatting.DARK_AQUA))));
                }
                
                setSlot(10+augmentSlots[i], augmentItem1);
@@ -566,7 +559,7 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
          ItemStack input1 = inv.getStack(0);
          ItemStack input2 = inv.getStack(1);
          TwilightAnvilBlockEntity.AnvilOutputSet outputSet = blockEntity.calculateOutput(input1,input2);
-         GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideFlags();
+         GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideDefaultTooltip();
          xpItem.setName((Text.literal("")
                .append(Text.literal("XP Cost").formatted(Formatting.GREEN))));
          
@@ -575,18 +568,28 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
             
             if(outputSet.levelCost() <= 64) xpItem.setCount(outputSet.levelCost());
             
-            xpItem.addLoreLine((Text.literal("")
-                  .append(Text.literal(outputSet.levelCost()+" Levels ("+ LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost()) +" Points)").formatted(Formatting.DARK_GREEN))));
+            xpItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                  .append(Text.literal(outputSet.levelCost()+" Levels ("+ LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost()) +" Points)").formatted(Formatting.DARK_GREEN)))));
             setSlot(16,xpItem);
          }else{
             setSlot(14,ItemStack.EMPTY);
             
-            xpItem.addLoreLine((Text.literal("")
-                  .append(Text.literal("XP Cost will be shown here").formatted(Formatting.DARK_GREEN))));
+            xpItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                  .append(Text.literal("XP Cost will be shown here").formatted(Formatting.DARK_GREEN)))));
             setSlot(16,xpItem);
          }
          
       }
+   }
+   
+   @Override
+   public void onTick(){
+      World world = blockEntity.getWorld();
+      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled()){
+         this.close();
+      }
+      
+      super.onTick();
    }
    
    @Override
@@ -601,15 +604,5 @@ public class TwilightAnvilGui extends SimpleGui implements WatchedGui {
    @Override
    public void close(){
       super.close();
-   }
-   
-   @Override
-   public BlockEntity getBlockEntity(){
-      return blockEntity;
-   }
-   
-   @Override
-   public SimpleGui getGui(){
-      return this;
    }
 }

@@ -1,13 +1,14 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,19 +30,26 @@ import java.util.function.Predicate;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.item.RangedWeaponItem.BOW_PROJECTILES;
 
-public abstract class QuiverItem extends MagicItem {
+public abstract class QuiverItem extends ArcanaItem {
+   public static final String ARROWS_TAG = "arrows";
+   public static final String QUIVER_SLOT_TAG = "QuiverSlot";
+   public static final String QUIVER_ID_TAG = "QuiverId";
+   public static final String QUIVER_CD_TAG = "QuiverCD";
+   public static final String RUNIC_INV_ID_TAG = "runicInvId";
+   public static final String ARROW_INV_ID_TAG = "arrowInvId";
+   public static final String RUNIC_INV_SLOT_TAG = "runicInvSlot";
+   public static final String ARROW_INV_SLOT_TAG = "arrowInvSlot";
+   
+   
    public static final int size = 9;
    protected Formatting color;
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      NbtList arrowsList = magicTag.getList("arrows", NbtElement.COMPOUND_TYPE).copy();
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").put("arrows",arrowsList);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      NbtList arrowsList = getListProperty(stack,ARROWS_TAG,NbtElement.COMPOUND_TYPE).copy();
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,ARROWS_TAG,arrowsList);
+      return buildItemLore(newStack,server);
    }
    
    public Formatting getColor(){
@@ -53,16 +61,14 @@ public abstract class QuiverItem extends MagicItem {
    protected abstract double getEfficiencyMod(ItemStack item);
    
    protected void refillArrow(ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
+      NbtList arrows = getListProperty(item,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
       ArrayList<Integer> eligible = new ArrayList<>();
       
       for(int i = 0; i < arrows.size(); i++){
          NbtCompound stack = arrows.getCompound(i);
-         byte count = stack.getByte("Count");
-         if(count <= 0 || stack.getString("id").equals("minecraft:air")) continue;
-         ItemStack itemStack = ItemStack.fromNbt(stack);
+         byte count = stack.getByte("count");
+         if(count <= 0 || stack.isEmpty()) continue;
+         ItemStack itemStack = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stack).orElse(ItemStack.EMPTY);
          
          if(count < itemStack.getMaxCount()){
             eligible.add(i);
@@ -72,35 +78,35 @@ public abstract class QuiverItem extends MagicItem {
       int slot = eligible.get((int)(Math.random()*eligible.size()));
    
       NbtCompound stack = arrows.getCompound(slot);
-      byte count = stack.getByte("Count");
-      stack.putByte("Count", (byte) (count+1));
+      byte count = stack.getByte("count");
+      stack.putByte("count", (byte) (count+1));
       PLAYER_DATA.get(player).addXP(50); // Add xp
       if(this instanceof OverflowingQuiver){
          ArcanaAchievements.progress(player,ArcanaAchievements.SPARE_STOCK.id,1);
       }else if(this instanceof RunicQuiver){
          ArcanaAchievements.progress(player,ArcanaAchievements.UNLIMITED_STOCK.id,1);
       }
+      
+      putProperty(item,ARROWS_TAG,arrows);
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayerEntity player, ItemStack bow){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
-      boolean runic = MagicItemUtils.identifyItem(bow) instanceof RunicBow || (bow.isOf(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST.id) >= 1);
+      NbtList arrows = getListProperty(item,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
+      boolean runic = ArcanaItemUtils.identifyItem(bow) instanceof RunicBow || (bow.isOf(ArcanaRegistry.ALCHEMICAL_ARBALEST.getItem()) && ArcanaAugments.getAugmentOnItem(bow,ArcanaAugments.RUNIC_ARBALEST.id) >= 1);
       
       for(int i = 0; i < arrows.size(); i++){
          NbtCompound stack = arrows.getCompound(i);
          if(stack.getByte("Slot") == slot){
-            byte count = stack.getByte("Count");
-            if(count <= 0 || stack.getString("id").equals("minecraft:air")) return false;
-            if(EnchantmentHelper.getLevel(Enchantments.INFINITY, bow) > 0 && item.isOf(Items.ARROW)) return true;
+            byte count = stack.getByte("count");
+            if(count <= 0 || stack.isEmpty()) return false;
+            if(EnchantmentHelper.getLevel(MiscUtils.getEnchantment(Enchantments.INFINITY), bow) > 0 && item.isOf(Items.ARROW)) return true;
             if(Math.random() >= getEfficiencyMod(item)) count--;
             
             if(count == 0){
                arrows.remove(i);
                switchArrowOption(player,runic);
             }else{
-               stack.putByte("Count",count);
+               stack.putByte("count",count);
             }
    
             PlayerInventory inv = player.getInventory();
@@ -108,7 +114,8 @@ public abstract class QuiverItem extends MagicItem {
                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, j, inv.getStack(j)));
             }
             player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, PlayerInventory.OFF_HAND_SLOT, inv.getStack(PlayerInventory.OFF_HAND_SLOT)));
-           
+            
+            putProperty(item,ARROWS_TAG,arrows);
             return true;
          }
       }
@@ -117,8 +124,8 @@ public abstract class QuiverItem extends MagicItem {
    
    public static Pair<String,Integer> getArrowOption(ServerPlayerEntity player, boolean runic){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      String invId = profile.getMiscData(runic ? "runicInvId" : "arrowInvId").asString();
-      int invSlot = ((NbtInt)profile.getMiscData(runic ? "runicInvSlot" : "arrowInvSlot")).intValue();
+      String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString();
+      int invSlot = ((NbtInt)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    
       List<Pair<String,Integer>> options = getArrowOptions(player,runic);
       if(options.isEmpty()){
@@ -134,8 +141,8 @@ public abstract class QuiverItem extends MagicItem {
    
    public static Pair<String,Integer> switchArrowOption(ServerPlayerEntity player, boolean runic){
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
-      String invId = profile.getMiscData(runic ? "runicInvId" : "arrowInvId").asString();
-      int invSlot = ((NbtInt)profile.getMiscData(runic ? "runicInvSlot" : "arrowInvSlot")).intValue();
+      String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString();
+      int invSlot = ((NbtInt)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    
       List<Pair<String,Integer>> options = getArrowOptions(player,runic);
       if(options.isEmpty()){
@@ -160,8 +167,8 @@ public abstract class QuiverItem extends MagicItem {
       }else{
          option = options.get(0);
       }
-      profile.addMiscData(runic ? "runicInvId" : "arrowInvId",NbtString.of(option.getLeft()));
-      profile.addMiscData(runic ? "runicInvSlot" : "arrowInvSlot",NbtInt.of(option.getRight()));
+      profile.addMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG,NbtString.of(option.getLeft()));
+      profile.addMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG,NbtInt.of(option.getRight()));
       getArrowStack(player,runic,true);
       return option;
    }
@@ -182,8 +189,8 @@ public abstract class QuiverItem extends MagicItem {
             if (PROJECTILES.test(stack)) {
                if(display){
                   Text name = stack.getName();
-                  MagicItem magicArrow = MagicItemUtils.identifyItem(stack);
-                  if(magicArrow instanceof RunicArrow runicArrow){
+                  ArcanaItem arcanaArrow = ArcanaItemUtils.identifyItem(stack);
+                  if(arcanaArrow instanceof RunicArrow runicArrow){
                      name = runicArrow.getArrowName(stack);
                   }
                   player.sendMessage(Text.literal("")
@@ -206,15 +213,15 @@ public abstract class QuiverItem extends MagicItem {
                continue;
             }
    
-            MagicItem magicItem = MagicItemUtils.identifyItem(item);
-            if(magicItem == null) continue;
+            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+            if(arcanaItem == null) continue;
             if(getUUID(item).equals(invId)){
-               if(magicItem instanceof RunicQuiver quiver){
+               if(arcanaItem instanceof RunicQuiver quiver){
                   ItemStack stack = quiver.getArrow(item,invSlot);
                   if(display){
                      Text name = stack.getName();
-                     MagicItem magicArrow = MagicItemUtils.identifyItem(stack);
-                     if(magicArrow instanceof RunicArrow runicArrow){
+                     ArcanaItem arcanaArrow = ArcanaItemUtils.identifyItem(stack);
+                     if(arcanaArrow instanceof RunicArrow runicArrow){
                         name = runicArrow.getArrowName(stack);
                      }
                      player.sendMessage(Text.literal("")
@@ -224,12 +231,12 @@ public abstract class QuiverItem extends MagicItem {
                            ,true);
                   }
                   return stack;
-               }else if(magicItem instanceof OverflowingQuiver quiver){
+               }else if(arcanaItem instanceof OverflowingQuiver quiver){
                   ItemStack stack = quiver.getArrow(item,invSlot);
                   if(display){
                      Text name = stack.getName();
-                     MagicItem magicArrow = MagicItemUtils.identifyItem(stack);
-                     if(magicArrow instanceof RunicArrow runicArrow){
+                     ArcanaItem arcanaArrow = ArcanaItemUtils.identifyItem(stack);
+                     if(arcanaArrow instanceof RunicArrow runicArrow){
                         name = runicArrow.getArrowName(stack);
                      }
                      player.sendMessage(Text.literal("")
@@ -263,32 +270,28 @@ public abstract class QuiverItem extends MagicItem {
             continue;
          }
       
-         MagicItem magicItem = MagicItemUtils.identifyItem(item);
-         if(magicItem instanceof RunicQuiver quiver){
-            NbtCompound itemNbt = item.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+         if(arcanaItem instanceof RunicQuiver quiver){
+            NbtList arrows = getListProperty(item,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
             for(int j = 0; j < arrows.size(); j++){
                NbtCompound stack = arrows.getCompound(j);
-               if(!stack.contains("Slot") || !stack.contains("Count") || !stack.contains("id")) continue;
-               if(stack.getByte("Count") <= 0 || stack.getString("id").equals("minecraft:air")) continue;
-               if(MagicItemUtils.isRunicArrow(ItemStack.fromNbt(stack)) && !runic) continue;
+               if(!stack.contains("Slot") || !stack.contains("count") || !stack.contains("id")) continue;
+               if(stack.getByte("count") <= 0 || stack.isEmpty()) continue;
+               if(ArcanaItemUtils.isRunicArrow(ItemStack.fromNbt(player.getRegistryManager(),stack).orElse(ItemStack.EMPTY)) && !runic) continue;
                options.add(new Pair<>(getUUID(item),(int) stack.getByte("Slot")));
             }
-         }else if(magicItem instanceof OverflowingQuiver quiver){
-            NbtCompound itemNbt = item.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
+         }else if(arcanaItem instanceof OverflowingQuiver quiver){
+            NbtList arrows = getListProperty(item,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
             for(int j = 0; j < arrows.size(); j++){
                NbtCompound stack = arrows.getCompound(j);
-               if(!stack.contains("Slot") || !stack.contains("Count") || !stack.contains("id")) continue;
-               if(stack.getByte("Count") <= 0 || stack.getString("id").equals("minecraft:air")) continue;
+               if(!stack.contains("Slot") || !stack.contains("count") || !stack.contains("id")) continue;
+               if(stack.getByte("count") <= 0 || stack.isEmpty()) continue;
                options.add(new Pair<>(getUUID(item),(int) stack.getByte("Slot")));
             }
          }
    
          if (PROJECTILES.test(item)) {
-            if(!runic && magicItem instanceof RunicArrow){
+            if(!runic && arcanaItem instanceof RunicArrow){
                continue;
             }
             options.add(new Pair<>("inventory",i));
@@ -299,18 +302,15 @@ public abstract class QuiverItem extends MagicItem {
    }
    
    public ItemStack getArrow(ItemStack quiver, int slot){
-      NbtCompound itemNbt = quiver.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
+      NbtList arrows = getListProperty(quiver,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
    
       for(int i = 0; i < arrows.size(); i++){
          NbtCompound stack = arrows.getCompound(i);
          if(stack.getByte("Slot") == slot){
-            if(stack.getByte("Count") <= 0 || stack.getString("id").equals("minecraft:air")) return null;
-            ItemStack itemStack = ItemStack.fromNbt(stack).copy();
-            NbtCompound tag = itemStack.getOrCreateNbt();
-            tag.putInt("QuiverSlot",slot);
-            tag.putString("QuiverId",getUUID(quiver));
+            if(stack.getByte("count") <= 0 || stack.isEmpty()) return null;
+            ItemStack itemStack = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stack).orElse(ItemStack.EMPTY).copy();
+            putProperty(itemStack,QUIVER_SLOT_TAG,slot);
+            putProperty(itemStack,QUIVER_ID_TAG,getUUID(quiver));
             return itemStack;
          }
       }
@@ -318,11 +318,10 @@ public abstract class QuiverItem extends MagicItem {
    }
    
    public static void decreaseQuiver(ItemStack bow, ItemStack arrow, PlayerEntity playerEntity){
-      NbtCompound tag = arrow.getNbt();
-      if(tag == null || !(playerEntity instanceof ServerPlayerEntity player)) return;
-      if(tag.contains("QuiverSlot") && tag.contains("QuiverId")){
-         String quiverId = tag.getString("QuiverId");
-         int slot = tag.getInt("QuiverSlot");
+      if(!(playerEntity instanceof ServerPlayerEntity player)) return;
+      if(hasProperty(arrow,QUIVER_SLOT_TAG) && hasProperty(arrow,QUIVER_ID_TAG)){
+         String quiverId = getStringProperty(arrow,QUIVER_ID_TAG);
+         int slot = getIntProperty(arrow,QUIVER_SLOT_TAG);
          boolean isInvArrow = quiverId.equals("inventory");
          
          PlayerInventory inv = playerEntity.getInventory();
@@ -339,8 +338,8 @@ public abstract class QuiverItem extends MagicItem {
                   continue;
                }
                
-               MagicItem magicItem = MagicItemUtils.identifyItem(item);
-               if(magicItem instanceof QuiverItem quiver){
+               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
+               if(arcanaItem instanceof QuiverItem quiver){
                   if(getUUID(item).equals(quiverId)){
                      quiver.shootArrow(item,slot,player,bow);
                      return;

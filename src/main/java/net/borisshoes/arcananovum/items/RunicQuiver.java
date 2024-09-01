@@ -3,31 +3,38 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItemContainer;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
+import net.borisshoes.arcananovum.core.ArcanaItemContainer;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -37,8 +44,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicItemContainerHaver {
+public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.ArcanaItemContainerHaver {
+	public static final String ID = "runic_quiver";
    
    public static final int size = 9;
    private static final int[] refillReduction = {0,100,200,400,600,900};
@@ -46,42 +55,70 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
    private static final String TXT = "item/runic_quiver";
    
    public RunicQuiver(){
-      id = "runic_quiver";
+      id = ID;
       name = "Runic Quiver";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.ITEMS};
       color = Formatting.LIGHT_PURPLE;
       vanillaItem = Items.LEATHER;
-      item = new RunicQuiverItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new RunicQuiverItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Quiver").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_OVERFLOWING_QUIVER,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.CONCENTRATION_DAMAGE};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Quiver\",\"italic\":false,\"color\":\"light_purple\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").put("arrows",new NbtList());
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,ARROWS_TAG,new NbtList());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_purple\"},{\"text\":\"runes \",\"color\":\"light_purple\"},{\"text\":\"engraved \",\"color\":\"dark_aqua\"},{\"text\":\"upon the \"},{\"text\":\"quiver \",\"color\":\"light_purple\"},{\"text\":\"hum in the presence of \"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Runic Arrows\",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\" placed within the \",\"color\":\"dark_purple\"},{\"text\":\"quiver \"},{\"text\":\"regenerate \",\"color\":\"dark_aqua\"},{\"text\":\"over \",\"color\":\"dark_purple\"},{\"text\":\"time\",\"color\":\"blue\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Arrows \",\"italic\":false,\"color\":\"light_purple\"},{\"text\":\"take reduced \",\"color\":\"dark_purple\"},{\"text\":\"concentration \",\"color\":\"dark_aqua\"},{\"text\":\"when in the \",\"color\":\"dark_purple\"},{\"text\":\"quiver\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to put \",\"color\":\"dark_purple\"},{\"text\":\"Arrows \",\"color\":\"light_purple\"},{\"text\":\"in the \",\"color\":\"dark_purple\"},{\"text\":\"quiver\",\"color\":\"light_purple\"},{\"text\":\".\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Left Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" with a \",\"color\":\"dark_purple\"},{\"text\":\"Runic Bow\",\"color\":\"light_purple\"},{\"text\":\" to swap which \",\"color\":\"dark_purple\"},{\"text\":\"Runic Arrow\",\"color\":\"light_purple\"},{\"text\":\" will be shot.\",\"color\":\"dark_purple\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("runes ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("engraved ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("upon the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("quiver ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("hum in the presence of ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" placed within the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("quiver ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("regenerate ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("over ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("time").formatted(Formatting.BLUE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Arrows ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("take reduced ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("concentration ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("when in the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("quiver").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" to put ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Arrows ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("in the ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("quiver").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Left Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" with a ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Bow").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" to swap which ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Runic Arrow").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" will be shot.").formatted(Formatting.DARK_PURPLE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -99,73 +136,67 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
    @Override
    public ItemStack forgeItem(Inventory inv){
       ItemStack quiverStack = inv.getStack(12); // Should be the old quiver
-      ItemStack newMagicItem = getNewItem();
-      NbtCompound nbt = quiverStack.getNbt();
-      if(nbt != null && nbt.getCompound("arcananovum").contains("arrows")){
-         NbtList arrows = nbt.getCompound("arcananovum").getList("arrows", NbtElement.COMPOUND_TYPE);
-         newMagicItem.getOrCreateNbt().getCompound("arcananovum").put("arrows",arrows);
-      }
-      ArcanaAugments.copyAugment(quiverStack,newMagicItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
-      ArcanaAugments.copyAugment(quiverStack,newMagicItem,ArcanaAugments.ABUNDANT_AMMO.id,ArcanaAugments.QUIVER_DUPLICATION.id);
-      return newMagicItem;
+      ItemStack newArcanaItem = getNewItem();
+      putProperty(newArcanaItem,ARROWS_TAG,getListProperty(quiverStack,ARROWS_TAG,NbtElement.COMPOUND_TYPE));
+      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
+      ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.ABUNDANT_AMMO.id,ArcanaAugments.QUIVER_DUPLICATION.id);
+      return newArcanaItem;
    }
    
    private RunicQuiver getOuter(){
       return this;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = new MagicItemIngredient(Items.NETHER_STAR,4,null);
-      ItemStack enchantedBook1 = new ItemStack(Items.ENCHANTED_BOOK);
-      EnchantedBookItem.addEnchantment(enchantedBook1,new EnchantmentLevelEntry(Enchantments.INFINITY,1));
-      MagicItemIngredient b = new MagicItemIngredient(Items.ENCHANTED_BOOK,1,enchantedBook1.getNbt());
-      MagicItemIngredient c = new MagicItemIngredient(Items.LEATHER,64,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
-      GenericMagicIngredient h = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.OVERFLOWING_QUIVER,1);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.LEATHER,32);
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.INFINITY),1));
+      ArcanaIngredient c = new ArcanaIngredient(Items.NETHER_STAR,2);
+      ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
+      GenericArcanaIngredient h = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.OVERFLOWING_QUIVER,1);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
             {b,g,h,g,b},
             {c,h,m,h,c},
             {b,g,h,g,b},
             {a,b,c,b,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery().withEnchanter());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withFletchery().withEnchanter().withAnvil());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("\"      Runic Quiver\\n\\nRarity: Legendary\\n\\nMy improvements upon the overflowing quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within. \\nI even managed to make the quiver take a reduced amount of\"");
-      list.add("\"      Runic Quiver\\n\\nconcentration, allowing for more Runic Arrows to be stored without overburdening my mind.\\n\\nThe quiver acts the same as its base counterpart just with this added expansion and a quiver restock time.\"");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("      Runic Quiver\n\nRarity: Sovereign\n\nMy improvements upon the overflowing quiver have been completed and now the quiver is capable of sending some of my Arcana to Runic Arrows within. \nI even managed to make the quiver take a reduced amount of")));
+      list.add(List.of(Text.literal("      Runic Quiver\n\nconcentration, allowing for more Runic Arrows to be stored without overburdening my mind.\n\nThe quiver acts the same as its base counterpart just with this added expansion and a quiver restock time.")));
       return list;
    }
    
    @Override
-   public MagicItemContainer getMagicItemContainer(ItemStack item){
+   public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
       int size = 9;
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtList arrows = magicNbt.getList("arrows", NbtElement.COMPOUND_TYPE);
+      NbtList arrows = getListProperty(item,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
       SimpleInventory inv = new SimpleInventory(size);
       
       for(int i = 0; i < arrows.size(); i++){
          NbtCompound stack = arrows.getCompound(i);
-         ItemStack itemStack = ItemStack.fromNbt(stack);
+         ItemStack itemStack = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stack).orElse(ItemStack.EMPTY);
          inv.setStack(i,itemStack);
       }
       double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES.id) > 0 ? 0.25 : 0.5;
       
-      return new MagicItemContainer(inv, size,3, "RQ", "Runic Quiver", concMod);
+      return new ArcanaItemContainer(inv, size,3, "RQ", "Runic Quiver", concMod);
    }
    
-   public class RunicQuiverItem extends MagicPolymerItem {
-      public RunicQuiverItem(Settings settings){
+   public class RunicQuiverItem extends ArcanaPolymerItem {
+      public RunicQuiverItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -175,7 +206,7 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          if(world.getServer().getTicks() % getRefillMod(stack) == 0) refillArrow(player, stack);
       }
@@ -193,3 +224,4 @@ public class RunicQuiver extends QuiverItem implements MagicItemContainer.MagicI
       }
    }
 }
+

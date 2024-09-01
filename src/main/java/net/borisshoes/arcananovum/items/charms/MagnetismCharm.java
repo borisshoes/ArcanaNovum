@@ -1,32 +1,34 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.EggItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -41,11 +43,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 
-public class MagnetismCharm extends MagicItem {
+public class MagnetismCharm extends ArcanaItem {
+	public static final String ID = "magnetism_charm";
+   
+   public static final String FILTER_TAG = "filter";
    
    private static final String ON_TXT = "item/magnetism_charm_on";
    private static final String OFF_TXT = "item/magnetism_charm_off";
@@ -119,13 +125,17 @@ public class MagnetismCharm extends MagicItem {
    ));
    
    public MagnetismCharm(){
-      id = "magnetism_charm";
+      id = ID;
       name = "Charm of Magnetism";
-      rarity = MagicRarity.EMPOWERED;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EMPOWERED, ArcaneTome.TomeFilter.CHARMS, ArcaneTome.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 2;
       vanillaItem = Items.IRON_INGOT;
-      item = new MagnetismCharmItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new MagnetismCharmItem(new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Charm of Magnetism").formatted(Formatting.BOLD,Formatting.GRAY))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,OFF_TXT));
       models.add(new Pair<>(vanillaItem,ON_TXT));
@@ -133,61 +143,66 @@ public class MagnetismCharm extends MagicItem {
       models.add(new Pair<>(vanillaItem,NEO_ON_TXT));
       models.add(new Pair<>(vanillaItem,NEO_OFF_TXT));
       models.add(new Pair<>(vanillaItem,NEO_REVERSE_TXT));
-   
-      ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Charm of Magnetism\",\"italic\":false,\"bold\":true,\"color\":\"gray\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_HEAVY_CORE,ResearchTasks.FISH_ITEM};
       
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putInt("mode",0); // 0 off, 1 attract, 2 repel
-      tag.getCompound("arcananovum").putInt("cooldown",0);
-      tag.getCompound("arcananovum").put("filter",new NbtCompound());
-      stack.setNbt(tag);
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,MODE_TAG,0); // 0 off, 1 attract, 2 repel
+      putProperty(stack,COOLDOWN_TAG,0);
+      putProperty(stack,FILTER_TAG,new NbtCompound());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"You can feel the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"charm\",\"color\":\"gray\"},{\"text\":\" \"},{\"text\":\"tugging \",\"color\":\"dark_green\"},{\"text\":\"on surrounding objects.\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to \",\"color\":\"dark_gray\"},{\"text\":\"drag \",\"color\":\"gray\"},{\"text\":\"nearby items to you.\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak Right Click\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to toggle the \",\"color\":\"dark_gray\"},{\"text\":\"magnetism \",\"color\":\"gray\"},{\"text\":\"passively\",\"color\":\"dark_green\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"Sneak\",\"italic\":false,\"color\":\"dark_aqua\"},{\"text\":\" to temporarily disable the \",\"color\":\"dark_gray\"},{\"text\":\"passive\",\"italic\":false,\"color\":\"dark_green\"},{\"text\":\" pull\",\"color\":\"gray\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("You can feel the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("charm").formatted(Formatting.GRAY))
+            .append(Text.literal(" tugging ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("on surrounding objects.").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" to ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("drag ").formatted(Formatting.GRAY))
+            .append(Text.literal("nearby items to you.").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right Click").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" to toggle the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("magnetism ").formatted(Formatting.GRAY))
+            .append(Text.literal("passively").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" to temporarily disable the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("passive").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" pull").formatted(Formatting.GRAY))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtCompound itemNbt = stack.getNbt();
-      NbtCompound magicTag = itemNbt.getCompound("arcananovum");
-      int cooldown = magicTag.getInt("cooldown");
-      int mode = magicTag.getInt("mode");
-      NbtCompound filter = magicTag.getCompound("filter");
-      NbtCompound newTag = super.updateItem(stack,server).getNbt();
-      newTag.getCompound("arcananovum").putInt("cooldown",cooldown);
-      newTag.getCompound("arcananovum").putInt("mode",mode);
-      newTag.getCompound("arcananovum").put("filter",filter);
-      stack.setNbt(newTag);
-      return buildItemLore(stack,server);
+      int cooldown = getIntProperty(stack,COOLDOWN_TAG);
+      int mode = getIntProperty(stack,MODE_TAG);
+      NbtCompound filter = getCompoundProperty(stack,FILTER_TAG);
+      ItemStack newStack = super.updateItem(stack,server);
+      putProperty(newStack,COOLDOWN_TAG,cooldown);
+      putProperty(newStack,MODE_TAG,mode);
+      putProperty(newStack,FILTER_TAG,filter);
+      return buildItemLore(newStack,server);
    }
    
    public void activeUse(ServerPlayerEntity player, World world, ItemStack charm){
       int activeLength = 15 + 3*Math.max(0, ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.ELECTROMAGNET.id));;
       int activeRange = 3;
-      NbtCompound magicTag = charm.getNbt().getCompound("arcananovum");
-      int cooldown = magicTag.getInt("cooldown");
+      int cooldown = getIntProperty(charm,COOLDOWN_TAG);
       if(cooldown != 0){
          return;
       }else{
          player.getItemCooldownManager().set(this.item,20);
-         magicTag.putInt("cooldown",1);
+         putProperty(charm,COOLDOWN_TAG,1);
       }
       
       Vec3d playerPos = player.getEyePos();
@@ -197,7 +212,7 @@ public class MagnetismCharm extends MagicItem {
       Box box = new Box(playerPos,playerPos).expand(activeLength+activeRange);
       List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange) && canAffectItem(charm,entity.getStack().getItem()));
       SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_FOX_TELEPORT, 1,.9f);
-   
+      
       for(ItemEntity item : items){
          double x = playerPos.getX() - item.getX();
          double y = playerPos.getY() - item.getY();
@@ -234,7 +249,7 @@ public class MagnetismCharm extends MagicItem {
                equipment.put(EquipmentSlot.FEET,feet);
                equipment.put(EquipmentSlot.MAINHAND,hand1);
                equipment.put(EquipmentSlot.OFFHAND,hand2);
-   
+               
                
                
                for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
@@ -263,12 +278,9 @@ public class MagnetismCharm extends MagicItem {
    }
    
    public void toggleMode(ServerPlayerEntity player, ItemStack item){
-      NbtCompound itemNbt = item.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
       boolean canRepel = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.POLARITY_REVERSAL.id) >= 1;
-      int mode = (magicNbt.getInt("mode")+1) % (canRepel ? 3 : 2);
-      magicNbt.putInt("mode",mode);
-      itemNbt.put("arcananovum",magicNbt);
+      int mode = (getIntProperty(item,MODE_TAG)+1) % (canRepel ? 3 : 2);
+      putProperty(item,MODE_TAG,mode);
       if(mode == 1){
          player.sendMessage(Text.literal("The Charm's Pull Strengthens").formatted(Formatting.GRAY,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 1,2f);
@@ -282,9 +294,7 @@ public class MagnetismCharm extends MagicItem {
    }
    
    public boolean canAffectItem(ItemStack magnet, Item filterItem){
-      NbtCompound itemNbt = magnet.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound filter = magicNbt.getCompound("filter");
+      NbtCompound filter = getCompoundProperty(magnet,FILTER_TAG);
       String itemId = Registries.ITEM.getId(filterItem).toString();
       
       boolean hasWhitelist = filter.getKeys().stream().anyMatch(s -> filter.getInt(s) == 1);
@@ -293,9 +303,7 @@ public class MagnetismCharm extends MagicItem {
    }
    
    public void toggleFilterItem(ServerPlayerEntity player, ItemStack magnet, Item filterItem){
-      NbtCompound itemNbt = magnet.getNbt();
-      NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-      NbtCompound filter = magicNbt.getCompound("filter");
+      NbtCompound filter = getCompoundProperty(magnet,FILTER_TAG);
       String itemId = Registries.ITEM.getId(filterItem).toString();
       
       int itemStatus = 0; // 0 = nothing, 1 = whitelist, 2 = blacklist
@@ -323,6 +331,7 @@ public class MagnetismCharm extends MagicItem {
                .append(Text.translatable(filterItem.getTranslationKey()).formatted(Formatting.DARK_GRAY,Formatting.ITALIC))
                .append(Text.literal(" from the filter").formatted(Formatting.GRAY,Formatting.ITALIC)),true);
       }
+      putProperty(magnet,FILTER_TAG,filter);
    }
    
    @Override
@@ -330,43 +339,44 @@ public class MagnetismCharm extends MagicItem {
       return true;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient r = new MagicItemIngredient(Items.LIGHTNING_ROD,64,null);
-      MagicItemIngredient b = new MagicItemIngredient(Items.IRON_BARS,64,null);
-      MagicItemIngredient i = new MagicItemIngredient(Items.IRON_INGOT,64,null);
-      MagicItemIngredient c = new MagicItemIngredient(Items.COMPASS,64,null);
-      MagicItemIngredient l = new MagicItemIngredient(Items.IRON_BLOCK,64,null);
-      MagicItemIngredient a = new MagicItemIngredient(Items.ANVIL,64,null);
- 
-      MagicItemIngredient[][] ingredients = {
-            {r,b,i,b,r},
-            {b,c,l,c,b},
-            {i,l,a,l,i},
-            {b,c,l,c,b},
-            {r,b,i,b,r}};
-      return new MagicItemRecipe(ingredients);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.LIGHTNING_ROD,16);
+      ArcanaIngredient b = new ArcanaIngredient(Items.IRON_INGOT,16);
+      ArcanaIngredient c = new ArcanaIngredient(Items.IRON_BARS,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BLOCK,8);
+      ArcanaIngredient m = new ArcanaIngredient(Items.HEAVY_CORE,1, true);
+      
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,c,h,c,b},
+            {c,h,m,h,c},
+            {b,c,h,c,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"  Charm of Magnetism\\n\\nRarity: Empowered\\n\\nMagnets, how do they work? Well, they pull stuff sometimes... \\nI think I can make one by condensing all the iron I can find and striking it with lightning to charge it, which will leave me with a permanent magnet.\"}");
-      list.add("{\"text\":\"  Charm of Magnetism\\n\\nThe Charm can be toggled to passively pull in items around you.\\n\\nRight Clicking the charm pulls items from the direction you are looking towards you.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("  Charm of Magnetism\n\nRarity: Empowered\n\nMagnets, how do they work? Well, they pull stuff sometimes... \nI think I can make one by condensing all the iron I can find and striking it with lightning to charge it, which will leave me with a permanent magnet.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Charm of Magnetism\n\nThe Charm can be toggled to passively pull in items around you.\n\nRight Clicking the charm pulls items from the direction you are looking towards you.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class MagnetismCharmItem extends MagicPolymerItem {
-      public MagnetismCharmItem(Settings settings){
+   public class MagnetismCharmItem extends ArcanaPolymerItem {
+      public MagnetismCharmItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!MagicItemUtils.isMagic(itemStack)) return ArcanaRegistry.MODELS.get(OFF_TXT).value();
-         int mode = itemStack.getNbt().getCompound("arcananovum").getInt("mode");
+         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(OFF_TXT).value();
+         int mode = getIntProperty(itemStack,MODE_TAG);
          boolean neo = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.NEODYMIUM.id) >= 1;
-         if(mode == 1) return neo ? ArcanaRegistry.MODELS.get(NEO_ON_TXT).value() : ArcanaRegistry.MODELS.get(ON_TXT).value();
-         if(mode == 2) return neo ? ArcanaRegistry.MODELS.get(NEO_REVERSE_TXT).value() : ArcanaRegistry.MODELS.get(REVERSE_TXT).value();
-         return neo ? ArcanaRegistry.MODELS.get(NEO_OFF_TXT).value() : ArcanaRegistry.MODELS.get(OFF_TXT).value();
+         if(mode == 1) return neo ? ArcanaRegistry.getModelData(NEO_ON_TXT).value() : ArcanaRegistry.getModelData(ON_TXT).value();
+         if(mode == 2) return neo ? ArcanaRegistry.getModelData(NEO_REVERSE_TXT).value() : ArcanaRegistry.getModelData(REVERSE_TXT).value();
+         return neo ? ArcanaRegistry.getModelData(NEO_OFF_TXT).value() : ArcanaRegistry.getModelData(OFF_TXT).value();
       }
       
       @Override
@@ -376,14 +386,13 @@ public class MagnetismCharm extends MagicItem {
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          int passiveRange = 5 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERRITE_CORE.id));
-         NbtCompound magicTag = stack.getNbt().getCompound("arcananovum");
-         int cooldown = magicTag.getInt("cooldown");
+         int cooldown = getIntProperty(stack,COOLDOWN_TAG);
          
          if(!player.isSneaking()){
-            int mode = stack.getNbt().getCompound("arcananovum").getInt("mode");
+            int mode = getIntProperty(stack,MODE_TAG);
             
             if(mode > 0 && world.getServer().getTicks() % 6 == 0){
                Vec3d playerPos = player.getEyePos();
@@ -407,7 +416,7 @@ public class MagnetismCharm extends MagicItem {
          }
          
          if(world.getServer().getTicks() % 20 == 0){
-            if(cooldown > 0) magicTag.putInt("cooldown", cooldown - 1);
+            if(cooldown > 0) putProperty(stack,COOLDOWN_TAG,cooldown-1);
          }
       }
       
@@ -419,9 +428,7 @@ public class MagnetismCharm extends MagicItem {
          ItemStack offHand = playerEntity.getStackInHand(Hand.OFF_HAND);
          
          if(canFilter && hand == Hand.OFF_HAND && playerEntity.isSneaking()){
-            NbtCompound itemNbt = stack.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            magicNbt.put("filter",new NbtCompound());
+            putProperty(stack,FILTER_TAG,new NbtCompound());
             player.sendMessage(Text.literal("Filter Cleared").formatted(Formatting.GRAY,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ANVIL_LAND, 0.5f,1f);
          }else if(canFilter && hand == Hand.MAIN_HAND && !offHand.isEmpty() && playerEntity.isSneaking()){
@@ -435,3 +442,4 @@ public class MagnetismCharm extends MagicItem {
       }
    }
 }
+

@@ -1,32 +1,33 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
-import net.borisshoes.arcananovum.effects.DamageAmpEffect;
-import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.QuiverItem;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.entity.projectile.SpectralArrowEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Unit;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -43,29 +44,51 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
       this.range = 2;
    }
    
-   public ArbalestArrowEntity(World world, LivingEntity owner, int ampLvl, int rangeLvl, ItemStack stack) {
+   public ArbalestArrowEntity(World world, LivingEntity owner, int ampLvl, int rangeLvl, ItemStack arrowStack, @Nullable ItemStack weaponStack) {
       this(ArcanaRegistry.ARBALEST_ARROW_ENTITY, world);
       this.setOwner(owner);
       this.setPosition(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
       this.lvl = ampLvl > 3 ? ampLvl : lvlLookup[ampLvl];
       this.range = 2 + rangeLvl;
-      this.stack = stack.copy();
-      if(this.stack.hasNbt()){
-         this.stack.removeSubNbt("QuiverId");
-         this.stack.removeSubNbt("QuiverSlot");
-      }
-      if (this.stack.hasCustomName()) {
-         this.setCustomName(this.stack.getName());
-      }
+      initFromStack(arrowStack, weaponStack);
       
       if(owner instanceof ServerPlayerEntity player){
          PLAYER_DATA.get(player).addXP(25); // Add xp
       }
    }
    
+   public void initFromStack(ItemStack arrowStack, ItemStack weaponStack){
+      setStack(arrowStack);
+      
+      Unit unit = stack.remove(DataComponentTypes.INTANGIBLE_PROJECTILE);
+      if (unit != null) {
+         this.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
+      }
+      
+      ArcanaItem.removeProperty(this.stack, QuiverItem.QUIVER_ID_TAG);
+      ArcanaItem.removeProperty(this.stack, QuiverItem.QUIVER_SLOT_TAG);
+      
+      if(this.stack.contains(DataComponentTypes.CUSTOM_NAME)){
+         this.setCustomName(this.stack.getName());
+      }
+      
+      if(weaponStack != null){
+         this.weapon = weaponStack.copy();
+         
+         if(getWorld() instanceof ServerWorld serverWorld){
+            int i = EnchantmentHelper.getProjectilePiercing(serverWorld, weapon, this.stack);
+            if (i > 0) {
+               this.setPierceLevel((byte)i);
+            }
+            
+            EnchantmentHelper.onProjectileSpawned(serverWorld, weapon, this, item -> this.weapon = null);
+         }
+      }
+   }
+   
    @Override
    public EntityType<?> getPolymerEntityType(ServerPlayerEntity player){
-      return PotionUtil.getPotionEffects(asItemStack()).isEmpty() ? EntityType.SPECTRAL_ARROW : EntityType.ARROW;
+      return this.stack.contains(DataComponentTypes.POTION_CONTENTS) ? EntityType.SPECTRAL_ARROW : EntityType.ARROW;
    }
    
    @Override
@@ -100,13 +123,14 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    private void deployAura(ServerWorld serverWorld, Vec3d pos){
-      List<StatusEffectInstance> effects = PotionUtil.getPotionEffects(asItemStack());
+      List<StatusEffectInstance> effects = new ArrayList<>();
+      this.stack.getOrDefault(DataComponentTypes.POTION_CONTENTS,PotionContentsComponent.DEFAULT).getEffects().forEach(effects::add);
       if(effects.isEmpty()){
          effects.add(new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT,100,lvl,false,false,false));
          effects.add(new StatusEffectInstance(StatusEffects.GLOWING,100,0,false,true,true));
       }
       
-      ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getType()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.ofFloored(pos),serverWorld,range,lvl,effects));
+      ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.ofFloored(pos),serverWorld,range,lvl,effects));
    }
    
    @Override

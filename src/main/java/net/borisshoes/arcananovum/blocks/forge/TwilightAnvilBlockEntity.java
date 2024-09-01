@@ -1,30 +1,38 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import eu.pb4.sgui.api.gui.SimpleGui;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.*;
-import net.borisshoes.arcananovum.gui.WatchedGui;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.RenameGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
-import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +40,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObject, MagicBlockEntity {
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
+
+public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -40,6 +50,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
+   private boolean seenForge;
    
    public TwilightAnvilBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY, pos, state);
@@ -67,11 +78,16 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       
       if(serverWorld.getServer().getTicks() % 10 == 0){
          this.assembled = multiblock.matches(getMultiblockCheck());
+         this.seenForge = StarlightForge.findActiveForge(serverWorld,pos) != null;
+      }
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0 && this.assembled && this.seenForge){
+         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
       }
    }
    
    public void openGui(int screen, ServerPlayerEntity player, String data){  // 0 - Menu (hopper), 1 - Anvil (9x3), 2 - Augmenting (9x4), 3 - Rename (anvil), 4 - Item View (9x6)
-      WatchedGui gui = null;
+      SimpleGui gui = null;
       if(screen == 0){
          gui = new TwilightAnvilGui(ScreenHandlerType.HOPPER,player,this,screen);
          ((TwilightAnvilGui)gui).buildMenuGui();
@@ -86,149 +102,131 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
          ((RenameGui)gui).build();
       }else if(screen == 4){
          gui = new TwilightAnvilGui(ScreenHandlerType.GENERIC_9X6,player,this,screen);
-         ArcaneTome.buildItemGui(((TwilightAnvilGui)gui),player,data);
+         TomeGui.buildItemGui(((TwilightAnvilGui)gui),player,data);
       }
       if(gui != null){
-         if(!gui.tryOpen(player)){
-            player.sendMessage(Text.literal("Someone else is using the Anvil").formatted(Formatting.RED),true);
-         }
+         gui.open();
       }
    }
    
-   public AnvilOutputSet calculateOutput(ItemStack input1, ItemStack input2){
+   public AnvilOutputSet calculateOutput(ItemStack input1, ItemStack input2) {
       ItemStack output = input1.copy();
-      int levelCost;
       int repairItemUsage = 0;
       int runningLevelCost = 0;
-      int existingRepairCost = 0;
-      if (input1.isEmpty()) {
+      int repairedDamage;
+      long combinedRepairCost = 0L;
+      if (input1.isEmpty() || !EnchantmentHelper.canHaveEnchantments(input1)) {
          return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
       }
-      Map<Enchantment, Integer> map = EnchantmentHelper.get(output);
-      existingRepairCost += input1.getRepairCost() + (input2.isEmpty() ? 0 : input2.getRepairCost());
+      ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(EnchantmentHelper.getEnchantments(output));
+      combinedRepairCost += (long) input1.getOrDefault(DataComponentTypes.REPAIR_COST, 0) + (long) input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
       if (!input2.isEmpty()) {
-         boolean slot2IsBook = input2.isOf(Items.ENCHANTED_BOOK) && !EnchantedBookItem.getEnchantmentNbt(input2).isEmpty();
+         boolean input2Enchanted = input2.contains(DataComponentTypes.STORED_ENCHANTMENTS);
          if (output.isDamageable() && output.getItem().canRepair(input1, input2)) {
             int repairCount;
-            int nextRepairAmt = Math.min(output.getDamage(), output.getMaxDamage() / 4);
-            if (nextRepairAmt <= 0) {
+            repairedDamage = Math.min(output.getDamage(), output.getMaxDamage() / 4);
+            if (repairedDamage <= 0) {
                return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
             }
-            for (repairCount = 0; nextRepairAmt > 0 && repairCount < input2.getCount(); ++repairCount) {
-               int n = output.getDamage() - nextRepairAmt;
-               output.setDamage(n);
+            for (repairCount = 0; repairedDamage > 0 && repairCount < input2.getCount(); ++repairCount) {
+               int newDamage = output.getDamage() - repairedDamage;
+               output.setDamage(newDamage);
                ++runningLevelCost;
-               nextRepairAmt = Math.min(output.getDamage(), output.getMaxDamage() / 4);
+               repairedDamage = Math.min(output.getDamage(), output.getMaxDamage() / 4);
             }
             repairItemUsage = repairCount;
          } else {
-            if (!(slot2IsBook || output.isOf(input2.getItem()) && output.isDamageable())) {
+            if (!(input2Enchanted || output.isOf(input2.getItem()) && output.isDamageable())) {
                return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
             }
-            if (output.isDamageable() && !slot2IsBook) {
-               int missingDmg1 = input1.getMaxDamage() - input1.getDamage();
-               int missingDmg2 = input2.getMaxDamage() - input2.getDamage();
-               int boostDmg = missingDmg2 + output.getMaxDamage() * 12 / 100;
-               int combinedDmg = missingDmg1 + boostDmg;
-               int remainingDmg = output.getMaxDamage() - combinedDmg;
-               if (remainingDmg < 0) {
-                  remainingDmg = 0;
+            if (output.isDamageable() && !input2Enchanted) {
+               int input1Durability = input1.getMaxDamage() - input1.getDamage();
+               int input2Durability = input2.getMaxDamage() - input2.getDamage();
+               int bonusDurability = input2Durability + output.getMaxDamage() * 12 / 100;
+               int otherRepairedDamage = input1Durability + bonusDurability;
+               int newDamage = output.getMaxDamage() - otherRepairedDamage;
+               if (newDamage < 0) {
+                  newDamage = 0;
                }
-               if (remainingDmg < output.getDamage()) {
-                  output.setDamage(remainingDmg);
+               if (newDamage < output.getDamage()) {
+                  output.setDamage(newDamage);
                   runningLevelCost += 2;
                }
             }
-            Map<Enchantment, Integer> map2 = EnchantmentHelper.get(input2);
+            ItemEnchantmentsComponent itemEnchantmentsComponent = EnchantmentHelper.getEnchantments(input2);
             boolean hasCompatibleEnchant = false;
             boolean hasIncompatibleEnchant = false;
-            boolean enhancingStats = false;
-            for (Enchantment enchantment : map2.keySet()) {
-               int combinedLvl;
-               if (enchantment == null) continue;
-               int enchantLvl = map.getOrDefault(enchantment, 0);
-               combinedLvl = enchantLvl == (combinedLvl = map2.get(enchantment).intValue()) ? combinedLvl + 1 : Math.max(combinedLvl, enchantLvl);
-               boolean canCombineEnchants = enchantment.isAcceptableItem(input1);
+            for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : itemEnchantmentsComponent.getEnchantmentEntries()) {
+               int newLevel;
+               RegistryEntry<Enchantment> enchantmentEntry = entry.getKey();
+               Enchantment enchantment = (Enchantment)enchantmentEntry.value();
+               int level = builder.getLevel(enchantmentEntry);
+               newLevel = level == (newLevel = entry.getIntValue()) ? newLevel + 1 : Math.max(newLevel, level);
+               boolean canCombine = enchantment.isAcceptableItem(input1);
                if (input1.isOf(Items.ENCHANTED_BOOK)) {
-                  canCombineEnchants = true;
+                  canCombine = true;
                }
-               for (Enchantment enchantment2 : map.keySet()) {
-                  if (enchantment2 == enchantment || enchantment.canCombine(enchantment2)) continue;
-                  canCombineEnchants = false;
+               for (RegistryEntry<Enchantment> enchantmentEntry2 : builder.getEnchantments()) {
+                  if (enchantmentEntry2.equals(enchantmentEntry) || Enchantment.canBeCombined(enchantmentEntry,enchantmentEntry2)) continue;
+                  canCombine = false;
                   ++runningLevelCost;
                }
-               if (!canCombineEnchants) {
+               if (!canCombine) {
                   hasIncompatibleEnchant = true;
                   continue;
                }
                hasCompatibleEnchant = true;
-               if (combinedLvl > enchantment.getMaxLevel()) {
-                  combinedLvl = enchantment.getMaxLevel();
+               if (newLevel > enchantment.getMaxLevel()) {
+                  newLevel = enchantment.getMaxLevel();
                }
-               map.put(enchantment, combinedLvl);
-               int rarityCost = 0;
-               switch (enchantment.getRarity()) {
-                  case COMMON: {
-                     rarityCost = 1;
-                     break;
-                  }
-                  case UNCOMMON: {
-                     rarityCost = 2;
-                     break;
-                  }
-                  case RARE: {
-                     rarityCost = 4;
-                     break;
-                  }
-                  case VERY_RARE: {
-                     rarityCost = 8;
-                  }
+               builder.set(enchantmentEntry, newLevel);
+               int enchantCost = enchantment.getAnvilCost();
+               if (input2Enchanted) {
+                  enchantCost = Math.max(1, enchantCost / 2);
                }
-               if (slot2IsBook) {
-                  rarityCost = Math.max(1, rarityCost / 2);
-               }
-               runningLevelCost += rarityCost * combinedLvl;
+               runningLevelCost += enchantCost * newLevel;
                if (input1.getCount() <= 1) continue;
                runningLevelCost = 40;
             }
+            boolean enhancingStats = false;
+            
             if(input1.isOf(input2.getItem())){ // Enhanced Stats combining
                boolean enhanced1 = EnhancedStatUtils.isEnhanced(input1);
                boolean enhanced2 = EnhancedStatUtils.isEnhanced(input2);
                enhancingStats = enhanced2;
                if(enhanced1 && enhanced2){ // Perform combination calculation
-                  double stat1 = input1.getNbt().getDouble("ArcanaStats");
-                  double stat2 = input2.getNbt().getDouble("ArcanaStats");
+                  double stat1 = ArcanaItem.getDoubleProperty(input1,EnhancedStatUtils.ENHANCED_STAT_TAG);
+                  double stat2 = ArcanaItem.getDoubleProperty(input2,EnhancedStatUtils.ENHANCED_STAT_TAG);
                   double combined = Math.min(1,EnhancedStatUtils.combineStats(stat1,stat2) + 0.025*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ENHANCED_ENHANCEMENTS.id));
-                  output.removeSubNbt("AttributeModifiers"); // Clear stats from first item
                   EnhancedStatUtils.enhanceItem(output,combined);
                   runningLevelCost += (int) (40*combined);
                }else if(enhanced2){ // Enhance output with stats of 2nd slot
-                  double stat2 = input2.getNbt().getDouble("ArcanaStats");
+                  double stat2 = ArcanaItem.getDoubleProperty(input2,EnhancedStatUtils.ENHANCED_STAT_TAG);
                   EnhancedStatUtils.enhanceItem(output,stat2);
                   runningLevelCost += (int) (20*stat2);
                }
             }
-            if (hasIncompatibleEnchant && !hasCompatibleEnchant && !enhancingStats) { // No compatible enchants, can't combine
+            
+            if (hasIncompatibleEnchant && !hasCompatibleEnchant && !enhancingStats) {
                return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
             }
          }
       }
-      
-      levelCost = (existingRepairCost + runningLevelCost);
+      int levelCost = (int) MathHelper.clamp(combinedRepairCost + (long)runningLevelCost, 0L, Integer.MAX_VALUE);
       if (runningLevelCost <= 0) {
          output = ItemStack.EMPTY;
       }
       if (!output.isEmpty()) {
-         int newRepairCost = output.getRepairCost();
-         if (!input2.isEmpty() && newRepairCost < input2.getRepairCost()) {
-            newRepairCost = input2.getRepairCost();
+         repairedDamage = output.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
+         if (repairedDamage < input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0)) {
+            repairedDamage = input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
          }
-         newRepairCost = AnvilScreenHandler.getNextCost(newRepairCost);
-         output.setRepairCost(newRepairCost);
-         EnchantmentHelper.set(map, output);
+         repairedDamage = AnvilScreenHandler.getNextCost(repairedDamage);
+         output.set(DataComponentTypes.REPAIR_COST, repairedDamage);
+         EnchantmentHelper.set(output, builder.build());
       }
       return new AnvilOutputSet(input1,input2,output,levelCost,repairItemUsage);
-   } 
+   }
    
    public boolean isAssembled(){
       return assembled;
@@ -261,13 +259,13 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       return customName;
    }
    
-   public MagicItem getMagicItem(){
+   public ArcanaItem getArcanaItem(){
       return ArcanaRegistry.TWILIGHT_ANVIL;
    }
    
    @Override
-   public void readNbt(NbtCompound nbt) {
-      super.readNbt(nbt);
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.readNbt(nbt, registryLookup);
       if (nbt.contains("arcanaUuid")) {
          this.uuid = nbt.getString("arcanaUuid");
       }
@@ -291,8 +289,8 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt) {
-      super.writeNbt(nbt);
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+      super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){

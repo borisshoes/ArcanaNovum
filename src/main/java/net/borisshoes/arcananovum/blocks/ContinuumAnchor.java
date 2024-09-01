@@ -2,36 +2,32 @@ package net.borisshoes.arcananovum.blocks;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.core.MagicBlock;
-import net.borisshoes.arcananovum.core.MagicBlockEntity;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockEntity;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerBlockItem;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.MagicRarity;
+import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.MapColor;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
@@ -41,64 +37,87 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.*;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.ANCHOR_CHUNKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
-public class ContinuumAnchor extends MagicBlock {
+public class ContinuumAnchor extends ArcanaBlock {
+   public static final String ID = "continuum_anchor";
+   
    public static final ChunkTicketType<ChunkPos> TICKET_TYPE = ChunkTicketType.create("ArcanaNovum_Anchor", Comparator.comparingLong(ChunkPos::toLong));
    
    public ContinuumAnchor(){
-      id = "continuum_anchor";
+      id = ID;
       name = "Continuum Anchor";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.BLOCKS};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.BLOCKS};
       itemVersion = 1;
       vanillaItem = Items.RESPAWN_ANCHOR;
-      block = new ContinuumAnchorBlock(FabricBlockSettings.create().mapColor(MapColor.BLACK).requiresTool().strength(50.0f, 1200.0f).luminance(state -> ContinuumAnchorBlock.getLightLevel(state, 15)));
-      item = new ContinuumAnchorItem(block,new FabricItemSettings().maxCount(1).fireproof());
+      block = new ContinuumAnchorBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).requiresTool().strength(50.0f, 1200.0f).luminance(state -> ContinuumAnchorBlock.getLightLevel(state, 15)));
+      item = new ContinuumAnchorItem(block,new Item.Settings().maxCount(1).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Continuum Anchor").formatted(Formatting.BOLD,Formatting.DARK_BLUE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      );
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Continuum Anchor\",\"italic\":false,\"bold\":true,\"color\":\"dark_blue\"}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"anchor\",\"color\":\"dark_blue\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"has the extraordinary ability to manipulate \"},{\"text\":\"spacetime\",\"color\":\"dark_purple\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It just needs the \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"right type\",\"color\":\"gray\"},{\"text\":\" of\"},{\"text\":\" \",\"color\":\"dark_purple\"},{\"text\":\"fuel\",\"color\":\"gold\"},{\"text\":\"...\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"continuum anchor\",\"color\":\"dark_blue\"},{\"text\":\" consumes \"},{\"text\":\"exotic matter\",\"color\":\"blue\"},{\"text\":\" to \"},{\"text\":\"chunk load\",\"color\":\"aqua\"},{\"text\":\" a \"},{\"text\":\"5x5 area\",\"color\":\"dark_green\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"area \",\"color\":\"dark_green\"},{\"text\":\"also receives \"},{\"text\":\"random ticks\",\"color\":\"blue\"},{\"text\":\" and keeps \"},{\"text\":\"mobs \",\"color\":\"gray\"},{\"text\":\"loaded\",\"color\":\"aqua\"},{\"text\":\".\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("anchor").formatted(Formatting.DARK_BLUE))
+            .append(Text.literal("has the extraordinary ability to manipulate ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("spacetime").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("It just needs the ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("right type").formatted(Formatting.GRAY))
+            .append(Text.literal(" of ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("fuel").formatted(Formatting.GOLD))
+            .append(Text.literal("...").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("continuum anchor").formatted(Formatting.DARK_BLUE))
+            .append(Text.literal(" consumes ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("exotic matter").formatted(Formatting.BLUE))
+            .append(Text.literal(" to ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("chunk load").formatted(Formatting.AQUA))
+            .append(Text.literal(" a ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("5x5 area").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("area ").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal("also receives ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("random ticks").formatted(Formatting.BLUE))
+            .append(Text.literal(" and keeps ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("mobs ").formatted(Formatting.GRAY))
+            .append(Text.literal("loaded").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    public static void addChunk(ServerWorld world, ChunkPos chunk){
@@ -147,32 +166,34 @@ public class ContinuumAnchor extends MagicBlock {
       }
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Continuum Anchor\\n\\nRarity: Legendary\\n\\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing sturdy casings that can withstand the flow of Arcana, I have made additional efforts to \"}");
-      list.add("{\"text\":\"   Continuum Anchor\\n\\nreinforce this chassis against dimensional shear.\\nBy combining all known techniques of manipulating dimensional energy I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.\"}");
-      list.add("{\"text\":\"   Continuum Anchor\\n\\nWhen fed with Exotic Matter the Anchor chunk loads a 5x5 chunk area with Mob Spawning & Random Ticks. The Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. It can be refueled in use.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Continuum Anchor\n\nRarity: Sovereign\n\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing sturdy casings that can withstand the flow of Arcana, I have made additional efforts to ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Continuum Anchor\n\nreinforce this chassis against dimensional shear.\nBy combining all known techniques of manipulating dimensional energy I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Continuum Anchor\n\nWhen fed with Exotic Matter the Anchor chunk loads a 5x5 chunk area with Mob Spawning & Random Ticks. The Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. It can be refueled in use.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient s = new MagicItemIngredient(Items.NETHER_STAR,16,null);
-      MagicItemIngredient p = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
-      MagicItemIngredient o = new MagicItemIngredient(Items.OBSIDIAN,64,null);
-      MagicItemIngredient a = new MagicItemIngredient(Items.RESPAWN_ANCHOR,32,null);
-      MagicItemIngredient e = new MagicItemIngredient(Items.ENDER_EYE,64,null);
-      MagicItemIngredient n = new MagicItemIngredient(Items.NETHERITE_INGOT,4,null);
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = new ArcanaIngredient(Items.NETHERITE_INGOT,2);
+      ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
+      ArcanaIngredient c = new ArcanaIngredient(Items.RESPAWN_ANCHOR,16);
+      ArcanaIngredient g = new ArcanaIngredient(Items.NETHER_STAR,2);
+      ArcanaIngredient h = new ArcanaIngredient(Items.ENDER_EYE,16);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
       
-      MagicItemIngredient[][] ingredients = {
-            {o,p,n,p,o},
-            {p,e,a,e,p},
-            {n,a,s,a,n},
-            {p,e,a,e,p},
-            {o,p,n,p,o}};
-      return new MagicItemRecipe(ingredients);
+      ArcanaIngredient[][] ingredients = {
+            {a,b,c,b,a},
+            {b,g,h,g,b},
+            {c,h,m,h,c},
+            {b,g,h,g,b},
+            {a,b,c,b,a}};
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withAnvil().withCore());
    }
    
-   public class ContinuumAnchorItem extends MagicPolymerBlockItem {
+   public class ContinuumAnchorItem extends ArcanaPolymerBlockItem {
       public ContinuumAnchorItem(Block block, Settings settings){
          super(getThis(), block, settings);
       }
@@ -183,22 +204,17 @@ public class ContinuumAnchor extends MagicBlock {
       }
    }
    
-   public class ContinuumAnchorBlock extends MagicPolymerBlockEntity {
+   public class ContinuumAnchorBlock extends ArcanaPolymerBlockEntity {
       public static final IntProperty CHARGES = Properties.CHARGES;
       public static final BooleanProperty ACTIVE = BooleanProperty.of("active");
       
-      public ContinuumAnchorBlock(Settings settings){
+      public ContinuumAnchorBlock(AbstractBlock.Settings settings){
          super(settings);
       }
       
       @Override
-      public Block getPolymerBlock(BlockState state) {
-         return Blocks.RESPAWN_ANCHOR;
-      }
-      
-      @Override
       public BlockState getPolymerBlockState(BlockState state){
-         return super.getPolymerBlockState(state).with(CHARGES,state.get(CHARGES));
+         return Blocks.RESPAWN_ANCHOR.getDefaultState().with(CHARGES,state.get(CHARGES));
       }
       
       @Nullable
@@ -233,10 +249,16 @@ public class ContinuumAnchor extends MagicBlock {
       }
       
       @Override
-      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
-         ItemStack stack = player.getStackInHand(hand);
+      protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
          ContinuumAnchorBlockEntity anchor = (ContinuumAnchorBlockEntity) world.getBlockEntity(pos);
-         if(anchor != null && anchor.interact(player, stack)) return ActionResult.SUCCESS;
+         if(anchor != null && anchor.interact(player, stack)) return ItemActionResult.success(true);
+         return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      }
+      
+      @Override
+      public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit){
+         ContinuumAnchorBlockEntity anchor = (ContinuumAnchorBlockEntity) world.getBlockEntity(pos);
+         if(anchor != null && anchor.interact(player, ItemStack.EMPTY)) return ActionResult.SUCCESS;
          return ActionResult.PASS;
       }
       
@@ -248,12 +270,6 @@ public class ContinuumAnchor extends MagicBlock {
          }
          BlockEntity blockEntity = world.getBlockEntity(pos);
          if (blockEntity instanceof ContinuumAnchorBlockEntity anchor && world instanceof ServerWorld serverWorld) {
-            DefaultedList<ItemStack> drops = DefaultedList.of();
-            int fuel = anchor.getFuel();
-            if(fuel > 0){
-               drops.add(anchor.getFuelStack());
-            }
-            
             ChunkPos chunkPos = new ChunkPos(pos);
             for(int i = -ContinuumAnchorBlockEntity.RANGE; i <= ContinuumAnchorBlockEntity.RANGE; i++){
                for(int j = -ContinuumAnchorBlockEntity.RANGE; j <= ContinuumAnchorBlockEntity.RANGE; j++){
@@ -262,13 +278,8 @@ public class ContinuumAnchor extends MagicBlock {
             }
             
             ArcanaNovum.removeActiveAnchor(serverWorld, pos);
-            
-            
-            drops.add(getDroppedBlockItem(state,world,null,blockEntity));
-            ItemScatterer.spawn(world, pos, drops);
-            
-            world.updateComparators(pos, state.getBlock());
          }
+         ItemScatterer.onStateReplaced(state, newState, world, pos);
          super.onStateReplaced(state, world, pos, newState, moved);
       }
       
@@ -276,7 +287,7 @@ public class ContinuumAnchor extends MagicBlock {
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
          BlockEntity entity = world.getBlockEntity(pos);
          if (placer instanceof ServerPlayerEntity player && entity instanceof ContinuumAnchorBlockEntity anchor) {
-            initializeMagicBlock(stack,anchor);
+            initializeArcanaBlock(stack,anchor);
             
             player.sendMessage(Text.literal("Placing the Continuum Anchor sends a ripple across spacetime.").formatted(Formatting.DARK_BLUE),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, 5,.8f);
@@ -284,7 +295,7 @@ public class ContinuumAnchor extends MagicBlock {
       }
       
       @Override
-      public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
+      protected boolean canPathfindThrough(BlockState state, NavigationType type){
          return false;
       }
       
@@ -293,3 +304,4 @@ public class ContinuumAnchor extends MagicBlock {
       }
    }
 }
+

@@ -6,9 +6,9 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
-import net.borisshoes.arcananovum.gui.WatchedGui;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.Items;
@@ -22,6 +22,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.Set;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
-public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
+public class StarpathAltarGui  extends SimpleGui {
    private final StarpathAltarBlockEntity blockEntity;
    
    public StarpathAltarGui(ServerPlayerEntity player, StarpathAltarBlockEntity blockEntity){
@@ -90,7 +91,9 @@ public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
                }));
                close();
             }else{
-               player.sendMessage(Text.literal("You do not have enough Eyes to power the Altar").formatted(Formatting.RED,Formatting.ITALIC),false);
+               player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
+                     .append(Text.translatable(Items.ENDER_EYE.getTranslationKey()).formatted(Formatting.DARK_AQUA,Formatting.ITALIC))
+                     .append(Text.literal(" to power the Altar").formatted(Formatting.RED,Formatting.ITALIC)),false);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
                close();
             }
@@ -105,41 +108,47 @@ public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
    
    @Override
    public void onTick(){
+      World world = blockEntity.getWorld();
+      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled() || blockEntity.isActive()){
+         this.close();
+      }
+      
       build();
    }
    
    public void build(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,new GuiElementBuilder(Items.BLACK_STAINED_GLASS_PANE).setName(Text.literal("Starpath Altar").formatted(Formatting.DARK_PURPLE)));
+         
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,0x1a0136)).setName(Text.literal("Starpath Altar").formatted(Formatting.DARK_PURPLE)));
       }
       
-      GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideFlags();
+      GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();
       if(blockEntity.getCooldown() <= 0){
          cooldownItem.setName((Text.literal("")
                .append(Text.literal("Altar Ready").formatted(Formatting.AQUA))));
       }else{
          cooldownItem.setName((Text.literal("")
                .append(Text.literal("Altar Recharging").formatted(Formatting.DARK_AQUA))));
-         cooldownItem.addLoreLine((Text.literal("")
-               .append(Text.literal((blockEntity.getCooldown()/20)+" Seconds").formatted(Formatting.GRAY))));
+         cooldownItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal((blockEntity.getCooldown()/20)+" Seconds").formatted(Formatting.GRAY)))));
       }
       setSlot(0,cooldownItem);
       
       BlockPos target = blockEntity.getTargetCoords();
-      GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideFlags();
+      GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
       locationItem.setName((Text.literal("")
             .append(Text.literal("Target Location").formatted(Formatting.GOLD))));
-      locationItem.addLoreLine((Text.literal("")
-            .append(Text.literal("X: "+target.getX()).formatted(Formatting.YELLOW))));
-      locationItem.addLoreLine((Text.literal("")
-            .append(Text.literal("Y: "+target.getY()).formatted(Formatting.YELLOW))));
-      locationItem.addLoreLine((Text.literal("")
-            .append(Text.literal("Z: "+target.getZ()).formatted(Formatting.YELLOW))));
-      locationItem.addLoreLine((Text.literal("")
-            .append(Text.literal("").formatted(Formatting.YELLOW))));
-      locationItem.addLoreLine((Text.literal("")
-            .append(Text.literal("Click to Change Target").formatted(Formatting.YELLOW))));
+      locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("X: "+target.getX()).formatted(Formatting.YELLOW)))));
+      locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Y: "+target.getY()).formatted(Formatting.YELLOW)))));
+      locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Z: "+target.getZ()).formatted(Formatting.YELLOW)))));
+      locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("").formatted(Formatting.YELLOW)))));
+      locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Click to Change Target").formatted(Formatting.YELLOW)))));
       setSlot(2,locationItem);
       
       int cost = blockEntity.calculateCost();
@@ -148,17 +157,17 @@ public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
       GuiElementBuilder activateItem = new GuiElementBuilder(Items.ENDER_EYE);
       activateItem.setName((Text.literal("")
             .append(Text.literal("Activate Altar").formatted(Formatting.LIGHT_PURPLE))));
-      activateItem.addLoreLine((Text.literal("")
-            .append(Text.literal("Click to travel the Star's Path").formatted(Formatting.DARK_PURPLE))));
-      activateItem.addLoreLine((Text.literal("")
-            .append(Text.literal("").formatted(Formatting.DARK_PURPLE))));
-      activateItem.addLoreLine((Text.literal("")
-            .append(Text.literal("This Journey Costs: ").formatted(Formatting.AQUA))));
-      activateItem.addLoreLine((Text.literal("")
-            .append(Text.literal(cost+" Eye"+(cost != 1 ? "s" : "")+" of Ender").formatted(Formatting.DARK_AQUA))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Click to travel the Star's Path").formatted(Formatting.DARK_PURPLE)))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("").formatted(Formatting.DARK_PURPLE)))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("This Journey Costs: ").formatted(Formatting.AQUA)))));
+      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal(cost+" Eye"+(cost != 1 ? "s" : "")+" of Ender").formatted(Formatting.DARK_AQUA)))));
       if(cost > 64){
-         activateItem.addLoreLine((Text.literal("")
-               .append(Text.literal(stacks+" Stacks + "+leftover).formatted(Formatting.DARK_AQUA))));
+         activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal(stacks+" Stacks + "+leftover).formatted(Formatting.DARK_AQUA)))));
       }
       setSlot(4,activateItem);
    }
@@ -167,15 +176,5 @@ public class StarpathAltarGui  extends SimpleGui implements WatchedGui {
    @Override
    public void close(){
       super.close();
-   }
-   
-   @Override
-   public BlockEntity getBlockEntity(){
-      return blockEntity;
-   }
-   
-   @Override
-   public SimpleGui getGui(){
-      return this;
    }
 }

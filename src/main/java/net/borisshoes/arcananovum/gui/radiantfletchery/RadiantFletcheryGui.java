@@ -3,18 +3,20 @@ package net.borisshoes.arcananovum.gui.radiantfletchery;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.forge.RadiantFletcheryBlockEntity;
-import net.borisshoes.arcananovum.gui.WatchedGui;
-import net.minecraft.block.entity.BlockEntity;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.world.World;
 
-public class RadiantFletcheryGui extends SimpleGui implements WatchedGui {
+public class RadiantFletcheryGui extends SimpleGui {
    private final RadiantFletcheryBlockEntity blockEntity;
-   private RadiantFletcheryInventory inv;
-   private RadiantFletcheryInventoryListener listener;
    
    public RadiantFletcheryGui(ServerPlayerEntity player, RadiantFletcheryBlockEntity blockEntity){
       super(ScreenHandlerType.GENERIC_3X3, player, false);
@@ -22,55 +24,47 @@ public class RadiantFletcheryGui extends SimpleGui implements WatchedGui {
       setTitle(Text.literal("Radiant Fletchery"));
    }
    
-   public void buildGui(){
-      GuiElementBuilder itemsPane = new GuiElementBuilder(Items.PURPLE_STAINED_GLASS_PANE).hideFlags().setName(Text.empty());
-      setSlot(1,itemsPane);
-      setSlot(6,itemsPane);
-      setSlot(8,itemsPane);
+   @Override
+   public void onTick(){
+      World world = blockEntity.getWorld();
+      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled()){
+         this.close();
+      }
       
-      GuiElementBuilder arrowsItem = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideFlags();
+      super.onTick();
+   }
+   
+   public void buildGui(){
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(8,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      
+      GuiElementBuilder arrowsItem = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
       arrowsItem.setName((Text.literal("")
             .append(Text.literal("Place Arrows Above").formatted(Formatting.YELLOW))));
       setSlot(3,arrowsItem);
       
-      GuiElementBuilder brewItem = new GuiElementBuilder(Items.BREWING_STAND).hideFlags();
+      GuiElementBuilder brewItem = new GuiElementBuilder(Items.BREWING_STAND).hideDefaultTooltip();
       brewItem.setName((Text.literal("")
             .append(Text.literal("Create Tipped Arrows").formatted(Formatting.LIGHT_PURPLE))));
-      brewItem.addLoreLine((Text.literal("")
-            .append(Text.literal("1 Potion Makes "+blockEntity.getPotionRatio()+" Arrows").formatted(Formatting.DARK_PURPLE))));
+      brewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("1 Potion Makes "+blockEntity.getPotionRatio()+" Arrows").formatted(Formatting.DARK_PURPLE)))));
       setSlot(4,brewItem);
       
-      GuiElementBuilder potionItem = new GuiElementBuilder(Items.POTION).hideFlags();
+      GuiElementBuilder potionItem = new GuiElementBuilder(Items.POTION).hideDefaultTooltip();
       potionItem.setName((Text.literal("")
             .append(Text.literal("Place Potions Above").formatted(Formatting.DARK_AQUA))));
       setSlot(5,potionItem);
       
-      inv = new RadiantFletcheryInventory();
-      listener = new RadiantFletcheryInventoryListener(this,blockEntity);
-      inv.addListener(listener);
+      Inventory inv = blockEntity.getInventory();
       setSlotRedirect(0,new RadiantFletcherySlot(inv,0,0,0,0));
       setSlotRedirect(2,new RadiantFletcherySlot(inv,1,1,0,1));
       setSlotRedirect(7,new RadiantFletcherySlot(inv,2,2,0,2));
-      
-      listener.setUpdating();
-      for(int i = 0; i < 3; i++){
-         inv.setStack(i,blockEntity.getInventory().get(i));
-      }
-      listener.finishUpdate();
    }
    
    @Override
    public void close(){
+      blockEntity.removePlayer(player);
       super.close();
-   }
-   
-   @Override
-   public BlockEntity getBlockEntity(){
-      return blockEntity;
-   }
-   
-   @Override
-   public SimpleGui getGui(){
-      return this;
    }
 }

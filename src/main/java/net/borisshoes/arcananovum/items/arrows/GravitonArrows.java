@@ -1,37 +1,40 @@
 package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MagicRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.potion.Potions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -43,47 +46,56 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class GravitonArrows extends RunicArrow {
+	public static final String ID = "graviton_arrows";
    
    private static final String TXT = "item/runic_arrow";
    
    public GravitonArrows(){
-      id = "graviton_arrows";
+      id = ID;
       name = "Graviton Arrows";
-      rarity = MagicRarity.EXOTIC;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.EXOTIC, ArcaneTome.TomeFilter.ARROWS};
+      rarity = ArcanaRarity.EXOTIC;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new GravitonArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      item = new GravitonArrowsItem(new Item.Settings().maxCount(64).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Graviton").formatted(Formatting.BOLD,Formatting.DARK_BLUE))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(869887),new ArrayList<>()))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_SLOWNESS};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Arrows - Graviton\",\"italic\":false,\"color\":\"dark_blue\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("CustomPotionColor",869887);
-      tag.putInt("HideFlags", 255);
-      stack.setCount(64);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Graviton Arrows:\",\"italic\":false,\"color\":\"dark_blue\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" \"},{\"text\":\"attract\",\"color\":\"dark_aqua\"},{\"text\":\" \"},{\"text\":\"entities\",\"color\":\"aqua\"},{\"text\":\" near the area of \"},{\"text\":\"impact\",\"color\":\"aqua\"},{\"text\":\".\",\"color\":\"blue\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"A hit \",\"italic\":false,\"color\":\"blue\"},{\"text\":\"entity\",\"color\":\"aqua\"},{\"text\":\" is \"},{\"text\":\"not affected\",\"color\":\"dark_aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addRunicArrowLore(lore);
+      lore.add(Text.literal("Graviton Arrows:").formatted(Formatting.BOLD,Formatting.DARK_BLUE));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.BLUE))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" attract").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" entities").formatted(Formatting.AQUA))
+            .append(Text.literal(" near the area of ").formatted(Formatting.BLUE))
+            .append(Text.literal("impact").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.BLUE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("A hit ").formatted(Formatting.BLUE))
+            .append(Text.literal("entity").formatted(Formatting.AQUA))
+            .append(Text.literal(" is ").formatted(Formatting.BLUE))
+            .append(Text.literal("not affected").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(".").formatted(Formatting.BLUE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -119,7 +131,7 @@ public class GravitonArrows extends RunicArrow {
          if(entity1 instanceof ServerPlayerEntity player){
             player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          }
-   
+         
          if(entity1 instanceof LivingEntity e){
             if(e instanceof MobEntity) mobsHit++;
             
@@ -140,37 +152,38 @@ public class GravitonArrows extends RunicArrow {
       }
    }
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      MagicItemIngredient c = new MagicItemIngredient(Items.OBSIDIAN,64,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.COBWEB,64,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      MagicItemIngredient k = new MagicItemIngredient(Items.CRYING_OBSIDIAN,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient c = new ArcanaIngredient(Items.LINGERING_POTION,1).withPotions(Potions.STRONG_SLOWNESS);
+      ArcanaIngredient g = new ArcanaIngredient(Items.COBWEB,16);
+      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,a,c,a,a},
             {a,g,h,g,a},
-            {k,h,m,h,k},
+            {c,h,m,h,c},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Graviton Arrows\\n\\nRarity: Exotic\\n\\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Graviton Arrows\n\nRarity: Exotic\n\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class GravitonArrowsItem extends MagicPolymerArrowItem {
-      public GravitonArrowsItem(Settings settings){
+   public class GravitonArrowsItem extends ArcanaPolymerArrowItem {
+      public GravitonArrowsItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -179,3 +192,4 @@ public class GravitonArrows extends RunicArrow {
       }
    }
 }
+

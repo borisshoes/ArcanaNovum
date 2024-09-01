@@ -12,48 +12,37 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
-import net.borisshoes.arcananovum.callbacks.ServerStartedCallback;
-import net.borisshoes.arcananovum.callbacks.TickCallback;
+import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.cache.CacheGui;
-import net.borisshoes.arcananovum.items.AequalisScientia;
-import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.NulMemento;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtInt;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.registry.Registries;
-import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
@@ -70,8 +59,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.DEBUG_VALUE;
-import static net.borisshoes.arcananovum.ArcanaNovum.devMode;
+import static net.borisshoes.arcananovum.ArcanaNovum.*;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
@@ -81,10 +69,8 @@ public class ArcanaCommands {
    
    public static int openGuideBook(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException{
       ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
-      ItemStack writablebook = new ItemStack(Items.WRITABLE_BOOK);
-      writablebook.setNbt(getGuideBook());
-      BookElementBuilder bookBuilder = BookElementBuilder.from(writablebook);
-      LoreGui loreGui = new LoreGui(player,bookBuilder,null, ArcaneTome.TomeMode.NONE,null);
+      BookElementBuilder bookBuilder = getGuideBook();
+      LoreGui loreGui = new LoreGui(player,bookBuilder,null, TomeGui.TomeMode.NONE,null);
       loreGui.open();
       return 1;
    }
@@ -96,10 +82,10 @@ public class ArcanaCommands {
          for (ServerPlayerEntity player : targets) {
             IArcanaProfileComponent profile = PLAYER_DATA.get(player);
             
-            NbtInt pointsEle = (NbtInt) profile.getMiscData("adminSkillPoints");
+            NbtInt pointsEle = (NbtInt) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
             int oldPoints = pointsEle == null ? 0 : pointsEle.intValue();
             int newPoints = set ? amount : amount + oldPoints;
-            profile.addMiscData("adminSkillPoints", NbtInt.of(newPoints));
+            profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG, NbtInt.of(newPoints));
          }
       
          if(targets.size() == 1 && set){
@@ -114,7 +100,7 @@ public class ArcanaCommands {
       
          return targets.size();
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return 0;
       }
    }
@@ -123,17 +109,17 @@ public class ArcanaCommands {
       try{
          ServerCommandSource source = ctx.getSource();
          IArcanaProfileComponent profile = PLAYER_DATA.get(target);
-         NbtInt pointsEle = (NbtInt) profile.getMiscData("adminSkillPoints");
+         NbtInt pointsEle = (NbtInt) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
          int adminPoints = pointsEle == null ? 0 : pointsEle.intValue();
          MutableText feedback = Text.literal("")
                .append(target.getDisplayName())
                .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(Integer.toString(adminPoints)).formatted(Formatting.AQUA,Formatting.BOLD))
+               .append(Text.literal(Integer.toString(adminPoints)).formatted(Formatting.AQUA,Formatting.BOLD))
                .append(Text.literal(" Bonus Skill Points").formatted(Formatting.LIGHT_PURPLE));
          source.sendFeedback(()->feedback, false);
          return 1;
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return 0;
       }
    }
@@ -174,7 +160,7 @@ public class ArcanaCommands {
          
          return targets.size();
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return 0;
       }
    }
@@ -186,9 +172,9 @@ public class ArcanaCommands {
       Set<String> uuids = new HashSet<>();
       int count = 0;
       
-      List<MagicItemUtils.MagicInvItem> magicInv = MagicItemUtils.getMagicInventory(player);
-      for(MagicItemUtils.MagicInvItem invItem : magicInv){
-         MagicItem magicItem = invItem.item;
+      List<ArcanaItemUtils.ArcanaInvItem> arcanaInv = ArcanaItemUtils.getArcanaInventory(player);
+      for(ArcanaItemUtils.ArcanaInvItem invItem : arcanaInv){
+         ArcanaItem arcanaItem = invItem.item;
          for(Pair<String,ItemStack> pair : invItem.getStacks()){
             String uuid = pair.getLeft();
             ItemStack stack = pair.getRight();
@@ -198,20 +184,20 @@ public class ArcanaCommands {
             
             MutableText feedback = Text.literal("")
                   .append(Text.literal("(").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.translatable(storage).formatted(Formatting.BLUE))
+                  .append(Text.literal(storage).formatted(Formatting.BLUE))
                   .append(Text.literal(") ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal("[").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.translatable(magicItem.getNameString()).formatted(Formatting.AQUA))
+                  .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.AQUA))
                   .append(Text.literal("] ID: ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
+                  .append(Text.literal(uuid).formatted(Formatting.DARK_PURPLE));
             response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
             
-            if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/magicItem.getPrefItem().getCount())){
+            if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/ arcanaItem.getPrefItem().getCount())){
                MutableText duplicateWarning = Text.literal("")
                      .append(Text.literal("Duplicate: ").formatted(Formatting.RED))
-                     .append(Text.translatable(magicItem.getNameString()).formatted(Formatting.AQUA))
+                     .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.AQUA))
                      .append(Text.literal(" ID: ").formatted(Formatting.LIGHT_PURPLE))
-                     .append(Text.translatable(uuid).formatted(Formatting.DARK_PURPLE));
+                     .append(Text.literal(uuid).formatted(Formatting.DARK_PURPLE));
                response2.add(duplicateWarning);
             }
          }
@@ -220,7 +206,7 @@ public class ArcanaCommands {
       MutableText feedback = Text.literal("")
             .append(player.getDisplayName())
             .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.translatable(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+            .append(Text.literal(Integer.toString(count)).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
             .append(Text.literal(" items.").formatted(Formatting.LIGHT_PURPLE));
       source.sendFeedback(()->Text.literal(""),false);
       source.sendFeedback(()->feedback,false);
@@ -241,23 +227,33 @@ public class ArcanaCommands {
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
          ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
+         ArrayList<String> lines = new ArrayList<>();
          if(stack.isOf(Items.WRITTEN_BOOK)){
-            NbtCompound tag = stack.getNbt();
-            NbtList pages = tag.getList("pages", NbtElement.STRING_TYPE);
+            WrittenBookContentComponent comp = stack.getOrDefault(DataComponentTypes.WRITTEN_BOOK_CONTENT,WrittenBookContentComponent.DEFAULT);
+            for(Text page : comp.getPages(false)){
+               lines.add(page.getString());
+            }
+         }else if(stack.isOf(Items.WRITABLE_BOOK)){
+            WritableBookContentComponent comp = stack.getOrDefault(DataComponentTypes.WRITABLE_BOOK_CONTENT,WritableBookContentComponent.DEFAULT);
+            for(RawFilteredPair<String> page : comp.pages()){
+               lines.add(page.get(false));
+            }
+         }
+         
+         if(lines.isEmpty()){
+            player.sendMessage(Text.literal("Hold a written book to get data"),true);
+         }else{
             String path = "C:\\Users\\Boris\\Desktop\\bookdata.txt";
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
-            for(int i = 0; i < pages.size(); i++){
-               String page = pages.getString(i);
-               page = page.replaceAll("\"","\\\\\"").replace("\\n","\\\\n");
-               out.println("list.add(\""+page+"\");");
-               //log("\n"+page);
+            
+            for(String line : lines){
+               out.println("pages.add(Text.literal(\""+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK));");
             }
+            
             out.close();
-         }else{
-            player.sendMessage(Text.literal("Hold a book to get data"),true);
          }
       } catch (Exception e) {
-         e.printStackTrace();
+         log(2,e.toString());
       }
       return 0;
    }
@@ -269,16 +265,16 @@ public class ArcanaCommands {
          MutableText feedback = Text.literal("")
                .append(target.getDisplayName())
                .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+               .append(Text.literal(Integer.toString(profile.getLevel())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                .append(Text.literal(" levels (").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
+               .append(Text.literal(LevelUtils.getCurLevelXp(profile.getXP())+"/"+LevelUtils.nextLevelNewXp(profile.getLevel())).formatted(Formatting.AQUA))
                .append(Text.literal("). ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+               .append(Text.literal(Integer.toString(profile.getXP())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                .append(Text.literal(" Total XP").formatted(Formatting.LIGHT_PURPLE));
          source.sendFeedback(()->feedback, false);
          return 1;
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return 0;
       }
    }
@@ -290,8 +286,6 @@ public class ArcanaCommands {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
          ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
          if(!stack.isEmpty()){
-            NbtCompound tag = stack.getNbt();
-            NbtCompound display = tag.getCompound("display");
             
             StringBuilder itemName = new StringBuilder();
             boolean foundFirstCap = false;
@@ -314,106 +308,9 @@ public class ArcanaCommands {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
             ArrayList<String> lines = new ArrayList<>();
             
-            lines.add("public static final MagicItem "+idName.toUpperCase()+" = ArcanaRegistry.register(new "+name+"());");
             
-            lines.add("public class "+name+" extends MagicItem {");
-            lines.add("");
-            lines.add("private static final String TXT = \"item/"+idName+"\";");
-            lines.add("");
-            lines.add("public "+name+"(){");
+            // TODO New item gen
             
-            lines.add("id = \""+idName+"\";");
-            lines.add("name = \""+fullName+"\";");
-            lines.add("rarity = MagicRarity.;");
-            lines.add("categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.};");
-            lines.add("vanillaItem = Items."+Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase()+";");
-            lines.add("item = new "+name+"Item(new FabricItemSettings().maxCount(1).fireproof());");
-            lines.add("models = new ArrayList<>();");
-            lines.add("models.add(new Pair<>(vanillaItem,TXT));");
-            lines.add("");
-            lines.add("ItemStack stack = new ItemStack(item);");
-            lines.add("NbtCompound tag = stack.getOrCreateNbt();");
-            lines.add("NbtCompound display = new NbtCompound();");
-            lines.add("NbtList enchants = new NbtList();");
-            lines.add("enchants.add(new NbtCompound()); // Gives enchant glow with no enchants");
-            if(display != null){
-               lines.add("display.putString(\"Name\",\""+display.getString("Name").replaceAll("\"","\\\\\"")+"\");");
-            }
-            lines.add("tag.put(\"display\",display);");
-            lines.add("tag.put(\"Enchantments\",enchants);");
-            if(stack.isOf(Items.TIPPED_ARROW)){
-               lines.add("tag.putInt(\"CustomPotionColor\","+tag.getInt("CustomPotionColor")+");");
-               lines.add("tag.putInt(\"HideFlags\",255);");
-               lines.add("stack.setCount(64);");
-            }
-            lines.add("buildItemLore(stack, ArcanaNovum.SERVER);");
-            lines.add("");
-            lines.add("setBookLore(makeLore());");
-            lines.add("//setRecipe(makeRecipe());");
-            lines.add("prefNBT = addMagicNbt(tag);");
-            lines.add("");
-            lines.add("stack.setNbt(prefNBT);");
-            lines.add("prefItem = stack;");
-            lines.add("}");
-            lines.add("");
-            
-            lines.add("@Override");
-            lines.add("public NbtList getItemLore(@Nullable ItemStack itemStack){");
-            lines.add("NbtList loreList = new NbtList();");
-            if(display != null){
-               NbtList lore = display.getList("Lore",NbtElement.STRING_TYPE);
-               for(int i = 0; i < lore.size(); i++){
-                  lines.add("loreList.add(NbtString.of(\""+lore.getString(i).replaceAll("\"","\\\\\"")+"\"));");
-               }
-            }
-            lines.add("return loreList;");
-            lines.add("}");
-   
-            lines.add("");
-            lines.add("");
-            lines.add("//TODO: Make Recipe");
-            lines.add("private MagicItemRecipe makeRecipe(){");
-            lines.add("return null;");
-            lines.add("}");
-            lines.add("");
-            lines.add("//TODO: Make Lore");
-            lines.add("private List<String> makeLore(){");
-            lines.add("ArrayList<String> list = new ArrayList<>();");
-            lines.add("list.add(\"{\\\"text\\\":\\\"TODO\\\"}\");");
-            lines.add("return list;");
-            lines.add("}");
-            
-            lines.add("");
-            lines.add("public class "+name+"Item extends MagicPolymerItem {");
-            lines.add("public "+name+"Item(Settings settings){");
-            lines.add("super(getThis(),settings);");
-            lines.add("}");
-            lines.add("");
-            lines.add("@Override");
-            lines.add("public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){");
-            lines.add("return ArcanaRegistry.MODELS.get(TXT).value();");
-            lines.add("}");
-            lines.add("");
-            lines.add("@Override");
-            lines.add("public ItemStack getDefaultStack(){");
-            lines.add("return prefItem;");
-            lines.add("}");
-            lines.add("");
-            lines.add("@Override");
-            lines.add("public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){");
-            lines.add("if(!MagicItemUtils.isMagic(stack)) return;");
-            lines.add("if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;");
-            lines.add("");
-            lines.add("}");
-            lines.add("");
-            lines.add("@Override");
-            lines.add("public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {");
-            lines.add("");
-            lines.add("return TypedActionResult.success(playerEntity.getStackInHand(hand));");
-            lines.add("}");
-            lines.add("}");
-            
-            lines.add("}");
             
             for(String line : lines){
                out.println(line);
@@ -423,7 +320,7 @@ public class ArcanaCommands {
             player.sendMessage(Text.literal("Hold an item to get data"),true);
          }
       } catch (Exception e) {
-         e.printStackTrace();
+         log(2,e.toString());
       }
       return 0;
    }
@@ -452,71 +349,71 @@ public class ArcanaCommands {
                return 0;
             }
             
-            Pair<MagicItemIngredient,Character>[][] ingredients = new Pair[5][5];
+            Pair<ArcanaIngredient,Character>[][] ingredients = new Pair[5][5];
             HashMap<Character,ArrayList<String>> lineSet = new HashMap<>();
-            
             for(int i = 0; i < 5; i++){
                for(int j = 0; j < 5; j++){
                   ItemStack stack = chestInventory.getStack(i*9+j);
-                  
-                  MagicItem magicItem = MagicItemUtils.identifyItem(stack);
-                  MagicItemIngredient ingred;
+
+                  ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+                  ArcanaIngredient ingred;
                   ArrayList<String> lines = new ArrayList<>();
                   char letter = (char) ('a' + (i * 5 + j));
-                  
-                  if(magicItem != null){
-                     ingred = new GenericMagicIngredient(magicItem,stack.getCount());
-                     String idName = magicItem.getId().toUpperCase();
-                     lines.add("GenericMagicIngredient "+letter+" = new GenericMagicIngredient(ArcanaRegistry."+idName+","+stack.getCount()+");");
-                  }else if(stack.isOf(Items.POTION) || stack.isOf(Items.SPLASH_POTION) || stack.isOf(Items.LINGERING_POTION)){
+
+                  if(arcanaItem != null){
+                     ingred = new GenericArcanaIngredient(arcanaItem,stack.getCount());
+                     String idName = arcanaItem.getId().toUpperCase();
+                     lines.add("GenericArcanaIngredient "+letter+" = new GenericArcanaIngredient(ArcanaRegistry."+idName+","+stack.getCount()+");");
+                  }else if(stack.contains(DataComponentTypes.POTION_CONTENTS)){
                      String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
-                     Potion potion = PotionUtil.getPotion(stack);
-                     ItemStack potionStack = new ItemStack(stack.getItem());
-                     ingred = new MagicItemIngredient(stack.getItem(),stack.getCount(), PotionUtil.setPotion(potionStack, potion).getNbt());
+                     PotionContentsComponent potionsComp = stack.get(DataComponentTypes.POTION_CONTENTS);
+                     String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
+                     ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
+                     if(potionsComp.potion().isPresent()){
+                        ingredStr += ".withPotions(Potions."+Registries.POTION.getId(potionsComp.potion().get().value()).getPath().toUpperCase()+");";
+                        ingred = ingred.withPotions(potionsComp.potion().get());
+                     }
+                     lines.add(ingredStr);
+                  }else if(EnchantmentHelper.hasEnchantments(stack)){
+                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     ItemEnchantmentsComponent enchantComp = EnchantmentHelper.getEnchantments(stack);
+                     String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
+                     ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
                      
-                     lines.add("ItemStack potion"+(i * 5 + j)+" = new ItemStack(Items."+idName+");");
-                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+", PotionUtil.setPotion(potion"+(i * 5 + j)+", Potions."+Registries.POTION.getId(potion).getPath().toUpperCase()+").getNbt());");
-                  }else if(stack.isOf(Items.ENCHANTED_BOOK)){
-                     ItemStack enchantedItem = new ItemStack(Items.ENCHANTED_BOOK);
-                     lines.add("ItemStack enchantedBook"+(i * 5 + j)+" = new ItemStack(Items.ENCHANTED_BOOK);");
-   
-                     Map<Enchantment, Integer> enchants = EnchantmentHelper.get(stack);
-                     for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()){
-                        EnchantedBookItem.addEnchantment(enchantedItem,new EnchantmentLevelEntry(entry.getKey(),entry.getValue()));
-                        lines.add("EnchantedBookItem.addEnchantment(enchantedBook"+(i * 5 + j)+",new EnchantmentLevelEntry(Enchantments."+ Registries.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"));");
+                     ArrayList<String> enchStrs = new ArrayList<>();
+                     for(RegistryEntry<Enchantment> entry : enchantComp.getEnchantments()){
+                        enchStrs.add("new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments."+entry.getKey().get().getValue().getPath().toUpperCase()+"),"+enchantComp.getLevel(entry)+")");
+                        ingred = ingred.withEnchantments(new EnchantmentLevelEntry(entry, enchantComp.getLevel(entry)));
                      }
-                     ingred = new MagicItemIngredient(Items.ENCHANTED_BOOK,stack.getCount(),enchantedItem.getNbt());
-   
-                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items.ENCHANTED_BOOK,"+stack.getCount()+",enchantedBook"+(i * 5 + j)+".getNbt());");
-                  }else if(stack.hasEnchantments()){
-                     ItemStack enchantedItem = new ItemStack(stack.getItem());
-                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
-                     String line = "MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+", MagicItemIngredient.getEnchantNbt(";
-   
-                     Map<Enchantment, Integer> enchants = EnchantmentHelper.get(stack);
-                     for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()){
-                        enchantedItem.addEnchantment(entry.getKey(),entry.getValue());
-                        line += "new Pair(Enchantments."+Registries.ENCHANTMENT.getId(entry.getKey()).getPath().toUpperCase()+","+entry.getValue()+"),";
+                     
+                     if(!enchStrs.isEmpty()){
+                        ingredStr += ".withEnchantments(";
+                        for(int k = 0; k < enchStrs.size(); k++){
+                           ingredStr += enchStrs.get(k);
+                           if(k != enchStrs.size() - 1){
+                              ingredStr += ", ";
+                           }
+                        }
+                        ingredStr += ")";
                      }
-                     ingred = new MagicItemIngredient(Items.ENCHANTED_BOOK,stack.getCount(),enchantedItem.getNbt());
-                     line = line.substring(0,line.length()-1) + "));";
-                     lines.add(line);
+                     ingredStr += ";";
+                     lines.add(ingredStr);
                   }else if(stack.isEmpty()){
-                     ingred = MagicItemIngredient.EMPTY;
-                     lines.add("MagicItemIngredient "+letter+" = MagicItemIngredient.EMPTY;");
+                     ingred = ArcanaIngredient.EMPTY;
+                     lines.add("ArcanaIngredient "+letter+" = ArcanaIngredient.EMPTY;");
                   }else{
-                     ingred = new MagicItemIngredient(stack.getItem(),stack.getCount(),null);
+                     ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
                      String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
-                     lines.add("MagicItemIngredient "+letter+" = new MagicItemIngredient(Items."+idName+","+stack.getCount()+",null);");
+                     lines.add("ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+");");
                   }
-                  
+
                   boolean match = false;
                   for(int m = 0; m <= i; m++){
                      if(match) break;
                      for(int n = 0; n < (m == i ? j : 5); n++){
-                        Pair<MagicItemIngredient,Character> prev = ingredients[m][n];
-                        MagicItemIngredient prevIng = prev.getLeft();
-                        
+                        Pair<ArcanaIngredient,Character> prev = ingredients[m][n];
+                        ArcanaIngredient prevIng = prev.getLeft();
+
                         if(prevIng.equals(ingred)){
                            ingredients[i][j] = prev;
                            match = true;
@@ -532,6 +429,23 @@ public class ArcanaCommands {
                }
                //System.out.println();
             }
+            
+            String forgeReqStr = "new ForgeRequirement()";
+            int[] forgeSlots = new int[]{6,7,8,15,16,17};
+            for(int forgeSlot : forgeSlots){
+               ItemStack stack = chestInventory.getStack(forgeSlot);
+               if(stack.isOf(Items.ANVIL)){
+                  forgeReqStr += ".withAnvil()";
+               }else if(stack.isOf(Items.BLAST_FURNACE)){
+                  forgeReqStr += ".withCore()";
+               }else if(stack.isOf(Items.ENCHANTING_TABLE)){
+                  forgeReqStr += ".withEnchanter()";
+               }else if(stack.isOf(Items.FLETCHING_TABLE)){
+                  forgeReqStr += ".withFletchery()";
+               }else if(stack.isOf(Items.LECTERN)){
+                  forgeReqStr += ".withSingularity()";
+               }
+            }
    
             String path = "C:\\Users\\Boris\\Desktop\\itemrecipe.txt";
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
@@ -541,7 +455,7 @@ public class ArcanaCommands {
                lines.addAll(entry.getValue());
             }
             lines.add("");
-            lines.add("MagicItemIngredient[][] ingredients = {");
+            lines.add("ArcanaIngredient[][] ingredients = {");
             for(int i = 0; i < 5; i++){
                String line = "   {";
                for(int j = 0; j < 5; j++){
@@ -554,42 +468,53 @@ public class ArcanaCommands {
                }
                lines.add(line);
             }
-            lines.add("return new MagicItemRecipe(ingredients,new ForgeRequirement());");
-            
-            /*
-            MagicItemIngredient[][] ingredients = {
-               {c,e,x,e,c},
-               {e,m,x,m,e},
-               {x,x,h,x,x},
-               {e,m,x,m,e},
-               {c,e,x,e,c}};
-            return new MagicItemRecipe(ingredients);
-            */
+            lines.add("return new ArcanaRecipe(ingredients,"+forgeReqStr+");");
             
             for(String line : lines){
                out.println(line);
             }
             out.close();
+            return 1;
          }
          
       } catch (Exception e) {
-         e.printStackTrace();
+         log(2,e.toString());
       }
       return 0;
    }
    
-   public static int testCommand(CommandContext<ServerCommandSource> objectCommandContext) {
+   public static int testCommand(CommandContext<ServerCommandSource> ctx) {
       if (!devMode)
          return 0;
       try {
-         ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
+         ServerPlayerEntity player = ctx.getSource().getPlayer();
          
-         PuzzleGui gui = new PuzzleGui(ScreenHandlerType.GENERIC_9X6,player,null);
-         gui.buildPuzzle();
-         gui.open();
+//         PuzzleGui gui = new PuzzleGui(ScreenHandlerType.GENERIC_9X6,player,null);
+//         gui.buildPuzzle();
+//         gui.open();
+         
+         //ArcanaItem.putProperty(player.getMainHandStack(), GraphicalItem.GRAPHICS_TAG,"confirm");
+         
+//         ParticleEffectUtils.animatedLightningBolt(
+//               player.getServerWorld(),
+//               player.getPos().add(0,4,0),
+//               player.getPos().add(4,8,4),
+//               13,
+//               0.8,
+//               ParticleTypes.END_ROD,
+//               12,
+//               1,
+//               0,
+//               0,
+//               false,
+//               0,
+//               5
+//               );
+         
+         ParticleEffectUtils.arcanaCraftingAnim(ctx.getSource().getWorld(),new BlockPos(1378,96,1272),new ItemStack(Items.MACE),0);
          
       } catch (Exception e) {
-         e.printStackTrace();
+         log(2,e.toString());
       }
       return 0;
    }
@@ -603,7 +528,7 @@ public class ArcanaCommands {
          DEBUG_VALUE = num;
          
       } catch (Exception e) {
-         e.printStackTrace();
+         log(2,e.toString());
       }
       return 0;
    }
@@ -618,14 +543,24 @@ public class ArcanaCommands {
          gui.open();
          return 0;
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return -1;
       }
    }
    
    public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
       String start = builder.getRemaining().toLowerCase();
-      Set<String> items = ArcanaRegistry.MAGIC_ITEMS.keySet();
+      Set<String> items = new HashSet<>();
+      ArcanaRegistry.ARCANA_ITEMS.getKeys().forEach(key -> items.add(key.getValue().getPath()));
+      items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
+      return builder.buildFuture();
+   }
+   
+   public static CompletableFuture<Suggestions> getResearchSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
+      String start = builder.getRemaining().toLowerCase();
+      Set<String> items = new HashSet<>();
+      ArcanaRegistry.ARCANA_ITEMS.getKeys().forEach(key -> items.add(key.getValue().getPath()));
+      items.add("all");
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
@@ -640,16 +575,16 @@ public class ArcanaCommands {
    public static CompletableFuture<Suggestions> getAugmentSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
       ServerCommandSource src = context.getSource();
       String start = builder.getRemaining().toLowerCase();
-      MagicItem magicItem;
+      ArcanaItem arcanaItem;
       if(src.isExecutedByPlayer() && src.getPlayer() != null){
          ItemStack handItem = src.getPlayer().getMainHandStack();
-         magicItem = MagicItemUtils.identifyItem(handItem);
+         arcanaItem = ArcanaItemUtils.identifyItem(handItem);
       }else{
-         magicItem = null;
+         arcanaItem = null;
       }
       Set<String> augments = ArcanaAugments.registry.keySet();
-      if(magicItem != null){
-         augments = augments.stream().filter(s -> ArcanaAugments.registry.get(s).getMagicItem().getId().equals(magicItem.getId())).collect(Collectors.toSet());
+      if(arcanaItem != null){
+         augments = augments.stream().filter(s -> ArcanaAugments.registry.get(s).getArcanaItem().getId().equals(arcanaItem.getId())).collect(Collectors.toSet());
       }
       augments.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
@@ -682,7 +617,39 @@ public class ArcanaCommands {
          }
          return 1;
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int enhanceCommand(CommandContext<ServerCommandSource> ctx, double percentage, ServerPlayerEntity player){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer() && player == null){
+            src.sendError(Text.literal("Must specify player, or run command as a player"));
+            return -1;
+         }else if(player == null && src.getPlayer() != null){
+            player = src.getPlayer();
+         }
+         ItemStack handItem = player.getMainHandStack();
+         
+         if(percentage > 100 || percentage < 0){
+            src.sendError(Text.literal("Percentage out of bounds 0.0 - 100.0"));
+            return -1;
+         }
+         if(!EnhancedStatUtils.isItemEnhanceable(handItem)){
+            src.sendError(Text.literal("Player is not holding a valid infusion item"));
+            return -1;
+         }
+         
+         if(percentage == 0){
+            EnhancedStatUtils.stripEnhancements(handItem,true);
+         }else{
+            EnhancedStatUtils.enhanceItem(handItem,percentage/100.0);
+         }
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
          return -1;
       }
    }
@@ -698,7 +665,7 @@ public class ArcanaCommands {
          }
          ArcanaAugment augment = ArcanaAugments.registry.get(id);
          ItemStack handItem = player.getMainHandStack();
-         MagicItem magicItem = MagicItemUtils.identifyItem(handItem);
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(handItem);
          
          if(augment == null){
             src.sendError(Text.literal("That is not a valid Augment"));
@@ -708,8 +675,8 @@ public class ArcanaCommands {
             src.sendError(Text.literal("Level out of bounds (1-"+augment.getTiers().length+")"));
             return -1;
          }
-         if(magicItem == null || !magicItem.getId().equals(augment.getMagicItem().getId())){
-            src.sendError(Text.literal("Player is not holding a valid Magic Item"));
+         if(arcanaItem == null || !arcanaItem.getId().equals(augment.getArcanaItem().getId())){
+            src.sendError(Text.literal("Player is not holding a valid Arcana Item"));
             return -1;
          }
          if(ArcanaAugments.isIncompatible(handItem,id)){
@@ -724,7 +691,89 @@ public class ArcanaCommands {
             return -1;
          }
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int setResearch(CommandContext<ServerCommandSource> ctx, String id, boolean grant, Collection<ServerPlayerEntity> targets){
+      try{
+         ServerCommandSource source = ctx.getSource();
+         ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+         boolean isAll = id.equals("all");
+         
+         if(arcanaItem == null && !isAll){
+            source.sendError(Text.literal("That is not a valid item id"));
+            return -1;
+         }
+         
+         List<ArcanaItem> items = new ArrayList<>();
+         if(isAll){
+            ArcanaRegistry.ARCANA_ITEMS.getEntrySet().forEach(entry -> items.add(entry.getValue()));
+         }else{
+            items.add(arcanaItem);
+         }
+         
+         for (ServerPlayerEntity player : targets) {
+            if(grant){
+               for(ArcanaItem item : items){
+                  PLAYER_DATA.get(player).addResearchedItem(item.getId());
+               }
+            }else{
+               for(ArcanaItem item : items){
+                  PLAYER_DATA.get(player).removeResearchedItem(item.getId());
+               }
+            }
+         }
+         
+         MutableText feedback = Text.literal("");
+         String itemName = isAll ? "All Arcana Items" : arcanaItem.getNameString();
+         if(grant){
+            feedback.append(Text.literal("Added Research for [").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Text.literal(itemName).formatted(Formatting.AQUA));
+            feedback.append(Text.literal("] to ").formatted(Formatting.LIGHT_PURPLE));
+         }else{
+            feedback.append(Text.literal("Removed Research for [").formatted(Formatting.LIGHT_PURPLE));
+            feedback.append(Text.literal(itemName).formatted(Formatting.AQUA));
+            feedback.append(Text.literal("] from ").formatted(Formatting.LIGHT_PURPLE));
+         }
+         if(targets.size() == 1){
+            feedback.append(targets.iterator().next().getDisplayName());
+         }else{
+            feedback.append(Text.literal(targets.size() + " players").formatted(Formatting.LIGHT_PURPLE));
+         }
+         source.sendFeedback(()->feedback,true);
+         
+         return targets.size();
+      }catch(Exception e){
+         log(2,e.toString());
+         return 0;
+      }
+   }
+   
+   public static int getResearch(CommandContext<ServerCommandSource> ctx, String id, ServerPlayerEntity target){
+      try{
+         ServerCommandSource source = ctx.getSource();
+         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+         
+         if(arcanaItem == null){
+            source.sendError(Text.literal("That is not a valid item id"));
+            return -1;
+         }
+         
+         boolean researched = profile.hasResearched(arcanaItem);
+         
+         MutableText feedback = Text.literal("")
+               .append(target.getDisplayName().copy())
+               .append(Text.literal(researched ? " has researched [" : " has NOT researched [").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.AQUA))
+               .append(Text.literal("]").formatted(Formatting.LIGHT_PURPLE));
+         
+         source.sendFeedback(()->feedback,false);
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
          return -1;
       }
    }
@@ -766,7 +815,7 @@ public class ArcanaCommands {
       
          return targets.size();
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return 0;
       }
    }
@@ -780,7 +829,7 @@ public class ArcanaCommands {
             source.sendError(Text.literal("That is not a valid Achievement"));
             return -1;
          }
-         ArcanaAchievement profAchieve = profile.getAchievement(baseAch.getMagicItem().getId(),id);
+         ArcanaAchievement profAchieve = profile.getAchievement(baseAch.getArcanaItem().getId(),id);
          ArcanaAchievement achieve = profAchieve == null ? baseAch : profAchieve;
          MutableText[] response = achieve.getStatusDisplay(target);
          
@@ -798,60 +847,58 @@ public class ArcanaCommands {
          }
          return 1;
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return 0;
       }
    }
    
    public static int createItems(ServerCommandSource source, String id, Collection<ServerPlayerEntity> targets){
       try{
-         MagicItem magicItem = MagicItemUtils.getItemFromId(id);
-         if(magicItem == null){
-            source.sendMessage(Text.literal("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
+         ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+         if(arcanaItem == null){
+            source.sendMessage(Text.literal("Invalid Arcana Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }
    
          for(ServerPlayerEntity target : targets){
-            ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),target.getUuidAsString(),true,source.getServer());
+            ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),target.getUuidAsString(),true,source.getServer());
    
             if(item == null){
-               source.sendMessage(Text.literal("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
+               source.sendMessage(Text.literal("No Preferred Item Found For: "+ arcanaItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
                return 0;
             }else{
-               NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-               String uuid = magicTag.getString("UUID");
-               source.sendFeedback(() -> Text.literal("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
+               String uuid = ArcanaItem.getUUID(item);
+               source.sendFeedback(() -> Text.literal("Generated New: "+ arcanaItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
                target.giveItemStack(item);
             }
          }
          return 1;
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return -1;
       }
    }
    
    public static int createItem(ServerCommandSource source, String id) throws CommandSyntaxException{
       try{
-         MagicItem magicItem = MagicItemUtils.getItemFromId(id);
-         if(magicItem == null){
-            source.sendMessage(Text.literal("Invalid Magic Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
+         ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
+         if(arcanaItem == null){
+            source.sendMessage(Text.literal("Invalid Arcana Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }
-         ItemStack item = magicItem.addCrafter(magicItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),true,source.getServer());
+         ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),true,source.getServer());
          
          if(item == null){
-            source.sendMessage(Text.literal("No Preferred Item Found For: "+magicItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendMessage(Text.literal("No Preferred Item Found For: "+ arcanaItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }else{
-            NbtCompound magicTag = item.getNbt().getCompound("arcananovum");
-            String uuid = magicTag.getString("UUID");
-            source.sendMessage(Text.literal("Generated New: "+magicItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN));
+            String uuid = ArcanaItem.getUUID(item);
+            source.sendMessage(Text.literal("Generated New: "+ arcanaItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN));
             source.getPlayerOrThrow().giveItemStack(item);
             return 1;
          }
       }catch(Exception e){
-         e.printStackTrace();
+         log(2,e.toString());
          return -1;
       }
    }
@@ -863,8 +910,8 @@ public class ArcanaCommands {
          return -1;
       }
       ServerPlayerEntity player = source.getPlayer();
-      if(!MagicItemUtils.isMagic(player.getMainHandStack())){
-         source.sendFeedback(()->Text.literal("You can only show off Magic Items"), false);
+      if(!ArcanaItemUtils.isArcane(player.getMainHandStack())){
+         source.sendFeedback(()->Text.literal("You can only show off Arcana Items"), false);
          return -1;
       }
       
@@ -1020,4 +1067,130 @@ public class ArcanaCommands {
    }
    
    
+   public static int setItemName(CommandContext<ServerCommandSource> ctx, String name){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer()){
+            src.sendError(Text.literal("Must run command as a player"));
+            return -1;
+         }
+         ServerPlayerEntity player = src.getPlayer();
+         ItemStack handItem = player.getMainHandStack();
+         handItem.set(DataComponentTypes.ITEM_NAME, TextUtils.parseString(name));
+         
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int getItemName(CommandContext<ServerCommandSource> ctx){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer()){
+            src.sendError(Text.literal("Must run command as a player"));
+            return -1;
+         }
+         ServerPlayerEntity player = src.getPlayer();
+         ItemStack handItem = player.getMainHandStack();
+         
+         String feedback = TextUtils.textToString(handItem.getName());
+         String copyText = feedback;
+         src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyText))), false);
+         
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int setItemLore(CommandContext<ServerCommandSource> ctx, int index, String lore){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer()){
+            src.sendError(Text.literal("Must run command as a player"));
+            return -1;
+         }
+         ServerPlayerEntity player = src.getPlayer();
+         ItemStack handItem = player.getMainHandStack();
+         LoreComponent loreComp = handItem.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
+         LoreComponent newLore;
+         List<Text> lines = loreComp.styledLines();
+         
+         if(index < 0){
+            newLore = loreComp.with(TextUtils.removeItalics(TextUtils.parseString(lore)));
+         }else if(index < lines.size()){
+            lines.set(index, TextUtils.removeItalics(TextUtils.parseString(lore)));
+            newLore = new LoreComponent(lines);
+         }else{
+            int blankLines = index - lines.size();
+            for(int i = 0; i < blankLines; i++){
+               lines.add(Text.literal(""));
+            }
+            lines.add(TextUtils.removeItalics(TextUtils.parseString(lore)));
+            newLore = new LoreComponent(lines);
+         }
+         
+         handItem.set(DataComponentTypes.LORE,newLore);
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int getItemLore(CommandContext<ServerCommandSource> ctx, int index){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer()){
+            src.sendError(Text.literal("Must run command as a player"));
+            return -1;
+         }
+         ServerPlayerEntity player = src.getPlayer();
+         ItemStack handItem = player.getMainHandStack();
+         LoreComponent loreComp = handItem.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
+         List<Text> lines = loreComp.styledLines();
+         
+         if(index >= 0 && index < lines.size()){
+            String feedback = TextUtils.textToString(lines.get(index));
+            String copyText = feedback;
+            src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyText))), false);
+         }else{
+            return 0;
+         }
+         
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int removeItemLore(CommandContext<ServerCommandSource> ctx, int index){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer()){
+            src.sendError(Text.literal("Must run command as a player"));
+            return -1;
+         }
+         ServerPlayerEntity player = src.getPlayer();
+         ItemStack handItem = player.getMainHandStack();
+         LoreComponent loreComp = handItem.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
+         List<Text> lines = loreComp.styledLines();
+         
+         if(index >= 0 && index < lines.size()){
+            lines.remove(index);
+         }else{
+            return 0;
+         }
+         
+         handItem.set(DataComponentTypes.LORE,new LoreComponent(lines));
+         return 1;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
 }

@@ -4,6 +4,11 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
@@ -41,20 +46,18 @@ public class PuzzleGui extends SimpleGui {
       ArrayList<Item> puzzleItems = curPuzzle.getPuzzleItems();
       Item targetItem = curPuzzle.getTargetItem();
       
-      for(int i = 0; i < size; i++){
-         setSlot(i,new GuiElementBuilder(Items.MAGENTA_STAINED_GLASS_PANE).setName(Text.literal("Tower Reclamation").formatted(Formatting.LIGHT_PURPLE)));
-      }
+      MiscUtils.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.literal("Tower Reclamation").formatted(Formatting.LIGHT_PURPLE));
       
-      GuiElementBuilder targetGuiItem = new GuiElementBuilder(targetItem).hideFlags();
+      GuiElementBuilder targetGuiItem = new GuiElementBuilder(targetItem).hideDefaultTooltip();
       targetGuiItem.setName((Text.literal("")
             .append(Text.translatable(targetItem.getTranslationKey()).formatted(Formatting.AQUA,Formatting.BOLD))));
-      targetGuiItem.addLoreLine((Text.literal("")
-            .append(Text.literal("Click this item!").formatted(Formatting.DARK_PURPLE))));
+      targetGuiItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+            .append(Text.literal("Click this item!").formatted(Formatting.DARK_PURPLE)))));
       setSlot(4,targetGuiItem);
       
       for(int i = 46; i < 53; i++){
          int lvl = i-45;
-         GuiElementBuilder progressGuiItem = new GuiElementBuilder(lvl <= level ? Items.LIGHT_BLUE_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE).hideFlags();
+         GuiElementBuilder progressGuiItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,lvl <= level ? ArcanaColors.EQUAYUS_COLOR : ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
          progressGuiItem.setName((Text.literal("("+level+"/7)").formatted(Formatting.AQUA,Formatting.BOLD)));
          setSlot(i,progressGuiItem);
       }
@@ -63,7 +66,7 @@ public class PuzzleGui extends SimpleGui {
       for(int i = 0; i < 4; i++){
          for(int j = 0; j < 7; j++){
             if(k < puzzleItems.size()){
-               GuiElementBuilder puzzleItem = new GuiElementBuilder(puzzleItems.get(k)).hideFlags();
+               GuiElementBuilder puzzleItem = new GuiElementBuilder(puzzleItems.get(k)).hideDefaultTooltip();
                puzzleItem.setName((Text.literal("")
                      .append(Text.translatable(puzzleItems.get(k).getTranslationKey()).formatted(Formatting.YELLOW))));
                

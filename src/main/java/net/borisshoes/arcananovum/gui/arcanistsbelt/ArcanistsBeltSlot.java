@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.gui.arcanistsbelt;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class ArcanistsBeltSlot extends Slot {
    
-   public static final List<MagicItem> BELT_MAGIC_ITEMS = new ArrayList<>(Arrays.asList(
+   public static final List<ArcanaItem> BELT_ARCANA_ITEMS = new ArrayList<>(Arrays.asList(
          ArcanaRegistry.ALCHEMICAL_ARBALEST,
          ArcanaRegistry.ANCIENT_DOWSING_ROD,
          ArcanaRegistry.ARCANE_TOME,
@@ -49,9 +49,9 @@ public class ArcanistsBeltSlot extends Slot {
    
    @Override
    public boolean canInsert(ItemStack stack){
-      MagicItem magicItem = MagicItemUtils.identifyItem(stack);
-      if(magicItem != null){
-         return BELT_MAGIC_ITEMS.contains(magicItem);
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+      if(arcanaItem != null){
+         return BELT_ARCANA_ITEMS.contains(arcanaItem);
       }
       return stack.isDamageable();
    }

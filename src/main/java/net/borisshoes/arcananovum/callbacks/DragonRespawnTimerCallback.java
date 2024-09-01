@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -29,20 +30,20 @@ public class DragonRespawnTimerCallback extends TickTimerCallback{
          if(bossFight != null && bossFight.getLeft() == BossFights.DRAGON){
             NbtCompound data = bossFight.getRight();
             String state = data.getString("State");
-            ServerPlayerEntity gm = server.getPlayerManager().getPlayer(UUID.fromString(data.getString("GameMaster")));
+            ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
             if(DragonBossFight.States.valueOf(state) == DragonBossFight.States.WAITING_RESPAWN){
                //Check for alive Dragon
-               if(server.getWorld(World.END).getAliveEnderDragons().size() > 0){
+               if(!server.getWorld(World.END).getAliveEnderDragons().isEmpty()){
                   bossFight.getRight().putString("State",DragonBossFight.States.WAITING_START.name());
                   // Confirm message
                   if(gm != null){
-                     gm.sendMessage(Text.translatable("Dragon Respawned Successfully"));
+                     gm.sendMessage(Text.literal("Dragon Respawned Successfully"));
                   }
                   return;
                }
             }
             if(gm != null){
-               gm.sendMessage(Text.translatable("Dragon Respawn Failed, Cleaning Boss Fight"));
+               gm.sendMessage(Text.literal("Dragon Respawn Failed, Cleaning Boss Fight"));
             }
          }
          // Clean Boss

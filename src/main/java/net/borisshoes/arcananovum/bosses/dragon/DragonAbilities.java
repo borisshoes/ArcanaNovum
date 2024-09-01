@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.minecraft.entity.EntityType;
@@ -11,7 +11,6 @@ import net.minecraft.entity.boss.dragon.phase.PhaseManager;
 import net.minecraft.entity.boss.dragon.phase.PhaseType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.decoration.EndCrystalEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.player.ItemCooldownManager;
@@ -50,7 +49,7 @@ public class DragonAbilities {
    private final int conscriptCD = 240*20;
    private final int bombardCD = 45*20;
    private final int obliterateCD = 120*20;
-   private final int resilienceCD = 150*20;
+   private final int resilienceCD = 250*20;
    private final int corruptArcanaCD = 60*20;
    
    private int swoopTicks;
@@ -146,8 +145,8 @@ public class DragonAbilities {
          }
       }
       
-      if(resilienceTicks < 3*20 && resilienceTicks % 20 == 0){
-         dragon.heal(dragon.getMaxHealth() / 20);
+      if(resilienceTicks < 5*20 && resilienceTicks % 10 == 0){
+         dragon.heal(dragon.getMaxHealth() / 100.0f);
       }
       
       if(bombardTicks < 12 * 5 && bombardTicks % 5 == 0){
@@ -170,8 +169,8 @@ public class DragonAbilities {
             if (!this.dragon.isSilent()) {
                this.dragon.getWorld().syncWorldEvent((PlayerEntity)null, 1017, this.dragon.getBlockPos(), 0);
             }
-   
-            DragonFireballEntity dragonFireballEntity = new DragonFireballEntity(this.dragon.getWorld(), this.dragon, o, p, q);
+            
+            DragonFireballEntity dragonFireballEntity = new DragonFireballEntity(this.dragon.getWorld(), this.dragon, new Vec3d(o,p,q));
             dragonFireballEntity.refreshPositionAndAngles(l, m, n, 0.0F, 0.0F);
             this.dragon.getWorld().spawnEntity(dragonFireballEntity);
          }
@@ -180,11 +179,11 @@ public class DragonAbilities {
       if(corruptArcanaTicks < 200 && corruptArcanaTicks % 20 == 0){
          List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
          for(ServerPlayerEntity player : nearbyPlayers300){
-            float damage = MagicItemUtils.getUsedConcentration(player)/8f * (player.getMaxHealth()/20f);
+            float damage = ArcanaItemUtils.getUsedConcentration(player)/8f * (player.getMaxHealth()/20f);
             if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
             
             player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),damage);
-            player.sendMessage(Text.literal("Your Magic Items surge with corrupted Arcana!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
+            player.sendMessage(Text.literal("Your Arcana Items surge with corrupted Arcana!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
          }
          
@@ -367,7 +366,7 @@ public class DragonAbilities {
                if(item.isEmpty()){
                   continue;
                }
-               if(MagicItemUtils.isMagic(item) && !manager.isCoolingDown(item.getItem())){
+               if(ArcanaItemUtils.isArcane(item) && !manager.isCoolingDown(item.getItem())){
                   manager.set(item.getItem(),200);
                }
             }

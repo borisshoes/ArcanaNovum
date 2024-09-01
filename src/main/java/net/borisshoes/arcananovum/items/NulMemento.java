@@ -6,12 +6,21 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.MagicItem;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArmorItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.recipes.arcana.*;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.UnbreakableComponent;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EquipmentSlot;
@@ -23,15 +32,14 @@ import net.minecraft.item.ArmorMaterials;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
@@ -41,63 +49,136 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class NulMemento extends EnergyItem {
+	public static final String ID = "nul_memento";
+   
+   public static final String HEAD_TAG = "onHead";
    
    private static final String TXT = "item/nul_memento";
    private static final Item textureItem = Items.BLACK_STAINED_GLASS;
    
    public NulMemento(){
-      id = "nul_memento";
+      id = ID;
       name = "Nul Memento";
-      rarity = MagicRarity.MYTHICAL;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.MYTHICAL, ArcaneTome.TomeFilter.ITEMS, ArcaneTome.TomeFilter.EQUIPMENT};
+      rarity = ArcanaRarity.DIVINE;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
-      item = new NulMementoItem(new FabricItemSettings().maxCount(1).fireproof());
+      item = new NulMementoItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Nul Memento").formatted(Formatting.BOLD,Formatting.BLACK))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
       models.add(new Pair<>(textureItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.KILL_CONSTRUCT};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      NbtCompound prot = new NbtCompound();
-      prot.putString("id","protection");
-      prot.putInt("lvl",4);
-      enchants.add(prot);
-      display.putString("Name","[{\"text\":\"Nul Memento\",\"italic\":false,\"color\":\"black\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("HideFlags", 255);
-      tag.putInt("Unbreakable",1);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      addMagicNbt(tag);
-      tag.getCompound("arcananovum").putBoolean("active",false);
-      tag.getCompound("arcananovum").putBoolean("onHead",false);
-      stack.setNbt(tag);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      putProperty(stack,ACTIVE_TAG,false);
+      putProperty(stack,HEAD_TAG,false);
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      loreList.add(NbtString.of("[{\"text\":\"A strange, \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"withered skull\",\"color\":\"gray\"},{\"text\":\", more protective than others you have found.\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"Aspect of Death\",\"color\":\"blue\"},{\"text\":\" has granted you his \"},{\"text\":\"favor\",\"color\":\"gray\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"You have \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"seen \",\"color\":\"blue\"},{\"text\":\"things that most \"},{\"text\":\"mortals \",\"color\":\"gray\"},{\"text\":\"never will.\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"curse of knowledge\",\"color\":\"blue\"},{\"text\":\" binds \"},{\"text\":\"tighter \",\"color\":\"gray\"},{\"text\":\"than any other.\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"There are some \",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"Skills \",\"color\":\"blue\"},{\"text\":\"that are better left \"},{\"text\":\"forgotten\",\"color\":\"gray\"},{\"text\":\"...\"},{\"text\":\"\",\"italic\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"calls \",\"color\":\"gray\"},{\"text\":\"to your \"},{\"text\":\"mind \",\"color\":\"blue\"},{\"text\":\"with a familiar \"},{\"text\":\"burn of concentration\",\"color\":\"dark_red\"},{\"text\":\".\",\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"It \",\"italic\":true,\"color\":\"dark_gray\"},{\"text\":\"yearns \",\"color\":\"blue\"},{\"text\":\"to be worn... To protect you from \"},{\"text\":\"death\",\"color\":\"gray\"},{\"text\":\"...\",\"italic\":true}]"));
-      loreList.add(NbtString.of("[{\"text\":\"\",\"italic\":false,\"color\":\"dark_gray\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"When \",\"italic\":false,\"color\":\"dark_gray\"},{\"text\":\"activated\",\"color\":\"gray\"},{\"text\":\", all \"},{\"text\":\"Skill Points\",\"color\":\"blue\"},{\"text\":\" will be \"},{\"text\":\"deallocated\",\"color\":\"gray\"},{\"text\":\".\"}]"));
-      return loreList;
+   public void finalizePrefItem(MinecraftServer server){
+      super.finalizePrefItem(server);
+      ItemStack curPrefItem = this.getPrefItem();
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
+            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.PROTECTION),4)
+      ).withShowInTooltip(false));
+      this.prefItem = buildItemLore(curPrefItem, server);
+   }
+   
+   @Override
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      lore.add(Text.literal("")
+            .append(Text.literal("A strange, ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("withered skull").formatted(Formatting.GRAY))
+            .append(Text.literal(", more protective than others you have found.").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Aspect of Death").formatted(Formatting.BLUE))
+            .append(Text.literal(" has granted you his ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("favor").formatted(Formatting.GRAY))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal(""));
+      lore.add(Text.literal("")
+            .append(Text.literal("You have ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("seen ").formatted(Formatting.BLUE))
+            .append(Text.literal("things that most ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("mortals ").formatted(Formatting.GRAY))
+            .append(Text.literal("never will.").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("curse of knowledge").formatted(Formatting.BLUE))
+            .append(Text.literal(" binds ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("tighter ").formatted(Formatting.GRAY))
+            .append(Text.literal("than any other.").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("There are some ").formatted(Formatting.ITALIC,Formatting.DARK_GRAY))
+            .append(Text.literal("Skills ").formatted(Formatting.ITALIC,Formatting.BLUE))
+            .append(Text.literal("that are better left ").formatted(Formatting.ITALIC,Formatting.DARK_GRAY))
+            .append(Text.literal("forgotten").formatted(Formatting.ITALIC,Formatting.GRAY))
+            .append(Text.literal("...").formatted(Formatting.ITALIC,Formatting.DARK_GRAY)));
+      lore.add(Text.literal(""));
+      lore.add(Text.literal("")
+            .append(Text.literal("It ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("calls ").formatted(Formatting.GRAY))
+            .append(Text.literal("to your ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("mind ").formatted(Formatting.BLUE))
+            .append(Text.literal("with a familiar ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("burn of concentration").formatted(Formatting.DARK_RED))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      lore.add(Text.literal("")
+            .append(Text.literal("It ").formatted(Formatting.ITALIC,Formatting.DARK_GRAY))
+            .append(Text.literal("yearns ").formatted(Formatting.ITALIC,Formatting.BLUE))
+            .append(Text.literal("to be worn... To protect you from ").formatted(Formatting.ITALIC,Formatting.DARK_GRAY))
+            .append(Text.literal("death").formatted(Formatting.ITALIC,Formatting.GRAY))
+            .append(Text.literal("...").formatted(Formatting.ITALIC,Formatting.DARK_GRAY)));
+      lore.add(Text.literal(""));
+      lore.add(Text.literal("")
+            .append(Text.literal("When ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("activated").formatted(Formatting.GRAY))
+            .append(Text.literal(", all ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("Skill Points").formatted(Formatting.BLUE))
+            .append(Text.literal(" will be ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal("deallocated").formatted(Formatting.GRAY))
+            .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
+      
+      if(itemStack != null){
+         int energy = getEnergy(itemStack);
+         if(energy == 0){
+            lore.add(Text.literal(""));
+            lore.add(Text.literal("")
+                  .append(Text.literal("Nul's Ward").formatted(Formatting.GRAY))
+                  .append(Text.literal(" - ").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("Ready").formatted(Formatting.BLUE)));
+         }else{
+            energy /= 20;
+            String duration;
+            if(energy >= 100){
+               duration = ((energy/60)+1)+" Minutes";
+            }else{
+               duration = energy+" Seconds";
+            }
+            lore.add(Text.literal(""));
+            lore.add(Text.literal("")
+                  .append(Text.literal("Nul's Ward").formatted(Formatting.GRAY))
+                  .append(Text.literal(" - ").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("Recharging: ").formatted(Formatting.BLUE))
+                  .append(Text.literal(duration).formatted(Formatting.DARK_GRAY)));
+         }
+      }
+      
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -158,13 +239,13 @@ public class NulMemento extends EnergyItem {
       return true;
    }
    
-   public boolean isActive(ItemStack item){
-      return item.getNbt().getCompound("arcananovum").getBoolean("active");
+   public boolean isActive(ItemStack stack){
+      return getBooleanProperty(stack,ACTIVE_TAG);
    }
    
-   public void forgor(ItemStack item, ServerPlayerEntity player){
-      item.getNbt().getCompound("arcananovum").putBoolean("active",true);
-   
+   public void forgor(ItemStack stack, ServerPlayerEntity player){
+      putProperty(stack,ACTIVE_TAG,true);
+      
       int increments = 100;
       StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT,increments*5 , 0, false, false, true);
       StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, increments*5, 9, false, false, true);
@@ -191,11 +272,11 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal(" whisper...")).formatted(Formatting.DARK_GRAY)
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
-
+      
       ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*1, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+            if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
@@ -212,7 +293,7 @@ public class NulMemento extends EnergyItem {
       ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*2, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+            if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
@@ -232,7 +313,7 @@ public class NulMemento extends EnergyItem {
       ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*3, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+            if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
@@ -249,7 +330,7 @@ public class NulMemento extends EnergyItem {
       ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*4, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+            if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
@@ -266,7 +347,7 @@ public class NulMemento extends EnergyItem {
       ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*5, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
-            if(!(MagicItemUtils.identifyItem(headStack) instanceof NulMemento) || !(MagicItemUtils.getUsedConcentration(player) > maxConc)){
+            if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
@@ -287,7 +368,6 @@ public class NulMemento extends EnergyItem {
                StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA,200, 4, false, false, true);
                player.addStatusEffect(nausea);
                headStack.decrement(headStack.getCount());
-               headStack.setNbt(new NbtCompound());
                SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1f, 1f);
             }
          }
@@ -324,9 +404,9 @@ public class NulMemento extends EnergyItem {
       boolean[] conditions = new boolean[]{
             PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
             PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
-            MagicItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
-            MagicItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),
       };
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -509,44 +589,42 @@ public class NulMemento extends EnergyItem {
       helper.sendDialog(List.of(player),helper.getWeightedResult(),true);
    }
    
-   private MagicItemRecipe makeRecipe(){
-      ItemStack pane = new ItemStack(Items.GRAY_STAINED_GLASS_PANE).setCustomName(Text.literal("In World Recipe").formatted(Formatting.BLUE,Formatting.BOLD));
-      MiscUtils.addLoreLine(pane,Text.literal("Build this in the World").formatted(Formatting.DARK_PURPLE));
-      
-      ItemStack soulSand = new ItemStack(Items.SOUL_SAND).setCustomName(Text.literal("Soul Sand or Soil").formatted(Formatting.GRAY,Formatting.BOLD));
-      MiscUtils.addLoreLine(soulSand,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
-      
-      ItemStack skull = new ItemStack(Items.WITHER_SKELETON_SKULL).setCustomName(Text.literal("Eye of Ender").formatted(Formatting.DARK_GRAY,Formatting.BOLD));
-      MiscUtils.addLoreLine(skull,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
-      
-      ItemStack netherite = new ItemStack(Items.NETHERITE_BLOCK).setCustomName(Text.literal("Block of Netherite").formatted(Formatting.DARK_RED,Formatting.BOLD));
-      MiscUtils.addLoreLine(netherite,Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE));
-      
-      ItemStack catalyst = ArcanaRegistry.MYTHICAL_CATALYST.getItem().getDefaultStack().copy();
-      MiscUtils.addLoreLine(catalyst,Text.literal("")
-            .append(Text.literal("Right Click").formatted(Formatting.BLUE))
-            .append(Text.literal(" the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Catalyst").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" on the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Netherite Heart").formatted(Formatting.DARK_RED)));
-      MiscUtils.addLoreLine(catalyst,Text.literal("")
-            .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" will flow into the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Mythical Construct").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" empowering it").formatted(Formatting.DARK_PURPLE)));
-      MiscUtils.addLoreLine(catalyst,Text.literal("")
-            .append(Text.literal("Defeat the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Mythical Construct").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal(" without dying to have a chance at receiving a ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Nul Memento").formatted(Formatting.BLACK)));
-      MiscUtils.addLoreLine(catalyst,Text.literal("").formatted(Formatting.DARK_PURPLE));
-      MiscUtils.addLoreLine(catalyst,Text.literal("WARNING!!! This fight is considerably harder than a Nul Construct. Attempt at your own peril.").formatted(Formatting.RED));
-      
-      ExplainIngredient a = new ExplainIngredient(pane,"",false);
-      ExplainIngredient s = new ExplainIngredient(soulSand,"Soul Sand or Soil");
-      ExplainIngredient k = new ExplainIngredient(skull,"Wither Skeleton Skull");
-      ExplainIngredient n = new ExplainIngredient(netherite,"Netherite Block");
-      ExplainIngredient c = new ExplainIngredient(catalyst,"Mythical Augment Catalyst");
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
+            .withName(Text.literal("In World Recipe").formatted(Formatting.BLUE,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Build this in the World").formatted(Formatting.DARK_PURPLE)));
+      ExplainIngredient s = new ExplainIngredient(Items.SOUL_SAND,1,"Soul Sand or Soil")
+            .withName(Text.literal("Soul Sand or Soil").formatted(Formatting.GRAY,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE)));
+      ExplainIngredient k = new ExplainIngredient(Items.WITHER_SKELETON_SKULL,1,"Wither Skeleton Skull")
+            .withName(Text.literal("Wither Skeleton Skull").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE)));
+      ExplainIngredient n = new ExplainIngredient(Items.NETHERITE_BLOCK,1,"Netherite Block")
+            .withName(Text.literal("Block of Netherite").formatted(Formatting.DARK_RED,Formatting.BOLD))
+            .withLore(List.of(Text.literal("Construct a Wither Base with a heart of Netherite").formatted(Formatting.DARK_PURPLE)));
+      ExplainIngredient c = new ExplainIngredient(ArcanaRegistry.DIVINE_CATALYST.getItem(),1,"Divine Augment Catalyst")
+            .withName(Text.literal("Divine Augmentation Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+            .withLore(List.of(
+                  Text.literal("")
+                        .append(Text.literal("Right Click").formatted(Formatting.BLUE))
+                        .append(Text.literal(" the ").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal("Catalyst").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(" on the ").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal("Netherite Heart").formatted(Formatting.DARK_RED)),
+                  Text.literal("")
+                        .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(" will flow into the ").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal("Exalted Construct").formatted(Formatting.DARK_GRAY))
+                        .append(Text.literal(" empowering it").formatted(Formatting.DARK_PURPLE)),
+                  Text.literal("")
+                        .append(Text.literal("Defeat the ").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal("Exalted Construct").formatted(Formatting.DARK_GRAY))
+                        .append(Text.literal(" without dying to receive a ").formatted(Formatting.DARK_PURPLE))
+                        .append(Text.literal("Nul Memento").formatted(Formatting.BLACK)),
+                  Text.literal(""),
+                  Text.literal("WARNING!!! This fight is considerably harder than a Nul Construct. Attempt at your own peril.").formatted(Formatting.RED)
+            ));
       
       ExplainIngredient[][] ingredients = {
             {a,a,a,a,a},
@@ -557,28 +635,27 @@ public class NulMemento extends EnergyItem {
       return new ExplainRecipe(ingredients);
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("\"      Nul Memento\\n\\nRarity: Mythical\\n\\nThis entity of death that I have acquired a passing familiarity with is most intriguing.\\n\\nHe wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded.\"");
-      list.add("\"      Nul Memento\\n\\nAs I was gifted this strange skull, the entity informed me that I have become one of his 'chosen'.\\nI'm not sure what to think of this. What machinations could a deity of death be planning such that he needs to choose mortals like me?\"");
-      list.add("\"      Nul Memento\\n\\nThe Memento whispers to me every so often. I have come to learn the entity calls himself Nul, the God of Death.\\n\\nHe speaks of Arcana, and secrets that I have yet to learn.\\n\\nHe warns that one mind can only hold so\"");
-      list.add("\"      Nul Memento\\n\\nmuch knowledge at one time. However, he offers his aid in circumventing this mortal limitation.\\n\\nThis Memento reacts to an overburdened mind when worn, and will make me forget some of the skills I have learned.\"");
-      list.add("\"      Nul Memento\\n\\nAs long as I use those skills before forgetting them. I should be able to take advantage of new knowledge with a new limit to what I can learn.\\n\\nThe Memento also offers incredible protection, as if it was\"");
-      list.add("\"      Nul Memento\\n\\nmade of enchanted Netherite!\\n\\nI believe wearing it may also encourage Nul to save me from any unfortunate circumstances that find me near death.\"");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("      Nul Memento\n\nRarity: Divine\n\nThis entity of death that I have acquired a passing familiarity with is most intriguing.\n\nHe wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded.")));
+      list.add(List.of(Text.literal("      Nul Memento\n\nAs I was gifted this strange skull, the entity informed me that I have become one of his 'chosen'.\nI'm not sure what to think of this. What machinations could a deity of death be planning such that he needs to choose mortals like me?")));
+      list.add(List.of(Text.literal("      Nul Memento\n\nThe Memento whispers to me every so often. I have come to learn the entity calls himself Nul, the God of Death.\n\nHe speaks of Arcana, and secrets that I have yet to learn.\n\nHe warns that one mind can only hold so")));
+      list.add(List.of(Text.literal("      Nul Memento\n\nmuch knowledge at one time. However, he offers his aid in circumventing this mortal limitation.\n\nThis Memento reacts to an overburdened mind when worn, and will make me forget some of the skills I have learned.")));
+      list.add(List.of(Text.literal("      Nul Memento\n\nAs long as I use those skills before forgetting them. I should be able to take advantage of new knowledge with a new limit to what I can learn.\n\nThe Memento also offers incredible protection, as if it was")));
+      list.add(List.of(Text.literal("      Nul Memento\n\nmade of enchanted Netherite!\n\nI believe wearing it may also encourage Nul to save me from any unfortunate circumstances that find me near death.")));
       return list;
    }
    
-   public class NulMementoItem extends MagicPolymerArmorItem {
-      public NulMementoItem(Settings settings){
+   public class NulMementoItem extends ArcanaPolymerArmorItem {
+      public NulMementoItem(Item.Settings settings){
          super(getThis(),ArmorMaterials.NETHERITE,Type.HELMET,settings);
       }
       
       @Override
       public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(MagicItemUtils.isMagic(itemStack)){
-            NbtCompound itemNbt = itemStack.getNbt();
-            NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
-            boolean onHead = magicNbt.getBoolean("onHead");
+         if(ArcanaItemUtils.isArcane(itemStack)){
+            boolean onHead = getBooleanProperty(itemStack,HEAD_TAG);
             if(onHead && PolymerResourcePackUtils.hasMainPack(player)) return textureItem;
          }
          return super.getPolymerItem(itemStack, player);
@@ -586,23 +663,22 @@ public class NulMemento extends EnergyItem {
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT+"@"+getPolymerItem(itemStack,player).getTranslationKey()).value();
+         return ArcanaRegistry.getModelData(TXT+"-"+getPolymerItem(itemStack,player).getTranslationKey()).value();
       }
       
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
-         if(!MagicItemUtils.isMagic(stack)) return;
+         if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         NbtCompound itemNbt = stack.getNbt();
-         NbtCompound magicNbt = itemNbt.getCompound("arcananovum");
          boolean nowOnHead = player.getEquippedStack(EquipmentSlot.HEAD).equals(stack);
-         boolean wasOnHead = magicNbt.getBoolean("onHead");
+         boolean wasOnHead = getBooleanProperty(stack,HEAD_TAG);
          if(nowOnHead != wasOnHead){
-            magicNbt.putBoolean("onHead",nowOnHead);
+            putProperty(stack,HEAD_TAG,nowOnHead);
          }
          if(nowOnHead && getEnergy(stack) > 0){
             addEnergy(stack,-1);
+            buildItemLore(stack,entity.getServer());
          }
          
          // 0.000015 ~ 60 minutes between voice lines
@@ -617,3 +693,4 @@ public class NulMemento extends EnergyItem {
       }
    }
 }
+

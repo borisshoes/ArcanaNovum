@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "arcananovum:arcana_block_entity"
+            }
+          ],
+          "name": "arcananovum:arcane_singularity"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "arcananovum:blocks/arcane_singularity"
+}

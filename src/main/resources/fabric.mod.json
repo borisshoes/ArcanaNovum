@@ -3,14 +3,14 @@
   "id": "arcananovum",
   "version": "${version}",
   "name": "Arcana Novum",
-  "description": "A Server-Side magic mod that adds various Magic Items to your server!",
+  "description": "A Server-Side magic mod that adds various Arcana Items to your server!",
   "authors": [
     "BorisShoes"
   ],
   "contact": {
     "repo": "https://github.com/borisshoes/ArcanaNovum"
   },
-  "license": "MIT",
+  "license": "OSL-3.0",
   "icon": "assets/arcananovum/icon.png",
   "environment": "*",
   "entrypoints": {

@@ -3,15 +3,12 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
-import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
-import net.borisshoes.arcananovum.gui.WatchedGui;
-import net.borisshoes.arcananovum.utils.MagicItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.SharedConstants;
-import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
@@ -20,13 +17,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
+import net.minecraft.util.StringHelper;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class RenameGui extends AnvilInputGui implements WatchedGui {
+public class RenameGui extends AnvilInputGui {
    private final TwilightAnvilBlockEntity blockEntity;
    private Text newName;
    private TinkerInventory inv;
@@ -49,7 +46,7 @@ public class RenameGui extends AnvilInputGui implements WatchedGui {
    
    public void build(){
       setTitle(Text.literal("Rename Item"));
-      setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultStack()).setName(Text.literal("")));
+      setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultStack()).setName(Text.literal("")).hideTooltip());
       
       inv = new TinkerInventory();
       listener = new TinkerInventoryListener(this,1,blockEntity);
@@ -63,9 +60,13 @@ public class RenameGui extends AnvilInputGui implements WatchedGui {
       if(index == 2){
          ItemStack outputStack = getSlot(2) == null ? ItemStack.EMPTY : getSlot(2).getItemStack();
          if(item != null && !item.isEmpty() && !outputStack.isEmpty()){
-            item.setCustomName(newName);
-            if(MagicItemUtils.isMagic(item)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.TOUCH_OF_PERSONALITY.id);
+            if(newName.getString().isBlank()){
+               item.remove(DataComponentTypes.CUSTOM_NAME);
+            }else{
+               item.set(DataComponentTypes.CUSTOM_NAME,newName);
+               if(ArcanaItemUtils.isArcane(item)){
+                  ArcanaAchievements.grant(player,ArcanaAchievements.TOUCH_OF_PERSONALITY.id);
+               }
             }
             SoundUtils.playSound(player.getServerWorld(),blockEntity.getPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
             this.close();
@@ -76,35 +77,52 @@ public class RenameGui extends AnvilInputGui implements WatchedGui {
    
    @Override
    public void onInput(String input) {
-      if(item != null && !item.isEmpty()){
-         ItemStack newItem = item.copy();
-         Text name = newItem.getName();
-         input = sanitize(input);
-         if (input == null || input.equals(name.getString())) {
-            setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
-            return;
-         }
-         newName = Text.literal(input);
-         if(MagicItemUtils.isMagic(newItem) || name.getStyle().isBold()){
-            List<Text> textList = newName.getWithStyle(name.getStyle());
-            if(!textList.isEmpty()){
-               newName = textList.get(0);
-            }
-         }else{
-            newName = Text.literal(input).formatted(newItem.getRarity().formatting, Formatting.ITALIC);
-         }
-         newItem.setCustomName(newName);
-         setSlot(2, GuiElementBuilder.from(newItem));
+      if(item == null || item.isEmpty()){
+         setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
+         return;
       }
+      String string = sanitize(input);
+      ItemStack newItem = item.copy();
+      Text name = newItem.getName();
+      if (string == null || string.equals(name.getString())) {
+         setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
+         return;
+      }
+      if(StringHelper.isBlank(string)){
+         newItem.remove(DataComponentTypes.CUSTOM_NAME);
+         newName = Text.literal("");
+      }else{
+         newName = Text.literal(string);
+         if(ArcanaItemUtils.isArcane(newItem)){
+            List<Text> textList = newName.getWithStyle(newItem.getOrDefault(DataComponentTypes.ITEM_NAME,Text.literal("")).getStyle().withItalic(false));
+            if(!textList.isEmpty()){
+               newName = textList.getFirst();
+            }
+            newItem.set(DataComponentTypes.CUSTOM_NAME, newName);
+         }else{
+            newItem.set(DataComponentTypes.CUSTOM_NAME, Text.literal(string));
+         }
+      }
+      setSlot(2,GuiElementBuilder.from(newItem));
    }
    
    @Nullable
    private static String sanitize(String name) {
-      String string = SharedConstants.stripInvalidChars(name);
-      if (string.length() <= 50 && !Util.isBlank(string)) {
+      String string = StringHelper.stripInvalidChars(name);
+      if (string.length() <= 50) {
          return string;
       }
       return null;
+   }
+   
+   @Override
+   public void onTick(){
+      World world = blockEntity.getWorld();
+      if(world == null || world.getBlockEntity(blockEntity.getPos()) != blockEntity || !blockEntity.isAssembled()){
+         this.close();
+      }
+      
+      super.onTick();
    }
    
    @Override
@@ -115,15 +133,5 @@ public class RenameGui extends AnvilInputGui implements WatchedGui {
    @Override
    public void close(){
       super.close();
-   }
-   
-   @Override
-   public BlockEntity getBlockEntity(){
-      return blockEntity;
-   }
-   
-   @Override
-   public SimpleGui getGui(){
-      return this;
    }
 }

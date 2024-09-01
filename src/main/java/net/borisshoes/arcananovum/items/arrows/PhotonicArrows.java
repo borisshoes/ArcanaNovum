@@ -1,38 +1,38 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.achievements.TimedAchievement;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.borisshoes.arcananovum.core.polymer.MagicPolymerArrowItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
-import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.mixins.LivingEntityAccessor;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericMagicIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.MagicItemRecipe;
+import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -47,53 +47,60 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PhotonicArrows extends RunicArrow {
+	public static final String ID = "photonic_arrows";
    
    private static final String TXT = "item/runic_arrow";
    
    public PhotonicArrows(){
-      id = "photonic_arrows";
+      id = ID;
       name = "Photonic Arrows";
-      rarity = MagicRarity.LEGENDARY;
-      categories = new ArcaneTome.TomeFilter[]{ArcaneTome.TomeFilter.LEGENDARY, ArcaneTome.TomeFilter.ARROWS};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new PhotonicArrowsItem(new FabricItemSettings().maxCount(64).fireproof());
+      item = new PhotonicArrowsItem(new Item.Settings().maxCount(64).fireproof()
+            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Photonic").formatted(Formatting.BOLD,Formatting.AQUA))
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(11271167),new ArrayList<>()))
+      );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_AMETHYST_CLUSTER,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
-      NbtCompound tag = stack.getOrCreateNbt();
-      NbtCompound display = new NbtCompound();
-      NbtList enchants = new NbtList();
-      enchants.add(new NbtCompound()); // Gives enchant glow with no enchants
-      display.putString("Name","[{\"text\":\"Runic Arrows - Photonic\",\"italic\":false,\"color\":\"aqua\",\"bold\":true}]");
-      tag.put("display",display);
-      tag.put("Enchantments",enchants);
-      tag.putInt("CustomPotionColor",11271167);
-      tag.putInt("HideFlags", 255);
-      stack.setCount(64);
-      
-      setBookLore(makeLore());
-      setRecipe(makeRecipe());
-      stack.setNbt(addMagicNbt(tag));
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
       setPrefStack(stack);
    }
    
    @Override
-   public NbtList getItemLore(@Nullable ItemStack itemStack){
-      NbtList loreList = new NbtList();
-      addRunicArrowLore(loreList);
-      loreList.add(NbtString.of("[{\"text\":\"Photonic Arrows:\",\"italic\":false,\"color\":\"aqua\",\"bold\":true},{\"text\":\"\",\"italic\":false,\"color\":\"dark_purple\",\"bold\":false}]"));
-      loreList.add(NbtString.of("[{\"text\":\"These \",\"italic\":false,\"color\":\"white\"},{\"text\":\"Runic Arrows\",\"color\":\"light_purple\"},{\"text\":\" fly perfectly \"},{\"text\":\"straight \",\"color\":\"aqua\"},{\"text\":\"through the air.\",\"color\":\"white\"}]"));
-      loreList.add(NbtString.of("[{\"text\":\"The \",\"italic\":false,\"color\":\"white\"},{\"text\":\"arrows \",\"color\":\"light_purple\"},{\"text\":\"pierce \",\"color\":\"aqua\"},{\"text\":\"all \"},{\"text\":\"entities \",\"color\":\"aqua\"},{\"text\":\"before hitting a \"},{\"text\":\"block\",\"color\":\"aqua\"},{\"text\":\".\"},{\"text\":\"\",\"color\":\"dark_purple\"}]"));
-      return loreList;
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      addRunicArrowLore(lore);
+      lore.add(Text.literal("Photonic Arrows:").formatted(Formatting.BOLD,Formatting.AQUA));
+      lore.add(Text.literal("")
+            .append(Text.literal("These ").formatted(Formatting.WHITE))
+            .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal(" fly perfectly ").formatted(Formatting.WHITE))
+            .append(Text.literal("straight ").formatted(Formatting.AQUA))
+            .append(Text.literal("through the air.").formatted(Formatting.WHITE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("The ").formatted(Formatting.WHITE))
+            .append(Text.literal("arrows ").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("pierce ").formatted(Formatting.AQUA))
+            .append(Text.literal("all ").formatted(Formatting.WHITE))
+            .append(Text.literal("entities ").formatted(Formatting.AQUA))
+            .append(Text.literal("before hitting a ").formatted(Formatting.WHITE))
+            .append(Text.literal("block").formatted(Formatting.AQUA))
+            .append(Text.literal(".").formatted(Formatting.WHITE)));
+     return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    
-   public void shoot(World world, LivingEntity entity, PersistentProjectileEntity proj, int alignmentLvl){
+   public void shoot(World world, LivingEntity entity, ProjectileEntity proj, int alignmentLvl){
       Vec3d startPos = entity.getEyePos();
       Vec3d view = entity.getRotationVecClient();
       Vec3d rayEnd = startPos.add(view.multiply(100));
@@ -109,7 +116,7 @@ public class PhotonicArrows extends RunicArrow {
             hits.add(entityHit.getEntity());
          }
       }while(entityHit != null && entityHit.getType() == HitResult.Type.ENTITY);
-   
+      
       // Secondary hitscan check to add lenience
       List<Entity> hits2 = world.getOtherEntities(entity, box, (e)-> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e) && inRange(e,startPos,raycast.getPos()));
       hits.addAll(hits2);
@@ -134,7 +141,7 @@ public class PhotonicArrows extends RunicArrow {
                
                // Activate Shield of Fortitude
                ItemStack activeItem = hitPlayer.getActiveItem();
-               if(MagicItemUtils.identifyItem(activeItem) instanceof ShieldOfFortitude shield){
+               if(ArcanaItemUtils.identifyItem(activeItem) instanceof ShieldOfFortitude shield){
                   shield.shieldBlock(hitPlayer, activeItem, finalDmg);
                }
             }
@@ -184,37 +191,39 @@ public class PhotonicArrows extends RunicArrow {
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){}
    
-   private MagicItemRecipe makeRecipe(){
-      MagicItemIngredient a = MagicItemIngredient.EMPTY;
-      MagicItemIngredient c = new MagicItemIngredient(Items.AMETHYST_CLUSTER,32,null);
-      MagicItemIngredient g = new MagicItemIngredient(Items.BEACON,4,null);
-      MagicItemIngredient h = new MagicItemIngredient(Items.SPECTRAL_ARROW,64,null);
-      MagicItemIngredient k = new MagicItemIngredient(Items.GLOW_INK_SAC,64,null);
-      GenericMagicIngredient m = new GenericMagicIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
-   
-      MagicItemIngredient[][] ingredients = {
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      ArcanaIngredient a = ArcanaIngredient.EMPTY;
+      ArcanaIngredient c = new ArcanaIngredient(Items.AMETHYST_CLUSTER,32);
+      ArcanaIngredient g = new ArcanaIngredient(Items.BEACON,1);
+      ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
+      ArcanaIngredient k = new ArcanaIngredient(Items.GLOW_INK_SAC,32);
+      GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
+      
+      ArcanaIngredient[][] ingredients = {
             {a,a,c,a,a},
             {a,g,h,g,a},
             {k,h,m,h,k},
             {a,g,h,g,a},
             {a,a,c,a,a}};
-      return new MagicItemRecipe(ingredients, new ForgeRequirement().withFletchery());
+      return new ArcanaRecipe(ingredients,new ForgeRequirement().withFletchery().withEnchanter());
    }
    
-   private List<String> makeLore(){
-      ArrayList<String> list = new ArrayList<>();
-      list.add("{\"text\":\"   Photonic Arrows\\n\\nRarity: Legendary\\n\\n'Straight as an arrow'. What a joke of a saying, I'll show them what straight looks like. Some solar runes coupled with a focusing prism makes a hell of a combo. This brings a new meaning to 'Shooting Lazers'.\"}");
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("   Photonic Arrows\n\nRarity: Sovereign\n\n'Straight as an arrow'. What a joke of a saying, I'll show them what straight looks like. Some solar runes coupled with a focusing prism makes a hell of a combo. This brings a new meaning to 'Shooting Lazers'.").formatted(Formatting.BLACK)));
       return list;
    }
    
-   public class PhotonicArrowsItem extends MagicPolymerArrowItem {
-      public PhotonicArrowsItem(Settings settings){
+   public class PhotonicArrowsItem extends ArcanaPolymerArrowItem {
+      public PhotonicArrowsItem(Item.Settings settings){
          super(getThis(),settings);
       }
       
       @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.MODELS.get(TXT).value();
+         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -223,3 +232,4 @@ public class PhotonicArrows extends RunicArrow {
       }
    }
 }
+

@@ -1,21 +1,16 @@
 package net.borisshoes.arcananovum.areaeffects;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.effects.DamageAmpEffect;
-import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -23,7 +18,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
@@ -70,21 +68,21 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
                StatusEffectInstance effect = pair.getLeft();
                AlchemicalArrowSource source = pair.getRight();
                
-               if(effect.getEffectType().isInstant() && server.getTicks() % 20 == 0){
-                  if(instantEffects.containsKey(effect.getEffectType())){
-                     if(effect.getAmplifier() > instantEffects.get(effect.getEffectType()).getLeft()){
-                        instantEffects.put(effect.getEffectType(),new Pair<>(effect.getAmplifier(),source));
+               if(effect.getEffectType().value().isInstant() && server.getTicks() % 20 == 0){
+                  if(instantEffects.containsKey(effect.getEffectType().value())){
+                     if(effect.getAmplifier() > instantEffects.get(effect.getEffectType().value()).getLeft()){
+                        instantEffects.put(effect.getEffectType().value(),new Pair<>(effect.getAmplifier(),source));
                      }
                   }else{
-                     instantEffects.put(effect.getEffectType(),new Pair<>(effect.getAmplifier(),source));
+                     instantEffects.put(effect.getEffectType().value(),new Pair<>(effect.getAmplifier(),source));
                   }
-               }else if(!effect.getEffectType().isInstant()){
+               }else if(!effect.getEffectType().value().isInstant()){
                   source.applyEffect(world, living, effect);
                }
             }
             
             for(Map.Entry<StatusEffect, Pair<Integer,AlchemicalArrowSource>> instantEntry : instantEffects.entrySet()){
-               instantEntry.getValue().getRight().applyEffect(world, living, new StatusEffectInstance(instantEntry.getKey(),1,instantEntry.getValue().getLeft()));
+               instantEntry.getValue().getRight().applyEffect(world, living, new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(instantEntry.getKey()),1,instantEntry.getValue().getLeft()));
             }
          }
          
@@ -94,7 +92,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
             int random = (int) (Math.random()*effects.size());
             
             if(Math.random() < 0.1){
-               ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(effects.get(random).getLeft().getEffectType().getColor()).toVector3f(),1.2f);
+               ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(effects.get(random).getLeft().getEffectType().value().getColor()).toVector3f(),1.2f);
                world.spawnParticles(dust,pos.getX(),pos.getY(),pos.getZ(),1,0.5,0.5,0.5,0);
             }
          }

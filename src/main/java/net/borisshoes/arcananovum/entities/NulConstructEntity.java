@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.core.MagicItem;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.mixins.WitherEntityAccessor;
 import net.borisshoes.arcananovum.utils.*;
@@ -25,7 +25,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -63,8 +62,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    private PlayerEntity summoner;
    private boolean shouldHaveSummoner;
    private boolean summonerHasWings;
-   private boolean summonerHasMythical;
-   private boolean isMythical;
+   private boolean summonerHasDivine;
+   private boolean isExalted;
    private boolean initializedAttributes = false;
    private float prevHP;
    private int numPlayers;
@@ -100,10 +99,10 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    @Override
    public void modifyRawTrackedData(List<DataTracker.SerializedEntry<?>> data, ServerPlayerEntity player, boolean initial){
-      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getTRACKED_ENTITY_ID_1().getId(), WitherEntityAccessor.getTRACKED_ENTITY_ID_1().getType(), getTrackedEntityId(0)));
-      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getTRACKED_ENTITY_ID_2().getId(), WitherEntityAccessor.getTRACKED_ENTITY_ID_2().getType(), getTrackedEntityId(1)));
-      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getTRACKED_ENTITY_ID_3().getId(), WitherEntityAccessor.getTRACKED_ENTITY_ID_3().getType(), getTrackedEntityId(2)));
-      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getINVUL_TIMER().getId(), WitherEntityAccessor.getINVUL_TIMER().getType(), getInvulnerableTimer()));
+      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getTRACKED_ENTITY_ID_1().id(), WitherEntityAccessor.getTRACKED_ENTITY_ID_1().dataType(), getTrackedEntityId(0)));
+      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getTRACKED_ENTITY_ID_2().id(), WitherEntityAccessor.getTRACKED_ENTITY_ID_2().dataType(), getTrackedEntityId(1)));
+      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getTRACKED_ENTITY_ID_3().id(), WitherEntityAccessor.getTRACKED_ENTITY_ID_3().dataType(), getTrackedEntityId(2)));
+      data.add(new DataTracker.SerializedEntry<>(WitherEntityAccessor.getINVUL_TIMER().id(), WitherEntityAccessor.getINVUL_TIMER().dataType(), getInvulnerableTimer()));
    }
    
    @Override
@@ -161,8 +160,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
            if(this.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)){
               destructiveAura();
            }
-           if(isMythical){
-              mythicalAura();
+           if(isExalted){
+              exaltedAura();
            }
         }
         
@@ -250,21 +249,21 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          if(attacker != null){
             attacker.damage(getDamageSources().thorns(this), amount * 0.5f);
             if(spells.get("dark_conversion").isActive()){
-               heal(amount*0.33f);
+               heal(amount*0.25f);
             }
          }
       }
       if(source.isIn(DamageTypeTags.IS_EXPLOSION)){
-         return isMythical ? 0 : modified * 0.25f;
+         return isExalted ? 0 : modified * 0.25f;
       }
       if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)){
-         return isMythical ? modified * 0.3f : modified * 0.5f;
+         return isExalted ? modified * 0.3f : modified * 0.5f;
       }
       
-      return isMythical ? modified * 0.3f : modified * 0.75f;
+      return isExalted ? modified * 0.3f : modified * 0.75f;
    }
    
-   private void mythicalAura(){
+   private void exaltedAura(){
       List<PlayerEntity> players = getWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(32),(e) -> true);
       
       for(PlayerEntity player : players){
@@ -280,7 +279,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          player.addStatusEffect(weakness);
       }
       
-      this.heal(1.0f);
+      this.heal(0.5f);
    }
    
    private void destructiveAura(){
@@ -315,21 +314,21 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       if(!(getEntityWorld() instanceof ServerWorld serverWorld)) return;
       this.summoner = summoner;
       this.shouldHaveSummoner = true;
-      this.isMythical = mythic;
+      this.isExalted = mythic;
       
       MutableText witherName;
-      if(isMythical){
+      if(isExalted){
          witherName = Text.literal("")
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
                .append(Text.literal("▓").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.OBFUSCATED))
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
                .append(Text.literal(" "))
-               .append(Text.literal("Mythical Nul Construct").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.UNDERLINE))
+               .append(Text.literal("Exalted Nul Construct").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.UNDERLINE))
                .append(Text.literal(" "))
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
                .append(Text.literal("▓").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.OBFUSCATED))
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD));
-         ParticleEffectUtils.mythicalConstructSummon(serverWorld,getPos().add(0,0,0),0);
+         ParticleEffectUtils.exaltedConstructSummon(serverWorld,getPos().add(0,0,0),0);
       }else{
          witherName = Text.literal("")
                .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
@@ -349,13 +348,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       setPersistent();
       
       summonerHasWings = PLAYER_DATA.get(summoner).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA);
-      summonerHasMythical = summonerHasWings || PLAYER_DATA.get(summoner).hasCrafted(ArcanaRegistry.MYTHICAL_CATALYST);
+      summonerHasDivine = summonerHasWings || PLAYER_DATA.get(summoner).hasCrafted(ArcanaRegistry.DIVINE_CATALYST);
       PlayerInventory inv = summoner.getInventory();
       for(int i = 0; i < inv.size(); i++){
          ItemStack stack = inv.getStack(i);
-         MagicItem magicItem = MagicItemUtils.identifyItem(stack);
-         if(magicItem == null) continue;
-         if(magicItem.getRarity() == MagicRarity.MYTHICAL) summonerHasMythical = true;
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
+         if(arcanaItem == null) continue;
+         if(arcanaItem.getRarity() == ArcanaRarity.DIVINE) summonerHasDivine = true;
       }
       numPlayers = serverWorld.getPlayers((player) -> player.distanceTo(this) <= 64).size();
       
@@ -364,7 +363,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       NulConstructDialog.announce(summoner.getServer(),summoner,this, Announcements.SUMMON_TEXT);
       NulConstructEntity construct = this;
       ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), () -> {
-         NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasMythical,summonerHasWings,false,isMythical});
+         NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine,summonerHasWings,false, isExalted});
          setHealth(getMaxHealth());
       }));
    }
@@ -382,7 +381,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             for(Entity entity1 : entities){
                if(!(entity1 instanceof LivingEntity living)) continue;;
                float dmg = living.getMaxHealth() / 7.0f;
-               float mod = living instanceof ServerPlayerEntity ? 0.8f : 0.33f;
+               float mod = living instanceof ServerPlayerEntity ? 0.66f : 0.25f;
                living.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),dmg);
                
                if(conversionActive) heal(dmg*mod);
@@ -454,11 +453,11 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          
          ParticleEffectUtils.nulConstructReflexiveBlast(world,getPos(),0);
          NulConstructDialog.abilityText(summoner,this,"The Construct Surges!");
-      }else if(spell.getName().equals("necrotic_shroud")){
+      }else if(spell.getName().equals("necrotic_shroud")){ // TODO fix possible teleport crash
          spell.setCooldown(450);
          BlockPos tpPos = SpawnPile.makeSpawnLocations(1,25,world,getBlockPos()).get(0);
          ParticleEffectUtils.nulConstructNecroticShroud(world, getPos());
-         teleport(tpPos.getX(),tpPos.getY(),tpPos.getZ());
+         requestTeleport(tpPos.getX(),tpPos.getY(),tpPos.getZ());
          ParticleEffectUtils.nulConstructNecroticShroud(world, tpPos.toCenterPos());
          NulConstructDialog.abilityText(summoner,this,"The Construct Shifts");
       }else if(spell.getName().equals("reflective_armor")){
@@ -519,10 +518,10 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       MinecraftServer server = getServer();
       if(server == null) return;
       
-      if(isMythical){
-         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(63),getPos());
+      if(isExalted){
+         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(16),getPos());
       }else{
-         for(int i = 0; i < (int)(Math.random()*33+16); i++){
+         for(int i = 0; i < (int)(Math.random()*12+4); i++){
             ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
             dropItem(getWorld(),stack,getPos());
          }
@@ -530,7 +529,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       if(summoner == null) return;
       
-      boolean dropped = isMythical ? Math.random() < 0.75 : Math.random() < 0.05;
+      boolean dropped = isExalted || Math.random() < 0.01;
       
       if(dropped){
          ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),false,server);
@@ -538,13 +537,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
-      if(!isMythical){
-         ItemStack stack = ArcanaRegistry.MYTHICAL_CATALYST.addCrafter(ArcanaRegistry.MYTHICAL_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
+      if(!isExalted){
+         ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
          PLAYER_DATA.get(summoner).addCraftedSilent(stack);
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
-      NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasMythical,summonerHasWings,dropped&&!isMythical,isMythical,isMythical&&dropped,isMythical&&!dropped});
+      NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasDivine,summonerHasWings,dropped&&!isExalted, isExalted, isExalted &&dropped, isExalted &&!dropped});
       
       if(summoner instanceof ServerPlayerEntity player){
          ArcanaAchievements.grant(player,ArcanaAchievements.CONSTRUCT_DECONSTRUCTED.id);
@@ -556,7 +555,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    public void deconstruct(){
       if(summoner != null){
-         NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasMythical,summonerHasWings,false,isMythical});
+         NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasDivine,summonerHasWings,false, isExalted});
       }
       
       dropItem(getWorld(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1),getPos());
@@ -596,9 +595,9 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       nbt.putInt("numPlayers",numPlayers);
       nbt.putInt("spellCooldown",spellCooldown);
       nbt.putBoolean("shouldHaveSummoner",shouldHaveSummoner);
-      nbt.putBoolean("summonerHasMythical",summonerHasMythical);
+      nbt.putBoolean("summonerHasDivine", summonerHasDivine);
       nbt.putBoolean("summonerHasWings",summonerHasWings);
-      nbt.putBoolean("isMythical",isMythical);
+      nbt.putBoolean("isExalted", isExalted);
       nbt.putFloat("prevHP",prevHP);
       
       if(summoner != null){
@@ -618,13 +617,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       numPlayers = nbt.getInt("numPlayers");
       spellCooldown = nbt.getInt("spellCooldown");
       shouldHaveSummoner = nbt.getBoolean("shouldHaveSummoner");
-      summonerHasMythical = nbt.getBoolean("summonerHasMythical");
+      summonerHasDivine = nbt.getBoolean("summonerHasDivine");
       summonerHasWings = nbt.getBoolean("summonerHasWings");
-      isMythical = nbt.getBoolean("isMythical");
+      isExalted = nbt.getBoolean("isExalted");
       prevHP = nbt.getFloat("prevHP");
       
       if(nbt.contains("summoner")){
-         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(UUID.fromString(nbt.getString("summoner"))) instanceof PlayerEntity player){
+         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbt.getString("summoner"))) instanceof PlayerEntity player){
             summoner = player;
          }
       }
@@ -642,7 +641,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       skeleton.setHealth(50f);
       skeleton.setPersistent();
       ItemStack axe = new ItemStack(Items.NETHERITE_AXE);
-      axe.addEnchantment(Enchantments.SHARPNESS,2);
+      axe.addEnchantment(MiscUtils.getEnchantment(Enchantments.SHARPNESS),2);
       skeleton.equipStack(EquipmentSlot.MAINHAND, axe);
       skeleton.setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
       StatusEffectInstance fireRes = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE,100000,0,false,false,false);
@@ -1150,7 +1149,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          announce(server,summoner,wither,type,new boolean[]{});
       }
       
-      // hasMythical, hasWings, droppedMemento & !isMythical, isMythical, droppedMemento & isMythical, !droppedMemento & isMythical
+      // hasDivine, hasWings, droppedMemento & !isExalted, isExalted, droppedMemento & isExalted, !droppedMemento & isExalted
       public static void announce(MinecraftServer server, PlayerEntity summoner, WitherEntity wither, Announcements type, boolean[] args){
          DialogHelper dialogHelper = new DialogHelper(DIALOG.get(type),args);
          ArrayList<MutableText> message = dialogHelper.getWeightedResult().message();
