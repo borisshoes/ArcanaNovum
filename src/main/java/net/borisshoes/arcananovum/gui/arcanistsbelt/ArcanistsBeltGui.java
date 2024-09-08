@@ -13,7 +13,6 @@ import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -65,7 +64,7 @@ public class ArcanistsBeltGui extends SimpleGui {
             inv.setStack(slot,stack);
       }
       
-      setTitle(Text.literal(belt.getNameString()));
+      setTitle(belt.getTranslatedName());
    }
    
    @Override

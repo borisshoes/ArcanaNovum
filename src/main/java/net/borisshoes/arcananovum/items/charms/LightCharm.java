@@ -9,9 +9,11 @@ import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -33,7 +35,6 @@ import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
@@ -43,6 +44,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.block.LightBlock.LEVEL_15;
 
@@ -65,7 +67,7 @@ public class LightCharm extends ArcanaItem {
       itemVersion = 1;
       vanillaItem = Items.SUNFLOWER;
       item = new LightCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Charm of Light").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

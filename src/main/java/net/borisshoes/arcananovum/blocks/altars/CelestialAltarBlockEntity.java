@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
 
 public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {

@@ -5,7 +5,6 @@ import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
@@ -99,6 +98,6 @@ public class StardustItem extends NormalPolymerItem {
             {a,m,b,m,a},
             {a,a,a,a,a}};
 
-      return new IngredientCompendiumEntry("Stardust", new ItemStack(ArcanaRegistry.STARDUST), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.STARDUST.getTranslationKey()), new ItemStack(ArcanaRegistry.STARDUST), new ExplainRecipe(ingredients));
    }
 }

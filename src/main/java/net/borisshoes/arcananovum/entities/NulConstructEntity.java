@@ -257,10 +257,10 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          return isExalted ? 0 : modified * 0.25f;
       }
       if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)){
-         return isExalted ? modified * 0.3f : modified * 0.5f;
+         return isExalted ? modified * 0.33f : modified * 0.5f;
       }
       
-      return isExalted ? modified * 0.3f : modified * 0.75f;
+      return isExalted ? modified * 0.5f : modified * 0.75f;
    }
    
    private void exaltedAura(){
@@ -526,8 +526,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
             dropItem(getWorld(),stack,getPos());
             dropItem(getWorld(),stack.copyWithCount(1),getPos());
-            dropItem(getWorld(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,2+(int)(Math.random()*9)),getPos());
          }
+         dropItem(getWorld(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,2+(int)(Math.random()*9)),getPos());
       }
       
       if(summoner == null) return;

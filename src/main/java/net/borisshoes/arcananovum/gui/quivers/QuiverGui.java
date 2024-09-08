@@ -14,7 +14,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,7 @@ public class QuiverGui extends SimpleGui {
             inv.setStack(slot,stack);
       }
       
-      setTitle(Text.literal(quiver.getNameString()));
+      setTitle(quiver.getTranslatedName());
       listener.finishUpdate();
    }
    

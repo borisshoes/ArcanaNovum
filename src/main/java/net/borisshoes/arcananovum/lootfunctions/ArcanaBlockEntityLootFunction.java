@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.lootfunctions;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -14,25 +13,19 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.function.ConditionalLootFunction;
-import net.minecraft.loot.function.CopyComponentsLootFunction;
-import net.minecraft.loot.function.CopyNameLootFunction;
 import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.StringIdentifiable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class ArcanaBlockEntityLootFunction extends ConditionalLootFunction {

@@ -2,12 +2,10 @@ package net.borisshoes.arcananovum.gui.arcanetome;
 
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -28,8 +26,8 @@ public class TransmutationRecipesCompendiumEntry extends CompendiumEntry{
    }
    
    @Override
-   public String getName(){
-      return "Transmutation Recipes";
+   public MutableText getName(){
+      return Text.literal("Transmutation Recipes");
    }
    
    @Override

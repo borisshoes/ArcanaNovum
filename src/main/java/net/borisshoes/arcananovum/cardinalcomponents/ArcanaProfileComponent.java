@@ -329,7 +329,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
             MutableText newCraftMsg = Text.literal("")
                   .append(player.getDisplayName()).formatted(Formatting.ITALIC)
                   .append(Text.literal(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
-                  .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
+                  .append(arcanaItem.getTranslatedName().formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
                   .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
             server.getPlayerManager().broadcast(newCraftMsg.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)))), false);
          }

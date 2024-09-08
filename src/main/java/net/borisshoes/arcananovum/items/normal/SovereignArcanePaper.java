@@ -5,8 +5,6 @@ import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -63,6 +61,6 @@ public class SovereignArcanePaper extends NormalPolymerItem {
             {c,p,p,p,c},
             {c,c,c,c,c}};
       
-      return new IngredientCompendiumEntry("Sovereign Arcane Paper", new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER,8), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER.getTranslationKey()), new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER,8), new ExplainRecipe(ingredients));
    }
 }

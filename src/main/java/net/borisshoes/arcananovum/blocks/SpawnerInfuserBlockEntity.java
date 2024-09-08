@@ -8,7 +8,6 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.gui.arcanesingularity.ArcaneSingularityGui;
 import net.borisshoes.arcananovum.gui.spawnerinfuser.SpawnerInfuserGui;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
@@ -38,9 +37,9 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity implements SidedInventory, PolymerObject, InventoryChangedListener, ArcanaBlockEntity {
    

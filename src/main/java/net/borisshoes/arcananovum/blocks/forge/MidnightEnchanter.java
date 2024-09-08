@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.blocks.forge;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
-import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -34,8 +33,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -44,6 +41,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "midnight_enchanter";
@@ -59,7 +58,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       vanillaItem = Items.ENCHANTING_TABLE;
       block = new MidnightEnchanterBlock(AbstractBlock.Settings.create().mapColor(MapColor.RED).strength(5.0f, 1200.0f).requiresTool().luminance(state -> 7));
       item = new MidnightEnchanterItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Midnight Enchanter").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

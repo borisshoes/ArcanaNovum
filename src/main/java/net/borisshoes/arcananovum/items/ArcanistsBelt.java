@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.ArcanaItemContainerHaver {
 	public static final String ID = "arcanists_belt";
    
@@ -62,7 +64,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       itemVersion = 0;
       vanillaItem = Items.LEAD;
       item = new ArcanistsBeltItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.literal("Arcanist's Belt").formatted(Formatting.BOLD), ArcanaColors.BELT_COLOR))
+            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD), ArcanaColors.BELT_COLOR))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

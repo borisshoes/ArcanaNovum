@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class OverflowingQuiver extends QuiverItem{
 	public static final String ID = "overflowing_quiver";
    
@@ -54,7 +56,7 @@ public class OverflowingQuiver extends QuiverItem{
       color = Formatting.DARK_AQUA;
       vanillaItem = Items.RABBIT_HIDE;
       item = new OverflowingQuiverItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Overflowing Quiver").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

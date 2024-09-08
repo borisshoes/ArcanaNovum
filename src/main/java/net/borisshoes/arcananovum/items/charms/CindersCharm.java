@@ -60,6 +60,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class CindersCharm extends EnergyItem implements LeftClickItem {
@@ -88,7 +89,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       itemVersion = 1;
       vanillaItem = Items.BLAZE_POWDER;
       item = new CindersCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Charm of Cinders").formatted(Formatting.BOLD,Formatting.GOLD))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GOLD))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

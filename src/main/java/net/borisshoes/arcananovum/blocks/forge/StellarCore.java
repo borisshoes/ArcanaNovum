@@ -39,7 +39,6 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -51,6 +50,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Map.entry;
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class StellarCore extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "stellar_core";
@@ -74,7 +74,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       vanillaItem = Items.BLAST_FURNACE;
       this.block = new StellarCoreBlock(AbstractBlock.Settings.create().requiresTool().strength(3.5f,1200.0f).luminance(StellarCoreBlock::getLightLevel).sounds(BlockSoundGroup.METAL));
       item = new StellarCoreItem(block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Stellar Core").formatted(Formatting.BOLD,Formatting.GOLD))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GOLD))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

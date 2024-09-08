@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class EverlastingRocket extends EnergyItem {
@@ -65,7 +66,7 @@ public class EverlastingRocket extends EnergyItem {
       itemVersion = 0;
       vanillaItem = Items.FIREWORK_ROCKET;
       item = new EverlastingRocketItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Everlasting Rocket").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.FIREWORKS, new FireworksComponent(1, List.of()))

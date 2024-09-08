@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class ShieldOfFortitude extends ArcanaItem {
    public static final String ID = "shield_of_fortitude";
    public static final Identifier EFFECT_ID = Identifier.of(ArcanaNovum.MOD_ID,ID);
@@ -59,7 +61,7 @@ public class ShieldOfFortitude extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.SHIELD;
       item = new ShieldOfFortitudeItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Shield of Fortitude").formatted(Formatting.BOLD,Formatting.AQUA))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))

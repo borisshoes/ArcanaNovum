@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class SojournerBoots extends EnergyItem {
@@ -57,7 +58,7 @@ public class SojournerBoots extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.LEATHER_BOOTS;
       item = new SojournerBootsItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Sojourner's Boots").formatted(Formatting.BOLD,Formatting.DARK_GREEN))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_GREEN))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.DYED_COLOR,new DyedColorComponent(0x33A900,false))

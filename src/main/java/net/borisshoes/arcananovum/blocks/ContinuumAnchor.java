@@ -40,7 +40,6 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -54,6 +53,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.ANCHOR_CHUNKS;
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
@@ -71,7 +71,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       vanillaItem = Items.RESPAWN_ANCHOR;
       block = new ContinuumAnchorBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).requiresTool().strength(50.0f, 1200.0f).luminance(state -> ContinuumAnchorBlock.getLightLevel(state, 15)));
       item = new ContinuumAnchorItem(block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Continuum Anchor").formatted(Formatting.BOLD,Formatting.DARK_BLUE))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_BLUE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

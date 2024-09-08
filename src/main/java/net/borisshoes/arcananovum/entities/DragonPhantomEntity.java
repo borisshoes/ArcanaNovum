@@ -1,17 +1,12 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.mixins.EntityAccessor;
-import net.borisshoes.arcananovum.mixins.PhantomEntityAccessor;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -23,8 +18,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-
-import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 

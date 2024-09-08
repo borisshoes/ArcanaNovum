@@ -36,8 +36,6 @@ public class RangedWeaponItemMixin {
    private static void arcananovum_modifyProjectiles(ItemStack stack, ItemStack projectileStack, LivingEntity shooter, boolean multishot, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 0) LocalIntRef i){
       if(i.get() != 0 && (ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENHANCED_INFINITY.id) >= 1 && (projectileStack.isOf(Items.SPECTRAL_ARROW) || projectileStack.isOf(Items.TIPPED_ARROW)))){
          i.set(0);
-      }else if(i.get() < 5 && ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SCATTERSHOT.id) > 0){
-         i.set(5);
       }
    }
    

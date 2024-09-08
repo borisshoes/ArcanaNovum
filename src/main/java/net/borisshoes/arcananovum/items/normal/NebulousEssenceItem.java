@@ -96,6 +96,6 @@ public class NebulousEssenceItem extends NormalPolymerItem {
             {a,a,m,a,a},
             {a,a,a,a,a}};
       
-      return new IngredientCompendiumEntry("Nebulous Essence", new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getTranslationKey()), new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE), new ExplainRecipe(ingredients));
    }
 }

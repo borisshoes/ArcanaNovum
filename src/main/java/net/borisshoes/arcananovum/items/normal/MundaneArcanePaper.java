@@ -61,7 +61,7 @@ public class MundaneArcanePaper extends NormalPolymerItem {
             {c,a,p,a,c},
             {c,c,c,c,c}};
       
-      return new IngredientCompendiumEntry("Mundane Arcane Paper", new ItemStack(ArcanaRegistry.MUNDANE_ARCANE_PAPER,4), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.MUNDANE_ARCANE_PAPER.getTranslationKey()), new ItemStack(ArcanaRegistry.MUNDANE_ARCANE_PAPER,4), new ExplainRecipe(ingredients));
    }
 }
 

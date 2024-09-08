@@ -31,9 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 
 public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;

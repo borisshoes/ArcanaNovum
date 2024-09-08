@@ -670,8 +670,15 @@ public class MidnightEnchanterGui extends SimpleGui {
    }
    
    public void calculateXPCost(){
+      boolean paperUpgrade = stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
       int cost = 0;
       int eCost = 0;
+      if(paperUpgrade){
+         xpCost = 10;
+         essenceCost = stack.getCount();
+         return;
+      }
+      
       ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
       Object2IntOpenHashMap<RegistryEntry<Enchantment>> curEnchants = new Object2IntOpenHashMap<>();
       comp.getEnchantmentEntries().forEach(entry -> curEnchants.addTo(entry.getKey(),entry.getIntValue()));

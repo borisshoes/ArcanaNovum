@@ -253,7 +253,7 @@ public class ArcanaItemUtils {
          String multStr = multiplier > 1 ? " x"+multiplier : "";
          String contStr = arcanaInvItem.getContainerString();
          MutableText line = Text.literal("")
-               .append(Text.literal("- "+ arcanaItem.getNameString()).formatted(Formatting.DARK_AQUA))
+               .append((Text.literal("- ").append(arcanaItem.getTranslatedName())).formatted(Formatting.DARK_AQUA))
                .append(Text.literal(multStr).formatted(Formatting.BLUE))
                .append(Text.literal(" ("+itemConc+")").formatted(Formatting.DARK_GREEN))
                .append(Text.literal(" "+contStr).formatted(Formatting.DARK_PURPLE));

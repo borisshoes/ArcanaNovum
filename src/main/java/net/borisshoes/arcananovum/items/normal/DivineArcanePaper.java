@@ -71,6 +71,6 @@ public class DivineArcanePaper extends NormalPolymerItem {
             {b,w,w,w,w},
             {w,w,w,w,w}};
       
-      return new IngredientCompendiumEntry("Divine Arcane Paper", new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,1), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.DIVINE_ARCANE_PAPER.getTranslationKey()), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,1), new ExplainRecipe(ingredients));
    }
 }

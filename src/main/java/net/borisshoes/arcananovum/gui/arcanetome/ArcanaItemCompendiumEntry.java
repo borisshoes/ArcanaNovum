@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.gui.arcanetome;
 
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.minecraft.text.MutableText;
 
 public class ArcanaItemCompendiumEntry extends CompendiumEntry{
    
@@ -17,8 +18,8 @@ public class ArcanaItemCompendiumEntry extends CompendiumEntry{
    
    
    @Override
-   public String getName(){
-      return arcanaItem.getNameString();
+   public MutableText getName(){
+      return arcanaItem.getTranslatedName();
    }
    
    @Override

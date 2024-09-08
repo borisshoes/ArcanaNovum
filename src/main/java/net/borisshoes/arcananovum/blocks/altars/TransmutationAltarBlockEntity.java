@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 import static net.borisshoes.arcananovum.blocks.altars.TransmutationAltar.TransmutationAltarBlock.HORIZONTAL_FACING;
 
 public class TransmutationAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {

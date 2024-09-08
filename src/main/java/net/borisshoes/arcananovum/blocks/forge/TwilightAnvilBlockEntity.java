@@ -40,8 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
-
 public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;

@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AquaticEversource extends ArcanaItem {
@@ -72,7 +73,7 @@ public class AquaticEversource extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED,TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.WATER_BUCKET;
       item = new AquaticEversourceItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Aquatic Eversource").formatted(Formatting.BOLD,Formatting.BLUE))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.BLUE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

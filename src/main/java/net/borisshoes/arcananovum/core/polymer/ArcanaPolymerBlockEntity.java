@@ -13,11 +13,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -28,6 +24,7 @@ import net.minecraft.world.event.listener.GameEventListener;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
+import java.util.UUID;
 
 public abstract class ArcanaPolymerBlockEntity extends BlockWithEntity implements PolymerBlock {
    protected ArcanaPolymerBlockEntity(Settings settings){
@@ -47,6 +44,9 @@ public abstract class ArcanaPolymerBlockEntity extends BlockWithEntity implement
          customName = stack.get(DataComponentTypes.CUSTOM_NAME).getString();
       }
       
+      if(uuid == null || uuid.isEmpty()){
+         uuid = UUID.randomUUID().toString();
+      }
       arcanaBlock.initialize(augments,crafterId,uuid,synthetic,customName);
    }
    

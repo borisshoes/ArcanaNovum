@@ -11,8 +11,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 
-import java.util.UUID;
-
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
 public class DragonRespawnTimerCallback extends TickTimerCallback{

@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class PickaxeOfCeptyus extends ArcanaItem {
@@ -89,7 +90,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_PICKAXE;
       item = new PickaxeOfCeptyusItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Ancient Pickaxe of Ceptyus").formatted(Formatting.BOLD,Formatting.DARK_AQUA))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))

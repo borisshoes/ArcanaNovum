@@ -1,7 +1,5 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
-import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;

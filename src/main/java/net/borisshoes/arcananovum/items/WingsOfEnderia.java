@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class WingsOfEnderia extends EnergyItem {
 	public static final String ID = "wings_of_enderia";
    
@@ -43,7 +45,7 @@ public class WingsOfEnderia extends EnergyItem {
       itemVersion = 1;
       vanillaItem = Items.ELYTRA;
       item = new WingsOfEnderiaItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Armored Wings of Enderia").formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))

@@ -90,7 +90,7 @@ public class TomeGui extends SimpleGui {
             if(index == 4){
                buildProfileGui(player);
             }else if(indexInCenter){
-               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
                int ind = (7*(index/9 - 1) + (index % 9 - 1)) + 28*(settings.getPage()-1);
                if(ind >= items.size()) return true;
                CompendiumEntry entry = items.get(ind);
@@ -136,7 +136,7 @@ public class TomeGui extends SimpleGui {
                   settings.setFilterType(TomeFilter.cycleFilter(settings.getFilterType(),backwards));
                }
                
-               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
                int numPages = (int) Math.ceil((float)items.size()/28.0);
                if(settings.getPage() > numPages){
                   settings.setPage(numPages);
@@ -148,7 +148,7 @@ public class TomeGui extends SimpleGui {
                   buildCompendiumGui(this,player,settings);
                }
             }else if(index == 53){
-               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+               List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
                int numPages = (int) Math.ceil((float)items.size()/28.0);
                if(settings.getPage() < numPages){
                   settings.setPage(settings.getPage()+1);
@@ -357,9 +357,9 @@ public class TomeGui extends SimpleGui {
                if(settings.hideCompletedResearch()){
                   tasks = tasks.stream().filter(task -> !task.isAcquired(player)).toList();
                }
-               int numPages = (int) (Math.ceil(tasks.size() / 28.0));
-               if(settings.getPage() > numPages){
-                  settings.setPage(numPages);
+               int numPages = Math.max(1,(int) (Math.ceil(tasks.size() / 28.0)));
+               if(settings.getResearchPage() > numPages){
+                  settings.setResearchPage(numPages);
                }
                buildResearchGui(player,settings,arcanaItem.getId());
             }else if(index == 45){
@@ -532,7 +532,7 @@ public class TomeGui extends SimpleGui {
    }
    
    public static void buildCompendiumGui(SimpleGui gui, ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
-      List<CompendiumEntry> items = sortedFilteredEntryList(settings);
+      List<CompendiumEntry> items = sortedFilteredEntryList(settings, player);
       if(gui instanceof TomeGui tomeGui){
          tomeGui.setMode(TomeMode.COMPENDIUM);
       }else{
@@ -668,7 +668,7 @@ public class TomeGui extends SimpleGui {
                ItemStack displayItem = achievement.getDisplayItem();
                ArcanaItem.putProperty(displayItem,ArcaneTome.DISPLAY_TAG,achievement.getArcanaItem().getId());
                GuiElementBuilder achievementItem = GuiElementBuilder.from(displayItem);
-               achievementItem.hideDefaultTooltip().setName(Text.literal(achievement.name+" - "+achievement.getArcanaItem().getNameString()).formatted(Formatting.LIGHT_PURPLE))
+               achievementItem.hideDefaultTooltip().setName(Text.literal("").formatted(Formatting.LIGHT_PURPLE).append(achievement.getTranslatedName()).append(" - ").append(achievement.getArcanaItem().getTranslatedName()))
                      .addLoreLine(TextUtils.removeItalics(Text.literal("")
                            .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
                            .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
@@ -912,7 +912,7 @@ public class TomeGui extends SimpleGui {
          int augmentLvl = profile.getAugmentLevel(augment.id);
          
          GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
-         augmentItem1.hideDefaultTooltip().setName(Text.literal(augment.name).formatted(Formatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
+         augmentItem1.hideDefaultTooltip().setName(augment.getTranslatedName().formatted(Formatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
          
          for(String s : augment.getDescription()){
             augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal(s).formatted(Formatting.GRAY)));
@@ -973,7 +973,7 @@ public class TomeGui extends SimpleGui {
          gui.clearSlot(46+achieveSlots[i]);
          
          GuiElementBuilder achievementItem = GuiElementBuilder.from(achievement.getDisplayItem());
-         achievementItem.hideDefaultTooltip().setName(Text.literal(achievement.name).formatted(Formatting.LIGHT_PURPLE))
+         achievementItem.hideDefaultTooltip().setName(achievement.getTranslatedName().formatted(Formatting.LIGHT_PURPLE))
                .addLoreLine(TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
                      .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
@@ -1013,10 +1013,10 @@ public class TomeGui extends SimpleGui {
          gui.setSlot(46+achieveSlots[i], achievementItem);
       }
       
-      gui.setTitle(Text.literal(arcanaItem.getNameString()));
+      gui.setTitle(arcanaItem.getTranslatedName());
    }
    
-   public void buildRecipeGui(SimpleGui gui, String name, ArcanaRecipe recipe, ItemStack output){
+   public void buildRecipeGui(SimpleGui gui, Text name, ArcanaRecipe recipe, ItemStack output){
       if(gui instanceof TomeGui tomeGui){
          tomeGui.setMode(TomeMode.RECIPE);
       }
@@ -1083,7 +1083,7 @@ public class TomeGui extends SimpleGui {
          MutableText requiresText = Text.literal("")
                .append(Text.literal("Requires").formatted(Formatting.GREEN))
                .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
-               .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA));
+               .append(item.getTranslatedName().formatted(Formatting.AQUA));
          recipeItem.addLoreLine(TextUtils.removeItalics(requiresText));
          reqItem.setName(requiresText);
          gui.setSlot(slotCount,reqItem);
@@ -1093,7 +1093,7 @@ public class TomeGui extends SimpleGui {
       recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("Does not include item data").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC)));
       gui.setSlot(43,recipeItem);
       
-      gui.setTitle(Text.literal("Recipe for "+ name));
+      gui.setTitle(Text.literal("Recipe for ").append(name));
    }
    
    public void buildResearchGui(ServerPlayerEntity player, CompendiumSettings settings, String id){
@@ -1210,7 +1210,7 @@ public class TomeGui extends SimpleGui {
       }
       setSlot(49,notes);
       
-      setTitle(Text.literal(arcanaItem.getNameString()+" Research"));
+      setTitle(arcanaItem.getTranslatedName().append(Text.literal(" Research")));
    }
    
    public static MutableText getIngredStr(Map.Entry<String, Pair<Integer, ItemStack>> ingred){
@@ -1240,7 +1240,7 @@ public class TomeGui extends SimpleGui {
          ItemStack item = this.getSlot(25).getItemStack();
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          tome.openGui(player,TomeMode.COMPENDIUM,settings);
-      }else if(mode == TomeMode.ITEM){ // Item gui to compendium
+      }else if(mode == TomeMode.ITEM || mode == TomeMode.RESEARCH){ // Item gui to compendium
          tome.openGui(player,TomeMode.COMPENDIUM,settings);
       }
    }
@@ -1289,14 +1289,14 @@ public class TomeGui extends SimpleGui {
       return book;
    }
    
-   public static List<CompendiumEntry> sortedFilteredEntryList(CompendiumSettings settings){
+   public static List<CompendiumEntry> sortedFilteredEntryList(CompendiumSettings settings, ServerPlayerEntity player){
       TomeFilter filterType = settings.getFilterType();
       TomeSort sortType = settings.getSortType();
       List<CompendiumEntry> items;
       if(filterType != null){
          items = new ArrayList<>();
          for(CompendiumEntry entry : RECOMMENDED_LIST){
-            if(TomeFilter.matchesFilter(filterType, entry)){
+            if(TomeFilter.matchesFilter(filterType, entry, player)){
                items.add(entry);
             }
          }
@@ -1309,14 +1309,14 @@ public class TomeGui extends SimpleGui {
             items.sort(Comparator.comparingInt(RECOMMENDED_LIST::indexOf));
          }
          case NAME -> {
-            Comparator<CompendiumEntry> nameComparator = Comparator.comparing(CompendiumEntry::getName);
+            Comparator<CompendiumEntry> nameComparator = Comparator.comparing(entry -> entry.getName().getString());
             items.sort(nameComparator);
          }
          case RARITY_DESC -> {
             Comparator<CompendiumEntry> rarityDescComparator = (CompendiumEntry i1, CompendiumEntry i2) -> {
                int rarityCompare = (i2.getRarityValue() - i1.getRarityValue());
                if(rarityCompare == 0){
-                  return i1.getName().compareTo(i2.getName());
+                  return i1.getName().getString().compareTo(i2.getName().getString());
                }else{
                   return rarityCompare;
                }
@@ -1327,7 +1327,7 @@ public class TomeGui extends SimpleGui {
             Comparator<CompendiumEntry> rarityAscComparator = (CompendiumEntry i1, CompendiumEntry i2) -> {
                int rarityCompare = (i1.getRarityValue() - i2.getRarityValue());
                if(rarityCompare == 0){
-                  return i1.getName().compareTo(i2.getName());
+                  return i1.getName().getString().compareTo(i2.getName().getString());
                }else{
                   return rarityCompare;
                }
@@ -1594,6 +1594,8 @@ public class TomeGui extends SimpleGui {
    // TODO: Refactor filters and sorts
    public enum TomeFilter{
       NONE("None"),
+      RESEARCHED("Researched"),
+      NOT_RESEARCHED("Not Researched"),
       MUNDANE("Mundane"),
       EMPOWERED("Empowered"),
       EXOTIC("Exotic"),
@@ -1620,6 +1622,8 @@ public class TomeGui extends SimpleGui {
          
          return switch(filter){ // Only Black left for future usage (before repeats)
             case NONE -> text.formatted(Formatting.WHITE);
+            case RESEARCHED -> text.formatted(Formatting.LIGHT_PURPLE);
+            case NOT_RESEARCHED -> text.formatted(Formatting.DARK_GRAY);
             case MUNDANE -> text.formatted(Formatting.GRAY);
             case EMPOWERED -> text.formatted(Formatting.GREEN);
             case EXOTIC -> text.formatted(Formatting.AQUA);
@@ -1651,8 +1655,18 @@ public class TomeGui extends SimpleGui {
          return filters[ind];
       }
       
-      public static boolean matchesFilter(TomeFilter filter, CompendiumEntry entry){
+      public static boolean matchesFilter(TomeFilter filter, CompendiumEntry entry, ServerPlayerEntity player){
          if(filter == TomeFilter.NONE) return true;
+         if(filter == RESEARCHED || filter == NOT_RESEARCHED){
+            if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
+               if(filter == RESEARCHED){
+                  return PLAYER_DATA.get(player).hasResearched(arcanaEntry.getArcanaItem());
+               }else{
+                  return !PLAYER_DATA.get(player).hasResearched(arcanaEntry.getArcanaItem());
+               }
+            }
+            return false;
+         }
          TomeFilter[] cats = entry.getCategories();
          if(cats == null){
             log(2,"No categories found for: "+entry.getName());

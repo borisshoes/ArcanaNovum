@@ -19,7 +19,7 @@ public abstract class RunicArrow extends ArcanaItem {
       if(arrow.contains(DataComponentTypes.CUSTOM_NAME)){
          return Text.literal(arrow.getName().getString()).formatted(color,Formatting.BOLD);
       }else{
-         return Text.literal(getNameString()).formatted(color,Formatting.BOLD);
+         return getTranslatedName().formatted(color,Formatting.BOLD);
       }
    }
 }

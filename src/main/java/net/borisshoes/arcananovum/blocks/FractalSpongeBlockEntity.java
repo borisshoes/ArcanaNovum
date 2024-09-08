@@ -20,8 +20,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
-
 public class FractalSpongeBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;

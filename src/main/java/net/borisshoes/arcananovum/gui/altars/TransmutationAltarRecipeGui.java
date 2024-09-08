@@ -26,6 +26,7 @@ import java.util.Optional;
 
 public class TransmutationAltarRecipeGui extends SimpleGui {
    private int page = 1;
+   private int commiePage = 1;
    private String curRecipeName = "";
    private CommutativeTransmutationRecipe curRecipe = null;
    private final List<TransmutationRecipe> recipes;
@@ -72,14 +73,15 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             curRecipeName = "";
             curRecipe = null;
             buildRecipeListGui();
+            commiePage = 1;
          }else if(index == 45){
-            if(page > 1){
-               page--;
+            if(commiePage > 1){
+               commiePage--;
                buildRecipeViewGui(curRecipeName);
             }
          }else if(index == 53){
-            if(page < numPages){
-               page++;
+            if(commiePage < numPages){
+               commiePage++;
                buildRecipeViewGui(curRecipeName);
             }
          }
@@ -146,6 +148,24 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                         .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
                         .append(Text.literal(infusion.getOutput().getCount()+" ").formatted(Formatting.DARK_AQUA))
                         .append(Text.translatable(infusion.getOutput().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
+                        .append(Text.translatable(recipe.getReagent1().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
+                        .append(Text.translatable(recipe.getReagent2().getTranslationKey()).formatted(Formatting.AQUA)))));
+               }else if(recipe instanceof PermutationTransmutationRecipe permutation){
+                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Permutation Transmutation").formatted(Formatting.DARK_AQUA)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Input: ").formatted(Formatting.GRAY))
+                        .append(Text.literal(permutation.getInput().getCount()+" ").formatted(Formatting.DARK_AQUA))
+                        .append(Text.translatable(permutation.getInput().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
+                        .append(permutation.getOutputDescription()).formatted(Formatting.AQUA))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
@@ -227,17 +247,17 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       nextArrow.setName((Text.literal("")
             .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
       nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+            .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
       setSlot(53,nextArrow);
       
       GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
       prevArrow.setName((Text.literal("")
             .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
       prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+            .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
       setSlot(45,prevArrow);
       
-      int k = (page-1)*28;
+      int k = (commiePage-1)*28;
       for(int i = 0; i < 4; i++){
          for(int j = 0; j < 7; j++){
             if(k < inputs.size()){

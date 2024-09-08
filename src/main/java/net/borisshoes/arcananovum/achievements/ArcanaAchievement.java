@@ -17,6 +17,7 @@ import net.minecraft.util.Formatting;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public abstract class ArcanaAchievement {
@@ -45,6 +46,14 @@ public abstract class ArcanaAchievement {
       this.xpReward = xpReward;
       this.pointsReward = pointsReward;
       this.acquired = false;
+   }
+   
+   public String getTranslationKey(){
+      return "achievement."+MOD_ID+".name."+this.id;
+   }
+   
+   public MutableText getTranslatedName(){
+      return Text.translatableWithFallback(getTranslationKey(),name);
    }
    
    protected void setAcquired(boolean acquired){
@@ -95,9 +104,9 @@ public abstract class ArcanaAchievement {
                   .append(Text.literal("=== ").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK))
                   .append(player.getDisplayName())
                   .append(Text.literal(" has mastered all Arcana Achievements and became ").formatted(Formatting.DARK_PURPLE))
-                  .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                               Text.literal("")
-                                    .append(Text.literal(name).formatted(Formatting.DARK_AQUA))
+                                    .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
                                     .append(Text.literal("")
                                           .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))
@@ -114,9 +123,9 @@ public abstract class ArcanaAchievement {
             msgs.add(Text.literal("")
                   .append(player.getDisplayName())
                   .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.DARK_PURPLE))
-                  .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                               Text.literal("")
-                                    .append(Text.literal(name).formatted(Formatting.DARK_AQUA))
+                                    .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
                                     .append(Text.literal("")
                                           .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))
@@ -131,9 +140,9 @@ public abstract class ArcanaAchievement {
             msgs.add(Text.literal("")
                   .append(player.getDisplayName())
                   .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal("[" + name + "]").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                               Text.literal("")
-                                    .append(Text.literal(name).formatted(Formatting.AQUA))
+                                    .append(getTranslatedName().formatted(Formatting.AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))
                                     .append(Text.literal("")
                                           .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 
 public abstract class ResearchTask {
    
@@ -35,6 +37,10 @@ public abstract class ResearchTask {
       this.description = description;
       this.displayItem = displayItem;
       this.prerequisites = new RegistryKey[0];
+   }
+   
+   public String getTranslationKey(){
+      return "research."+MOD_ID+".name."+this.id;
    }
    
    public enum Type{

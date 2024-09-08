@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class ArcaneTome extends ArcanaItem {
 	public static final String ID = "arcane_tome";
    
@@ -54,7 +56,7 @@ public class ArcaneTome extends ArcanaItem {
       itemVersion = 1;
       vanillaItem = Items.KNOWLEDGE_BOOK;
       item = new ArcaneTomeItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Tome of Arcana Novum").formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );
@@ -136,10 +138,10 @@ public class ArcaneTome extends ArcanaItem {
    }
    
    public void openRecipeGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings, ArcanaItem arcanaItem){
-      openRecipeGui(player,settings,arcanaItem.getNameString(),arcanaItem.getRecipe(),arcanaItem.getPrefItem());
+      openRecipeGui(player,settings,arcanaItem.getTranslatedName(),arcanaItem.getRecipe(),arcanaItem.getPrefItem());
    }
    
-   public void openRecipeGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings, String name, ArcanaRecipe recipe, ItemStack output){
+   public void openRecipeGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings, Text name, ArcanaRecipe recipe, ItemStack output){
       TomeGui gui = new TomeGui(ScreenHandlerType.GENERIC_9X5,player, TomeGui.TomeMode.RECIPE,this,settings);
       gui.buildRecipeGui(gui,name,recipe,output);
       gui.setMode(TomeGui.TomeMode.RECIPE);
@@ -177,9 +179,9 @@ public class ArcaneTome extends ArcanaItem {
       ExplainIngredient t = new ExplainIngredient(Items.ENCHANTING_TABLE,1,"Enchanting Table")
             .withName(Text.literal("Enchanting Table").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
             .withLore(List.of(Text.literal("Place an Enchanting Table in the World").formatted(Formatting.DARK_PURPLE)));
-      ExplainIngredient b = new ExplainIngredient(Items.BOOK,1,"Book")
-            .withName(Text.literal("Book").formatted(Formatting.AQUA,Formatting.BOLD))
-            .withLore(List.of(Text.literal("Place a Book onto the Enchanting Table").formatted(Formatting.DARK_PURPLE)));
+      ExplainIngredient p = new ExplainIngredient(ArcanaRegistry.MUNDANE_ARCANE_PAPER,4,"Mundane Arcane Paper")
+            .withName(Text.literal("Mundane Arcane Paper").formatted(Formatting.AQUA))
+            .withLore(List.of(Text.literal("Place the Paper onto the Enchanting Table").formatted(Formatting.DARK_PURPLE)));
       ExplainIngredient e = new ExplainIngredient(Items.ENDER_EYE,1,"Eye of Ender")
             .withName(Text.literal("Eye of Ender").formatted(Formatting.GREEN,Formatting.BOLD))
             .withLore(List.of(Text.literal("Place an Eye of Ender onto the Enchanting Table").formatted(Formatting.DARK_PURPLE)));
@@ -187,7 +189,7 @@ public class ArcaneTome extends ArcanaItem {
       ExplainIngredient[][] ingredients = {
             {a,a,a,a,a},
             {a,a,e,a,a},
-            {a,a,b,a,a},
+            {a,a,p,a,a},
             {a,a,t,a,a},
             {a,a,a,a,a}};
       return new ExplainRecipe(ingredients);

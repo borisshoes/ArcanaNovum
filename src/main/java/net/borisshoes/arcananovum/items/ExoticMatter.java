@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class ExoticMatter extends EnergyItem {
 	public static final String ID = "exotic_matter";
    
@@ -46,7 +48,7 @@ public class ExoticMatter extends EnergyItem {
       initEnergy = 600000;
       vanillaItem = Items.STRUCTURE_BLOCK;
       item = new ExoticMatterItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Exotic Matter").formatted(Formatting.BOLD,Formatting.BLUE))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.BLUE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

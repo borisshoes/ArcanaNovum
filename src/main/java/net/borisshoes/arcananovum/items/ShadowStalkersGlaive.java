@@ -41,9 +41,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShadowStalkersGlaive extends EnergyItem {
@@ -62,7 +62,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_SWORD;
       item = new ShadowStalkersGlaiveItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.literal("Shadow Stalker's Glaive").formatted(Formatting.BOLD),0x222222))
+            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD),0x222222))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))

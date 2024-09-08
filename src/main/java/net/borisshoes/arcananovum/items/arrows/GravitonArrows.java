@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class GravitonArrows extends RunicArrow {
 	public static final String ID = "graviton_arrows";
    
@@ -61,7 +63,7 @@ public class GravitonArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new GravitonArrowsItem(new Item.Settings().maxCount(64).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Graviton").formatted(Formatting.BOLD,Formatting.DARK_BLUE))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_BLUE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(869887),new ArrayList<>()))

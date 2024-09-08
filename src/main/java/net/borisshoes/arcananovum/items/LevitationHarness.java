@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class LevitationHarness extends EnergyItem {
@@ -75,7 +76,7 @@ public class LevitationHarness extends EnergyItem {
       itemVersion = 1;
       vanillaItem = Items.LEATHER_CHESTPLATE;
       item = new LevitationHarnessItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Levitation Harness").formatted(Formatting.BOLD,Formatting.GRAY))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GRAY))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0x966996,false))

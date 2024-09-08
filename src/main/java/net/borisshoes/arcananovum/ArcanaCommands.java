@@ -187,7 +187,7 @@ public class ArcanaCommands {
                   .append(Text.literal(storage).formatted(Formatting.BLUE))
                   .append(Text.literal(") ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal("[").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.AQUA))
+                  .append(arcanaItem.getTranslatedName().formatted(Formatting.AQUA))
                   .append(Text.literal("] ID: ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal(uuid).formatted(Formatting.DARK_PURPLE));
             response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
@@ -195,7 +195,7 @@ public class ArcanaCommands {
             if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/ arcanaItem.getPrefItem().getCount())){
                MutableText duplicateWarning = Text.literal("")
                      .append(Text.literal("Duplicate: ").formatted(Formatting.RED))
-                     .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.AQUA))
+                     .append(arcanaItem.getTranslatedName().formatted(Formatting.AQUA))
                      .append(Text.literal(" ID: ").formatted(Formatting.LIGHT_PURPLE))
                      .append(Text.literal(uuid).formatted(Formatting.DARK_PURPLE));
                response2.add(duplicateWarning);
@@ -610,10 +610,10 @@ public class ArcanaCommands {
          }
          if(level == 0){
             PLAYER_DATA.get(player).removeAugment(id);
-            src.sendMessage(Text.literal("Successfully removed "+augment.name+" from ").append(player.getDisplayName()));
+            src.sendMessage(Text.literal("Successfully removed ").append(augment.getTranslatedName()).append(" from ").append(player.getDisplayName()));
          }else{
             PLAYER_DATA.get(player).setAugmentLevel(id,level);
-            src.sendMessage(Text.literal("Successfully set "+augment.name+" to level "+level+" for ").append(player.getDisplayName()));
+            src.sendMessage(Text.literal("Successfully set ").append(augment.getTranslatedName()).append(" to level "+level+" for ").append(player.getDisplayName()));
          }
          return 1;
       }catch(Exception e){
@@ -684,7 +684,7 @@ public class ArcanaCommands {
             return -1;
          }
          if(ArcanaAugments.applyAugment(handItem,id,level,false)){
-            src.sendMessage(Text.literal("Successfully applied "+augment.name+" at level "+level+" for ").append(player.getDisplayName()));
+            src.sendMessage(Text.literal("Successfully applied ").append(augment.getTranslatedName()).append(" at level "+level+" for ").append(player.getDisplayName()));
             return 1;
          }else{
             src.sendError(Text.literal("Couldn't apply augment (Cannot downgrade existing augments)"));
@@ -727,14 +727,14 @@ public class ArcanaCommands {
          }
          
          MutableText feedback = Text.literal("");
-         String itemName = isAll ? "All Arcana Items" : arcanaItem.getNameString();
+         MutableText itemName = isAll ? Text.literal("All Arcana Items") : arcanaItem.getTranslatedName();
          if(grant){
             feedback.append(Text.literal("Added Research for [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(Text.literal(itemName).formatted(Formatting.AQUA));
+            feedback.append(itemName.formatted(Formatting.AQUA));
             feedback.append(Text.literal("] to ").formatted(Formatting.LIGHT_PURPLE));
          }else{
             feedback.append(Text.literal("Removed Research for [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(Text.literal(itemName).formatted(Formatting.AQUA));
+            feedback.append(itemName.formatted(Formatting.AQUA));
             feedback.append(Text.literal("] from ").formatted(Formatting.LIGHT_PURPLE));
          }
          if(targets.size() == 1){
@@ -767,7 +767,7 @@ public class ArcanaCommands {
          MutableText feedback = Text.literal("")
                .append(target.getDisplayName().copy())
                .append(Text.literal(researched ? " has researched [" : " has NOT researched [").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(arcanaItem.getNameString()).formatted(Formatting.AQUA))
+               .append(arcanaItem.getTranslatedName().formatted(Formatting.AQUA))
                .append(Text.literal("]").formatted(Formatting.LIGHT_PURPLE));
          
          source.sendFeedback(()->feedback,false);
@@ -799,11 +799,11 @@ public class ArcanaCommands {
          MutableText feedback = Text.literal("");
          if(grant){
             feedback.append(Text.literal("Granted Achievement [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(Text.literal(achievement.name).formatted(Formatting.AQUA));
+            feedback.append(achievement.getTranslatedName().formatted(Formatting.AQUA));
             feedback.append(Text.literal("] to ").formatted(Formatting.LIGHT_PURPLE));
          }else{
             feedback.append(Text.literal("Revoked Achievement [").formatted(Formatting.LIGHT_PURPLE));
-            feedback.append(Text.literal(achievement.name).formatted(Formatting.AQUA));
+            feedback.append(achievement.getTranslatedName().formatted(Formatting.AQUA));
             feedback.append(Text.literal("] from ").formatted(Formatting.LIGHT_PURPLE));
          }
          if(targets.size() == 1){
@@ -837,7 +837,7 @@ public class ArcanaCommands {
          MutableText header = Text.literal("")
                .append(target.getDisplayName().copy().append("'s"))
                .append(Text.literal(" progress towards [").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.literal(achieve.name).formatted(Formatting.AQUA))
+               .append(achieve.getTranslatedName().formatted(Formatting.AQUA))
                .append(Text.literal("]: ").formatted(Formatting.LIGHT_PURPLE));
          
          source.sendFeedback(()->header,false);
@@ -862,13 +862,13 @@ public class ArcanaCommands {
    
          for(ServerPlayerEntity target : targets){
             ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),target.getUuidAsString(),true,source.getServer());
-   
+            
             if(item == null){
-               source.sendMessage(Text.literal("No Preferred Item Found For: "+ arcanaItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
+               source.sendMessage((Text.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).formatted(Formatting.RED, Formatting.ITALIC));
                return 0;
             }else{
                String uuid = ArcanaItem.getUUID(item);
-               source.sendFeedback(() -> Text.literal("Generated New: "+ arcanaItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN), false);
+               source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
                target.giveItemStack(item);
             }
          }
@@ -889,11 +889,11 @@ public class ArcanaCommands {
          ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),true,source.getServer());
          
          if(item == null){
-            source.sendMessage(Text.literal("No Preferred Item Found For: "+ arcanaItem.getNameString()).formatted(Formatting.RED, Formatting.ITALIC));
+            source.sendMessage((Text.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }else{
             String uuid = ArcanaItem.getUUID(item);
-            source.sendMessage(Text.literal("Generated New: "+ arcanaItem.getNameString()+" with UUID "+uuid).formatted(Formatting.GREEN));
+            source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
             source.getPlayerOrThrow().giveItemStack(item);
             return 1;
          }

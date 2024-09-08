@@ -33,9 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
-import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
-
 public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;

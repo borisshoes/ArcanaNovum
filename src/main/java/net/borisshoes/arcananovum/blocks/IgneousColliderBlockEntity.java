@@ -37,9 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class IgneousColliderBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {

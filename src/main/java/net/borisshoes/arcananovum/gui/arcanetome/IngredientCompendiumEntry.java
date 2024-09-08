@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -14,9 +15,9 @@ import java.util.List;
 public class IngredientCompendiumEntry extends CompendiumEntry{
    
    private final ExplainRecipe recipe;
-   private final String name;
+   private final Text name;
    
-   public IngredientCompendiumEntry(String name, ItemStack displayStack, ExplainRecipe recipe){
+   public IngredientCompendiumEntry(Text name, ItemStack displayStack, ExplainRecipe recipe){
       super(new TomeGui.TomeFilter[]{TomeGui.TomeFilter.INGREDIENT}, displayStack);
       this.recipe = recipe;
       this.name = name;
@@ -38,8 +39,8 @@ public class IngredientCompendiumEntry extends CompendiumEntry{
    }
    
    @Override
-   public String getName(){
-      return name;
+   public MutableText getName(){
+      return name.copy();
    }
    
    @Override

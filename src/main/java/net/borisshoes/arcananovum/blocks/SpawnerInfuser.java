@@ -18,7 +18,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
@@ -28,8 +27,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
@@ -53,6 +50,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class SpawnerInfuser extends ArcanaBlock {
 	public static final String ID = "spawner_infuser";
    
@@ -67,7 +66,7 @@ public class SpawnerInfuser extends ArcanaBlock {
       vanillaItem = Items.SCULK_SHRIEKER;
       block = new SpawnerInfuserBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).strength(3.0f, 1200.0f).sounds(BlockSoundGroup.SCULK_SHRIEKER));
       item = new SpawnerInfuserItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Spawner Infuser").formatted(Formatting.BOLD,Formatting.DARK_GREEN))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_GREEN))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

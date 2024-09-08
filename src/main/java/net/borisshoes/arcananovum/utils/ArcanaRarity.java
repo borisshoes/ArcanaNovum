@@ -8,19 +8,27 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public enum ArcanaRarity {
-   MUNDANE(0,"Mundane"),
-   EMPOWERED(1,"Empowered"),
-   EXOTIC(2,"Exotic"),
-   SOVEREIGN(3,"Sovereign"),
-   DIVINE(4,"Divine");
+   MUNDANE(0,"Mundane","mundane"),
+   EMPOWERED(1,"Empowered","empowered"),
+   EXOTIC(2,"Exotic","exotic"),
+   SOVEREIGN(3,"Sovereign","sovereign"),
+   DIVINE(4,"Divine","divine");
    
    public final String label;
    public final int rarity;
+   public final String id;
    
-   ArcanaRarity(int rarity, String label){
+   ArcanaRarity(int rarity, String label, String id){
       this.label = label;
       this.rarity = rarity;
+      this.id = id;
+   }
+   
+   public String getTranslationKey(){
+      return "rarity."+MOD_ID+"."+this.id;
    }
    
    public static ArcanaRarity rarityFromInt(int value){
@@ -35,7 +43,7 @@ public enum ArcanaRarity {
       if(rarity == null){
          text = Text.literal("None").formatted(Formatting.WHITE);
       }else{
-         text = Text.literal(rarity.label);
+         text = Text.translatableWithFallback(rarity.getTranslationKey(),rarity.label);
       }
       if(bold) text = text.formatted(Formatting.BOLD);
       if (rarity == null) return text;

@@ -59,6 +59,6 @@ public class EmpoweredArcanePaper extends NormalPolymerItem {
             {c,a,p,a,c},
             {c,c,c,c,c}};
       
-      return new IngredientCompendiumEntry("Empowered Arcane Paper", new ItemStack(ArcanaRegistry.EMPOWERED_ARCANE_PAPER,4), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.EMPOWERED_ARCANE_PAPER.getTranslationKey()), new ItemStack(ArcanaRegistry.EMPOWERED_ARCANE_PAPER,4), new ExplainRecipe(ingredients));
    }
 }

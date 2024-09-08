@@ -60,6 +60,6 @@ public class ExoticArcanePaper extends NormalPolymerItem {
             {a,a,m,a,a},
             {a,a,a,a,a}};
       
-      return new IngredientCompendiumEntry("Exotic Arcane Paper", new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER), new ExplainRecipe(ingredients));
+      return new IngredientCompendiumEntry(Text.translatable(ArcanaRegistry.EXOTIC_ARCANE_PAPER.getTranslationKey()), new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER), new ExplainRecipe(ingredients));
    }
 }

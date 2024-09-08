@@ -450,7 +450,7 @@ public class TwilightAnvilGui extends SimpleGui {
                ArcanaRarity[] tiers = augment.getTiers();
                
                GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
-               augmentItem1.hideDefaultTooltip().setName(Text.literal(augment.name).formatted(Formatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
+               augmentItem1.hideDefaultTooltip().setName(augment.getTranslatedName().formatted(Formatting.DARK_PURPLE)).addLoreLine(TextUtils.removeItalics(augment.getTierDisplay()));
                
                for(String s : augment.getDescription()){
                   augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal(s).formatted(Formatting.GRAY)));

@@ -8,6 +8,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class ArcanaAugment implements Comparable<ArcanaAugment>{
    public final String name;
    public final String id;
@@ -23,6 +25,14 @@ public class ArcanaAugment implements Comparable<ArcanaAugment>{
       this.arcanaItem = arcanaItem;
       this.description = description;
       this.tiers = tiers;
+   }
+   
+   public String getTranslationKey(){
+      return "augment."+MOD_ID+".name."+this.id;
+   }
+   
+   public MutableText getTranslatedName(){
+      return Text.translatableWithFallback(getTranslationKey(),name);
    }
    
    public ItemStack getDisplayItem(){

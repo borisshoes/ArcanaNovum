@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class ConcussionArrows extends RunicArrow {
 	public static final String ID = "concussion_arrows";
    
@@ -63,7 +65,7 @@ public class ConcussionArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new ConcussionArrowsItem(new Item.Settings().maxCount(64).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Concussion").formatted(Formatting.BOLD,Formatting.GOLD))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GOLD))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(14391821),new ArrayList<>()))

@@ -343,7 +343,7 @@ public class SpawnerInfuserGui extends SimpleGui {
          setSlot(34,playerRangeInd == 0 ? minedOut : playerRangeDecArrow);
       }
       
-      setTitle(Text.literal(ArcanaRegistry.SPAWNER_INFUSER.getNameString()));
+      setTitle(ArcanaRegistry.SPAWNER_INFUSER.getTranslatedName());
    }
    
    private boolean detectSpawner(){

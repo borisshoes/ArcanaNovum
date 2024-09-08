@@ -7,7 +7,6 @@ import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;

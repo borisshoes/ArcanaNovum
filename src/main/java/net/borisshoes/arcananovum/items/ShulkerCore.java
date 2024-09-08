@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShulkerCore extends EnergyItem {
@@ -70,7 +71,7 @@ public class ShulkerCore extends EnergyItem {
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
       item = new ShulkerCoreItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.literal("Shulker Core").formatted(Formatting.BOLD),0xFFFF99))
+            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD),0xFFFF99))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

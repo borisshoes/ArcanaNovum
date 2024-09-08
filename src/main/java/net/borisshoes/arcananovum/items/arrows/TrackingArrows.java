@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class TrackingArrows extends RunicArrow {
 	public static final String ID = "tracking_arrows";
    
@@ -52,7 +54,7 @@ public class TrackingArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN,TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new TrackingArrowsItem(new Item.Settings().maxCount(64).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Runic Arrows - Tracking").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(16777063),new ArrayList<>()))

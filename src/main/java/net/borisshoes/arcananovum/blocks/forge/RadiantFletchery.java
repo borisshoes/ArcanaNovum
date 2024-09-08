@@ -37,7 +37,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -46,6 +45,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "radiant_fletchery";
@@ -61,7 +62,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       vanillaItem = Items.FLETCHING_TABLE;
       block = new RadiantFletcheryBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
       item = new RadiantFletcheryItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Radiant Fletchery").formatted(Formatting.BOLD,Formatting.YELLOW))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

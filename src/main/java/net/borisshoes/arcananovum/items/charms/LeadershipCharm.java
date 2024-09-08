@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class LeadershipCharm extends ArcanaItem {
 	public static final String ID = "leadership_charm";
    
@@ -49,7 +51,7 @@ public class LeadershipCharm extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.AMETHYST_SHARD;
       item = new LeadershipCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Charm of Leadership").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

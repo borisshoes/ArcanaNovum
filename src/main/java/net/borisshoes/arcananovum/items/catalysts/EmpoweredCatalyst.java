@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class EmpoweredCatalyst extends ArcanaItem {
 	public static final String ID = "empowered_catalyst";
    
@@ -40,7 +42,7 @@ public class EmpoweredCatalyst extends ArcanaItem {
       rarity = ArcanaRarity.MUNDANE;
       vanillaItem = Items.EMERALD;
       item = new EmpoweredCatalystItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.literal("Empowered Augment Catalyst").formatted(Formatting.BOLD,Formatting.GREEN))
+            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GREEN))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
       );

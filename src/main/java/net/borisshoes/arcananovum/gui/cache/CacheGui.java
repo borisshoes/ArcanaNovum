@@ -14,7 +14,6 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
@@ -55,7 +54,7 @@ public class CacheGui extends SimpleGui {
             settings.setFilterType(TomeGui.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
          }
       
-         List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+         List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
          int numPages = (int) Math.ceil((float)items.size()/28.0);
          if(settings.getPage() > numPages){
             settings.setPage(numPages);
@@ -67,7 +66,7 @@ public class CacheGui extends SimpleGui {
             buildCompendiumGui();
          }
       }else if(index == 53){
-         List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+         List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
          int numPages = (int) Math.ceil((float)items.size()/28.0);
          if(settings.getPage() < numPages){
             settings.setPage(settings.getPage()+1);
@@ -78,7 +77,7 @@ public class CacheGui extends SimpleGui {
    }
    
    public void buildCompendiumGui(){
-      List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+      List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
       items = items.stream().filter(entry -> entry instanceof ArcanaItemCompendiumEntry || entry instanceof IngredientCompendiumEntry).toList();
       List<CompendiumEntry> pageItems = MiscUtils.listToPage(items, settings.getPage(),28);
       int numPages = (int) Math.ceil((float)items.size()/28.0);

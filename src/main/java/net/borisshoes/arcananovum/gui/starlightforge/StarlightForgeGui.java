@@ -22,7 +22,6 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -195,7 +194,7 @@ public class StarlightForgeGui extends SimpleGui {
                settings.setFilterType(TomeGui.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
             }
             
-            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
             int numPages = (int) Math.ceil((float)items.size()/28.0);
             if(settings.getPage() > numPages){
                settings.setPage(numPages);
@@ -207,7 +206,7 @@ public class StarlightForgeGui extends SimpleGui {
                TomeGui.buildCompendiumGui(this,player,settings);
             }
          }else if(index == 53){
-            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings);
+            List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
             int numPages = (int) Math.ceil((float)items.size()/28.0);
             if(settings.getPage() < numPages){
                settings.setPage(settings.getPage()+1);
@@ -294,16 +293,18 @@ public class StarlightForgeGui extends SimpleGui {
    private HashMap<ArcanaAugment,Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayerEntity player){
       List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
       HashMap<ArcanaAugment,Integer> options = new HashMap<>();
+      if(settings.skillLvl == 0) return options;
       
       for(ArcanaAugment augment : augments){
          ArcanaRarity[] tiers = augment.getTiers();
          int skillPoints = SKILLED_POINTS[settings.skillLvl];
+         ArcanaRarity maxRarity = ArcanaAugments.SKILLED.getTiers()[settings.skillLvl-1];
          int applicableLevel = 0;
          int sumCost = 0;
          int unlockedLevel = PLAYER_DATA.get(player).getAugmentLevel(augment.id);
          for(ArcanaRarity tier : tiers){
             sumCost += tier.rarity + 1;
-            if(sumCost > skillPoints || applicableLevel+1 > unlockedLevel){
+            if(sumCost > skillPoints || applicableLevel+1 > unlockedLevel || tier.rarity > maxRarity.rarity){
                break;
             }else{
                applicableLevel++;
@@ -482,7 +483,7 @@ public class StarlightForgeGui extends SimpleGui {
             Text req = Text.literal("")
                   .append(Text.literal("Requires").formatted(Formatting.GREEN))
                   .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
-                  .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA));
+                  .append(item.getTranslatedName().formatted(Formatting.AQUA));
             recipeList.addLoreLine(TextUtils.removeItalics(req));
             reqItem.setName(req);
             setSlot(slotCount,reqItem);
@@ -549,7 +550,7 @@ public class StarlightForgeGui extends SimpleGui {
          Text req = Text.literal("")
                .append(Text.literal("Requires").formatted(Formatting.GREEN))
                .append(Text.literal(" a ").formatted(Formatting.DARK_PURPLE))
-               .append(Text.literal(item.getNameString()).formatted(Formatting.AQUA));
+               .append(item.getTranslatedName().formatted(Formatting.AQUA));
          recipeList.addLoreLine(TextUtils.removeItalics(req));
          reqItem.setName(req);
          setSlot(slotCount,reqItem);
@@ -559,7 +560,7 @@ public class StarlightForgeGui extends SimpleGui {
       recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("Does not include item data").formatted(Formatting.ITALIC,Formatting.DARK_PURPLE)));
       setSlot(26,recipeList);
       
-      setTitle(Text.literal("Recipe for "+ arcanaItem.getNameString()));
+      setTitle(Text.literal("Recipe for ").append(arcanaItem.getTranslatedName()));
    }
    
    public void buildSkilledGui(String id){
@@ -591,7 +592,7 @@ public class StarlightForgeGui extends SimpleGui {
          int augmentLvl = profile.getAugmentLevel(augment.id);
          
          GuiElementBuilder augmentItem1 = GuiElementBuilder.from(augment.getDisplayItem());
-         MutableText name = Text.literal(augment.name).formatted(Formatting.DARK_PURPLE);
+         MutableText name = augment.getTranslatedName().formatted(Formatting.DARK_PURPLE);
          if(augmentLvl > 0){
             name.append(Text.literal("")
                   .append(Text.literal(" (Level ")).formatted(Formatting.BLUE)
@@ -617,7 +618,7 @@ public class StarlightForgeGui extends SimpleGui {
             augmentItem1.addLoreLine(TextUtils.removeItalics(Text.literal("")
                   .append(Text.literal("Click").formatted(Formatting.AQUA))
                   .append(Text.literal(" to apply ").formatted(Formatting.DARK_PURPLE))
-                  .append(Text.literal(augment.name).formatted(Formatting.DARK_AQUA))
+                  .append(augment.getTranslatedName().formatted(Formatting.DARK_AQUA))
                   .append(Text.literal(" at Level ").formatted(Formatting.DARK_PURPLE))
                   .append(Text.literal(applicableLevel+"").formatted(Formatting.LIGHT_PURPLE))));
          }else{

@@ -79,6 +79,10 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return name;
    }
    
+   public MutableText getTranslatedName(){
+      return Text.translatableWithFallback(this.item.getTranslationKey(),getNameString());
+   }
+   
    public String getId(){
       return id;
    }
@@ -459,7 +463,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }
       
       loreList.add(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal(rarity.label).formatted(Formatting.BOLD, ArcanaRarity.getColor(rarity)))
+            .append(ArcanaRarity.getColoredLabel(rarity,true))
             .append(Text.literal(" Arcana Item").formatted(Formatting.DARK_PURPLE))));
       
       if(EnhancedStatUtils.isEnhanced(item)){
@@ -494,11 +498,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
          loreList.add(TextUtils.removeItalics(Text.literal("Augmentations:").formatted(Formatting.DARK_AQUA)));
          for(String key : augmentTag.getKeys()){
             ArcanaAugment augment = ArcanaAugments.registry.get(key);
-            String str = augment.name;
+            MutableText txt = augment.getTranslatedName();
             if(augment.getTiers().length > 1){
-               str += " "+ LevelUtils.intToRoman(augmentTag.getInt(key));
+               txt.append(Text.literal(" "+LevelUtils.intToRoman(augmentTag.getInt(key))));
             }
-            loreList.add(TextUtils.removeItalics(Text.literal(str).formatted(Formatting.BLUE)));
+            loreList.add(TextUtils.removeItalics(txt.formatted(Formatting.BLUE)));
          }
       }
       

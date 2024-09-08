@@ -766,8 +766,8 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment SKILLED = ArcanaAugments.register(
          new ArcanaAugment("Skilled", "skilled", new ItemStack(Items.BOOK), ArcanaRegistry.STARLIGHT_FORGE,
-         new String[]{"Select an Augment when Forging an Arcana Item.","That Augment will have the specified amount of "," skill points worth of levels applied automatically.","Skill Points Per Level: 1/2/3/4/5/6/8/10/12/15"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE,MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE}
+         new String[]{"Select an Augment when Forging an Arcana Item.","That Augment will have the specified amount of "," skill points worth of levels applied automatically.","Skill Points Per Level: 1/2/3/4/5/6/8/10/12/15", "Can only apply up to a matching catalyst level."," (i.e. Lvl 5 can apply up to Exotic Augment levels)"},
+         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC,SOVEREIGN,SOVEREIGN,DIVINE,DIVINE}
    ));
    public static final ArcanaAugment MOONLIT_FORGE = ArcanaAugments.register(
          new ArcanaAugment("Moonlit Forge", "moonlit_forge", MiscUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultStack()), ArcanaRegistry.STARLIGHT_FORGE,

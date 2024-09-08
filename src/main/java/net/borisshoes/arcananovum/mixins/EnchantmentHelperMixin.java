@@ -3,10 +3,13 @@ package net.borisshoes.arcananovum.mixins;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -46,4 +49,10 @@ public class EnchantmentHelperMixin {
       }
    }
    
+   @Inject(method = "getProjectileCount",at=@At("RETURN"), cancellable = true)
+   private static void arcananovum_modifyProjectileCount(ServerWorld world, ItemStack stack, Entity user, int baseProjectileCount, CallbackInfoReturnable<Integer> cir){
+      if(ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.SCATTERSHOT.id) > 0 && cir.getReturnValueI() < 5){
+         cir.setReturnValue(5);
+      }
+   }
 }
