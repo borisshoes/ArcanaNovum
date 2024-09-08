@@ -246,7 +246,7 @@ public class ParticleEffectUtils {
                      elem.setLeftRotation(elem.getLeftRotation().rotateY(0.1f,new Quaternionf()));
                      
                      if(elem.getScale().y() < 1){
-                        elem.setScale(elem.getScale().add(0.01f,0.01f,0.01f,new Vector3f()));
+                        elem.setScale(elem.getScale().add(0.0075f,0.0075f,0.0075f,new Vector3f()));
                      }
                      
                      if(elem.getTranslation().y() < 1.5){

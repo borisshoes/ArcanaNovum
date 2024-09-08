@@ -803,6 +803,11 @@ public class ArcanaAugments {
          new String[]{"Unlocks the ability to disenchant items and put the","enchant on a book or save it to a singularity"},
          new ArcanaRarity[]{SOVEREIGN}
    ));
+   public static final ArcanaAugment ENCHANTING_EXPERTISE = ArcanaAugments.register(
+         new ArcanaAugment("Enchanting Expertise", "enchanting_expertise", new ItemStack(Items.EXPERIENCE_BOTTLE), ArcanaRegistry.MIDNIGHT_ENCHANTER,
+         new String[]{"Enchanter uses raw XP points instead of levels"},
+         new ArcanaRarity[]{SOVEREIGN}
+   ));
    public static final ArcanaAugment ESSENCE_SUPERNOVA = ArcanaAugments.register(
          new ArcanaAugment("Essence Supernova", "essence_supernova", MiscUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack()), ArcanaRegistry.MIDNIGHT_ENCHANTER,
          new String[]{"The Enchanter gives an additional 15% Essence per level"},

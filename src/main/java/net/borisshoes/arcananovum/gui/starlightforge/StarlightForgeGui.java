@@ -294,11 +294,11 @@ public class StarlightForgeGui extends SimpleGui {
       List<ArcanaAugment> augments = ArcanaAugments.getAugmentsForItem(arcanaItem);
       HashMap<ArcanaAugment,Integer> options = new HashMap<>();
       if(settings.skillLvl == 0) return options;
+      ArcanaRarity maxRarity = ArcanaAugments.SKILLED.getTiers()[settings.skillLvl-1];
       
       for(ArcanaAugment augment : augments){
          ArcanaRarity[] tiers = augment.getTiers();
          int skillPoints = SKILLED_POINTS[settings.skillLvl];
-         ArcanaRarity maxRarity = ArcanaAugments.SKILLED.getTiers()[settings.skillLvl-1];
          int applicableLevel = 0;
          int sumCost = 0;
          int unlockedLevel = PLAYER_DATA.get(player).getAugmentLevel(augment.id);

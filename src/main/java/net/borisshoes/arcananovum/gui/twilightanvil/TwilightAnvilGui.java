@@ -70,7 +70,7 @@ public class TwilightAnvilGui extends SimpleGui {
             if(outputSet.output().isEmpty()) return true;
             
             int points = LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost());
-            if (!player.getAbilities().creativeMode) {
+            if (!player.isCreative()) {
                if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ANVIL_EXPERTISE.id) > 0){
                   if(player.totalExperience < points){
                      player.sendMessage(Text.literal("Not Enough Experience").formatted(Formatting.RED));

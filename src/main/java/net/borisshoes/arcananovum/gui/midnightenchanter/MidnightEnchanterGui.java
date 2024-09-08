@@ -87,7 +87,7 @@ public class MidnightEnchanterGui extends SimpleGui {
             if(MiscUtils.removeItems(player,Items.LAPIS_LAZULI,lapisLevel)){
                player.applyEnchantmentCosts(stack,0);
                applyEnchants();
-               player.addExperienceLevels(-lapisLevel);
+               removeXP(lapisLevel);
                MiscUtils.returnItems(inv,player);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
                listener.setUpdating();
@@ -106,7 +106,7 @@ public class MidnightEnchanterGui extends SimpleGui {
                   ItemStack newStack = new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER);
                   newStack.setCount(stack.getCount());
                   inv.setStack(0,newStack);
-                  player.addExperienceLevels(-xpCost);
+                  removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
                   MiscUtils.returnItems(inv,player);
                   inv.setStack(0,ItemStack.EMPTY);
@@ -126,7 +126,7 @@ public class MidnightEnchanterGui extends SimpleGui {
             if(player.experienceLevel >= xpCost || player.isCreative()){
                if(MiscUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
                   applyEnchants();
-                  player.addExperienceLevels(-xpCost);
+                  removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
                   MiscUtils.returnItems(inv,player);
                   listener.setUpdating();
@@ -540,6 +540,18 @@ public class MidnightEnchanterGui extends SimpleGui {
                .append(Text.literal("Select Enchantments").formatted(Formatting.DARK_GREEN)))));
       }
       setSlot(1,xpItem);
+   }
+   
+   private void removeXP(int levels){
+       boolean expertise = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ENCHANTING_EXPERTISE.id) > 0;
+       if(player.isCreative()) return;
+      
+      int points = LevelUtils.vanillaLevelToTotalXp(levels);
+      if(expertise){
+         player.addExperience(-points);
+      }else{
+         player.addExperienceLevels(-levels);
+      }
    }
    
    private boolean isCompatible(RegistryEntry<Enchantment> enchant, int level){
