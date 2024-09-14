@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -25,6 +26,11 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
    
    public AequalisSkillTransmutationRecipe(String name){
       super(name,new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
+   }
+   
+   @Override // This transmutation cannot be done by an Aequalis
+   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player){
+      return List.of(positiveInput,negativeInput,reagent1,reagent2,aequalisInput);
    }
    
    private Pair<ArrayList<Pair<ArcanaAugment,Integer>>,Integer> getCanSell(List<ArcanaAugment> item1Augments, ArcanaItem otherItem, IArcanaProfileComponent profile){
@@ -120,8 +126,9 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
                int cost = buyAug.getTiers()[buyLvl-1].rarity+1;
                if(cost > sellingPower+liquidated) continue;
                
+               boolean cantSell = false;
                while(cost > liquidated){
-                  Pair<ArcanaAugment,Integer> toSell = canSell.get(0);
+                  Pair<ArcanaAugment,Integer> toSell = canSell.getFirst();
                   ArcanaAugment sellAug = toSell.getLeft();
                   int sellLvl = toSell.getRight();
                   profile.setAugmentLevel(sellAug.id,sellLvl-1);
@@ -129,7 +136,12 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
                   
                   canSellRet = getCanSell(item1Augments, arcanaItem2,profile);
                   canSell = canSellRet.getLeft();
+                  if(canSell.isEmpty()){
+                     cantSell = true;
+                     break;
+                  }
                }
+               if(cantSell) continue;
                
                profile.setAugmentLevel(buyAug.id,buyLvl);
                liquidated -= buyAug.getTiers()[buyLvl-1].rarity+1;
@@ -145,10 +157,14 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       }
       
       if(aequalisEntity != null){
-         int timelessLvl = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM.id);
-         boolean keep = Math.random() < 0.2*timelessLvl;
-         if(!keep){
+         boolean timeless = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM.id) > 0;
+         int uses = ArcanaItem.getIntProperty(aequalisStack,AequalisScientia.USES_TAG);
+         if(!timeless && uses <= 1){
             aequalisEntity.discard();
+         }else if(!timeless){
+            ArcanaItem.putProperty(aequalisStack,AequalisScientia.USES_TAG,uses-1);
+            ArcanaRegistry.AEQUALIS_SCIENTIA.buildItemLore(aequalisStack, ArcanaNovum.SERVER);
+            aequalisEntity.setStack(aequalisStack);
          }
       }
       

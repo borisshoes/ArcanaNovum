@@ -18,11 +18,14 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.InstrumentTags;
 import net.minecraft.text.Text;
+import net.minecraft.util.Rarity;
 import net.minecraft.util.math.random.Random;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class TransmutationRecipes {
    public static final ArrayList<TransmutationRecipe> TRANSMUTATION_RECIPES = new ArrayList<>();
@@ -354,11 +357,13 @@ public class TransmutationRecipes {
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Nautilus Synthesis",new ItemStack(Items.TURTLE_SCUTE,4),new ItemStack(Items.NAUTILUS_SHELL,1),new ItemStack(Items.PRISMARINE_CRYSTALS,16),new ItemStack(Items.QUARTZ,16)));
       
-      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Oceanic Heart Synthesis",new ItemStack(Items.NAUTILUS_SHELL,8),new ItemStack(Items.HEART_OF_THE_SEA,1),new ItemStack(Items.PRISMARINE_CRYSTALS,64),new ItemStack(Items.QUARTZ,32)));
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Oceanic Heart Synthesis",new ItemStack(Items.NAUTILUS_SHELL,8),new ItemStack(Items.HEART_OF_THE_SEA,1),new ItemStack(Items.PRISMARINE_CRYSTALS,32),new ItemStack(Items.QUARTZ,32)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Trident Synthesis",new ItemStack(Items.DIAMOND_SWORD,1),new ItemStack(Items.TRIDENT,1),new ItemStack(Items.PRISMARINE_CRYSTALS,16),new ItemStack(Items.HEART_OF_THE_SEA,1)));
       
-      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Resonator Synthesis",new ItemStack(Items.GOLD_BLOCK,1),new ItemStack(Items.BELL,1),new ItemStack(Items.QUARTZ,64),new ItemStack(Items.AMETHYST_SHARD,64)));
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Resonator Synthesis",new ItemStack(Items.GOLD_BLOCK,1),new ItemStack(Items.BELL,1),new ItemStack(Items.QUARTZ,16),new ItemStack(Items.AMETHYST_SHARD,16)));
+      
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Gravity Core Synthesis",new ItemStack(Items.NETHERITE_BLOCK,1),new ItemStack(Items.HEAVY_CORE,1),new ItemStack(Items.IRON_BLOCK,32),new ItemStack(Items.POLISHED_TUFF,32)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Enchanted Golden Apple Synthesis",new ItemStack(Items.TOTEM_OF_UNDYING,1),new ItemStack(Items.ENCHANTED_GOLDEN_APPLE,1),new ItemStack(Items.GOLD_BLOCK,8),new ItemStack(Items.GOLDEN_APPLE,16)));
       
@@ -371,6 +376,8 @@ public class TransmutationRecipes {
       // Permutation Recipes
       TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Faeries' Stew", new ItemStack(Items.MUSHROOM_STEW,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 1)), new ItemStack(Items.NETHER_WART),  (stack, server) -> {
          ItemStack stewStack = new ItemStack(Items.SUSPICIOUS_STEW);
+         stewStack.set(DataComponentTypes.RARITY, Rarity.RARE);
+         stewStack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+".faeries_stew"));
          List<SuspiciousStewEffectsComponent.StewEffect> effects = new ArrayList<>();
          Registry<StatusEffect> effectRegistry = server.getRegistryManager().get(RegistryKeys.STATUS_EFFECT);
          List<RegistryEntry.Reference<StatusEffect>> effectEntries = effectRegistry.streamEntries().toList();

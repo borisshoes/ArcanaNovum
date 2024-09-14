@@ -15,7 +15,7 @@ import static com.mojang.brigadier.arguments.DoubleArgumentType.getDouble;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.*;
-import static net.borisshoes.arcananovum.ArcanaNovum.devMode;
+import static net.borisshoes.arcananovum.ArcanaNovum.DEV_MODE;
 import static net.minecraft.command.argument.EntityArgumentType.*;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -132,7 +132,7 @@ public class CommandRegisterCallback {
    
       dispatcher.register(ArcanaNovum.config.generateCommand());
    
-      if(devMode){
+      if(DEV_MODE){
          dispatcher.register(literal("arcana")
                .then(literal("test").requires(source -> source.hasPermissionLevel(2))
                      .executes(ArcanaCommands::testCommand)

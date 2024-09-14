@@ -271,9 +271,9 @@ public class SojournerBoots extends EnergyItem {
                      if((newEnergy % 50 == 0 || newEnergy % 50 == 1) && curEnergy != newEnergy)
                         player.sendMessage(Text.literal("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                      PLAYER_DATA.get(player).addXP(1); // Add xp
-                  }
-                  if(getEnergy(stack) >= getMaxEnergy(stack)){
-                     ArcanaAchievements.progress(player,ArcanaAchievements.RUNNING.id, 1);
+                     if(newEnergy >= getMaxEnergy(stack)){
+                        ArcanaAchievements.progress(player,ArcanaAchievements.RUNNING.id, 1);
+                     }
                   }
                }else{
                   addEnergy(stack,-10);

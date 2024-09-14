@@ -13,6 +13,8 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.Multiblock;
+import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarRecipeGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
@@ -37,6 +39,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.GeneratorOptions;
 
 import java.text.DecimalFormat;
@@ -275,7 +278,13 @@ public class TomeGui extends SimpleGui {
             ItemStack item = this.getSlot(4).getItemStack();
             ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
             
-            if(index == 2){
+            if(index == 0){
+               if(arcanaItem instanceof MultiblockCore multicore){
+                  multicore.getMultiblock().displayStructure(new Multiblock.MultiblockCheck(player.getServerWorld(),player.getBlockPos(),player.getServerWorld().getBlockState(player.getBlockPos()),new BlockPos(multicore.getCheckOffset()),null),player);
+                  close();
+                  close();
+               }
+            }else if(index == 2){
                if(arcanaItem.getRecipe() != null){
                   tome.openRecipeGui(player,settings, arcanaItem);
                }else{
@@ -858,6 +867,45 @@ public class TomeGui extends SimpleGui {
       
       for(int i = 0; i < 9; i++){
          gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.PAGE_COLOR)).setName(Text.empty()).hideTooltip());
+      }
+      
+      if(arcanaItem instanceof MultiblockCore multicore){
+         LinkedHashMap<Item, Integer> mbMats = new LinkedHashMap<>();
+         multicore.getMultiblock().getMaterialList().entrySet().stream()
+               .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+               .forEachOrdered(entry -> mbMats.put(entry.getKey(), entry.getValue()));
+         
+         GuiElementBuilder structure = new GuiElementBuilder(Items.BRICKS).hideDefaultTooltip();
+         structure.setName(Text.literal("Multi-Block Structure").formatted(Formatting.DARK_PURPLE));
+         structure.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click ").formatted(Formatting.YELLOW))
+               .append(Text.literal("to view this block's Structure").formatted(Formatting.LIGHT_PURPLE))));
+         structure.addLoreLine(Text.literal(""));
+         structure.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Materials ").formatted(Formatting.DARK_PURPLE))));
+         structure.addLoreLine(TextUtils.removeItalics(Text.literal("-----------------------").formatted(Formatting.LIGHT_PURPLE)));
+         
+         for(Map.Entry<Item, Integer> entry : mbMats.entrySet()){
+            Item matItem = entry.getKey();
+            int num = entry.getValue();
+            int stacks = num / matItem.getMaxCount();
+            int rem = num % matItem.getMaxCount();
+            
+            MutableText text = Text.literal("")
+                  .append(Text.translatable(matItem.getTranslationKey()).formatted(Formatting.AQUA))
+                  .append(Text.literal(" - ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(num+"").formatted(Formatting.GREEN));
+            if(num > matItem.getMaxCount()){
+               text.append(Text.literal(" - ").formatted(Formatting.DARK_PURPLE));
+               if(rem > 0){
+                  text.append("("+stacks+" Stacks + "+rem+")").formatted(Formatting.YELLOW);
+               }else{
+                  text.append("("+stacks+" Stacks)").formatted(Formatting.YELLOW);
+               }
+            }
+            structure.addLoreLine(TextUtils.removeItalics(text));
+         }
+         if(!isTwilightAnvil) gui.setSlot(0,structure);
       }
       
       GuiElementBuilder book = new GuiElementBuilder(Items.WRITTEN_BOOK).hideDefaultTooltip();

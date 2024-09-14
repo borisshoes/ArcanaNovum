@@ -47,6 +47,7 @@ public class EnhancedForgingGui extends SimpleGui {
    private boolean animated = false;
    private boolean completed = false;
    private boolean paid = false;
+   private boolean fast = false;
    
    /**
     * Constructs a new simple container gui for the supplied player.
@@ -77,7 +78,7 @@ public class EnhancedForgingGui extends SimpleGui {
          }else if(type.isLeft){
             this.selectedItem = EFItem.cycleItem(selectedItem,false);
             buildGui();
-         }else if(type.isMiddle){
+         }else if(type == ClickType.MOUSE_MIDDLE){
             this.selectedItem = EFItem.NOVA;
             buildGui();
          }
@@ -90,6 +91,7 @@ public class EnhancedForgingGui extends SimpleGui {
                   animated = true;
                   cinematicMode = true;
                   paid = true;
+                  fast = type == ClickType.MOUSE_LEFT_SHIFT;
                   buildGui();
                }else{
                   player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
@@ -106,7 +108,7 @@ public class EnhancedForgingGui extends SimpleGui {
          int x = (index % 9);
          int y = index / 9;
          
-         if(type.isMiddle){ // Reset tile
+         if(type == ClickType.MOUSE_MIDDLE){ // Reset tile
             game.removeChanges(x,y);
          }else if(type == ClickType.MOUSE_LEFT_SHIFT){ // Tile change
             game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TILE_CHANGE,x,y,Optional.of(this.selectedItem)));
@@ -122,9 +124,10 @@ public class EnhancedForgingGui extends SimpleGui {
       return true;
    }
    
-   public void advanceGameStep(){
-      game.nextTurn();
+   public boolean advanceGameStep(){
+      boolean changed = game.nextTurn();
       buildGui();
+      return changed;
    }
    
    @Override
@@ -138,7 +141,7 @@ public class EnhancedForgingGui extends SimpleGui {
       super.onTick();
       if(!animated && endingAnim == -1) return;
       
-      if(tickCount % 10 != 0) return;
+      if(tickCount % (fast ? 5 : 10) != 0) return;
       
       if(endingAnim >= 0){
          
@@ -179,9 +182,12 @@ public class EnhancedForgingGui extends SimpleGui {
       
       if(tickCount % 20 != 0) return;
       
-      if(game.hasNextTurn()){
-         advanceGameStep();
-      }else{
+      boolean didTurn = false;
+      
+      while(game.hasNextTurn() && !advanceGameStep()){
+         didTurn = true;
+      }
+      if(!didTurn && !game.hasNextTurn()){
          animated = false;
          endingAnim = 0;
       }
@@ -319,11 +325,11 @@ public class EnhancedForgingGui extends SimpleGui {
       }
       
       ServerWorld world = (ServerWorld) blockEntity.getWorld();
-      ParticleEffectUtils.enhancedForgingAnim(world,blockEntity.getPos(),enhancedStack,0);
+      ParticleEffectUtils.enhancedForgingAnim(world,blockEntity.getPos(),enhancedStack,0,fast ? 1.75 : 1);
       
       final int finalCost = game.getTotalCost();
       
-      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(350, () -> {
+      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(fast ? (int) (350 / 1.75) : 350, () -> {
          if(percentile >= 0.99){
             ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
          }
@@ -332,6 +338,7 @@ public class EnhancedForgingGui extends SimpleGui {
          ItemScatterer.spawn(world,pos.x,pos.y,pos.z,enhancedStack);
       }));
       
+      paid = false;
       close();
    }
    
@@ -347,6 +354,14 @@ public class EnhancedForgingGui extends SimpleGui {
       SimpleInventory returnInv = new SimpleInventory(list.size()+1);
       for(ItemStack stack : list){
          returnInv.addStack(stack);
+      }
+      if(paid){
+         int cost = game.getTotalCost();
+         while(cost > 0){
+            int amnt = Math.min(cost,ArcanaRegistry.STARDUST.getMaxCount());
+            returnInv.addStack(new ItemStack(ArcanaRegistry.STARDUST,amnt));
+            cost -= amnt;
+         }
       }
       MiscUtils.returnItems(returnInv,player);
    }
@@ -421,7 +436,7 @@ enum EFItem {
                      .append(Text.literal("Plasma").formatted(Formatting.GOLD))),
                TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal("Turns into ").formatted(Formatting.GRAY))
-                     .append(Text.literal("Black Hole").formatted(Formatting.BLUE)))
+                     .append(Text.literal("Quasar").formatted(Formatting.DARK_AQUA)))
          ), 24,18),
    QUASAR("quasar",
          Text.literal("Quasar").formatted(Formatting.DARK_AQUA,Formatting.BOLD),
@@ -429,6 +444,7 @@ enum EFItem {
                TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal("Converts").formatted(Formatting.GRAY))
                      .append(Text.literal(" 8 surrounding").formatted(Formatting.RED))
+                     .append(Text.literal(" Gas").formatted(Formatting.DARK_PURPLE))
                      .append(Text.literal(" and all ").formatted(Formatting.GRAY))
                      .append(Text.literal("Gas").formatted(Formatting.DARK_PURPLE))
                      .append(Text.literal(" in ").formatted(Formatting.GRAY))
@@ -455,7 +471,7 @@ enum EFItem {
                      .append(Text.literal("Turns into ").formatted(Formatting.GRAY))
                      .append(Text.literal("Nova").formatted(Formatting.DARK_GREEN))
                      .append(Text.literal(" if").formatted(Formatting.GRAY))
-                     .append(Text.literal(" 5 of 8 surrounding tiles").formatted(Formatting.RED))
+                     .append(Text.literal(" 4 of 8 surrounding tiles").formatted(Formatting.RED))
                      .append(Text.literal(" are ").formatted(Formatting.GRAY))
                      .append(Text.literal("Plasma").formatted(Formatting.GOLD))),
                TextUtils.removeItalics(Text.literal("")
@@ -602,7 +618,8 @@ class EnhancedForgingGame{
       return this.board;
    }
    
-   public void nextTurn(){
+   public boolean nextTurn(){
+      boolean tileChanged = false;
       turn++;
       
       Pair<EFItem, Integer> turnPair = null;
@@ -623,9 +640,9 @@ class EnhancedForgingGame{
       }
       if(turnPair == null){
          if(turn < getHighestTurn()){
-            nextTurn();
+            tileChanged = nextTurn();
          }
-         return;
+         return tileChanged;
       }
       
       EFItem turnItem = turnPair.getLeft();
@@ -639,19 +656,25 @@ class EnhancedForgingGame{
             }
          }
          board[itemX][itemY] = new Pair<>(count >= 3 ? EFItem.STAR : EFItem.PLASMA,count >= 3 ? ++highestTurn : 0);
+         tileChanged = true;
       }else if(turnItem == EFItem.QUASAR || turnItem == EFItem.PULSAR || turnItem == EFItem.STAR){
          for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
             EFItem slotItem = board[slot.getLeft()][slot.getRight()].getLeft();
-            if(slotItem == EFItem.GAS || slotItem == EFItem.PLASMA)
-               board[slot.getLeft()][slot.getRight()] = new Pair<>(EFItem.PLASMA,0);
+            if(slotItem == EFItem.GAS || slotItem == EFItem.PLASMA){
+               EFItem before = board[slot.getLeft()][slot.getRight()].getLeft();
+               board[slot.getLeft()][slot.getRight()] = new Pair<>(EFItem.PLASMA, 0);
+               if(board[slot.getLeft()][slot.getRight()].getLeft() != before) tileChanged = true;
+            }
          }
       }else if(turnItem == EFItem.SUPERNOVA){
          for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
             EFItem slotItem = board[slot.getLeft()][slot.getRight()].getLeft();
-            if(slotItem == EFItem.GAS || slotItem == EFItem.PLASMA)
-               board[slot.getLeft()][slot.getRight()] = new Pair<>(EFItem.PLASMA,0);
+            if(slotItem == EFItem.GAS || slotItem == EFItem.PLASMA){
+               board[slot.getLeft()][slot.getRight()] = new Pair<>(EFItem.PLASMA, 0);
+            }
          }
-         board[itemX][itemY] = new Pair<>(EFItem.BLACK_HOLE,++highestTurn);
+         board[itemX][itemY] = new Pair<>(EFItem.QUASAR,++highestTurn);
+         tileChanged = true;
       }else if(turnItem == EFItem.NEBULA){
          int count = 0;
          for(Pair<Integer, Integer> slot : getValidEffectedSlots(itemX, itemY, turnItem)){
@@ -660,8 +683,9 @@ class EnhancedForgingGame{
                count++;
             }
          }
-         if(count >= 5){
+         if(count >= 4){
             board[itemX][itemY] = new Pair<>(EFItem.NOVA,++highestTurn);
+            tileChanged = true;
          }
       }else if(turnItem == EFItem.BLACK_HOLE){
          boolean convert = false;
@@ -670,12 +694,18 @@ class EnhancedForgingGame{
             if(slotItem == EFItem.STAR || slotItem == EFItem.QUASAR || slotItem == EFItem.PULSAR || slotItem == EFItem.BLACK_HOLE){
                convert = true;
             }
-            if(slotItem != EFItem.NEBULA) board[slot.getLeft()][slot.getRight()] = new Pair<>(EFItem.PLASMA,0);
+            if(slotItem != EFItem.NEBULA){
+               EFItem before = board[slot.getLeft()][slot.getRight()].getLeft();
+               board[slot.getLeft()][slot.getRight()] = new Pair<>(EFItem.PLASMA, 0);
+               if(board[slot.getLeft()][slot.getRight()].getLeft() != before) tileChanged = true;
+            }
          }
          if(convert){
             board[itemX][itemY] = new Pair<>(EFItem.QUASAR,++highestTurn);
+            tileChanged = true;
          }
       }
+      return tileChanged;
    }
    
    private List<Pair<Integer,Integer>> getValidEffectedSlots(int x, int y, EFItem item){

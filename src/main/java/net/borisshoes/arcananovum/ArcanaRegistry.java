@@ -4,6 +4,7 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
+import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.rsm.api.RegistrySyncUtils;
@@ -36,9 +37,11 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentTypes;
@@ -270,8 +273,6 @@ public class ArcanaRegistry {
    public static final LootFunctionType<? extends LootFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
    public static final LootFunctionType<? extends LootFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
    
-   
-   
    public static void initialize(){
       PolymerResourcePackUtils.addModAssets(MOD_ID);
       RegistrySyncUtils.setServerEntry(Registries.ARMOR_MATERIAL, NON_PROTECTIVE_ARMOR_MATERIAL.value());
@@ -411,6 +412,26 @@ public class ArcanaRegistry {
             new ArcanaItemCompendiumEntry(PICKAXE_OF_CEPTYUS),
             new ArcanaItemCompendiumEntry(LEADERSHIP_CHARM)
       ));
+      
+      final ItemGroup ARCANA_ITEMS_GROUP = PolymerItemGroupUtils.builder().displayName(Text.translatable("itemGroup.arcana_items")).icon(ARCANE_TOME::getPrefItemNoLore).entries((displayContext, entries) -> {
+         RECOMMENDED_LIST.forEach(entry -> {
+            if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
+               ItemStack entryStack = arcanaEntry.getArcanaItem().getPrefItem();
+               entryStack.setCount(1);
+               entries.add(entryStack);
+            }
+         });
+      }).build();
+      final ItemGroup ARCANA_INGREDIENTS_GROUP = PolymerItemGroupUtils.builder().displayName(Text.translatable("itemGroup.arcana_ingredients")).icon(() -> MiscUtils.removeLore(new ItemStack(SOVEREIGN_ARCANE_PAPER))).entries((displayContext, entries) -> {
+         RECOMMENDED_LIST.forEach(entry -> {
+            if(entry instanceof IngredientCompendiumEntry ingredientEntry){
+               entries.add(new ItemStack(ingredientEntry.getDisplayStack().getItem()));
+            }
+         });
+      }).build();
+      
+      PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.of(MOD_ID,"arcana_items"), ARCANA_ITEMS_GROUP);
+      PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.of(MOD_ID,"arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
    }
    
    public static void onServerInitialize(MinecraftServer server){

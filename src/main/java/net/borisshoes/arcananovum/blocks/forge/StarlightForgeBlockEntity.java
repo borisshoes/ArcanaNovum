@@ -179,7 +179,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-1,-1,-1),null);
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset()),null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

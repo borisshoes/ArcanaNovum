@@ -103,7 +103,7 @@ public class NulMemento extends EnergyItem {
       lore.add(Text.literal("")
             .append(Text.literal("A strange, ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("withered skull").formatted(Formatting.GRAY))
-            .append(Text.literal(", more protective than others you have found.").formatted(Formatting.DARK_GRAY)));
+            .append(Text.literal("with a distinctive gash.").formatted(Formatting.DARK_GRAY)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("Aspect of Death").formatted(Formatting.BLUE))

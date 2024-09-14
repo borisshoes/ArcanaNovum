@@ -21,6 +21,11 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    }
    
    @Override
+   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player){
+      return List.of(negativeInput.copyWithCount(positiveInput.getCount()),negativeInput,aequalisInput);
+   }
+   
+   @Override
    public List<Pair<ItemStack,String>> doTransmutation(ItemEntity sourceEntity, ItemEntity focusEntity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayerEntity player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       ItemStack re1 = getBargainReagent(reagent1,bargainLvl);

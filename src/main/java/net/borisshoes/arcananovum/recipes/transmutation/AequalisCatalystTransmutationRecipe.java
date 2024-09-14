@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -26,6 +27,11 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
    public AequalisCatalystTransmutationRecipe(String name){
       super(name,new ItemStack(ArcanaRegistry.STARDUST,64),new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE,64));
+   }
+   
+   @Override // This transmutation cannot be done by an Aequalis
+   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player){
+      return List.of(positiveInput,negativeInput,reagent1,reagent2,aequalisInput);
    }
    
    @Override
@@ -113,10 +119,14 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       ArcanaAugments.setAugmentsOnItem(arcanaItemStack,curAugments);
       
       if(aequalisEntity != null){
-         int timelessLvl = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM.id);
-         boolean keep = Math.random() < 0.2*timelessLvl;
-         if(!keep){
+         boolean timeless = ArcanaAugments.getAugmentOnItem(aequalisStack,ArcanaAugments.TIMELESS_WISDOM.id) > 0;
+         int uses = ArcanaItem.getIntProperty(aequalisStack,AequalisScientia.USES_TAG);
+         if(!timeless && uses <= 1){
             aequalisEntity.discard();
+         }else if(!timeless){
+            ArcanaItem.putProperty(aequalisStack,AequalisScientia.USES_TAG,uses-1);
+            ArcanaRegistry.AEQUALIS_SCIENTIA.buildItemLore(aequalisStack, ArcanaNovum.SERVER);
+            aequalisEntity.setStack(aequalisStack);
          }
       }
       

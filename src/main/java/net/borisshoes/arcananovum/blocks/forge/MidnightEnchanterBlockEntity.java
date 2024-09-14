@@ -102,7 +102,7 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-2,-1,-2),null);
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.MIDNIGHT_ENCHANTER).getCheckOffset()),null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

@@ -69,8 +69,9 @@ public class TickCallback {
                
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
                if(ArcanaItemUtils.needsVersionUpdate(item)){
-                  arcanaItem.updateItem(item,server);
+                  inv.setStack(i,arcanaItem.updateItem(item,server));
                   ArcanaNovum.devPrint("Updating Item "+item.getName().getString());
+                  continue;
                }
    
                // Achievements

@@ -229,7 +229,7 @@ public class EnhancedStatUtils {
    public static double combineStats(double p1, double p2){
       double max = Math.max(p1,p2);
       double min = Math.min(p1,p2);
-      double magic = 0.03;
+      double magic = 0.07;
       double increased = max + min*((2*magic) / (max*max+magic));
       return Math.min(1,increased);
    }

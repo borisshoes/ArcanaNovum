@@ -7,6 +7,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.List;
 
@@ -21,6 +22,8 @@ public abstract class TransmutationRecipe {
       this.reagent1 = reagent1;
       this.reagent2 = reagent2;
    }
+   
+   public abstract List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player);
    
    public abstract List<Pair<ItemStack,String>> doTransmutation(ItemEntity positiveInput, ItemEntity negativeInput, ItemEntity reagent1, ItemEntity reagent2, ItemEntity aequalisInput, TransmutationAltarBlockEntity altar, ServerPlayerEntity player);
    
@@ -58,6 +61,13 @@ public abstract class TransmutationRecipe {
       int count = stack.getCount();
       if(ArcanaItemUtils.isArcane(stack)) return stack.copy();
       count = (int) Math.min(stack.getMaxCount(),count * bargainMod[bargainlvl]);
+      return stack.copyWithCount(count);
+   }
+   
+   public ItemStack getAequalisReagent(ItemStack stack){
+      int count = stack.getCount();
+      if(ArcanaItemUtils.isArcane(stack)) return stack.copy();
+      count = MathHelper.ceil(MathHelper.clamp(count*0.5,1,stack.getMaxCount()));
       return stack.copyWithCount(count);
    }
 }

@@ -35,6 +35,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -124,6 +125,11 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    @Override
    public Multiblock getMultiblock(){
       return multiblock;
+   }
+   
+   @Override
+   public Vec3i getCheckOffset(){
+      return new Vec3i(-2,-1,-2);
    }
    
    @Override
@@ -221,7 +227,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(enchanter.getMultiblockCheck());
+                  multiblock.displayStructure(enchanter.getMultiblockCheck(),player);
                }
             }
          }

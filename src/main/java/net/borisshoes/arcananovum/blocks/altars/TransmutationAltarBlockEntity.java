@@ -135,7 +135,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-5,0,-5),world.getBlockState(pos).get(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset()),world.getBlockState(pos).get(HORIZONTAL_FACING));
    }
    
    private void tick(){

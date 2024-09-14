@@ -197,7 +197,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-2,-1,-4),serverWorld.getBlockState(pos).get(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getCheckOffset()),serverWorld.getBlockState(pos).get(HORIZONTAL_FACING));
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

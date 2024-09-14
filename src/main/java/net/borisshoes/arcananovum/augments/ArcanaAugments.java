@@ -66,8 +66,13 @@ public class ArcanaAugments {
    // Expulsion Arrows
    public static final ArcanaAugment REPULSION = ArcanaAugments.register(
          new ArcanaAugment("Repulsion", "repulsion", new ItemStack(Items.LIGHT_BLUE_STAINED_GLASS), ArcanaRegistry.EXPULSION_ARROWS,
-         new String[]{"Increases expulsion range by 1.5 blocks per level"},
+         new String[]{"Increases expulsion range by 1.5 blocks per level","Mutually Exclusive with Eviction Burst"},
          new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+   ));
+   public static final ArcanaAugment EVICTION_BURST = ArcanaAugments.register(
+         new ArcanaAugment("Eviction Burst", "eviction_burst", new ItemStack(Items.WIND_CHARGE), ArcanaRegistry.EXPULSION_ARROWS,
+         new String[]{"Impact causes a single burst instead of multiple","The range is dependent on the arrow speed","A hit entity is also affected by the burst","Mutually Exclusive with Repulsion"},
+         new ArcanaRarity[]{EXOTIC}
    ));
    
    // Graviton Arrows
@@ -892,12 +897,12 @@ public class ArcanaAugments {
    public static final ArcanaAugment EQUIVALENT_EXCHANGE = ArcanaAugments.register(
          new ArcanaAugment("Equivalent Exchange", "equivalent_exchange", ArcanaRegistry.CATALYTIC_MATRIX.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA,
          new String[]{"Unlocks a transmutation recipe that lets"," you reclaim catalysts from augmented items"},
-         new ArcanaRarity[]{DIVINE}
+         new ArcanaRarity[]{SOVEREIGN}
    ));
    public static final ArcanaAugment TIMELESS_WISDOM = ArcanaAugments.register(
          new ArcanaAugment("Timeless Wisdom", "timeless_wisdom", ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA,
-         new String[]{"Gives a 20% chance to not consume the Aequalis Scientia"},
-         new ArcanaRarity[]{DIVINE, DIVINE, DIVINE, DIVINE, DIVINE}
+         new String[]{"Makes the Aequalis Scientia have infinite uses"},
+         new ArcanaRarity[]{DIVINE}
    ));
    
    // Ensnarement Arrows
@@ -1024,6 +1029,9 @@ public class ArcanaAugments {
          
          if(id.equals(ArcanaAugments.RUNIC_ARBALEST.id) && other.id.equals(ArcanaAugments.SPECTRAL_AMPLIFICATION.id)) return true;
          if(id.equals(ArcanaAugments.SPECTRAL_AMPLIFICATION.id) && other.id.equals(ArcanaAugments.RUNIC_ARBALEST.id)) return true;
+         
+         if(id.equals(ArcanaAugments.REPULSION.id) && other.id.equals(ArcanaAugments.EVICTION_BURST.id)) return true;
+         if(id.equals(ArcanaAugments.EVICTION_BURST.id) && other.id.equals(ArcanaAugments.REPULSION.id)) return true;
       }
       return false;
    }

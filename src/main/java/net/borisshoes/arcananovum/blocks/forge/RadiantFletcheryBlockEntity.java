@@ -115,7 +115,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-1,-1,-1),null);
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset()),null);
    }
    
    public Inventory getInventory(){

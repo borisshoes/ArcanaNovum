@@ -222,7 +222,7 @@ public class ArcanaCommands {
    }
    
    public static int getBookData(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!devMode)
+      if (!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
@@ -280,7 +280,7 @@ public class ArcanaCommands {
    }
    
    public static int getItemData(CommandContext<ServerCommandSource> objectCommandContext, String name) {
-      if (!devMode)
+      if (!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
@@ -326,7 +326,7 @@ public class ArcanaCommands {
    }
    
    public static int makeCraftingRecipe(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!devMode)
+      if (!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
@@ -484,7 +484,7 @@ public class ArcanaCommands {
    }
    
    public static int testCommand(CommandContext<ServerCommandSource> ctx) {
-      if (!devMode)
+      if (!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = ctx.getSource().getPlayer();
@@ -511,7 +511,7 @@ public class ArcanaCommands {
 //               5
 //               );
          
-         ParticleEffectUtils.arcanaCraftingAnim(ctx.getSource().getWorld(),new BlockPos(1378,96,1272),new ItemStack(Items.MACE),0);
+         ParticleEffectUtils.aequalisTransmuteAnim(ctx.getSource().getWorld(),player.getPos().add(0,2,5),0,player.getRotationClient(),1,new ItemStack(Items.ACACIA_LOG),new ItemStack(Items.SPRUCE_LOG),new ItemStack(Items.COPPER_INGOT),new ItemStack(Items.EMERALD),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore());
          
       } catch (Exception e) {
          log(2,e.toString());
@@ -520,7 +520,7 @@ public class ArcanaCommands {
    }
    
    public static int testCommand(CommandContext<ServerCommandSource> objectCommandContext, int num) {
-      if (!devMode)
+      if (!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();

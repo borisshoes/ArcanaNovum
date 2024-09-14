@@ -45,6 +45,7 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -155,6 +156,11 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    }
    
    @Override
+   public Vec3i getCheckOffset(){
+      return new Vec3i(-1,-1,-2);
+   }
+   
+   @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       ArcanaIngredient b = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
@@ -246,7 +252,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(singularity.getMultiblockCheck());
+                  multiblock.displayStructure(singularity.getMultiblockCheck(),player);
                }
             }
          }

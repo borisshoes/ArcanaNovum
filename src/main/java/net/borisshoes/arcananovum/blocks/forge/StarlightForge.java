@@ -40,6 +40,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,6 +118,11 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    @Override
    public void loadMultiblock(){
       multiblock = Multiblock.loadFromFile(getId());
+   }
+   
+   @Override
+   public Vec3i getCheckOffset(){
+      return new Vec3i(-1,-1,-1);
    }
    
    @Override
@@ -223,7 +229,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
                   forge.openGui(0, player,"",null);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(forge.getMultiblockCheck());
+                  multiblock.displayStructure(forge.getMultiblockCheck(),player);
                }
             }
          }

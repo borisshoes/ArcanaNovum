@@ -44,7 +44,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<UUID,Integer> PLAYER_XP_TRACKER = new HashMap<>();
    public static final HashMap<ServerPlayerEntity, Pair<Vec3d,Vec3d>> PLAYER_MOVEMENT_TRACKER = new HashMap<>();
    public static MinecraftServer SERVER = null;
-   public static final boolean devMode = false;
+   public static final boolean DEV_MODE = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static ConfigUtils config;
@@ -117,7 +117,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    }
    
    public static void devPrint(String msg){
-      if(devMode){
+      if(DEV_MODE){
          System.out.println(msg);
       }
    }

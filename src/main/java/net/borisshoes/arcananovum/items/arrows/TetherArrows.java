@@ -119,7 +119,7 @@ public class TetherArrows extends RunicArrow {
          Vec3d hitPos = blockHitResult.getPos();
          Vec3d motion = hitPos.subtract(player.getPos());
          Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
-         motion = motion.add(horizBoost);
+         //motion = motion.add(horizBoost);
          Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
          player.setVelocity(velocity);
          player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
@@ -131,8 +131,10 @@ public class TetherArrows extends RunicArrow {
       
    }
    
+   
+   // TODO Redo the funny physics
    private double velFromLength(double d){
-      double a = .98; // Drag
+      double a = .96; // Drag
       return -20*d*Math.log(a);
    }
    

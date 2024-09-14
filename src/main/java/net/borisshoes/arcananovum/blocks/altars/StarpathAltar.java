@@ -40,6 +40,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -140,6 +141,11 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    @Override
+   public Vec3i getCheckOffset(){
+      return new Vec3i(-5,0,-5);
+   }
+   
+   @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_EYE,16);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
@@ -228,7 +234,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
                   player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(altar.getMultiblockCheck());
+                  multiblock.displayStructure(altar.getMultiblockCheck(),player);
                }
             }
          }

@@ -99,19 +99,50 @@ public class ExpulsionArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
-         int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
-         expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
+         boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
+         if(evict){
+            double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
+            ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,entityHitResult.getPos(),range)));
+         }else{
+            int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
+            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
+            expulsionPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
+         }
       }
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
-         int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
-         double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
-         expulsionPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);
+         boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
+         if(evict){
+            double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
+            ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,blockHitResult.getPos(),range)));
+         }else{
+            int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
+            double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
+            expulsionPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);
+         }
       }
+   }
+   
+   private void evictionPulse(PersistentProjectileEntity arrow, ServerWorld world, Vec3d pos, double range){
+      Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
+      List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && !(e instanceof PersistentProjectileEntity) && !(e instanceof EnderDragonEntity));
+      for(Entity entity1 : entities){
+         Vec3d diff = entity1.getPos().subtract(pos);
+         double multiplier = MathHelper.clamp(3-diff.length()*.5,.1,7.5);
+         Vec3d motion = diff.add(0,0,0).normalize().multiply(multiplier);
+         entity1.setVelocity(motion.x,motion.y,motion.z);
+         if(entity1 instanceof ServerPlayerEntity player){
+            player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+            
+            if(arrow.getOwner() != null && arrow.getOwner().getUuid().equals(player.getUuid()) && motion.y > 2) ArcanaAchievements.grant(player,ArcanaAchievements.JUMP_PAD.id);
+         }
+      }
+      
+      ParticleEffectUtils.expulsionArrowEmit(world,pos,range,0);
+      SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.PLAYERS,.5f,.5f);
    }
    
    private void expulsionPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, double range, int calls){

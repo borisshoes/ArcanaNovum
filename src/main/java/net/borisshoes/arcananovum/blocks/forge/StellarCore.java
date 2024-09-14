@@ -41,6 +41,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -130,6 +131,11 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
    @Override
    public Multiblock getMultiblock(){
       return multiblock;
+   }
+   
+   @Override
+   public Vec3i getCheckOffset(){
+      return new Vec3i(-2,-1,-4);
    }
    
    @Override
@@ -238,7 +244,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(core.getMultiblockCheck());
+                  multiblock.displayStructure(core.getMultiblockCheck(),player);
                }
             }
          }

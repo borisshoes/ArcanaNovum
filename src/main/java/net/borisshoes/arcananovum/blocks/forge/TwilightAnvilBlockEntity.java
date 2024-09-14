@@ -234,7 +234,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-1,-1,-1),null);
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.TWILIGHT_ANVIL).getCheckOffset()),null);
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

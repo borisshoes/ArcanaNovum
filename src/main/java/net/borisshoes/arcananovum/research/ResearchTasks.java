@@ -633,7 +633,7 @@ public class ResearchTasks {
                   Text.literal(" possibly one of the oldest beings still alive."),
                   Text.literal("I also have learned that she is a mad tyrant, "),
                   Text.literal(" who rules over the Enderman with a cold heart."),
-                  Text.literal("It is possible she also posses Divine Arcana..."),
+                  Text.literal("It is possible she also possesses Divine Arcana..."),
             },
             ArcanaRegistry.WINGS_OF_ENDERIA.getPrefItemNoLore()
       ));
@@ -749,7 +749,7 @@ public class ResearchTasks {
             new Text[]{
                   Text.literal("Interestingly enough, Blaze Powder was the key"),
                   Text.literal(" to re-awakening the Enderman's eye."),
-                  Text.literal("However, it does not appear to posses the"),
+                  Text.literal("However, it does not appear to possess the"),
                   Text.literal(" enhanced teleportation abilities I expected."),
                   Text.literal("There may be more to this mystery yet.")
             },

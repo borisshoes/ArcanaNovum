@@ -6,19 +6,22 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltar;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -32,6 +35,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
    private final List<TransmutationRecipe> recipes;
    private final TransmutationAltarBlockEntity blockEntity;
    private final SimpleGui returnGui;
+   private ItemStack selectionModeStack;
    
    public TransmutationAltarRecipeGui(ServerPlayerEntity player, SimpleGui returnGui, Optional<TransmutationAltarBlockEntity> altarOpt){
       super(ScreenHandlerType.GENERIC_9X6, player, false);
@@ -39,6 +43,11 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       this.blockEntity = altarOpt.orElse(null);
       this.returnGui = returnGui;
       setTitle(Text.literal("Transmutation Altar"));
+   }
+   
+   public void enableSelectionMode(ItemStack stack){
+      selectionModeStack = stack;
+      recipes.removeIf(recipe -> recipe instanceof AequalisCatalystTransmutationRecipe || recipe instanceof AequalisSkillTransmutationRecipe);
    }
    
    @Override
@@ -61,6 +70,14 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             int ind = (7*(index/9 - 1) + (index % 9 - 1)) + 28*(page-1);
             if(ind >= pageRecipes.size()) return true;
             TransmutationRecipe recipe = pageRecipes.get(ind);
+            if(selectionModeStack != null && ArcanaItemUtils.identifyItem(selectionModeStack) instanceof AequalisScientia aq){
+               ArcanaItem.putProperty(selectionModeStack, AequalisScientia.TRANSMUTATION_TAG,recipe.getName());
+               aq.buildItemLore(selectionModeStack,player.getServer());
+               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM,1,0.8f);
+               close();
+               return true;
+            }
+            
             if(!(recipe instanceof CommutativeTransmutationRecipe cr)) return true;
             curRecipe = cr;
             curRecipeName = cr.getName();

@@ -336,7 +336,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       if (!(this.world instanceof ServerWorld serverWorld)) {
          return null;
       }
-      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(-1,-1,-2),serverWorld.getBlockState(pos).get(HORIZONTAL_FACING));
+      return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.ARCANE_SINGULARITY).getCheckOffset()),serverWorld.getBlockState(pos).get(HORIZONTAL_FACING));
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){

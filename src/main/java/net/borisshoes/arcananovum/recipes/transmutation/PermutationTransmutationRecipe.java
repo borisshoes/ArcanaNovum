@@ -33,6 +33,22 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe{
    }
    
    @Override
+   public List<ItemStack> doTransmutation(ItemStack positiveInput, ItemStack negativeInput, ItemStack reagent1, ItemStack reagent2, ItemStack aequalisInput, ServerPlayerEntity player){
+      List<ItemStack> returnItems = new ArrayList<>();
+      int iterations = positiveInput.getCount() / getInput().getCount();
+      for(int i = 0; i < iterations; i++){
+         ItemStack outputStack = permutationFunction.apply(input,player.getServer()).copy();
+         if(ArcanaItemUtils.isArcane(positiveInput) && ArcanaItemUtils.isArcane(outputStack)){
+            ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),false,player.getServer());
+         }
+         returnItems.add(outputStack);
+      }
+      returnItems.add(aequalisInput);
+      return returnItems;
+   }
+   
+   @Override
    public List<Pair<ItemStack, String>> doTransmutation(ItemEntity input1Entity, ItemEntity input2Entity, ItemEntity reagent1Entity, ItemEntity reagent2Entity, ItemEntity aequalisEntity, TransmutationAltarBlockEntity altar, ServerPlayerEntity player){
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       ItemStack re1 = getBargainReagent(reagent1,bargainLvl);

@@ -8,6 +8,7 @@ import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SculkShriekerBlock;
 import net.minecraft.entity.Entity;
@@ -28,10 +29,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -41,6 +39,8 @@ import java.util.List;
 import java.util.*;
 
 public class ParticleEffectUtils {
+   
+   public static final double PHI = (1 + Math.sqrt(5)) / 2.0;
    
    public static void arcaneNotesFinish(ServerPlayerEntity player, ArcanaItem arcanaItem){
       ServerWorld world = player.getServerWorld();
@@ -62,10 +62,11 @@ public class ParticleEffectUtils {
       world.spawnParticles(dust,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),4,0.4,0.8,0.4,1);
    }
    
-   public static void enhancedForgingAnim(ServerWorld world, BlockPos forgePos, ItemStack stack, int tick){
+   public static void enhancedForgingAnim(ServerWorld world, BlockPos forgePos, ItemStack stack, double tickRaw, double speedMod){
       Vec3d center = forgePos.toCenterPos();
+      int tick = (int) tickRaw;
       if(tick < 350){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> enhancedForgingAnim(world, forgePos, stack, tick+1)));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> enhancedForgingAnim(world, forgePos, stack, tickRaw+(1*speedMod),speedMod)));
       }
       if(tick == 0){
          ItemDisplayElement item = new ItemDisplayElement(stack);
@@ -74,7 +75,7 @@ public class ParticleEffectUtils {
          item.setScale(new Vector3f(0.5f));
          
          ElementHolder holder = new ElementHolder() {
-            int lifeTime = 350;
+            int lifeTime = (int) (350 / speedMod);
             
             @Override
             protected void onTick(){
@@ -85,20 +86,24 @@ public class ParticleEffectUtils {
                   destroy(); // Time expired, remove
                   return;
                }
-               if(lifeTime < 80){
+               if(lifeTime < (int) (80 / speedMod)){
                   item.setGlowing(true);
                }
                
+               float rotateRate = (float) (0.1f * speedMod);
+               float scaleRate = (float) (0.01f * speedMod);
+               float translateRate = (float) (0.02f * speedMod);
+               
                for(VirtualElement element : getElements()){
                   if(element instanceof ItemDisplayElement elem){
-                     elem.setLeftRotation(elem.getLeftRotation().rotateY(0.1f,new Quaternionf()));
+                     elem.setLeftRotation(elem.getLeftRotation().rotateY(rotateRate,new Quaternionf()));
                      
                      if(elem.getScale().y() < 1){
-                        elem.setScale(elem.getScale().add(0.01f,0.01f,0.01f,new Vector3f()));
+                        elem.setScale(elem.getScale().add(scaleRate,scaleRate,scaleRate,new Vector3f()));
                      }
                      
                      if(elem.getTranslation().y() < 1.5){
-                        elem.setTranslation(elem.getTranslation().add(0,0.02f,0,new Vector3f()));
+                        elem.setTranslation(elem.getTranslation().add(0,translateRate,0,new Vector3f()));
                      }
                   }
                }
@@ -131,7 +136,7 @@ public class ParticleEffectUtils {
          world.spawnParticles(yellow,center.x,center.y+2.5,center.z,3,0.8,0.8,0.8,0);
       }
       
-      if(tick == 50){
+      if(tick == adjustTime(50,speedMod)){
          SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS, 2f, 0.8f);
       }
       
@@ -142,7 +147,7 @@ public class ParticleEffectUtils {
          }
       }
       
-      if(tick == 130){
+      if(tick == adjustTime(130,speedMod)){
          SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.BLOCKS, 0.7f, 0.7f);
       }
       
@@ -151,11 +156,11 @@ public class ParticleEffectUtils {
          world.spawnParticles(ParticleTypes.OMINOUS_SPAWNING,itemCenter.x,itemCenter.y,itemCenter.z,count,0.2,0.2,0.2,1);
       }
       
-      if(tick == 280){
+      if(tick == adjustTime(280,speedMod)){
          SoundUtils.playSound(world, forgePos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1.25f, 0.7f);
       }
       
-      if(tick == 330){
+      if(tick == adjustTime(330,speedMod)){
          world.spawnParticles(ParticleTypes.FLASH,center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
       }
       
@@ -214,10 +219,11 @@ public class ParticleEffectUtils {
       line(world,null,center.add(-S3,-0.4,S3),center.add(S3,-0.4,-S3),white,I3,C3,D3,1);
    }
    
-   public static void arcanaCraftingAnim(ServerWorld world, BlockPos forgePos, ItemStack stack, int tick){
+   public static void arcanaCraftingAnim(ServerWorld world, BlockPos forgePos, ItemStack stack, double tickRaw, double speedMod){
       Vec3d center = forgePos.toCenterPos();
+      int tick = (int) tickRaw;
       if(tick < 350){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> arcanaCraftingAnim(world, forgePos, stack, tick+1)));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> arcanaCraftingAnim(world, forgePos, stack, tickRaw+(1*speedMod), speedMod)));
       }
       if(tick == 0){
          ItemDisplayElement item = new ItemDisplayElement(stack);
@@ -226,7 +232,7 @@ public class ParticleEffectUtils {
          item.setScale(new Vector3f(0.5f));
          
          ElementHolder holder = new ElementHolder() {
-            int lifeTime = 350;
+            int lifeTime = (int) (350 / speedMod);
             
             @Override
             protected void onTick(){
@@ -237,20 +243,24 @@ public class ParticleEffectUtils {
                   destroy(); // Time expired, remove
                   return;
                }
-               if(lifeTime < 80){
+               if(lifeTime < (int) (80 / speedMod)){
                   item.setGlowing(true);
                }
                
+               float rotateRate = (float) (0.1f * speedMod);
+               float scaleRate = (float) (0.0075f * speedMod);
+               float translateRate = (float) (0.02f * speedMod);
+               
                for(VirtualElement element : getElements()){
                   if(element instanceof ItemDisplayElement elem){
-                     elem.setLeftRotation(elem.getLeftRotation().rotateY(0.1f,new Quaternionf()));
+                     elem.setLeftRotation(elem.getLeftRotation().rotateY(rotateRate,new Quaternionf()));
                      
                      if(elem.getScale().y() < 1){
-                        elem.setScale(elem.getScale().add(0.0075f,0.0075f,0.0075f,new Vector3f()));
+                        elem.setScale(elem.getScale().add(scaleRate,scaleRate,scaleRate,new Vector3f()));
                      }
                      
                      if(elem.getTranslation().y() < 1.5){
-                        elem.setTranslation(elem.getTranslation().add(0,0.02f,0,new Vector3f()));
+                        elem.setTranslation(elem.getTranslation().add(0,translateRate,0,new Vector3f()));
                      }
                   }
                }
@@ -283,7 +293,7 @@ public class ParticleEffectUtils {
          world.spawnParticles(purple,center.x,center.y+2.5,center.z,3,0.8,0.8,0.8,0);
       }
       
-      if(tick == 50){
+      if(tick == adjustTime(50,speedMod)){
          SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS, 2f, 0.8f);
       }
       
@@ -294,7 +304,7 @@ public class ParticleEffectUtils {
          }
       }
       
-      if(tick == 130){
+      if(tick == adjustTime(130,speedMod)){
          SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.BLOCKS, 0.7f, 0.7f);
       }
       
@@ -304,11 +314,11 @@ public class ParticleEffectUtils {
          world.spawnParticles(ParticleTypes.WITCH,itemCenter.x,itemCenter.y,itemCenter.z,count,0.2,0.5,0.2,0.05);
       }
       
-      if(tick == 280){
+      if(tick == adjustTime(280,speedMod)){
          SoundUtils.playSound(world, forgePos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1.25f, 0.7f);
       }
       
-      if(tick == 330){
+      if(tick == adjustTime(330,speedMod)){
          world.spawnParticles(ParticleTypes.FLASH,center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
          world.spawnParticles(ParticleTypes.WITCH,itemCenter.x,itemCenter.y,itemCenter.z,100,0.2,0.5,0.2,0.1);
       }
@@ -397,6 +407,205 @@ public class ParticleEffectUtils {
          circle(world,null,circleCenter.add(0,-circleHeight,0),ParticleTypes.WITCH,circleRadius*1.2,intervals/2,1,0,0);
       }
       ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> ensnaredEffect(living, amplifier,tick < 40 ? tick+1 : 0)));
+   }
+   
+   public static void aequalisTransmuteAnim(ServerWorld world, Vec3d center, double rawTick, Vec2f rotation, double speedMod, ItemStack input, ItemStack output, ItemStack reagent1, ItemStack reagent2, ItemStack aequalis){
+      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
+      ParticleEffect blueSmall = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.4f);
+      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.5f);
+      ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.8f);
+      
+      int tick = (int)(rawTick);
+      int intBonus = tick % 3;
+      int n = output == null || output.isEmpty() ? 3 : 4;
+      
+      List<Vec3d> itemCenters = getCirclePoints(center,1.75+0.5*Math.sin(-Math.PI*tick/60.0) / 30.0,n,tick * 6 * Math.PI / 500.0);
+      
+      if(tick == 0){
+         SoundUtils.playSound(world, BlockPos.ofFloored(center),SoundEvents.BLOCK_BEACON_POWER_SELECT,SoundCategory.BLOCKS,1,1.5f);
+         
+         ItemDisplayElement aequalisElem = new ItemDisplayElement(aequalis);
+         aequalisElem.setGlowColorOverride(ArcanaColors.EQUAYUS_COLOR);
+         aequalisElem.setBrightness(new Brightness(15,15));
+         aequalisElem.setScale(new Vector3f(0.5f));
+         aequalisElem.setTranslation(center.subtract(BlockPos.ofFloored(center).toCenterPos()).toVector3f());
+         
+         ItemDisplayElement inputElem = new ItemDisplayElement(input);
+         inputElem.setGlowColorOverride(ArcanaColors.EQUAYUS_COLOR);
+         inputElem.setBrightness(new Brightness(15,15));
+         inputElem.setScale(new Vector3f(0.0f));
+         
+         ItemDisplayElement reagent1Elem = new ItemDisplayElement(reagent1);
+         reagent1Elem.setGlowColorOverride(ArcanaColors.EQUAYUS_COLOR);
+         reagent1Elem.setBrightness(new Brightness(15,15));
+         reagent1Elem.setScale(new Vector3f(0.0f));
+         
+         ItemDisplayElement reagent2Elem = new ItemDisplayElement(reagent2);
+         reagent2Elem.setGlowColorOverride(ArcanaColors.EQUAYUS_COLOR);
+         reagent2Elem.setBrightness(new Brightness(15,15));
+         reagent2Elem.setScale(new Vector3f(0.0f));
+         
+         ElementHolder aequalisHolder = new ElementHolder() {
+            int lifeTime = (int) (500 / speedMod);
+            
+            @Override
+            protected void onTick(){
+               super.onTick();
+               
+               if(lifeTime-- <= 0) {
+                  setAttachment(null);
+                  destroy(); // Time expired, remove
+                  return;
+               }
+               if(lifeTime < (int) (80 / speedMod)){
+                  aequalisElem.setGlowing(true);
+               }
+               
+               float rotateRate = (float) (0.1f * speedMod);
+               float scaleRate = (float) (0.0075f * speedMod);
+               
+               for(VirtualElement element : getElements()){
+                  if(element instanceof ItemDisplayElement elem){
+                     elem.setLeftRotation(elem.getLeftRotation().rotateY(rotateRate,new Quaternionf()));
+                     
+                     if(elem.getScale().y() < 1){
+                        elem.setScale(elem.getScale().add(scaleRate,scaleRate,scaleRate,new Vector3f()));
+                     }
+                  }
+               }
+            }
+         };
+         aequalisHolder.addElement(aequalisElem);
+         ChunkAttachment.ofTicking(aequalisHolder, world, BlockPos.ofFloored(center));
+         
+         
+         ElementHolder inputHolder = makeAequalisItemHolder(inputElem,center,n,0,speedMod);
+         ElementHolder reagent1Holder = makeAequalisItemHolder(reagent1Elem,center,n,1,speedMod);
+         ElementHolder reagent2Holder = makeAequalisItemHolder(reagent2Elem,center,n,2,speedMod);
+         
+         inputHolder.addElement(inputElem);
+         ChunkAttachment.ofTicking(inputHolder, world, BlockPos.ofFloored(center));
+         
+         reagent1Holder.addElement(reagent1Elem);
+         ChunkAttachment.ofTicking(reagent1Holder, world, BlockPos.ofFloored(center));
+         
+         reagent2Holder.addElement(reagent2Elem);
+         ChunkAttachment.ofTicking(reagent2Holder, world, BlockPos.ofFloored(center));
+         
+         if(output != null && !output.isEmpty()){
+            ItemDisplayElement outputElem = new ItemDisplayElement(output);
+            outputElem.setGlowColorOverride(ArcanaColors.EQUAYUS_COLOR);
+            outputElem.setBrightness(new Brightness(15,15));
+            outputElem.setScale(new Vector3f(0.0f));
+            
+            ElementHolder outputHolder = makeAequalisItemHolder(outputElem,center,n,3,speedMod);
+            outputHolder.addElement(outputElem);
+            ChunkAttachment.ofTicking(outputHolder, world, BlockPos.ofFloored(center));
+         }
+      }
+      
+      double innerSize = tick < 50 ? tick/100.0 : 0.2*Math.sin(-Math.PI*tick/50.0-0.25)+0.45;
+      List<Pair<Vec3d, Vec3d>> innerPairs = getIcosahedronPairs(getIcosahedronPoints().stream().map(
+            point -> point.rotateZ(-0.55357f).rotateY((float) (rawTick * 2*Math.PI / 500.0f)).multiply(innerSize).add(center)
+      ).toList());
+      double outerSize = tick < 75 ? tick*2/75.0 : tick > 450 ? 15 - 0.03*tick : 0.25*Math.sin(-Math.PI*tick/75.0-Math.PI/2.0)+1.75;
+      List<Pair<Vec3d, Vec3d>> outerPairs = getIcosahedronPairs(getIcosahedronPoints().stream().map(
+            point -> point.rotateZ(-0.55357f).rotateY((float) (rawTick * 2*Math.PI / 500.0f)).multiply(outerSize).add(center)
+      ).toList());
+      
+      for(Pair<Vec3d, Vec3d> pair :innerPairs){
+         line(world,null,pair.getRight(),pair.getLeft(),blueSmall,5+intBonus,1,0,0,1);
+      }
+      
+      if(tick < 490){
+         for(Pair<Vec3d, Vec3d> pair : outerPairs){
+            line(world,null,pair.getRight(),pair.getLeft(),pink,10+intBonus,1,0,0,1);
+         }
+      }
+      
+      if(tick > 50){
+         int i = 0;
+         double radius = tick < 450 ? 0.5 : 5 - 0.01 * tick;
+         for(Vec3d itemCenter : itemCenters){
+            List<Vec3d> circlePoints1 = getCirclePoints(new Vec3d(0,0,0),radius,24,Math.PI*tick / 30.0).stream().map(point -> point.rotateX((float) (Math.PI/2.0f)).rotateY((float) (tick * 6 * Math.PI / 500.0)).add(itemCenter)).toList();
+            List<Vec3d> circlePoints2 = getCirclePoints(new Vec3d(0,0,0),radius,24,Math.PI*tick / 30.0).stream().map(point -> point.rotateX((float) (Math.PI/2.0f)).rotateY((float) (-tick * 6 * Math.PI / 500.0)).add(itemCenter)).toList();
+            double itemDY = 0.5 * Math.sin(Math.PI * tick / 100.0 + i * Math.PI * 2.0 / n);
+            for(Vec3d circlePoint : circlePoints1){
+               world.spawnParticles(purple,circlePoint.x,circlePoint.y + itemDY,circlePoint.z,1,0,0,0,0);
+            }
+            for(Vec3d circlePoint : circlePoints2){
+               world.spawnParticles(purple,circlePoint.x,circlePoint.y + itemDY,circlePoint.z,1,0,0,0,0);
+            }
+            
+            if(tick > 120 && tick < 450){
+               world.spawnParticles(ParticleTypes.WITCH,itemCenter.x,itemCenter.y + itemDY + 0.1,itemCenter.z,3,0.15,0.15,0.15,0);
+            }
+            i++;
+         }
+      }
+      
+      if(tick > 60 && tick < 450){
+         if(Math.random() < 0.1){
+            animatedLightningBolt(world,center,outerPairs.get((int)(Math.random()*outerPairs.size())).getRight(),12,0.5,ParticleTypes.ELECTRIC_SPARK,16,1,0,0,false,0,15);
+         }
+         if(tick % 6 == 0){
+            world.spawnParticles(ParticleTypes.END_ROD,center.x,center.y,center.z,1,1.6,1.6,1.6,0);
+         }
+      }
+      
+      if(tick % 70 == 20){
+         SoundUtils.playSound(world, BlockPos.ofFloored(center),SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,SoundCategory.BLOCKS,1,((float)Math.random())*.5f + 0.7f);
+      }
+      if(tick % 100 == 35){
+         SoundUtils.playSound(world, BlockPos.ofFloored(center),SoundEvents.BLOCK_PORTAL_AMBIENT,SoundCategory.BLOCKS,0.5f,((float)Math.random())*.4f + 1.2f);
+      }
+      
+      
+      if(tick < 500){
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> aequalisTransmuteAnim(world, center, rawTick+(1*speedMod), rotation, speedMod, input, output, reagent1, reagent2, aequalis)));
+      }else{
+         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y,center.z,5,0.3,0.3,0.3,0);
+         SoundUtils.playSound(world, BlockPos.ofFloored(center), SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS,1,0.8f);
+      }
+   }
+   
+   private static ElementHolder makeAequalisItemHolder(ItemDisplayElement element, Vec3d center, int n, int i, double speedMod){
+      return new ElementHolder() {
+         int lifeTime = (int) (500 / speedMod);
+         
+         @Override
+         protected void onTick(){
+            super.onTick();
+            
+            if(lifeTime-- <= 0) {
+               setAttachment(null);
+               destroy(); // Time expired, remove
+               return;
+            }
+            if(lifeTime < (int) (80 / speedMod)){
+               element.setGlowing(true);
+            }
+            
+            float rotateRate = (float) (0.1f * speedMod);
+            float scaleRate = (float) (0.0075f * speedMod);
+            
+            for(VirtualElement element : getElements()){
+               if(element instanceof ItemDisplayElement elem){
+                  elem.setLeftRotation(elem.getLeftRotation().rotateY(rotateRate,new Quaternionf()));
+                  
+                  if((500-lifeTime) > (int) (450 / speedMod) && elem.getScale().y() > 0){
+                     elem.setScale(elem.getScale().add(-scaleRate,-scaleRate,-scaleRate,new Vector3f()));
+                  }else if((500-lifeTime) > (int) (50 / speedMod) && elem.getScale().y() < 0.5){
+                     elem.setScale(elem.getScale().add(scaleRate,scaleRate,scaleRate,new Vector3f()));
+                  }
+                  
+                  double itemDY = 0.5 * Math.sin(Math.PI * (500-lifeTime) / 100.0 + i * Math.PI * 2.0 / n);
+                  elem.setTranslation(getCirclePoints(center,1.75+0.5*Math.sin(-Math.PI*(500-lifeTime)/60.0) / 30.0,n,(500-lifeTime) * 6 * Math.PI / 500.0).get(i)
+                        .subtract(center).add(0,itemDY,0).add(center.subtract(BlockPos.ofFloored(center).toCenterPos())).toVector3f());
+               }
+            }
+         }
+      };
    }
    
    public static void transmutationAltarAnim(ServerWorld world, Vec3d center, double rawTick, Direction direction, double speedMod){
@@ -509,7 +718,7 @@ public class ParticleEffectUtils {
       }
       
       if(tick < 500){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> transmutationAltarAnim(world,center,tick+(1*speedMod), direction,speedMod)));
+         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> transmutationAltarAnim(world,center,rawTick+(1*speedMod), direction,speedMod)));
       }
    }
    
@@ -1475,6 +1684,19 @@ public class ParticleEffectUtils {
       }
    }
    
+   public static List<Vec3d> getCirclePoints(Vec3d center, double radius, int intervals, double theta){
+      List<Vec3d> points = new ArrayList<>();
+      double dA = Math.PI * 2 / intervals;
+      for(int i = 0; i < intervals; i++){
+         double angle = dA * i + theta;
+         double x = radius * Math.cos(angle) + center.x;
+         double z = radius * Math.sin(angle) + center.z;
+         double y = center.y;
+         points.add(new Vec3d(x,y,z));
+      }
+      return points;
+   }
+   
    public static void longDistSphere(ServerWorld world, Vec3d center, ParticleEffect type, double radius, int points, int count, double delta, double speed, double theta){
       double phi = Math.PI * (3 - Math.sqrt(5));
       
@@ -1525,5 +1747,61 @@ public class ParticleEffectUtils {
       }
    }
    
+   public static int adjustTime(int tick, double speedMod){
+      return (int) (((int)(tick / speedMod)) * speedMod);
+   }
    
+   public static List<Pair<Vec3d,Vec3d>> getIcosahedronPairs(List<Vec3d> icosPoints){
+      List<Pair<Vec3d,Vec3d>> icosOutlines = new ArrayList<>();
+      
+      icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(1)));
+      icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(4)));
+      icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(7)));
+      icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(8)));
+      icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(11)));
+      icosOutlines.add(new Pair<>(icosPoints.get(9),icosPoints.get(2)));
+      icosOutlines.add(new Pair<>(icosPoints.get(9),icosPoints.get(3)));
+      icosOutlines.add(new Pair<>(icosPoints.get(9),icosPoints.get(4)));
+      icosOutlines.add(new Pair<>(icosPoints.get(9),icosPoints.get(5)));
+      icosOutlines.add(new Pair<>(icosPoints.get(9),icosPoints.get(8)));
+      icosOutlines.add(new Pair<>(icosPoints.get(10),icosPoints.get(7)));
+      icosOutlines.add(new Pair<>(icosPoints.get(10),icosPoints.get(3)));
+      icosOutlines.add(new Pair<>(icosPoints.get(10),icosPoints.get(6)));
+      icosOutlines.add(new Pair<>(icosPoints.get(10),icosPoints.get(11)));
+      icosOutlines.add(new Pair<>(icosPoints.get(10),icosPoints.get(2)));
+      icosOutlines.add(new Pair<>(icosPoints.get(4),icosPoints.get(8)));
+      icosOutlines.add(new Pair<>(icosPoints.get(4),icosPoints.get(7)));
+      icosOutlines.add(new Pair<>(icosPoints.get(4),icosPoints.get(3)));
+      icosOutlines.add(new Pair<>(icosPoints.get(7),icosPoints.get(3)));
+      icosOutlines.add(new Pair<>(icosPoints.get(3),icosPoints.get(2)));
+      icosOutlines.add(new Pair<>(icosPoints.get(6),icosPoints.get(2)));
+      icosOutlines.add(new Pair<>(icosPoints.get(6),icosPoints.get(1)));
+      icosOutlines.add(new Pair<>(icosPoints.get(6),icosPoints.get(11)));
+      icosOutlines.add(new Pair<>(icosPoints.get(6),icosPoints.get(5)));
+      icosOutlines.add(new Pair<>(icosPoints.get(7),icosPoints.get(11)));
+      icosOutlines.add(new Pair<>(icosPoints.get(2),icosPoints.get(5)));
+      icosOutlines.add(new Pair<>(icosPoints.get(1),icosPoints.get(5)));
+      icosOutlines.add(new Pair<>(icosPoints.get(8),icosPoints.get(5)));
+      icosOutlines.add(new Pair<>(icosPoints.get(1),icosPoints.get(11)));
+      icosOutlines.add(new Pair<>(icosPoints.get(1),icosPoints.get(8)));
+      return icosOutlines;
+   }
+   
+   public static List<Vec3d> getIcosahedronPoints(){
+      List<Vec3d> icosPoints = new ArrayList<>();
+      icosPoints.add(new Vec3d(0,1,PHI));
+      icosPoints.add(new Vec3d(0,-1,PHI));
+      icosPoints.add(new Vec3d(0,-1,-PHI));
+      icosPoints.add(new Vec3d(0,1,-PHI));
+      icosPoints.add(new Vec3d(-1,PHI,0));
+      icosPoints.add(new Vec3d(-1,-PHI,0));
+      icosPoints.add(new Vec3d(1,-PHI,0));
+      icosPoints.add(new Vec3d(1,PHI,0));
+      icosPoints.add(new Vec3d(-PHI,0,1));
+      icosPoints.add(new Vec3d(-PHI,0,-1));
+      icosPoints.add(new Vec3d(PHI,0,-1));
+      icosPoints.add(new Vec3d(PHI,0,1));
+      
+      return icosPoints;
+   }
 }

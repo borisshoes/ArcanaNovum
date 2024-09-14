@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
@@ -41,6 +42,7 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -111,14 +113,14 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
          if(recipe instanceof InfusionTransmutationRecipe r && ArcanaItemUtils.isArcane(r.getOutput()) && !PLAYER_DATA.get(player).hasResearched(ArcanaItemUtils.identifyItem(r.getOutput()))){
             return false;
          }
-         if(recipe instanceof AequalisCatalystTransmutationRecipe && !PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA)){
+         if(recipe instanceof AequalisCatalystTransmutationRecipe && !(PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && PLAYER_DATA.get(player).getAugmentLevel(ArcanaAugments.EQUIVALENT_EXCHANGE.id) > 0)){
             return false;
          }
          if(recipe instanceof AequalisSkillTransmutationRecipe && !PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA)){
             return false;
          }
          return true;
-      }).toList();
+      }).collect(Collectors.toCollection(ArrayList::new));
    }
    
    @Override
@@ -129,6 +131,11 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public Multiblock getMultiblock(){
       return multiblock;
+   }
+   
+   @Override
+   public Vec3i getCheckOffset(){
+      return new Vec3i(-5,0,-5);
    }
    
    
@@ -237,7 +244,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
                   player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
-                  multiblock.displayStructure(altar.getMultiblockCheck());
+                  multiblock.displayStructure(altar.getMultiblockCheck(),player);
                }
             }
          }

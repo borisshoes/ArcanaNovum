@@ -108,7 +108,7 @@ public class StarlightForgeGui extends SimpleGui {
                   buildSkilledGui(arcanaItem.getId());
                }else{
                   ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
-                  forgeItem(arcanaItem, newArcanaItem, recipe, null);
+                  forgeItem(arcanaItem, newArcanaItem, recipe, null,type == ClickType.MOUSE_LEFT_SHIFT);
                }
             }
          }
@@ -237,20 +237,20 @@ public class StarlightForgeGui extends SimpleGui {
                
                ArcanaRecipe recipe = arcanaItem.getRecipe();
                ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
-               forgeItem(arcanaItem, newArcanaItem, recipe, new Pair<>(augment,applicableLevel));
+               forgeItem(arcanaItem, newArcanaItem, recipe, new Pair<>(augment,applicableLevel), type == ClickType.MOUSE_LEFT_SHIFT);
                close();
             }
          }else if(index == 40 && arcanaItem != null){
             ArcanaRecipe recipe = arcanaItem.getRecipe();
             ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
-            forgeItem(arcanaItem, newArcanaItem, recipe, null);
+            forgeItem(arcanaItem, newArcanaItem, recipe, null, type == ClickType.MOUSE_LEFT_SHIFT);
          }
       }
    
       return true;
    }
    
-   private void forgeItem(ArcanaItem arcanaItem, ItemStack newArcanaItem, ArcanaRecipe recipe, @Nullable Pair<ArcanaAugment, Integer> skillPair){
+   private void forgeItem(ArcanaItem arcanaItem, ItemStack newArcanaItem, ArcanaRecipe recipe, @Nullable Pair<ArcanaAugment, Integer> skillPair, boolean fastAnim){
       if(skillPair != null && skillPair.getRight() > 0){
          ArcanaAugments.applyAugment(newArcanaItem, skillPair.getLeft().id, skillPair.getRight(),false);
       }
@@ -267,9 +267,9 @@ public class StarlightForgeGui extends SimpleGui {
       }
       
       ServerWorld world = (ServerWorld) blockEntity.getWorld();
-      ParticleEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0);
+      ParticleEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0,fastAnim ? 1.75 : 1);
       
-      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(350, () -> {
+      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
          if(!PLAYER_DATA.get(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
             PLAYER_DATA.get(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
          }

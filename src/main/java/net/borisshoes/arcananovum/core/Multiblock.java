@@ -11,11 +11,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.StairsBlock;
 import net.minecraft.block.enums.StairShape;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
@@ -41,26 +44,58 @@ public class Multiblock {
    private final int[][][] statePattern;
    private final List<Pair<BlockState,Predicate<BlockState>>> predicates;
    
-   private final HashMap<BlockPos, HolderAttachment> attachments;
+   private static final HashMap<ServerPlayerEntity,List<HolderAttachment>> MULTIBLOCK_DISPLAYS = new HashMap<>();
    
    private Multiblock(int[][][] statePattern, List<Pair<BlockState,Predicate<BlockState>>> predicates){
       this.statePattern = statePattern;
       this.predicates = predicates;
-      this.attachments = new HashMap<>();
    }
    
-   public void displayStructure(MultiblockCheck checkParams){
+   public HashMap<Item,Integer> getMaterialList(){
+      HashMap<Item,Integer> mats = new HashMap<>();
+      
+      int width = statePattern.length;
+      int height = statePattern[0].length;
+      int length = statePattern[0][0].length;
+      
+      for(int x=0;x<width;x++){
+         for(int y = 0; y < height; y++){
+            for(int z = 0; z < length; z++){
+               int pattern = statePattern[x][y][z];
+               if(pattern == -1) continue;
+               Pair<BlockState,Predicate<BlockState>> pair = predicates.get(pattern);
+               Item item = pair.getLeft().getBlock().asItem();
+               if(item == Items.AIR) continue;
+               if(mats.containsKey(item)){
+                  mats.put(item,mats.get(item)+1);
+               }else{
+                  mats.put(item,1);
+               }
+            }
+         }
+      }
+      
+      return mats;
+   }
+   
+   public void displayStructure(MultiblockCheck checkParams, ServerPlayerEntity player){
       if(checkParams == null) return;
       List<MultiblockCheckResult> incorrect = getIncorrect(checkParams);
+      
+      List<HolderAttachment> playerAttachments;
+      if(MULTIBLOCK_DISPLAYS.containsKey(player)){
+         playerAttachments = MULTIBLOCK_DISPLAYS.get(player);
+         for(HolderAttachment attachment : playerAttachments){
+            attachment.holder().destroy();
+         }
+         playerAttachments.clear();
+      }else{
+         playerAttachments = new ArrayList<>();
+      }
       
       for(MultiblockCheckResult result : incorrect){
          BlockPos blockPos = result.pos();
          BlockState blockState = result.displayState();
-         
-         if(attachments.containsKey(blockPos)){
-            attachments.get(blockPos).holder().destroy();
-            attachments.remove(blockPos);
-         }
          
          BlockDisplayElement element = createEmptyElement();
          ElementHolder holder = createHolder(blockPos,checkParams.coreState(),checkParams.corePos(),result.predicate());
@@ -79,8 +114,17 @@ public class Multiblock {
          }
          element.setGlowing(true);
          holder.addElement(element);
-         attachments.put(blockPos,attachment);
+         
+         playerAttachments.add(attachment);
+         
+         for(ServerPlayerEntity serverPlayer : player.getServer().getPlayerManager().getPlayerList()){
+            if(serverPlayer != player){
+               holder.stopWatching(serverPlayer);
+               attachment.stopWatching(serverPlayer);
+            }
+         }
       }
+      MULTIBLOCK_DISPLAYS.put(player,playerAttachments);
    }
    
    public boolean matches(MultiblockCheck checkParams){
