@@ -69,7 +69,7 @@ public class NulMemento extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
       item = new NulMementoItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.BLACK))
+            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
@@ -103,7 +103,7 @@ public class NulMemento extends EnergyItem {
       lore.add(Text.literal("")
             .append(Text.literal("A strange, ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("withered skull").formatted(Formatting.GRAY))
-            .append(Text.literal("with a distinctive gash.").formatted(Formatting.DARK_GRAY)));
+            .append(Text.literal(" with a distinctive gash.").formatted(Formatting.DARK_GRAY)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("Aspect of Death").formatted(Formatting.BLUE))
@@ -115,7 +115,7 @@ public class NulMemento extends EnergyItem {
             .append(Text.literal("You have ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("seen ").formatted(Formatting.BLUE))
             .append(Text.literal("things that most ").formatted(Formatting.DARK_GRAY))
-            .append(Text.literal("mortals ").formatted(Formatting.GRAY))
+            .append(Text.literal("Players ").formatted(Formatting.GRAY))
             .append(Text.literal("never will.").formatted(Formatting.DARK_GRAY)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
@@ -425,7 +425,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
-                  .append(Text.literal("My dear Mortal, will you help us revitalize these realms to new heights?").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("My dear Player, will you help us revitalize these realms to new heights?").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -434,7 +434,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
-                  .append(Text.literal("Every mortal faces me once... None have ever faced me twice.").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("Everything faces me once... Few have ever faced me twice.").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -452,7 +452,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
-                  .append(Text.literal("What do you think of my Sister's realm? Do you see the need for my lesson now?").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("What do you think of my Sister's realm? Do you see the need for my mission now?").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -479,7 +479,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
-                  .append(Text.literal("Equayus and I might not always see eye to eye, but we both have these realm's best intentions at heart.").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("Equayus and I might not always see eye to eye, but we both have these realms' best intentions at heart.").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,1));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -496,12 +496,12 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nEquayus? Is that you? It has been so long... What have you been doing in this time?\n").formatted(Formatting.DARK_GRAY)),
+                  .append(Text.literal("\nEquayus? Have you also taken an interest in this Player?\n").formatted(Formatting.DARK_GRAY)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nBrother, it is good to hear your voice again...").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nBrother, it is always good to hear your voice again...").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
@@ -512,7 +512,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nSo you too, have taken an interest in the Mortals now? Do you now share my vision?\n").formatted(Formatting.DARK_GRAY)),
+                  .append(Text.literal("\nSo you too, have taken an interest in this Player now? Do you now share my vision?\n").formatted(Formatting.DARK_GRAY)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
@@ -544,7 +544,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nIt was not my actions that led to this. The Mortals did it all themselves. Perhaps in time your arrogance will turn to humility.").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("\nIt was not my actions that led to this. This Player did it of their own power. Perhaps in time your arrogance will turn to humility.").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.5f,1.4f),
@@ -566,7 +566,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nThen I suppose your mistake was defying Tenbrous, and ascending to take their place.\n").formatted(Formatting.DARK_GRAY)),
+                  .append(Text.literal("\nThen I suppose your mistake was defying Tenbrous, and ascending to take its place.\n").formatted(Formatting.DARK_GRAY)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
@@ -640,9 +640,9 @@ public class NulMemento extends EnergyItem {
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
       list.add(List.of(Text.literal("      Nul Memento\n\nRarity: Divine\n\nThis entity of death that I have acquired a passing familiarity with is most intriguing.\n\nHe wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded.")));
-      list.add(List.of(Text.literal("      Nul Memento\n\nAs I was gifted this strange skull, the entity informed me that I have become one of his 'chosen'.\nI'm not sure what to think of this. What machinations could a deity of death be planning such that he needs to choose mortals like me?")));
+      list.add(List.of(Text.literal("      Nul Memento\n\nAs I was gifted this strange skull, the entity informed me that I have become one of his 'chosen'.\nI'm not sure what to think of this. What machinations could a deity of death be planning such that he needs help from me?")));
       list.add(List.of(Text.literal("      Nul Memento\n\nThe Memento whispers to me every so often. I have come to learn the entity calls himself Nul, the God of Death.\n\nHe speaks of Arcana, and secrets that I have yet to learn.\n\nHe warns that one mind can only hold so")));
-      list.add(List.of(Text.literal("      Nul Memento\n\nmuch knowledge at one time. However, he offers his aid in circumventing this mortal limitation.\n\nThis Memento reacts to an overburdened mind when worn, and will make me forget some of the skills I have learned.")));
+      list.add(List.of(Text.literal("      Nul Memento\n\nmuch knowledge at one time. However, he offers his aid in circumventing this limitation.\n\nThis Memento reacts to an overburdened mind when worn, and will make me forget some of the skills I have learned.")));
       list.add(List.of(Text.literal("      Nul Memento\n\nAs long as I use those skills before forgetting them. I should be able to take advantage of new knowledge with a new limit to what I can learn.\n\nThe Memento also offers incredible protection, as if it was")));
       list.add(List.of(Text.literal("      Nul Memento\n\nmade of enchanted Netherite!\n\nI believe wearing it may also encourage Nul to save me from any unfortunate circumstances that find me near death.")));
       return list;
@@ -682,8 +682,8 @@ public class NulMemento extends EnergyItem {
             buildItemLore(stack,entity.getServer());
          }
          
-         // 0.000015 ~ 60 minutes between voice lines
-         if(Math.random() < 0.000015){
+         // 0.0000075 ~ 120 minutes between voice lines
+         if(Math.random() < 0.0000075){
             inventoryDialog(player);
          }
       }

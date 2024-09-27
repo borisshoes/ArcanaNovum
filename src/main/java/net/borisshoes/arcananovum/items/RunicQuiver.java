@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
@@ -44,6 +45,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -63,6 +65,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.ITEMS};
       color = Formatting.LIGHT_PURPLE;
       vanillaItem = Items.LEATHER;
+      itemVersion = 1;
       item = new RunicQuiverItem(new Item.Settings().maxCount(1).fireproof()
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
@@ -75,7 +78,6 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getMaxCount());
-      putProperty(stack,ARROWS_TAG,new NbtList());
       setPrefStack(stack);
    }
    
@@ -139,7 +141,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    public ItemStack forgeItem(Inventory inv){
       ItemStack quiverStack = inv.getStack(12); // Should be the old quiver
       ItemStack newArcanaItem = getNewItem();
-      putProperty(newArcanaItem,ARROWS_TAG,getListProperty(quiverStack,ARROWS_TAG,NbtElement.COMPOUND_TYPE));
+      newArcanaItem.set(DataComponentTypes.CONTAINER,quiverStack.getOrDefault(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT));
       ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
       ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.ABUNDANT_AMMO.id,ArcanaAugments.QUIVER_DUPLICATION.id);
       return newArcanaItem;
@@ -178,14 +180,9 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    @Override
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
       int size = 9;
-      NbtList arrows = getListProperty(item,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
+      ContainerComponent arrows = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
       SimpleInventory inv = new SimpleInventory(size);
-      
-      for(int i = 0; i < arrows.size(); i++){
-         NbtCompound stack = arrows.getCompound(i);
-         ItemStack itemStack = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stack).orElse(ItemStack.EMPTY);
-         inv.setStack(i,itemStack);
-      }
+      arrows.stream().forEachOrdered(inv::addStack);
       double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES.id) > 0 ? 0.25 : 0.5;
       
       return new ArcanaItemContainer(inv, size,3, "RQ", "Runic Quiver", concMod);

@@ -17,6 +17,8 @@ import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.advancement.criterion.Criteria;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EquipmentSlot;
@@ -235,29 +237,8 @@ public abstract class LivingEntityMixin {
       }
    
       if(entity instanceof ServerPlayerEntity player){
-         List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
-         PlayerInventory playerInv = player.getInventory();
+         List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(player);
          boolean procdFelidae = false;
-         
-         List<ItemStack> invItems = new ArrayList<>();
-         for(int i=0; i<playerInv.size();i++){
-            ItemStack item = playerInv.getStack(i);
-            if(item.isEmpty()){
-               continue;
-            }
-         
-            invItems.add(item);
-            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-            if(arcanaItem instanceof ArcanistsBelt belt){
-               SimpleInventory beltInv = belt.deserialize(item);
-               ArrayList<ItemStack> beltList = new ArrayList<>();
-               for(int j = 0; j < beltInv.size(); j++){
-                  beltList.add(beltInv.getStack(j));
-               }
-               allItems.add(new Pair<>(beltList,item));
-            }
-         }
-         allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
          
          for(int i = 0; i < allItems.size(); i++){
             List<ItemStack> itemList = allItems.get(i).getLeft();
@@ -325,7 +306,7 @@ public abstract class LivingEntityMixin {
             }
             
             if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-               belt.serialize(carrier, sinv);
+               belt.buildItemLore(carrier, ArcanaNovum.SERVER);
             }
          }
       }
@@ -430,9 +411,8 @@ public abstract class LivingEntityMixin {
          for(int i = 0; i < inv.size(); i++){
             ItemStack beltStack = inv.getStack(i);
             if(ArcanaItemUtils.identifyItem(beltStack) instanceof ArcanistsBelt belt){
-               SimpleInventory beltInv = belt.deserialize(beltStack);
-               for(int j = 0; j < beltInv.size(); j++){
-                  ItemStack stack = beltInv.getStack(j);
+               ContainerComponent beltItems = beltStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+               for(ItemStack stack : beltItems.iterateNonEmpty()){
                   if(stack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance vtotem){
                      vengeanceStack = stack;
                      vengeanceTotem = vtotem;
@@ -466,14 +446,12 @@ public abstract class LivingEntityMixin {
             vengeanceStack.decrement(1);
          }else{
             if(ArcanaItemUtils.identifyItem(arcanistsBelt) instanceof ArcanistsBelt belt){
-               SimpleInventory beltInv = belt.deserialize(arcanistsBelt);
-               for(int j = 0; j < beltInv.size(); j++){
-                  ItemStack stack = beltInv.getStack(j);
+               ContainerComponent beltItems = arcanistsBelt.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+               for(ItemStack stack : beltItems.iterateNonEmpty()){
                   if(stack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance){
                      stack.decrement(1);
                   }
                }
-               belt.serialize(arcanistsBelt,beltInv);
             }
          }
          

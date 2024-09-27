@@ -55,6 +55,7 @@ public class OverflowingQuiver extends QuiverItem{
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
       color = Formatting.DARK_AQUA;
       vanillaItem = Items.RABBIT_HIDE;
+      itemVersion = 1;
       item = new OverflowingQuiverItem(new Item.Settings().maxCount(1).fireproof()
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
@@ -67,7 +68,6 @@ public class OverflowingQuiver extends QuiverItem{
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getMaxCount());
-      putProperty(stack,ARROWS_TAG,new NbtList());
       setPrefStack(stack);
    }
    

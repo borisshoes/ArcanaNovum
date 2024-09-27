@@ -422,7 +422,6 @@ public class DragonBossFight {
             }
             if(!quarterHPNotif && dragonHP/dragonMax <= 0.25){
                DragonDialog.announce(DragonDialog.Announcements.DRAGON_QUARTER_HP,server,null);
-               dragon.heal(dragonMax*0.25f);
                quarterHPNotif = true;
             }
             

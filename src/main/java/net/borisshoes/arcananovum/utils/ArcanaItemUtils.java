@@ -280,28 +280,7 @@ public class ArcanaItemUtils {
    }
    
    public static boolean hasItemInInventory(PlayerEntity player, Item itemType){
-      List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
-      PlayerInventory playerInv = player.getInventory();
-      
-      List<ItemStack> invItems = new ArrayList<>();
-      for(int i=0; i<playerInv.size();i++){
-         ItemStack item = playerInv.getStack(i);
-         if(item.isEmpty()){
-            continue;
-         }
-         
-         invItems.add(item);
-         ArcanaItem mitem = ArcanaItemUtils.identifyItem(item);
-         if(mitem instanceof ArcanistsBelt belt){
-            SimpleInventory beltInv = belt.deserialize(item);
-            ArrayList<ItemStack> beltList = new ArrayList<>();
-            for(int j = 0; j < beltInv.size(); j++){
-               beltList.add(beltInv.getStack(j));
-            }
-            allItems.add(new Pair<>(beltList,item));
-         }
-      }
-      allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
+      List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(player);
       
       for(Pair<List<ItemStack>, ItemStack> allItem : allItems){
          List<ItemStack> itemList = allItem.getLeft();

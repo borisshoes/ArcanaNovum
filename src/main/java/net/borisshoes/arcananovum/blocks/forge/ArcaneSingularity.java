@@ -91,7 +91,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       lore.add(Text.literal("")
             .append(Text.literal("A ").formatted(Formatting.DARK_AQUA))
             .append(Text.literal("Forge Structure").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal(" addon to the").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(" addon to the ").formatted(Formatting.DARK_AQUA))
             .append(Text.literal("Starlight Forge").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
       lore.add(Text.literal("")

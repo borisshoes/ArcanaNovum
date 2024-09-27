@@ -327,7 +327,7 @@ public class ArcanaAchievements {
          ));
    public static final ArcanaAchievement PHEIDIPPIDES = ArcanaAchievements.register(
          new ProgressAchievement("Pheidippides", "pheidippides", new ItemStack(Items.NETHERITE_BOOTS), ArcanaRegistry.SOJOURNER_BOOTS, 100000, 5,
-               new String[]{"Run a total of 246 kilometers at full speed"}, 24600000
+               new String[]{"Run a total of 246 kilometers with the Sojourner's Boots"}, 24600000
          ));
    
    // Soulstone

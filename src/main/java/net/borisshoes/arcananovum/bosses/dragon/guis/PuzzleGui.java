@@ -126,7 +126,7 @@ public class PuzzleGui extends SimpleGui {
    private static class Puzzle{
       private ArrayList<Item> puzzleItems;
       private Item targetItem;
-      private static final int[] itemsPerLevel = {4,8,16,20,28,28,28};
+      private static final int[] itemsPerLevel = {28,28,28,28,28,28,28};
       private static final Item[] targetItems = {Items.END_CRYSTAL,Items.OBSIDIAN,Items.ENDER_EYE,Items.AMETHYST_SHARD,Items.CRYING_OBSIDIAN,Items.NETHER_STAR,Items.END_CRYSTAL};
    
       public static Puzzle generatePuzzle(int level){

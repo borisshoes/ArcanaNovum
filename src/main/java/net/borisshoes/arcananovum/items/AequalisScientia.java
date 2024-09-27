@@ -260,7 +260,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nKnowledge is a most interesting posession. Its value changes based on who holds it.").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nKnowledge is a most interesting possession. Its value changes based on who holds it.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
       ),new int[]{},1,1,-1));
@@ -290,7 +290,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nVery few have had the wisdom to take my grand offer. I'm glad that you did.").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nVery few have had the wisdom to make my grand trade. I'm glad that you did.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
       ),new int[]{},1,1,-1));
@@ -300,7 +300,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nHave caution when taking my Brother's challenges. He forgets how fragile Mortals can be.").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nHave caution when taking my Brother's challenges. He forgets how fragile you can be.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
       ),new int[]{},0,1,1));
@@ -320,12 +320,12 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nNul, I figured you would be watching these Mortals closely, you always had a fascination with them.\n").formatted(Formatting.AQUA)),
+                  .append(Text.literal("\nNul, I figured you would be watching this Player closely, you always had a fascination with them.\n").formatted(Formatting.AQUA)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nWere we not both mortal once? And look at all that we have accomplished.\n").formatted(Formatting.DARK_GRAY)),
+                  .append(Text.literal("\nWere we not both like them once? And look at all that we have accomplished.\n").formatted(Formatting.DARK_GRAY)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
@@ -335,7 +335,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nSo very long ago...").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("\nIndeed, so very long ago...").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
@@ -358,7 +358,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nWe should face it together.\n").formatted(Formatting.AQUA)),
+                  .append(Text.literal("\nThen we should face it together.\n").formatted(Formatting.AQUA)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
@@ -392,7 +392,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nI shall keep that title for another ten thousand years, even if only to make you laugh.").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("\nI shall keep that title for eons to come, even if only to make you laugh.").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
@@ -410,12 +410,12 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nMy convictions remain the same as they have always been. And I wouldn't trust this mortal with my current plans, not yet.\n").formatted(Formatting.DARK_GRAY)),
+                  .append(Text.literal("\nMy convictions remain the same as they have always been. And I wouldn't trust this Player with my current plans, not yet.\n").formatted(Formatting.DARK_GRAY)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nMortal, whatever he has in store for you, remember you can always find your own path instead.").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nPlayer, whatever he has in store for you, remember you can always find your own path instead.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.8f),
@@ -432,12 +432,12 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
-                  .append(Text.literal("\nYou could have stopped him! Why have all this power if you do not wield it!?\n").formatted(Formatting.DARK_PURPLE)),
+                  .append(Text.literal("\nYou could have stopped them! Why have all this power if you do not wield it!?\n").formatted(Formatting.DARK_PURPLE)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nI am not like you and him, showing your power through violence. My influence is subtle, like the rising tide - its far stronger than you realize.").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nI am not like you and Nul, showing power through violence. My influence is subtle, like the rising tide - it's far stronger than you realize.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
@@ -454,12 +454,12 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
-                  .append(Text.literal("\nYou know nothing of what it was like! Being enslaved and forced to fight for amusement!\n").formatted(Formatting.DARK_PURPLE)),
+                  .append(Text.literal("\nYou know nothing of what it was like! Being enslaved and forced to slaughter everything!\n").formatted(Formatting.DARK_PURPLE)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nYou must never have visited the Overworld and seen what is done to my kind. Maybe this Mortal will show you sometime.").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nYou must never have visited the Overworld and seen what is done to my kind. Maybe this Player will show you sometime.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
@@ -531,7 +531,7 @@ public class AequalisScientia extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         if(Math.random() < 0.000015){
+         if(Math.random() < 0.0000075){
             inventoryDialog(player);
          }
       }

@@ -390,7 +390,7 @@ enum EFItem {
          List.of(
                TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal("Fuel for other tiles.").formatted(Formatting.GRAY)))
-         ), 5,1),
+         ), 7,1),
    BLACK_HOLE("black_hole",
          Text.literal("Black Hole").formatted(Formatting.BLUE,Formatting.BOLD),
          List.of(

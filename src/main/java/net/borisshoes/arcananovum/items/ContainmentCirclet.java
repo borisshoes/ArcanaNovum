@@ -5,6 +5,8 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
+import net.borisshoes.arcananovum.entities.DragonWizardEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -179,7 +181,7 @@ public class ContainmentCirclet extends ArcanaItem {
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;
       }
-      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof WardenEntity || entity.isDead()){
+      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof WardenEntity || entity instanceof DragonWizardEntity || entity instanceof DragonPhantomEntity || entity.isDead()){
          user.sendMessage(Text.literal("The Circlet cannot contain this creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;

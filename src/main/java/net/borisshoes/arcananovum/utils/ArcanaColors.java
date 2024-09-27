@@ -10,4 +10,5 @@ public class ArcanaColors {
    public static final int DARK_COLOR = 0x2a1136;
    public static final int LAPIS_COLOR = 0x074bde;
    public static final int LIGHT_COLOR = 0xdbdbdb;
+   public static final int NUL_COLOR = 0x222222;
 }

@@ -29,6 +29,7 @@ import java.util.*;
 
 public class ArcanaProfileComponent implements IArcanaProfileComponent{
    public static final String ADMIN_SKILL_POINTS_TAG = "adminSkillPoints";
+   public static final String CONCENTRATION_TICK_TAG = "concentration";
    
    private final PlayerEntity player;
    private final List<String> crafted = new ArrayList<>();

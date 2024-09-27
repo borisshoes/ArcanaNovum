@@ -213,7 +213,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    
    public void mining(ServerPlayerEntity player, ItemStack stack){
       int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
-      int energyGain = Math.random() < new double[]{0.2,0.4,0.5,0.6,0.8,1}[wHaste] ? 1+(wHaste/2) : 0;
+      int energyGain = 5+(wHaste * 2);
       int maxEnergy = 1000 + 100 * wHaste;
       IArcanaProfileComponent profile = PLAYER_DATA.get(player);
       
@@ -275,7 +275,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       @Override
       public boolean postMine(ItemStack stack, World world, BlockState state, BlockPos pos, LivingEntity miner){
          if(miner instanceof ServerPlayerEntity player){
-            int energyGain = 6 + 2 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
+            int energyGain = 3 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             IArcanaProfileComponent profile = PLAYER_DATA.get(player);
             
