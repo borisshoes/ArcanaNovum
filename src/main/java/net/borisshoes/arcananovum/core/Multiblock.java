@@ -259,10 +259,10 @@ public class Multiblock {
             // Get the actual block
             NbtCompound blockTag = (NbtCompound) e;
             String blockName = blockTag.getString("Name");
-            BlockState rawState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),blockTag); // Save raw state for display
+            BlockState rawState = NbtHelper.toBlockState(Registries.BLOCK,blockTag); // Save raw state for display
             Predicate<BlockState> pred;
             Identifier identifier = Identifier.of(blockName);
-            Optional<RegistryEntry.Reference<Block>> optional = Registries.BLOCK.getReadOnlyWrapper().getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
+            Optional<RegistryEntry.Reference<Block>> optional = Registries.BLOCK.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
             if (optional.isEmpty()) { // If block isn't found, let any block work
                pred = blockState -> true;
                preds.add(new Pair<>(rawState,pred));

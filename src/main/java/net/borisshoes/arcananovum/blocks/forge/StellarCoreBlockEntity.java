@@ -19,6 +19,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.EquippableComponent;
+import net.minecraft.component.type.RepairableComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
@@ -118,7 +121,8 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
       if(ArcanaItemUtils.isArcane(stack)) return salvage;
       
       if(item instanceof ArmorItem armor){
-         EquipmentSlot slot = armor.getSlotType();
+         EquippableComponent equippableComponent = stack.get(DataComponentTypes.EQUIPPABLE);
+         EquipmentSlot slot = equippableComponent.slot();
          int baseAmt = switch(slot){
             case MAINHAND, OFFHAND -> 1;
             case FEET -> 4;
@@ -127,34 +131,32 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
             case HEAD -> 5;
             case BODY -> 6;
          };
-         ItemStack[] repairItems = armor.getMaterial().value().repairIngredient().get().getMatchingStacks();
-         if(repairItems[0].isOf(Items.NETHERITE_INGOT)){
-            salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
-         }else{
-            salvage.add(repairItems[0].copyWithCount((int) Math.round(baseAmt*salvageLvl)));
+
+         RepairableComponent repairableComponent = stack.get(DataComponentTypes.REPAIRABLE);
+         if (repairableComponent != null && repairableComponent.items().size() > 0) {
+            if (repairableComponent.matches(Items.NETHERITE_INGOT.getDefaultStack())) {
+               salvage.add(new ItemStack(Items.NETHERITE_SCRAP, (int) Math.round(4 * salvageLvl)));
+            } else {
+               salvage.add(repairableComponent.items().get(0).value().getDefaultStack().copyWithCount((int) Math.round(baseAmt * salvageLvl)));
+            }
          }
-      }else if(item instanceof ToolItem tool){
-         int baseAmt;
-         if(item instanceof PickaxeItem){
-            baseAmt = 3;
-         }else if(item instanceof HoeItem){
-            baseAmt = 2;
-         }else if(item instanceof SwordItem){
-            baseAmt = 2;
-         }else if(item instanceof AxeItem){
-            baseAmt = 3;
-         }else if(item instanceof ShovelItem){
-            baseAmt = 1;
-         }else{
-            baseAmt = 1;
-         }
-         
-         ItemStack[] repairItems = tool.getMaterial().getRepairIngredient().getMatchingStacks();
-         if(repairItems.length > 0){
-            if(repairItems[0].isOf(Items.NETHERITE_INGOT)){
+      }else if(item instanceof Item tool){
+         int baseAmt = switch (item) {
+             case PickaxeItem pickaxeItem -> 3;
+             case HoeItem hoeItem -> 2;
+             case SwordItem swordItem -> 2;
+             case AxeItem axeItem -> 3;
+             case ShovelItem shovelItem -> 1;
+             default -> 1;
+         };
+
+         RepairableComponent repairableComponent = stack.get(DataComponentTypes.REPAIRABLE);
+//          ItemStack[] repairItems = tool.getMaterial().getRepairIngredient().getMatchingStacks();
+         if(repairableComponent != null && repairableComponent.items().size() > 0){
+            if(repairableComponent.matches(Items.NETHERITE_INGOT.getDefaultStack())){
                salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.max(1,Math.round(4*salvageLvl))));
             }else{
-               salvage.add(repairItems[0].copyWithCount((int) Math.max(1,Math.round(baseAmt*salvageLvl))));
+               salvage.add(repairableComponent.items().get(0).value().getDefaultStack().copyWithCount((int) Math.max(1,Math.round(baseAmt*salvageLvl))));
             }
          }
       }

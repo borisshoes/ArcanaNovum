@@ -34,12 +34,13 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,12 +62,11 @@ public class ShadowStalkersGlaive extends EnergyItem {
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_SWORD;
-      item = new ShadowStalkersGlaiveItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
+      item = new ShadowStalkersGlaiveItem(5, -2.0f, new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
             .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD),0x222222))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-            .attributeModifiers(SwordItem.createAttributeModifiers(ToolMaterials.NETHERITE, 5,-2.0f))
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
@@ -186,8 +186,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
    }
    
    public class ShadowStalkersGlaiveItem extends ArcanaPolymerSwordItem {
-      public ShadowStalkersGlaiveItem(Item.Settings settings){
-         super(getThis(),ToolMaterials.NETHERITE,settings);
+      public ShadowStalkersGlaiveItem(float attackDamage, float attackSpeed, Item.Settings settings){
+         super(getThis(),ToolMaterial.NETHERITE,attackDamage,attackSpeed,settings);
       }
       
       @Override
@@ -245,10 +245,10 @@ public class ShadowStalkersGlaive extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
          if(!(playerEntity instanceof ServerPlayerEntity player))
-            return TypedActionResult.pass(stack);
+            return ActionResult.PASS;
          
          int energy = getEnergy(stack);
          String tetherTarget = getStringProperty(stack,TETHER_TARGET_TAG);
@@ -264,7 +264,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   Vec3d tpPos = targetPos.add(targetView.multiply(-1.5,0,-1.5));
                   
                   ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
-                  player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,target.getYaw(),target.getPitch());
+                  player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,new HashSet(),target.getYaw(),target.getPitch(),false);
                   ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
                   SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
                   addEnergy(stack,-80);
@@ -295,7 +295,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      living.addStatusEffect(blind);
                   }
                   
-                  return TypedActionResult.success(stack);
+                  return ActionResult.SUCCESS;
                }
             }else{
                player.sendMessage(Text.literal("The Glaive Needs At Least 4 Charges").formatted(Formatting.BLACK),true);
@@ -308,7 +308,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                Vec3d tpPos = playerPos.add(view.multiply(teleportLength));
                
                ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
-               player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+               player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,new HashSet(),player.getYaw(),player.getPitch(),false);
                ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
                SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
                addEnergy(stack,-20);
@@ -323,13 +323,13 @@ public class ShadowStalkersGlaive extends EnergyItem {
                StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                player.addStatusEffect(invis);
                
-               return TypedActionResult.success(stack);
+               return ActionResult.SUCCESS;
             }else{
                player.sendMessage(Text.literal("The Glaive Needs At Least 1 Charge").formatted(Formatting.BLACK),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
             }
          }
-         return TypedActionResult.pass(stack);
+         return ActionResult.PASS;
       }
    }
 }

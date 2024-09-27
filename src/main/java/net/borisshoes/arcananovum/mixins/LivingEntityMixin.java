@@ -57,6 +57,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
@@ -198,7 +199,7 @@ public abstract class LivingEntityMixin {
             shieldStack = player.getEquippedStack(EquipmentSlot.MAINHAND);
          }
          
-         if(shieldStack != null && ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_BASH.id) >= 1 && !player.getItemCooldownManager().isCoolingDown(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem()) && source.isDirect()){
+         if(shieldStack != null && ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_BASH.id) >= 1 && !player.getItemCooldownManager().isCoolingDown(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem().getDefaultStack()) && source.isDirect()){
             ArrayList<ShieldTimerCallback> toRemove = new ArrayList<>();
             float shieldTotal = 0;
             float absAmt = player.getAbsorptionAmount();
@@ -221,7 +222,7 @@ public abstract class LivingEntityMixin {
                ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,20)); // Put 10 hearts back
                MiscUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,20f);
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
-               player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(),100);
+               player.getItemCooldownManager().set(shieldStack,100);
                SoundUtils.playSound(player.getServerWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
             }
          }
@@ -405,8 +406,8 @@ public abstract class LivingEntityMixin {
       cir.setReturnValue(newReturn);
    }
    
-   @Inject(method = "tryUseTotem", at = @At("RETURN"), cancellable = true)
-   public void arcananovum_useTotem(DamageSource source, CallbackInfoReturnable<Boolean> cir){
+   @Inject(method = "tryUseDeathProtector", at = @At("RETURN"), cancellable = true)
+   public void arcananovum_tryUseDeathProtector(DamageSource source, CallbackInfoReturnable<Boolean> cir){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       if(cir.getReturnValueZ()) return;
    
@@ -487,17 +488,20 @@ public abstract class LivingEntityMixin {
          return;
       }
    }
+
+   // TODO: Move this to LivingEntity.canGlideWith
+//   @Redirect(method="tickGliding", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
+//   private boolean arcananovum_elytraTick(ItemStack stack, Item item){
+//      return stack.isOf(item) || ArcanaItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
+//   }
    
-   @Redirect(method="tickFallFlying", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
-   private boolean arcananovum_elytraTick(ItemStack stack, Item item){
-      return stack.isOf(item) || ArcanaItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
-   }
-   
-   @Inject(method="onStatusEffectRemoved",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onRemoved(Lnet/minecraft/entity/attribute/AttributeContainer;)V"))
-   private void arcananovum_effectRemoved(StatusEffectInstance effect, CallbackInfo ci){
+   @Inject(method="onStatusEffectsRemoved",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onRemoved(Lnet/minecraft/entity/attribute/AttributeContainer;)V"))
+   private void arcananovum_effectRemoved(Collection<StatusEffectInstance> effects, CallbackInfo ci){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      if(effect.getEffectType() == ArcanaRegistry.GREATER_INVISIBILITY_EFFECT && livingEntity.getServer() != null){
-         GreaterInvisibilityEffect.removeInvis(livingEntity.getServer(),livingEntity);
+      for (StatusEffectInstance effect : effects) {
+         if (effect.getEffectType() == ArcanaRegistry.GREATER_INVISIBILITY_EFFECT && livingEntity.getServer() != null) {
+            GreaterInvisibilityEffect.removeInvis(livingEntity.getServer(), livingEntity);
+         }
       }
    }
    

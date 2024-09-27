@@ -197,7 +197,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
                      player.sendMessage(Text.literal("The Fletchery must be within the range of an active Starlight Forge"));
                   }else{
                      fletchery.openGui(player);
-                     player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
+                     player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));

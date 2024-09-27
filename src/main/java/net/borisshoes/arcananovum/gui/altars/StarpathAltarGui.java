@@ -25,6 +25,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -62,7 +63,7 @@ public class StarpathAltarGui  extends SimpleGui {
       for(int i = 0; i < targets.size(); i++){
          LivingEntity target = targets.get(i);
          BlockPos location = locations.get(i);
-         target.teleport(serverWorld, location.getX() + 0.5, location.getY(), location.getZ() + 0.5, Set.of(), target.getYaw(), target.getPitch());
+         target.teleport(serverWorld, location.getX() + 0.5, location.getY(), location.getZ() + 0.5, Set.of(), target.getYaw(), target.getPitch(), false);
          ParticleEffectUtils.recallTeleport(serverWorld,target.getPos());
          
          if(target instanceof ServerPlayerEntity p && Math.sqrt(blockEntity.getPos().getSquaredDistance(blockEntity.getTargetCoords())) >= 100000){

@@ -222,7 +222,7 @@ public class TelescopingBeacon extends ArcanaItem {
             NbtCompound blockType = blockTypes.getCompound(i);
             int count = blockType.getInt("count");
             String id = blockType.getString("id");
-            Block block = Registries.BLOCK.getOrEmpty(Identifier.of(id)).orElse(null);
+            Block block = Registries.BLOCK.getOptionalValue(Identifier.of(id)).orElse(null);
             if(block == null){
                log(1,"Unknown Block Type Stored In Telescoping Beacon: "+id);
                return;

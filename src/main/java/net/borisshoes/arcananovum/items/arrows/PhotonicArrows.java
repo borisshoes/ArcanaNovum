@@ -67,7 +67,7 @@ public class PhotonicArrows extends RunicArrow {
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(11271167),new ArrayList<>()))
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(11271167),new ArrayList<>(),Optional.empty()))
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));

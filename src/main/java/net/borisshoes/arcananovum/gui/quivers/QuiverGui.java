@@ -84,7 +84,7 @@ public class QuiverGui extends SimpleGui {
       for(int i = 0; i < inv.size(); i++){
          ItemStack arrowStack = inv.getStack(i);
          if(arrowStack.isEmpty()) continue;
-         NbtCompound arrow = (NbtCompound) arrowStack.encodeAllowEmpty(player.getRegistryManager());
+         NbtCompound arrow = (NbtCompound) arrowStack.toNbtAllowEmpty(player.getRegistryManager());
          arrow.putByte("Slot", (byte) i);
          arrows.add(arrow);
       }

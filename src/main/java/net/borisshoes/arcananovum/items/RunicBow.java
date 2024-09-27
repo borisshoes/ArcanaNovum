@@ -41,10 +41,10 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -209,16 +209,16 @@ public class RunicBow extends ArcanaItem {
       }
       
       @Override
-      public void onStoppedUsing(ItemStack bow, World world, LivingEntity user, int remainingUseTicks) {
+      public boolean onStoppedUsing(ItemStack bow, World world, LivingEntity user, int remainingUseTicks) {
          if (!(user instanceof PlayerEntity playerEntity)) {
-            return;
+            return false;
          }
          ItemStack arrowStack = playerEntity.getProjectileType(bow);
          boolean arrowsRunic = ArcanaItemUtils.isRunicArrow(arrowStack);
          if (!arrowStack.isEmpty()) {
             float pullPercent = getPullProgress(this.getMaxUseTime(bow, user) - remainingUseTicks, bow);
             if((double) pullPercent < 0.1){
-               return;
+               return false;
             }
             List<ItemStack> list = load(bow, arrowStack, playerEntity);
             if (world instanceof ServerWorld serverWorld && !list.isEmpty()) {
@@ -246,6 +246,7 @@ public class RunicBow extends ArcanaItem {
             world.playSound(null, playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), sound, SoundCategory.PLAYERS,volume,1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + pullPercent * 0.5F);
             playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
          }
+         return true;
       }
       
       protected void shootAll(ServerWorld world, LivingEntity shooter, Hand hand, ItemStack bow, List<ItemStack> projectiles, float speed, float divergence, boolean critical, @Nullable LivingEntity target) {
@@ -317,7 +318,7 @@ public class RunicBow extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand){
+      public ActionResult use(World world, PlayerEntity user, Hand hand){
          return super.use(world, user, hand);
       }
    }

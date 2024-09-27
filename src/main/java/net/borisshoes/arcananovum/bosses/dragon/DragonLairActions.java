@@ -20,10 +20,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DragonLairActions {
    
@@ -127,7 +124,7 @@ public class DragonLairActions {
             int i = 0;
             for(ServerPlayerEntity player : nearbyPlayers){
                BlockPos pos = locations.get(i);
-               player.teleport(endWorld,pos.getX(),pos.getY(),pos.getZ(), (float) (Math.random()*360-180),(float) (Math.random()*360-180));
+               player.teleport(endWorld,pos.getX(),pos.getY(),pos.getZ(),Set.of(), (float) (Math.random()*360-180),(float) (Math.random()*360-180), false);
                endWorld.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),500,.3,1,.3,3);
                player.sendMessage(Text.literal("Ender Energy Surges Through You!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
                i++;
@@ -168,7 +165,7 @@ public class DragonLairActions {
    
             for(ServerPlayerEntity player : hitPlayers){
                if(player.isBlocking() && (player.getMainHandStack().isOf(Items.SHIELD) || player.getOffHandStack().isOf(Items.SHIELD)) && player.getPitch() < -60){
-                  player.disableShield();
+                  player.disableShield(player.getBlockingItem());
                }else{
                   player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),10);
                }

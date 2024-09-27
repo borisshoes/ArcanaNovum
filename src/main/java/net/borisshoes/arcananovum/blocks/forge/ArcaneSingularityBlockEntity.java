@@ -24,7 +24,6 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -243,14 +242,14 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
             }
          }
          
-         ItemStack newBook = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(entry.getKey(), entry.getIntValue()-1));
+         ItemStack newBook = EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(entry.getKey(), entry.getIntValue()-1));
          ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG,NbtString.of(UUID.randomUUID().toString()));
          inventory.addStack(newBook.copy());
          ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG,NbtString.of(UUID.randomUUID().toString()));
          inventory.addStack(newBook.copy());
       }else{ // Remove top enchant
          RegistryEntryList<Enchantment> registryEntryList = null;
-         Optional<RegistryEntryList.Named<Enchantment>> optional = getWorld().getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
+         Optional<RegistryEntryList.Named<Enchantment>> optional = getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
          if (optional.isPresent()) {
             registryEntryList = optional.get();
          }
@@ -289,7 +288,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
                   break;
                }
             }
-            ItemStack newBook1 = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(registryEntry, value));
+            ItemStack newBook1 = EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(registryEntry, value));
             ArcanaItem.putProperty(newBook1, ArcaneSingularity.SINGULARITY_TAG,NbtString.of(UUID.randomUUID().toString()));
             inventory.addStack(newBook1.copy());
          }
@@ -367,7 +366,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       if(this.inventory != null){
          NbtList bookList = new NbtList();
          for(ItemStack book : inventory.getHeldStacks()){
-            if(!book.isEmpty()) bookList.add(book.encodeAllowEmpty(registryLookup));
+            if(!book.isEmpty()) bookList.add(book.toNbtAllowEmpty(registryLookup));
          }
          return bookList;
       }else{

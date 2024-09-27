@@ -318,9 +318,9 @@ public class DragonAbilities {
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
             goons[i].setHealth(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
+            goons[i].getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
       
@@ -366,8 +366,8 @@ public class DragonAbilities {
                if(item.isEmpty()){
                   continue;
                }
-               if(ArcanaItemUtils.isArcane(item) && !manager.isCoolingDown(item.getItem())){
-                  manager.set(item.getItem(),200);
+               if(ArcanaItemUtils.isArcane(item) && !manager.isCoolingDown(item)){
+                  manager.set(item,200);
                }
             }
          }

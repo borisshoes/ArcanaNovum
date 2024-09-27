@@ -20,8 +20,8 @@ import java.util.List;
 
 public abstract class ArcanaPolymerSwordItem extends SwordItem implements PolymerItem {
    protected ArcanaItem arcanaItem;
-   public ArcanaPolymerSwordItem(ArcanaItem arcanaItem, ToolMaterial toolMaterial, Settings settings){
-      super(toolMaterial, settings);
+   public ArcanaPolymerSwordItem(ArcanaItem arcanaItem, ToolMaterial toolMaterial, float attackDamage, float attackSpeed, Settings settings){
+      super(toolMaterial, attackDamage, attackSpeed, settings);
       this.arcanaItem = arcanaItem;
    }
    

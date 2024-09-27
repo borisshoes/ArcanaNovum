@@ -19,6 +19,7 @@ import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -258,7 +259,7 @@ public class ContainmentCirclet extends ArcanaItem {
          float hp = getFloatProperty(stack,HP_TAG);
          if(contents.isEmpty()) return ActionResult.PASS;
          
-         Optional<Entity> optional = EntityType.getEntityFromNbt(contents,context.getWorld());
+         Optional<Entity> optional = EntityType.getEntityFromNbt(contents,context.getWorld(),SpawnReason.TRIGGERED);
          Vec3d summonPos = context.getHitPos().add(0,0.5,0);
          
          if(optional.isPresent() && context.getWorld() instanceof ServerWorld serverWorld){

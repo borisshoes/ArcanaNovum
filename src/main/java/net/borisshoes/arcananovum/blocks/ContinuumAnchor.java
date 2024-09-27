@@ -249,10 +249,10 @@ public class ContinuumAnchor extends ArcanaBlock {
       }
       
       @Override
-      protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
+      protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
          ContinuumAnchorBlockEntity anchor = (ContinuumAnchorBlockEntity) world.getBlockEntity(pos);
-         if(anchor != null && anchor.interact(player, stack)) return ItemActionResult.success(true);
-         return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(anchor != null && anchor.interact(player, stack)) return ActionResult.SUCCESS;
+         return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
       }
       
       @Override

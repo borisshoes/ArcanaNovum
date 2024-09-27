@@ -7,7 +7,6 @@ import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import eu.pb4.polymer.rsm.api.RegistrySyncUtils;
 import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
@@ -39,9 +38,9 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentTypes;
@@ -50,13 +49,16 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.*;
+import net.minecraft.item.equipment.ArmorMaterial;
+import net.minecraft.item.equipment.EquipmentModels;
+import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.loot.function.LootFunction;
 import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundEvents;
@@ -76,14 +78,15 @@ public class ArcanaRegistry {
    public static final ArrayList<CompendiumEntry> RECOMMENDED_LIST = new ArrayList<>();
    
    // Armor Materials
-   public static final RegistryEntry<ArmorMaterial> NON_PROTECTIVE_ARMOR_MATERIAL = registerArmorMaterial("nonprotective",new ArmorMaterial(Util.make(new EnumMap<>(ArmorItem.Type.class), map -> {
-      map.put(ArmorItem.Type.BOOTS, 0);
-      map.put(ArmorItem.Type.LEGGINGS, 0);
-      map.put(ArmorItem.Type.CHESTPLATE, 0);
-      map.put(ArmorItem.Type.HELMET, 0);
-      map.put(ArmorItem.Type.BODY, 0);
-   }), 0, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, () -> Ingredient.ofItems(Items.LEATHER), List.of(new ArmorMaterial.Layer(Identifier.of(MOD_ID,"nonprotective"))), 0, 0));
-   
+   // TODO: Set durability?
+   public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new ArmorMaterial(5, Util.make(new EnumMap(EquipmentType.class), map -> {
+      map.put(EquipmentType.BOOTS, 0);
+      map.put(EquipmentType.LEGGINGS, 0);
+      map.put(EquipmentType.CHESTPLATE, 0);
+      map.put(EquipmentType.HELMET, 0);
+      map.put(EquipmentType.BODY, 0);
+   }), 0, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, 0.0F, 0.0F, ItemTags.REPAIRS_LEATHER_ARMOR, EquipmentModels.LEATHER);
+
    // Registering Banner Recipe
    public static final SpecialRecipeSerializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_SERIALIZER;
    public static final RecipeType<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION;
@@ -96,23 +99,23 @@ public class ArcanaRegistry {
    }
    
    // Entities
-   public static final EntityType<RunicArrowEntity> RUNIC_ARROW_ENTITY = registerEntity( "runic_arrow",
-         EntityType.Builder.<RunicArrowEntity>create(RunicArrowEntity::new,SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20).build()
+   public static final EntityType<RunicArrowEntity> RUNIC_ARROW_ENTITY = EntityType.register( "runic_arrow",
+         EntityType.Builder.<RunicArrowEntity>create(RunicArrowEntity::new,SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20)
    );
-   public static final EntityType<ArbalestArrowEntity> ARBALEST_ARROW_ENTITY = registerEntity( "arbalest_arrow",
-         EntityType.Builder.<ArbalestArrowEntity>create(ArbalestArrowEntity::new, SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20).build()
+   public static final EntityType<ArbalestArrowEntity> ARBALEST_ARROW_ENTITY = EntityType.register( "arbalest_arrow",
+         EntityType.Builder.<ArbalestArrowEntity>create(ArbalestArrowEntity::new, SpawnGroup.MISC).dimensions(0.5f,0.5f).maxTrackingRange(4).trackingTickInterval(20)
    );
-   public static final EntityType<StasisPearlEntity> STASIS_PEARL_ENTITY = registerEntity( "stasis_pearl",
-         EntityType.Builder.<StasisPearlEntity>create(StasisPearlEntity::new, SpawnGroup.MISC).dimensions(0.25f, 0.25f).maxTrackingRange(4).trackingTickInterval(10).build()
+   public static final EntityType<StasisPearlEntity> STASIS_PEARL_ENTITY = EntityType.register( "stasis_pearl",
+         EntityType.Builder.<StasisPearlEntity>create(StasisPearlEntity::new, SpawnGroup.MISC).dimensions(0.25f, 0.25f).maxTrackingRange(4).trackingTickInterval(10)
    );
-   public static final EntityType<DragonWizardEntity> DRAGON_WIZARD_ENTITY = registerEntity( "dragon_wizard",
-         EntityType.Builder.<DragonWizardEntity>create(DragonWizardEntity::new, SpawnGroup.MISC).dimensions(0.6f, 1.95f).maxTrackingRange(8).build()
+   public static final EntityType<DragonWizardEntity> DRAGON_WIZARD_ENTITY = EntityType.register( "dragon_wizard",
+         EntityType.Builder.<DragonWizardEntity>create(DragonWizardEntity::new, SpawnGroup.MISC).dimensions(0.6f, 1.95f).maxTrackingRange(8)
    );
-   public static final EntityType<DragonPhantomEntity> DRAGON_PHANTOM_ENTITY = registerEntity( "dragon_phantom",
-         EntityType.Builder.<DragonPhantomEntity>create(DragonPhantomEntity::new, SpawnGroup.MISC).dimensions(0.9f, 0.5f).maxTrackingRange(8).build()
+   public static final EntityType<DragonPhantomEntity> DRAGON_PHANTOM_ENTITY = EntityType.register( "dragon_phantom",
+         EntityType.Builder.<DragonPhantomEntity>create(DragonPhantomEntity::new, SpawnGroup.MISC).dimensions(0.9f, 0.5f).maxTrackingRange(8)
    );
-   public static final EntityType<NulConstructEntity> NUL_CONSTRUCT_ENTITY = registerEntity( "nul_construct",
-         EntityType.Builder.<NulConstructEntity>create(NulConstructEntity::new, SpawnGroup.MONSTER).dimensions(0.9f, 3.5f).maxTrackingRange(10).makeFireImmune().build()
+   public static final EntityType<NulConstructEntity> NUL_CONSTRUCT_ENTITY = EntityType.register( "nul_construct",
+         EntityType.Builder.<NulConstructEntity>create(NulConstructEntity::new, SpawnGroup.MONSTER).dimensions(0.9f, 3.5f).maxTrackingRange(10).makeFireImmune()
    );
    
    // Status Effects
@@ -245,20 +248,20 @@ public class ArcanaRegistry {
    
    
    // Block Entities
-   public static final BlockEntityType<? extends BlockEntity> IGNEOUS_COLLIDER_BLOCK_ENTITY = registerBlockEntity(IGNEOUS_COLLIDER.getId(), BlockEntityType.Builder.create(IgneousColliderBlockEntity::new,((ArcanaBlock) IGNEOUS_COLLIDER).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> FRACTAL_SPONGE_BLOCK_ENTITY = registerBlockEntity(FRACTAL_SPONGE.getId(), BlockEntityType.Builder.create(FractalSpongeBlockEntity::new,((ArcanaBlock) FRACTAL_SPONGE).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> CONTINUUM_ANCHOR_BLOCK_ENTITY = registerBlockEntity(CONTINUUM_ANCHOR.getId(), BlockEntityType.Builder.create(ContinuumAnchorBlockEntity::new,((ArcanaBlock) CONTINUUM_ANCHOR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> SPAWNER_INFUSER_BLOCK_ENTITY = registerBlockEntity(SPAWNER_INFUSER.getId(), BlockEntityType.Builder.create(SpawnerInfuserBlockEntity::new,((ArcanaBlock) SPAWNER_INFUSER).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> CELESTIAL_ALTAR_BLOCK_ENTITY = registerBlockEntity(CELESTIAL_ALTAR.getId(), BlockEntityType.Builder.create(CelestialAltarBlockEntity::new,((ArcanaBlock) CELESTIAL_ALTAR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STARPATH_ALTAR_BLOCK_ENTITY = registerBlockEntity(STARPATH_ALTAR.getId(), BlockEntityType.Builder.create(StarpathAltarBlockEntity::new,((ArcanaBlock) STARPATH_ALTAR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STORMCALLER_ALTAR_BLOCK_ENTITY = registerBlockEntity(STORMCALLER_ALTAR.getId(), BlockEntityType.Builder.create(StormcallerAltarBlockEntity::new,((ArcanaBlock) STORMCALLER_ALTAR).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> ARCANE_SINGULARITY_BLOCK_ENTITY = registerBlockEntity(ARCANE_SINGULARITY.getId(), BlockEntityType.Builder.create(ArcaneSingularityBlockEntity::new,((ArcanaBlock) ARCANE_SINGULARITY).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> MIDNIGHT_ENCHANTER_BLOCK_ENTITY = registerBlockEntity(MIDNIGHT_ENCHANTER.getId(), BlockEntityType.Builder.create(MidnightEnchanterBlockEntity::new,((ArcanaBlock) MIDNIGHT_ENCHANTER).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> RADIANT_FLETCHERY_BLOCK_ENTITY = registerBlockEntity(RADIANT_FLETCHERY.getId(), BlockEntityType.Builder.create(RadiantFletcheryBlockEntity::new,((ArcanaBlock) RADIANT_FLETCHERY).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STARLIGHT_FORGE_BLOCK_ENTITY = registerBlockEntity(STARLIGHT_FORGE.getId(), BlockEntityType.Builder.create(StarlightForgeBlockEntity::new,((ArcanaBlock) STARLIGHT_FORGE).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> STELLAR_CORE_BLOCK_ENTITY = registerBlockEntity(STELLAR_CORE.getId(), BlockEntityType.Builder.create(StellarCoreBlockEntity::new,((ArcanaBlock) STELLAR_CORE).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> TWILIGHT_ANVIL_BLOCK_ENTITY = registerBlockEntity(TWILIGHT_ANVIL.getId(), BlockEntityType.Builder.create(TwilightAnvilBlockEntity::new,((ArcanaBlock) TWILIGHT_ANVIL).getBlock()).build());
-   public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), BlockEntityType.Builder.create(TransmutationAltarBlockEntity::new,((ArcanaBlock) TRANSMUTATION_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> IGNEOUS_COLLIDER_BLOCK_ENTITY = registerBlockEntity(IGNEOUS_COLLIDER.getId(), FabricBlockEntityTypeBuilder.create(IgneousColliderBlockEntity::new,((ArcanaBlock) IGNEOUS_COLLIDER).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> FRACTAL_SPONGE_BLOCK_ENTITY = registerBlockEntity(FRACTAL_SPONGE.getId(), FabricBlockEntityTypeBuilder.create(FractalSpongeBlockEntity::new,((ArcanaBlock) FRACTAL_SPONGE).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> CONTINUUM_ANCHOR_BLOCK_ENTITY = registerBlockEntity(CONTINUUM_ANCHOR.getId(), FabricBlockEntityTypeBuilder.create(ContinuumAnchorBlockEntity::new,((ArcanaBlock) CONTINUUM_ANCHOR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> SPAWNER_INFUSER_BLOCK_ENTITY = registerBlockEntity(SPAWNER_INFUSER.getId(), FabricBlockEntityTypeBuilder.create(SpawnerInfuserBlockEntity::new,((ArcanaBlock) SPAWNER_INFUSER).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> CELESTIAL_ALTAR_BLOCK_ENTITY = registerBlockEntity(CELESTIAL_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(CelestialAltarBlockEntity::new,((ArcanaBlock) CELESTIAL_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STARPATH_ALTAR_BLOCK_ENTITY = registerBlockEntity(STARPATH_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(StarpathAltarBlockEntity::new,((ArcanaBlock) STARPATH_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STORMCALLER_ALTAR_BLOCK_ENTITY = registerBlockEntity(STORMCALLER_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(StormcallerAltarBlockEntity::new,((ArcanaBlock) STORMCALLER_ALTAR).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> ARCANE_SINGULARITY_BLOCK_ENTITY = registerBlockEntity(ARCANE_SINGULARITY.getId(), FabricBlockEntityTypeBuilder.create(ArcaneSingularityBlockEntity::new,((ArcanaBlock) ARCANE_SINGULARITY).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> MIDNIGHT_ENCHANTER_BLOCK_ENTITY = registerBlockEntity(MIDNIGHT_ENCHANTER.getId(), FabricBlockEntityTypeBuilder.create(MidnightEnchanterBlockEntity::new,((ArcanaBlock) MIDNIGHT_ENCHANTER).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> RADIANT_FLETCHERY_BLOCK_ENTITY = registerBlockEntity(RADIANT_FLETCHERY.getId(), FabricBlockEntityTypeBuilder.create(RadiantFletcheryBlockEntity::new,((ArcanaBlock) RADIANT_FLETCHERY).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STARLIGHT_FORGE_BLOCK_ENTITY = registerBlockEntity(STARLIGHT_FORGE.getId(), FabricBlockEntityTypeBuilder.create(StarlightForgeBlockEntity::new,((ArcanaBlock) STARLIGHT_FORGE).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> STELLAR_CORE_BLOCK_ENTITY = registerBlockEntity(STELLAR_CORE.getId(), FabricBlockEntityTypeBuilder.create(StellarCoreBlockEntity::new,((ArcanaBlock) STELLAR_CORE).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> TWILIGHT_ANVIL_BLOCK_ENTITY = registerBlockEntity(TWILIGHT_ANVIL.getId(), FabricBlockEntityTypeBuilder.create(TwilightAnvilBlockEntity::new,((ArcanaBlock) TWILIGHT_ANVIL).getBlock()).build());
+   public static final BlockEntityType<? extends BlockEntity> TRANSMUTATION_ALTAR_BLOCK_ENTITY = registerBlockEntity(TRANSMUTATION_ALTAR.getId(), FabricBlockEntityTypeBuilder.create(TransmutationAltarBlockEntity::new,((ArcanaBlock) TRANSMUTATION_ALTAR).getBlock()).build());
    
    
    // Custom Tags
@@ -275,8 +278,7 @@ public class ArcanaRegistry {
    
    public static void initialize(){
       PolymerResourcePackUtils.addModAssets(MOD_ID);
-      RegistrySyncUtils.setServerEntry(Registries.ARMOR_MATERIAL, NON_PROTECTIVE_ARMOR_MATERIAL.value());
-      
+
       for(Map.Entry<RegistryKey<ArcanaItem>, ArcanaItem> entry : ARCANA_ITEMS.getEntrySet()){
          String id = entry.getKey().getValue().getPath();
          ArcanaItem arcanaItem = entry.getValue();
@@ -477,10 +479,6 @@ public class ArcanaRegistry {
    
    public static RegistryEntry<StatusEffect> registerStatusEffect(String id, StatusEffect effect){
       return Registry.registerReference(Registries.STATUS_EFFECT, Identifier.of(MOD_ID,id), effect);
-   }
-   
-   private static RegistryEntry<ArmorMaterial> registerArmorMaterial(String id, ArmorMaterial material){
-      return Registry.registerReference(Registries.ARMOR_MATERIAL, Identifier.of(MOD_ID,id), material);
    }
    
    private static AreaEffectTracker registerAreaEffectTracker(AreaEffectTracker tracker){

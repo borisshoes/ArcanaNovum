@@ -66,7 +66,7 @@ public class ArcaneFlakArrows extends RunicArrow {
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(7802273),new ArrayList<>()))
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(7802273),new ArrayList<>(),Optional.empty()))
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));

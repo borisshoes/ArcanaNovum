@@ -53,7 +53,7 @@ public abstract class ResearchTask {
    
    public boolean satisfiedPreReqs(ServerPlayerEntity player){
       for(RegistryKey<ResearchTask> prerequisite : this.prerequisites){
-         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOrEmpty(prerequisite);
+         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOptionalValue(prerequisite);
          if(opt.isPresent() && !opt.get().isAcquired(player)){
             return false;
          }
@@ -63,7 +63,7 @@ public abstract class ResearchTask {
    
    public boolean satisfiedPrePreReqs(ServerPlayerEntity player){
       for(RegistryKey<ResearchTask> prerequisite : this.prerequisites){
-         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOrEmpty(prerequisite);
+         Optional<ResearchTask> opt = ResearchTasks.RESEARCH_TASKS.getOptionalValue(prerequisite);
          if(opt.isPresent() && !opt.get().satisfiedPreReqs(player)){
             return false;
          }
@@ -74,7 +74,7 @@ public abstract class ResearchTask {
    public List<ResearchTask> getPreReqs(){
       List<ResearchTask> prereqs = new ArrayList<>();
       for(RegistryKey<ResearchTask> prerequisite : this.prerequisites){
-         ResearchTasks.RESEARCH_TASKS.getOrEmpty(prerequisite).ifPresent(prereqs::add);
+         ResearchTasks.RESEARCH_TASKS.getOptionalValue(prerequisite).ifPresent(prereqs::add);
       }
       return prereqs;
    }

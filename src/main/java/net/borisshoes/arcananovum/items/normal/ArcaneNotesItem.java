@@ -18,7 +18,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -98,11 +98,11 @@ public class ArcaneNotesItem extends NormalPolymerItem {
    }
    
    @Override
-   public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand){
+   public ActionResult use(World world, PlayerEntity user, Hand hand){
       ItemStack itemStack = user.getStackInHand(hand);
       if(ArcanaItem.hasProperty(itemStack,UNLOCK_ID_TAG)){
          user.setCurrentHand(hand);
-         return TypedActionResult.consume(itemStack);
+         return ActionResult.CONSUME;
       }else{
          return super.use(world, user, hand);
       }

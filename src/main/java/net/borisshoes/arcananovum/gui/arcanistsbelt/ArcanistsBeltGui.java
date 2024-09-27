@@ -91,7 +91,7 @@ public class ArcanistsBeltGui extends SimpleGui {
       for(int i = 0; i < inv.size(); i++){
          ItemStack itemStack = inv.getStack(i);
          if(itemStack.isEmpty()) continue;
-         NbtCompound item = (NbtCompound) itemStack.encodeAllowEmpty(player.getRegistryManager());
+         NbtCompound item = (NbtCompound) itemStack.toNbtAllowEmpty(player.getRegistryManager());
          item.putByte("Slot", (byte) i);
          items.add(item);
          

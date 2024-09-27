@@ -62,13 +62,13 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    
    public static DefaultAttributeContainer.Builder createWizardAttributes() {
       return HostileEntity.createHostileAttributes()
-            .add(EntityAttributes.GENERIC_GRAVITY,0.0)
-            .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.0)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
-            .add(EntityAttributes.GENERIC_MAX_HEALTH, 64.0)
-            .add(EntityAttributes.GENERIC_ARMOR, 10)
-            .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10)
-            .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
+            .add(EntityAttributes.GRAVITY,0.0)
+            .add(EntityAttributes.MOVEMENT_SPEED, 0.0)
+            .add(EntityAttributes.FOLLOW_RANGE, 64.0)
+            .add(EntityAttributes.MAX_HEALTH, 64.0)
+            .add(EntityAttributes.ARMOR, 10)
+            .add(EntityAttributes.ARMOR_TOUGHNESS, 10)
+            .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0);
    }
    
    @Override
@@ -243,7 +243,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    private SkeletonEntity makeSkeleton(ServerWorld endWorld, int numPlayers){
       SkeletonEntity skeleton = new SkeletonEntity(EntityType.SKELETON, endWorld);
       float skeletonHP = MathHelper.clamp(20+numPlayers * 2,20,80);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(skeletonHP);
+      skeleton.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(skeletonHP);
       skeleton.setHealth(skeletonHP);
       skeleton.setPersistent();
       ItemStack bow = new ItemStack(Items.BOW);
@@ -272,7 +272,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       StatusEffectInstance slowFall = new StatusEffectInstance(StatusEffects.SLOW_FALLING,100000,0,false,false,false);
       skeleton.addStatusEffect(fireRes);
       skeleton.addStatusEffect(slowFall);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1);
+      skeleton.getAttributeInstance(EntityAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
       skeleton.setInvulnerable(true);
       skeleton.setAiDisabled(true);
       return skeleton;

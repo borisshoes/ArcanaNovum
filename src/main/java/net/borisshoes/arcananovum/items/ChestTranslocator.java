@@ -216,7 +216,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
          NbtCompound state = getCompoundProperty(itemStack,STATE_TAG);
          if(!contents.isEmpty()){
-            BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),state);
+            BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK,state);
             if(blockState.isOf(Blocks.CHEST) || blockState.isOf(Blocks.TRAPPED_CHEST)){
                return ArcanaRegistry.getModelData(CHEST_TXT).value();
             }else if(blockState.isOf(Blocks.BARREL)){
@@ -262,7 +262,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
             Direction side = context.getSide();
             BlockPos placePos = blockPos.add(side.getVector());
             if(world.getBlockState(placePos).isAir()){
-               BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),stateTag);
+               BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK,stateTag);
                ItemPlacementContext ipc = new ItemPlacementContext(player,context.getHand(),context.getStack(),new BlockHitResult(context.getHitPos(),context.getSide(),context.getBlockPos(),context.hitsInsideBlock()));
                if(blockState.isOf(Blocks.CHEST)){
                   blockState = Blocks.CHEST.getPlacementState(ipc);

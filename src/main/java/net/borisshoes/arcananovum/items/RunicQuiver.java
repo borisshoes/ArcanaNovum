@@ -38,7 +38,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -214,7 +214,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          // Open GUI
          if(playerEntity instanceof ServerPlayerEntity player){
             ItemStack stack = playerEntity.getStackInHand(hand);
@@ -222,7 +222,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
             gui.build();
             gui.open();
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

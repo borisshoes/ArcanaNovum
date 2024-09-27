@@ -28,7 +28,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    public DragonPhantomEntity(EntityType<? extends DragonPhantomEntity> entityType, World world){
       super(entityType, world);
       this.numPlayers = 5;
-      getAttributes().getCustomInstance(EntityAttributes.GENERIC_SCALE).addPersistentModifier(new EntityAttributeModifier(Identifier.of(MOD_ID,"phantom_scale"), 4.0, EntityAttributeModifier.Operation.ADD_VALUE));
+      getAttributes().getCustomInstance(EntityAttributes.SCALE).addPersistentModifier(new EntityAttributeModifier(Identifier.of(MOD_ID,"phantom_scale"), 4.0, EntityAttributeModifier.Operation.ADD_VALUE));
    }
    
    @Override
@@ -42,12 +42,12 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    
    public static DefaultAttributeContainer.Builder createPhantomAttributes() {
       return HostileEntity.createHostileAttributes()
-            .add(EntityAttributes.GENERIC_SCALE, 1.0)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
-            .add(EntityAttributes.GENERIC_MAX_HEALTH, 512.0)
-            .add(EntityAttributes.GENERIC_ARMOR, 10)
-            .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10)
-            .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
+            .add(EntityAttributes.SCALE, 1.0)
+            .add(EntityAttributes.FOLLOW_RANGE, 64.0)
+            .add(EntityAttributes.MAX_HEALTH, 512.0)
+            .add(EntityAttributes.ARMOR, 10)
+            .add(EntityAttributes.ARMOR_TOUGHNESS, 10)
+            .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0);
    }
    
    @Override

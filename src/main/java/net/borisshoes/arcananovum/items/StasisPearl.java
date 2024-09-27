@@ -30,7 +30,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -239,7 +239,7 @@ public class StasisPearl extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
          String pearlID = getStringProperty(stack,PEARL_ID_TAG);
@@ -249,7 +249,7 @@ public class StasisPearl extends EnergyItem {
             if(pearlID.isEmpty()){ // Throw new pearl
                if(getEnergy(stack) >= getMaxEnergy(stack)){
                   SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.ENTITY_ENDER_PEARL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F);
-                  playerEntity.getItemCooldownManager().set(this, 0);
+                  playerEntity.getItemCooldownManager().set(this.getDefaultStack(), 0);
                   if (!world.isClient) {
                      StasisPearlEntity stasisPearlEntity = new StasisPearlEntity(world, playerEntity, getUUID(stack), getCompoundProperty(stack,AUGMENTS_TAG));
                      stasisPearlEntity.setVelocity(playerEntity, playerEntity.getPitch(), playerEntity.getYaw(), 0.0F, 1.5F, 1.0F);
@@ -261,7 +261,7 @@ public class StasisPearl extends EnergyItem {
                      PLAYER_DATA.get(playerEntity).addXP(250);
                   }
                }else{
-                  playerEntity.getItemCooldownManager().set(this, 0);
+                  playerEntity.getItemCooldownManager().set(this.getDefaultStack(), 0);
                   if(playerEntity instanceof ServerPlayerEntity player){
                      playerEntity.sendMessage(Text.literal("Pearl Recharging: "+(getEnergy(stack)*100/getMaxEnergy(stack))+"%").formatted(Formatting.BLUE),true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
@@ -277,7 +277,7 @@ public class StasisPearl extends EnergyItem {
                      }
                   }
                   if(foundEntity != null) foundEntity.kill();
-                  playerEntity.getItemCooldownManager().set(this, 0);
+                  playerEntity.getItemCooldownManager().set(this.getDefaultStack(), 0);
                }
                // Reset data
                putProperty(stack,ACTIVE_TAG,false);
@@ -298,8 +298,8 @@ public class StasisPearl extends EnergyItem {
                   if(foundEntity instanceof StasisPearlEntity pearlEntity){
                      pearlEntity.setStasis(false);
                      putProperty(stack,ACTIVE_TAG,false);
-                     playerEntity.getItemCooldownManager().set(this, 0);
-                     return TypedActionResult.success(stack);
+                     playerEntity.getItemCooldownManager().set(this.getDefaultStack(), 0);
+                     return ActionResult.SUCCESS;
                   }
                }
                
@@ -318,8 +318,8 @@ public class StasisPearl extends EnergyItem {
                   if(foundEntity instanceof StasisPearlEntity pearlEntity){
                      pearlEntity.setStasis(true);
                      putProperty(stack,ACTIVE_TAG,true);
-                     playerEntity.getItemCooldownManager().set(this, 0);
-                     return TypedActionResult.success(stack);
+                     playerEntity.getItemCooldownManager().set(this.getDefaultStack(), 0);
+                     return ActionResult.SUCCESS;
                   }
                }
                // If this is reached, something went wrong and the pearl needs to be reset
@@ -329,8 +329,7 @@ public class StasisPearl extends EnergyItem {
          }catch(Exception e){
             e.printStackTrace();
          }
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
    }
 }
-

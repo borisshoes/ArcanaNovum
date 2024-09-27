@@ -182,12 +182,12 @@ public class MiscUtils {
          ArcanaNovum.log(2,"Attempted to access Enchantment "+key.toString()+" before DRM is available");
          return null;
       }
-      Optional<RegistryEntry.Reference<Enchantment>> opt = ArcanaNovum.SERVER.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(key);
+      Optional<RegistryEntry.Reference<Enchantment>> opt = ArcanaNovum.SERVER.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(key);
       return opt.orElse(null);
    }
    
    public static RegistryEntry<Enchantment> getEnchantment(DynamicRegistryManager drm, RegistryKey<Enchantment> key){
-      Optional<RegistryEntry.Reference<Enchantment>> opt = drm.get(RegistryKeys.ENCHANTMENT).getEntry(key);
+      Optional<RegistryEntry.Reference<Enchantment>> opt = drm.getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(key);
       return opt.orElse(null);
    }
    
@@ -335,7 +335,7 @@ public class MiscUtils {
    
    public static void removeMaxAbsorption(LivingEntity entity, Identifier id, float amount) {
       AttributeContainer attributeContainer = entity.getAttributes();
-      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
+      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.MAX_ABSORPTION);
       if (entityAttributeInstance == null) return;
       EntityAttributeModifier existing = entityAttributeInstance.getModifier(id);
       if(existing != null){
@@ -352,7 +352,7 @@ public class MiscUtils {
    public static void addMaxAbsorption(LivingEntity entity, Identifier id, double amount) {
       AttributeContainer attributeContainer = entity.getAttributes();
       EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE);
-      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
+      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.MAX_ABSORPTION);
       if (entityAttributeInstance == null) return;
       EntityAttributeModifier existing = entityAttributeInstance.getModifier(id);
       if(existing != null){

@@ -109,7 +109,7 @@ public class EntityKilledCallback {
             }
    
             ItemStack chestItem = player.getEquippedStack(EquipmentSlot.CHEST);
-            if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isFallFlying() && livingEntity instanceof MobEntity){
+            if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isGliding() && livingEntity instanceof MobEntity){
                ArcanaAchievements.grant(player,ArcanaAchievements.ANGEL_OF_DEATH.id);
             }
          }

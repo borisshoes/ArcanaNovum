@@ -5,9 +5,10 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ArmorMaterial;
+import net.minecraft.item.equipment.ArmorMaterial;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -21,7 +22,7 @@ import java.util.List;
 
 public abstract class ArcanaPolymerArmorItem extends ArmorItem implements PolymerItem {
    protected ArcanaItem arcanaItem;
-   public ArcanaPolymerArmorItem(ArcanaItem arcanaItem, RegistryEntry<ArmorMaterial> material, Type type, Settings settings){
+   public ArcanaPolymerArmorItem(ArcanaItem arcanaItem, ArmorMaterial material, EquipmentType type, Settings settings){
       super(material, type, settings);
       this.arcanaItem = arcanaItem;
    }

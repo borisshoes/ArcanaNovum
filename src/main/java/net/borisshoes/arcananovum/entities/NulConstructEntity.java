@@ -88,12 +88,12 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    }
    
    private void initializeAttributes(){
-      getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024.0);
-      getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85);
-      getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10.0);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(10.0);
-      getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(128);
+      getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(1024.0);
+      getAttributeInstance(EntityAttributes.MOVEMENT_SPEED).setBaseValue(0.85);
+      getAttributeInstance(EntityAttributes.FLYING_SPEED).setBaseValue(0.85);
+      getAttributeInstance(EntityAttributes.ARMOR).setBaseValue(10.0);
+      getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).setBaseValue(10.0);
+      getAttributeInstance(EntityAttributes.FOLLOW_RANGE).setBaseValue(128);
       initializedAttributes = true;
    }
    
@@ -112,12 +112,12 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    public static DefaultAttributeContainer.Builder createConstructAttributes() {
       return HostileEntity.createHostileAttributes()
-            .add(EntityAttributes.GENERIC_MAX_HEALTH, 1024.0)
-            .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.85)
-            .add(EntityAttributes.GENERIC_FLYING_SPEED, 0.85)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128)
-            .add(EntityAttributes.GENERIC_ARMOR, 10.0)
-            .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10.0);
+            .add(EntityAttributes.MAX_HEALTH, 1024.0)
+            .add(EntityAttributes.MOVEMENT_SPEED, 0.85)
+            .add(EntityAttributes.FLYING_SPEED, 0.85)
+            .add(EntityAttributes.FOLLOW_RANGE, 128)
+            .add(EntityAttributes.ARMOR, 10.0)
+            .add(EntityAttributes.ARMOR_TOUGHNESS, 10.0);
    }
    
    @Override
@@ -640,7 +640,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    private WitherSkeletonEntity makeWitherSkeleton(ServerWorld world){
       WitherSkeletonEntity skeleton = new WitherSkeletonEntity(EntityType.WITHER_SKELETON, world);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(50f);
+      skeleton.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(50f);
       skeleton.setHealth(50f);
       skeleton.setPersistent();
       ItemStack axe = new ItemStack(Items.NETHERITE_AXE);
@@ -655,11 +655,11 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       skeleton.addStatusEffect(slowFall);
       skeleton.addStatusEffect(fireRes);
       skeleton.addStatusEffect(res);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10f);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(4f);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(64f);
+      skeleton.getAttributeInstance(EntityAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
+      skeleton.getAttributeInstance(EntityAttributes.ARMOR).setBaseValue(10f);
+      skeleton.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).setBaseValue(4f);
+      skeleton.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
+      skeleton.getAttributeInstance(EntityAttributes.FOLLOW_RANGE).setBaseValue(64f);
       return skeleton;
    }
    

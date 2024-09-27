@@ -3,10 +3,8 @@ package net.borisshoes.arcananovum.utils;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.component.type.ToolComponent;
+import net.minecraft.component.type.*;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -135,24 +133,28 @@ public class EnhancedStatUtils {
       
       boolean enhanced = false;
       if(stack.isIn(ItemTags.ARMOR_ENCHANTABLE) && stack.getItem() instanceof ArmorItem armorItem){
-         double newArmor = 5 * percentile + armorItem.getProtection();
-         double newToughness = 5 * percentile + armorItem.getToughness();
-         double newKbRes = 0.2 * percentile + armorItem.getMaterial().value().knockbackResistance();
+         EquippableComponent equippableComponent = stack.get(DataComponentTypes.EQUIPPABLE);
+         EquipmentSlot slot = equippableComponent.slot();
+
+         // TODO: I DON'T KNOW HOW TO GET THESE PLEASE HELP ME
+         double newArmor = 1; // 5 * percentile + armorItem.getComponents().getProtection();
+         double newToughness = 1; // 5 * percentile + armorItem.getToughness();
+         double newKbRes = 1; // 0.2 * percentile + armorItem.getMaterial().value().knockbackResistance();
          double maxHpBoost = percentile >= 0.95 ? percentile*5 : 0;
-         String stat_tag = ENHANCED_STAT_TAG +"_"+ armorItem.getSlotType().asString();
-         
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newArmor,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR_TOUGHNESS,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newToughness,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newKbRes,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_MAX_HEALTH,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),maxHpBoost,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(armorItem.getSlotType())));
+         String stat_tag = ENHANCED_STAT_TAG +"_"+ slot.asString();
+
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.ARMOR,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newArmor,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(slot)));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.ARMOR_TOUGHNESS,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newToughness,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(slot)));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.KNOCKBACK_RESISTANCE,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),newKbRes,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(slot)));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.MAX_HEALTH,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,stat_tag),maxHpBoost,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.forEquipmentSlot(slot)));
          enhanced = true;
       }
       if(stack.isIn(ItemTags.WEAPON_ENCHANTABLE) || stack.isIn(ItemTags.SWORDS) || stack.isIn(ItemTags.AXES)){
          double newAttackSpeed = percentile >= 0.5 ? 0.5*(2*percentile-1) : 0;
          double newAttackDamage = 5 * percentile;
          
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ATTACK_DAMAGE,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackDamage,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND));
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ATTACK_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackSpeed,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.ATTACK_DAMAGE,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackDamage,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.ATTACK_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,ENHANCED_STAT_TAG),newAttackSpeed,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND));
          enhanced = true;
       }
       

@@ -145,11 +145,11 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Click").formatted(Formatting.GREEN))
@@ -160,37 +160,37 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Input: ").formatted(Formatting.GRAY))
                         .append(Text.literal(infusion.getInput().getCount()+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(infusion.getInput().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(infusion.getInput().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
                         .append(Text.literal(infusion.getOutput().getCount()+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(infusion.getOutput().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(infusion.getOutput().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                }else if(recipe instanceof PermutationTransmutationRecipe permutation){
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Permutation Transmutation").formatted(Formatting.DARK_AQUA)));
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Input: ").formatted(Formatting.GRAY))
                         .append(Text.literal(permutation.getInput().getCount()+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(permutation.getInput().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(permutation.getInput().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
                         .append(permutation.getOutputDescription()).formatted(Formatting.AQUA))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                }else if(recipe instanceof AequalisSkillTransmutationRecipe){
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Aequalis Transmutation").formatted(Formatting.AQUA)));
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
@@ -206,11 +206,11 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                }else if(recipe instanceof AequalisCatalystTransmutationRecipe){
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Aequalis Transmutation").formatted(Formatting.AQUA)));
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
@@ -227,11 +227,11 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent1().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
-                        .append(Text.translatable(recipe.getReagent2().getTranslationKey()).formatted(Formatting.AQUA)))));
+                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
                }
                setSlot((i*9+10)+j,viewItem);
             }else{
@@ -280,7 +280,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             if(k < inputs.size()){
                ItemStack item = inputs.get(k);
                GuiElementBuilder viewItem = GuiElementBuilder.from(item).hideDefaultTooltip();
-               viewItem.setName((Text.translatable(item.getTranslationKey()).formatted(Formatting.BOLD,Formatting.AQUA)));
+               viewItem.setName((Text.translatable(item.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.AQUA)));
                viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                      .append(Text.literal("Input").formatted(Formatting.GRAY))
                      .append(Text.literal(" or ").formatted(Formatting.DARK_AQUA))
@@ -296,21 +296,21 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       
       ItemStack reagent1 = curRecipe.getReagent1();
       GuiElementBuilder reagent1Item = GuiElementBuilder.from(reagent1).hideDefaultTooltip();
-      reagent1Item.setName((Text.translatable(reagent1.getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
+      reagent1Item.setName((Text.translatable(reagent1.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
       reagent1Item.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.literal(reagent1.getCount()+" ").formatted(Formatting.DARK_AQUA))
-            .append(Text.translatable(reagent1.getTranslationKey()).formatted(Formatting.AQUA)))));
+            .append(Text.translatable(reagent1.getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
       setSlot(48,reagent1Item);
       
       
       ItemStack reagent2 = curRecipe.getReagent2();
       GuiElementBuilder reagent2Item = GuiElementBuilder.from(reagent2).hideDefaultTooltip();
-      reagent2Item.setName((Text.translatable(reagent2.getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
+      reagent2Item.setName((Text.translatable(reagent2.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
       reagent2Item.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.literal(reagent2.getCount()+" ").formatted(Formatting.DARK_AQUA))
-            .append(Text.translatable(reagent2.getTranslationKey()).formatted(Formatting.AQUA)))));
+            .append(Text.translatable(reagent2.getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
       setSlot(50,reagent2Item);
       
       GuiElementBuilder recipeItem = new GuiElementBuilder(GraphicalItem.with(GraphicItems.TRANSMUTATION_BOOK)).hideDefaultTooltip();

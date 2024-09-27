@@ -274,12 +274,12 @@ public class EssenceEgg extends ArcanaItem {
                      int spawns = Math.random() >= 0.1*splitLevel ? 1 : 2;
                      
                      for(int i = 0; i < spawns; i++){
-                        Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, entity -> {
+                        Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, SpawnReason.SPAWN_ITEM_USE, entity -> {
                            entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
                            return entity;
                         });
                         if(newEntity instanceof MobEntity mobEntity){
-                           mobEntity.initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_EGG, null);
+                           mobEntity.initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_ITEM_USE, null);
                         }
                         serverWorld.spawnNewEntityAndPassengers(newEntity);
                      }
@@ -304,14 +304,14 @@ public class EssenceEgg extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack item = playerEntity.getStackInHand(hand);
          if(playerEntity.isCreative()){
             if(!getType(item).equals("unattuned"))
                addUses(item,1);
-            return TypedActionResult.success(item);
+            return ActionResult.SUCCESS;
          }
-         return TypedActionResult.pass(item);
+         return ActionResult.PASS;
       }
       
       @Override

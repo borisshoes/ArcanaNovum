@@ -69,10 +69,7 @@ import net.minecraft.world.gen.feature.EndSpikeFeature;
 import net.minecraft.world.gen.feature.EndSpikeFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.devPrint;
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
@@ -148,7 +145,7 @@ public class DragonBossFight {
                gameMaster = gm;
                hasDied = new ArrayList<>();
                dragon = endWorld.getAliveEnderDragons().get(0);
-               dragon.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024);
+               dragon.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(1024);
                dragon.setHealth(1024);
                reclaimStates = new ArrayList<>();
    
@@ -206,7 +203,7 @@ public class DragonBossFight {
                      List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
                      for(ServerPlayerEntity player : players){
                         if(!player.isCreative() && !player.isSpectator()){
-                           player.teleport(endWorld, 100.5+(Math.random()*3-1.5),51,0.5+(Math.random()*3-1.5),90,0);
+                           player.teleport(endWorld, 100.5+(Math.random()*3-1.5),51,0.5+(Math.random()*3-1.5),Set.of(), 90,0,false);
                         }
                      }
    
@@ -489,10 +486,10 @@ public class DragonBossFight {
          float endermiteHP = MathHelper.clamp(10 + 3*numPlayers,10,40);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermiteEntity(EntityType.ENDERMITE, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(endermiteHP);
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(endermiteHP);
             goons[i].setHealth(endermiteHP);
             goons[i].setPersistent();
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
+            goons[i].getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY()+1,pos.getZ());
       
@@ -512,7 +509,7 @@ public class DragonBossFight {
          float shulkerHP = MathHelper.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
             goons[i] = new ShulkerEntity(EntityType.SHULKER, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(shulkerHP);
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(shulkerHP);
             goons[i].setHealth(shulkerHP);
             goons[i].setPersistent();
             BlockPos pos = poses.get(i);
@@ -534,9 +531,9 @@ public class DragonBossFight {
          float endermanHP = MathHelper.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(endermanHP);
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(endermanHP);
             goons[i].setHealth(endermanHP);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
+            goons[i].getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
       
@@ -838,7 +835,7 @@ public class DragonBossFight {
       }
    
       for(EnderDragonEntity dragon : endWorld.getAliveEnderDragons()){
-         dragon.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(200);
+         dragon.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(200);
          dragon.setHealth(200);
          dragon.setCustomName(Text.literal("Ender Dragon"));
       }
@@ -1029,7 +1026,7 @@ public class DragonBossFight {
    public static void teleportPlayer(ServerPlayerEntity player, boolean override){
       ServerWorld endWorld = player.getServer().getWorld(World.END);
       if(hasDied.contains(player) || override){
-         player.teleport(endWorld, 100.5,51,0.5,90,0);
+         player.teleport(endWorld, 100.5,51,0.5,Set.of(),90,0, false);
          StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 20*30, 4, false, false, true);
          player.addStatusEffect(res);
          MutableText msg = Text.literal("")

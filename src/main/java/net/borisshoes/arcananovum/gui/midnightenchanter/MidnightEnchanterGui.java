@@ -502,11 +502,11 @@ public class MidnightEnchanterGui extends SimpleGui {
       }else{
          enchantItem.setName((Text.literal("")
                .append(Text.literal("Enchant ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(stack.getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))));
+               .append(Text.translatable(stack.getItem().getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))));
          enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
                .append(Text.literal(" to enchant the ").formatted(Formatting.DARK_PURPLE))
-               .append(Text.translatable(stack.getTranslationKey()).formatted(Formatting.DARK_PURPLE)))));
+               .append(Text.translatable(stack.getItem().getTranslationKey()).formatted(Formatting.DARK_PURPLE)))));
       }
       
       
@@ -623,7 +623,7 @@ public class MidnightEnchanterGui extends SimpleGui {
       listener.setUpdating();
       
       RegistryEntryList<Enchantment> registryEntryList = null;
-      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
+      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
       if (optional.isPresent()) {
          registryEntryList = optional.get();
       }
@@ -677,7 +677,7 @@ public class MidnightEnchanterGui extends SimpleGui {
    
    private void setSelectedFromList(List<EnchantmentLevelEntry> entries){
       enchants = new ArrayList<>();
-      RegistryWrapper.Impl<Enchantment> impl = player.getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT);
+      RegistryWrapper.Impl<Enchantment> impl = player.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
       entries.forEach(e -> enchants.add(new EnchantEntry(impl.getOrThrow(e.enchantment.getKey().get()), e.level,true)));
    }
    
@@ -750,7 +750,7 @@ public class MidnightEnchanterGui extends SimpleGui {
       
       List<EnchantEntry> possibleAdditions = new ArrayList<>();
       
-      for(RegistryEntry<Enchantment> entry : player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getIndexedEntries()){
+      for(RegistryEntry<Enchantment> entry : player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries()){
          Enchantment enchantment = entry.value();
          
          if(!EnchantmentHelper.isCompatible(curEnchants.keySet(),entry) && !curEnchants.containsKey(entry)) continue; // Remove incompatible enchants
@@ -777,7 +777,7 @@ public class MidnightEnchanterGui extends SimpleGui {
    
    private List<EnchantmentLevelEntry> generateEnchantments(ItemStack stack, int slot, int level, Random random, int playerSeed) {
       random.setSeed(playerSeed + slot);
-      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.IN_ENCHANTING_TABLE);
+      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE);
       if (optional.isEmpty()){
          return List.of();
       }

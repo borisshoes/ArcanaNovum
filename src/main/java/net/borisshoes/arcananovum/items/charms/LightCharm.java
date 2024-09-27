@@ -430,14 +430,14 @@ public class LightCharm extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
             selectMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
          }else{
             changeSetting((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
          }
          
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

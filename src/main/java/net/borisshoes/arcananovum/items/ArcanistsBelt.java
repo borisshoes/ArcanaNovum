@@ -38,7 +38,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -202,7 +202,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       for(int i = 0; i < inv.size(); i++){ // Re-serialize
          ItemStack itemStack = inv.getStack(i);
          if(itemStack.isEmpty()) continue;
-         NbtCompound item = (NbtCompound) itemStack.encodeAllowEmpty(ArcanaNovum.SERVER.getRegistryManager());
+         NbtCompound item = (NbtCompound) itemStack.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager());
          item.putByte("Slot", (byte) i);
          items.add(item);
       }
@@ -279,7 +279,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          // Open GUI
          if(playerEntity instanceof ServerPlayerEntity player){
             ItemStack stack = playerEntity.getStackInHand(hand);
@@ -287,7 +287,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
             gui.build();
             gui.open();
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

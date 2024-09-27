@@ -182,7 +182,7 @@ public class TickCallback {
    private static void wingsTick(ServerPlayerEntity player){
       ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
       if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
-         if(player.isFallFlying()){ // Wings of Enderia
+         if(player.isGliding()){ // Wings of Enderia
             wings.addEnergy(item,1); // Add 1 energy for each tick of flying
             if(wings.getEnergy(item) % 1000 == 999)
                player.sendMessage(Text.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).formatted(Formatting.DARK_PURPLE),true);

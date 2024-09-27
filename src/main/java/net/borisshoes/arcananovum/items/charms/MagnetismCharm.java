@@ -33,7 +33,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -202,7 +202,7 @@ public class MagnetismCharm extends ArcanaItem {
       if(cooldown != 0){
          return;
       }else{
-         player.getItemCooldownManager().set(this.item,20);
+         player.getItemCooldownManager().set(this.item.getDefaultStack(),20);
          putProperty(charm,COOLDOWN_TAG,1);
       }
       
@@ -231,8 +231,8 @@ public class MagnetismCharm extends ArcanaItem {
             LivingEntity e = (LivingEntity) entity;
             if(e instanceof ServerPlayerEntity hitPlayer){
                if(hitPlayer.isBlocking()){
-                  hitPlayer.getItemCooldownManager().set(Items.SHIELD, 100);
-                  hitPlayer.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(), 100);
+                  hitPlayer.getItemCooldownManager().set(Items.SHIELD.getDefaultStack(), 100);
+                  hitPlayer.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem().getDefaultStack(), 100);
                   hitPlayer.clearActiveItem();
                   hitPlayer.getWorld().sendEntityStatus(hitPlayer, (byte)30);
                }
@@ -422,9 +422,9 @@ public class MagnetismCharm extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          boolean canFilter = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FARADAY_CAGE.id) >= 1;
          ItemStack offHand = playerEntity.getStackInHand(Hand.OFF_HAND);
          
@@ -439,7 +439,7 @@ public class MagnetismCharm extends ArcanaItem {
          }else{
             activeUse((ServerPlayerEntity) playerEntity, world, stack);
          }
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
    }
 }

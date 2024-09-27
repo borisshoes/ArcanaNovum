@@ -305,7 +305,7 @@ public class ShulkerCore extends EnergyItem {
          setEnergy(stack,0);
       }else{
          putProperty(stack,STONE_TAG,true);
-         putProperty(stack,STONE_DATA_TAG,stone.encodeAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,stone.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
          setEnergy(stack,Soulstone.getSouls(stone));
       }
    }
@@ -382,7 +382,7 @@ public class ShulkerCore extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
             if(hand == Hand.MAIN_HAND){
                changeSpeed(playerEntity,world,hand);
@@ -392,7 +392,7 @@ public class ShulkerCore extends EnergyItem {
          }else{
             levitate(playerEntity,world,hand);
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
       
       @Override

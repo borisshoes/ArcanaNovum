@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtInt;
@@ -73,8 +74,8 @@ public class ServerPlayNetworkHandlerMixin {
       }
    }
    
-   @Inject(method = "requestTeleport(DDDFFLjava/util/Set;)V", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_ensnarementPlayerTeleport(double x, double y, double z, float yaw, float pitch, Set<PositionFlag> flags, CallbackInfo ci) {
+   @Inject(method = "requestTeleport(Lnet/minecraft/entity/player/PlayerPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
+   private void arcananovum_ensnarementPlayerTeleport(PlayerPosition pos, Set<PositionFlag> flags, CallbackInfo ci) {
       StatusEffectInstance effect = player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null && effect.getAmplifier() > 0){
          player.sendMessage(Text.literal("Your teleport has been ensnared!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
@@ -87,7 +88,8 @@ public class ServerPlayNetworkHandlerMixin {
    private void arcananovum_ensnarementPlayerTest(PlayerMoveC2SPacket packet, CallbackInfo ci) {
       StatusEffectInstance effect = player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null){
-         player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(player.getX(),player.getY(),player.getZ(),0,0,PositionFlag.getFlags(0b11000),0));
+         // TODO: This needs to be fixed
+//         player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(player.getX(),player.getY(),player.getZ(),0,0,PositionFlag.getFlags(0b11000),0));
          //player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(player.getX(),player.getY(),player.getZ(),player.getYaw(),player.getPitch(),PositionFlag.getFlags(0b111),0));
       }
    }

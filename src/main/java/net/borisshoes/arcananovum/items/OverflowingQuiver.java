@@ -31,7 +31,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -172,7 +172,7 @@ public class OverflowingQuiver extends QuiverItem{
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          // Open GUI
          if(playerEntity instanceof ServerPlayerEntity player){
             ItemStack stack = playerEntity.getStackInHand(hand);
@@ -180,7 +180,7 @@ public class OverflowingQuiver extends QuiverItem{
             gui.build();
             gui.open();
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

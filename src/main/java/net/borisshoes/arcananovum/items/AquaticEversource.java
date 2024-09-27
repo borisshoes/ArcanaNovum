@@ -43,7 +43,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -181,9 +181,9 @@ public class AquaticEversource extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          int mode = getIntProperty(stack,MODE_TAG);
          boolean floodgate = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FLOODGATE.id) > 0;
          
@@ -200,21 +200,21 @@ public class AquaticEversource extends ArcanaItem {
                player.sendMessage(Text.literal("The Eversource Condenses").formatted(Formatting.BLUE,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_FILL,1.0f,1.0f);
             }
-            return TypedActionResult.success(stack);
+            return ActionResult.SUCCESS;
          }
          
          Fluid fluid = mode == 1 ? Fluids.EMPTY : Fluids.WATER;
          
          BlockHitResult blockHitResult = BucketItem.raycast(world, playerEntity, fluid == Fluids.EMPTY ? RaycastContext.FluidHandling.SOURCE_ONLY : RaycastContext.FluidHandling.NONE);
          if (blockHitResult.getType() == HitResult.Type.MISS) {
-            return TypedActionResult.pass(stack);
+            return ActionResult.PASS;
          }
          if (blockHitResult.getType() == HitResult.Type.BLOCK) {
             BlockPos blockPos = blockHitResult.getBlockPos();
             Direction direction = blockHitResult.getSide();
             BlockPos blockPos2 = blockPos.offset(direction);
             if (!world.canPlayerModifyAt(playerEntity, blockPos) || !playerEntity.canPlaceOn(blockPos2, direction, stack)) {
-               return TypedActionResult.fail(stack);
+               return ActionResult.FAIL;
             }
             if (fluid == Fluids.EMPTY) {
                FluidDrainable fluidDrainable;
@@ -227,9 +227,9 @@ public class AquaticEversource extends ArcanaItem {
                   if (!world.isClient) {
                      PLAYER_DATA.get(player).addXP(1); // Add xp
                   }
-                  return TypedActionResult.success(stack);
+                  return ActionResult.SUCCESS;
                }
-               return TypedActionResult.fail(stack);
+               return ActionResult.FAIL;
             }
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof FluidFillable ? blockPos : blockPos2;
@@ -247,11 +247,11 @@ public class AquaticEversource extends ArcanaItem {
                PLAYER_DATA.get(player).addXP(5); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-               return TypedActionResult.success(stack);
+               return ActionResult.SUCCESS;
             }
-            return TypedActionResult.fail(stack);
+            return ActionResult.FAIL;
          }
-         return TypedActionResult.pass(stack);
+         return ActionResult.PASS;
       }
       
       

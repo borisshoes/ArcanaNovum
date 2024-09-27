@@ -33,8 +33,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
@@ -42,6 +43,7 @@ import net.minecraft.world.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -190,14 +192,16 @@ public class Planeshifter extends EnergyItem {
    private void findPortalAndTeleport(ServerPlayerEntity player, ServerWorld destWorld, boolean destIsNether){
       double scale = DimensionType.getCoordinateScaleFactor(player.getServerWorld().getDimension(), destWorld.getDimension());
       WorldBorder worldBorder = destWorld.getWorldBorder();
-      BlockPos destPos = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
+      // This is jank, don't do this. Write it correctly. I just don't know how!
+      Vec3d destPos3d = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
+      BlockPos destPos = new BlockPos((int) destPos3d.x, (int) destPos3d.y, (int) destPos3d.z);
       Optional<BlockPos> portalRect = destWorld.getPortalForcer().getPortalPos(destPos, destIsNether, worldBorder);
       if(portalRect.isPresent()){
          player.teleportTo(new TeleportTarget(destWorld,portalRect.get().toCenterPos(),player.getVelocity(),player.getYaw(),player.getPitch(),TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET.then(entityx -> entityx.addPortalChunkTicketAt(portalRect.get()))));
          player.resetPortalCooldown();
          player.sendMessage(Text.literal("The Planeshifter syncs up with a Nether Portal").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
       }else{
-         player.teleport(destWorld,destPos.getX(),destPos.getY(),destPos.getZ(),player.getYaw(),player.getPitch());
+         player.teleport(destWorld,destPos.getX(),destPos.getY(),destPos.getZ(),new HashSet(),player.getYaw(),player.getPitch(),false);
          player.sendMessage(Text.literal("The Planeshifter could not find a Nether Portal").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
          
          for(int y = player.getBlockY(); y >= player.getBlockY()-destWorld.getHeight(); y--){
@@ -316,9 +320,9 @@ public class Planeshifter extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!ArcanaItemUtils.isArcane(stack)) return TypedActionResult.pass(stack);
+         if(!ArcanaItemUtils.isArcane(stack)) return ActionResult.PASS;
          
          int mode = getIntProperty(stack,MODE_TAG);
          boolean nether = getBooleanProperty(stack,NETHER_UNLOCK_TAG);
@@ -358,7 +362,7 @@ public class Planeshifter extends EnergyItem {
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }
          }
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
       
       @Override

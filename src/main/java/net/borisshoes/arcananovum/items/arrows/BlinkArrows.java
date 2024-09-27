@@ -39,6 +39,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -59,7 +60,7 @@ public class BlinkArrows extends RunicArrow {
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(1404502),new ArrayList<>()))
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(1404502),new ArrayList<>(),Optional.empty()))
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
@@ -100,7 +101,7 @@ public class BlinkArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d tpPos = entityHitResult.getPos();
          if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
-         player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+         player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z, Set.of(),player.getYaw(),player.getPitch(),false);
          ParticleEffectUtils.blinkArrowTp(player.getServerWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
@@ -116,7 +117,7 @@ public class BlinkArrows extends RunicArrow {
          Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
          Vec3d tpPos = blockHitResult.getPos().add(offset);
          if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
-         player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,player.getYaw(),player.getPitch());
+         player.teleport(player.getServerWorld(),tpPos.x,tpPos.y+0.25,tpPos.z,Set.of(),player.getYaw(),player.getPitch(),false);
          ParticleEffectUtils.blinkArrowTp(player.getServerWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
