@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -57,6 +58,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    private static final int[] refillReduction = {0,100,200,400,600,900};
    private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
    private static final String TXT = "item/runic_quiver";
+   private static final Item textureItem = Items.ARROW;
    
    public RunicQuiver(){
       id = ID;
@@ -73,6 +75,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      models.add(new Pair<>(textureItem,TXT));
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_OVERFLOWING_QUIVER,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.CONCENTRATION_DAMAGE};
       
       ItemStack stack = new ItemStack(item);
@@ -194,8 +197,16 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       }
       
       @Override
+      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(PolymerResourcePackUtils.hasMainPack(player)){
+            return textureItem;
+         }
+         return super.getPolymerItem(itemStack, player);
+      }
+      
+      @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
+         return ArcanaRegistry.getModelData(TXT+"-"+getPolymerItem(itemStack,player).getTranslationKey()).value();
       }
       
       @Override

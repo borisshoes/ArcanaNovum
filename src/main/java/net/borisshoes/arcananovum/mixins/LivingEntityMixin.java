@@ -37,6 +37,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -442,17 +443,9 @@ public abstract class LivingEntityMixin {
       }
       
       if(vengeanceStack != null && vengeanceTotem.tryUseTotem(vengeanceStack, livingEntity,source)){
-         if(arcanistsBelt == null){
-            vengeanceStack.decrement(1);
-         }else{
-            if(ArcanaItemUtils.identifyItem(arcanistsBelt) instanceof ArcanistsBelt belt){
-               ContainerComponent beltItems = arcanistsBelt.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-               for(ItemStack stack : beltItems.iterateNonEmpty()){
-                  if(stack.isOf(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem()) && ArcanaItemUtils.identifyItem(stack) instanceof TotemOfVengeance){
-                     stack.decrement(1);
-                  }
-               }
-            }
+         if(livingEntity instanceof ServerPlayerEntity player){
+            player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, player.getInventory().selectedSlot, player.getInventory().getStack(player.getInventory().selectedSlot)));
+            player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, PlayerInventory.OFF_HAND_SLOT, player.getInventory().getStack(PlayerInventory.OFF_HAND_SLOT)));
          }
          
          cir.setReturnValue(true);

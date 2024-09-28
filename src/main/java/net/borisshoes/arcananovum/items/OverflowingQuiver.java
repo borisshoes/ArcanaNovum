@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -47,6 +48,7 @@ public class OverflowingQuiver extends QuiverItem{
    private static final int[] refillReduction = {0,300,600,900,1200,1800};
    private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
    private static final String TXT = "item/overflowing_quiver";
+   private static final Item textureItem = Items.ARROW;
    
    public OverflowingQuiver(){
       id = ID;
@@ -63,6 +65,7 @@ public class OverflowingQuiver extends QuiverItem{
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      models.add(new Pair<>(textureItem,TXT));
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
@@ -145,7 +148,7 @@ public class OverflowingQuiver extends QuiverItem{
       list.add(List.of(Text.literal("  Overflowing Quiver\n\nRarity: Exotic\n\nMore experienced archers keep a variety of arrows on hand, however it is difficult to switch between them in the heat of a fight. This quiver has slots that not only save space, and keep arrows").formatted(Formatting.BLACK)));
       list.add(List.of(Text.literal("  Overflowing Quiver\n\norganized, but it also contains a mechanism to help guide the archer's hand to the desired arrow type.\n\nLeft clicking with any bow cycles the preferred arrows.\n\nI have also managed to unlock greater").formatted(Formatting.BLACK)));
       list.add(List.of(Text.literal("  Overflowing Quiver\n\npotential from the Infinity enchantment and imbued it within the quiver.\n\nThe quiver now slowly regenerates all arrows placed inside of it.\n\nIt is worth noting that this quiver is not").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Overflowing Quiver\n\nsturdy enough to channel Arcana to arrows placed inside,  restricting Runic Arrows from being contained within.\n\nI am looking into possible improvments to this design to accommodate more powerful projectiles.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Overflowing Quiver\n\nsturdy enough to channel Arcana to arrows placed inside,  restricting Runic Arrows from being contained within.\n\nI am looking into possible improvements to this design to accommodate more powerful projectiles.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -155,8 +158,16 @@ public class OverflowingQuiver extends QuiverItem{
       }
       
       @Override
+      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(PolymerResourcePackUtils.hasMainPack(player)){
+            return textureItem;
+         }
+         return super.getPolymerItem(itemStack, player);
+      }
+      
+      @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
+         return ArcanaRegistry.getModelData(TXT+"-"+getPolymerItem(itemStack,player).getTranslationKey()).value();
       }
       
       @Override

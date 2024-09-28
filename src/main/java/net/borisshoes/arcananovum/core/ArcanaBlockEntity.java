@@ -56,7 +56,7 @@ public interface ArcanaBlockEntity {
       ArcanaItem arcanaItem = arcanaBlockEntity.getArcanaItem();
       
       if(stack != null){
-         arcanaItem.initializeArcanaTag(stack);
+         arcanaItem.initializeArcanaTag(stack,false);
       }else{
          stack = arcanaItem.getNewItem();
       }

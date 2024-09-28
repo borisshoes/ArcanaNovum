@@ -324,15 +324,23 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return buildItemLore(newStack,server);
    }
    
-   public ItemStack initializeArcanaTag(ItemStack stack){
+   public ItemStack initializeArcanaTag(ItemStack stack, boolean creativeMenuItem){
       putProperty(stack,ID_TAG,id);
       putProperty(stack,RARITY_TAG, ArcanaRarity.getRarityInt(rarity));
       putProperty(stack,VERSION_TAG, ArcanaItem.VERSION + getItemVersion());
       putProperty(stack,UUID_TAG,ArcanaNovum.BLANK_UUID);
       putProperty(stack,AUGMENTS_TAG, new NbtCompound());
       putProperty(stack,CATALYSTS_TAG,new NbtList());
-      putProperty(stack,UNINITIALIZED_TAG,true);
+      if(creativeMenuItem){
+         putProperty(stack,UNINITIALIZED_TAG,true);
+      }else{
+         removeProperty(stack,UNINITIALIZED_TAG);
+      }
       return stack;
+   }
+   
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      return initializeArcanaTag(stack,true);
    }
    
    public static String getUUID(ItemStack item){
