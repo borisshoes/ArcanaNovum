@@ -30,9 +30,9 @@ import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.recipe.ServerRecipeManager;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.input.SingleStackRecipeInput;
 import net.minecraft.registry.RegistryKey;
@@ -234,8 +234,8 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          int energyToConsume = (int)Math.ceil(stack.getCount() / 2.0);
          if(active && getEnergy(charm) >= energyToConsume){
             // Smelting registry and auto smelt
-            RecipeManager.MatchGetter<SingleStackRecipeInput, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
-            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(new SingleStackRecipeInput(stack),player.getEntityWorld()).orElse(null);
+            ServerRecipeManager.MatchGetter<SingleStackRecipeInput, ? extends AbstractCookingRecipe> matchGetter = ServerRecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
+            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(new SingleStackRecipeInput(stack),(ServerWorld)player.getEntityWorld()).orElse(null);
             if(recipeEntry == null) return null;
             AbstractCookingRecipe recipe = recipeEntry.value();
             if(recipe == null) return null;
