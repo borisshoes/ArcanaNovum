@@ -122,7 +122,7 @@ public class ArcaneFlakArrows extends RunicArrow {
             damage *= (e.isOnGround() ? 0.5f : 3.5f);
             damage *= e.distanceTo(arrow) > damageRange*.75 ? 0.5f : 1;
             DamageSource source = arrow.getDamageSources().explosion(arrow,arrow.getOwner());
-            e.damage(source,damage);
+            if(arrow.getEntityWorld() instanceof ServerWorld serverWorld) e.damage(serverWorld, source, damage);
             if(e instanceof PhantomEntity && e.isDead()) deadPhantomCount++;
          }
       }

@@ -92,7 +92,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
             int random = (int) (Math.random()*effects.size());
             
             if(Math.random() < 0.1){
-               ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(effects.get(random).getLeft().getEffectType().value().getColor()).toVector3f(),1.2f);
+               ParticleEffect dust = new DustParticleEffect(effects.get(random).getLeft().getEffectType().value().getColor(),1.2f);
                world.spawnParticles(dust,pos.getX(),pos.getY(),pos.getZ(),1,0.5,0.5,0.5,0);
             }
          }

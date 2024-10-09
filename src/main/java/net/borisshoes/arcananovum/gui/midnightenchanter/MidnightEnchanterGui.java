@@ -415,7 +415,7 @@ public class MidnightEnchanterGui extends SimpleGui {
          setSlot(47,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          
          Random random = Random.create();
-         int playerSeed = player.getEnchantmentTableSeed();
+         int playerSeed = player.getEnchantingTableSeed();
          random.setSeed(playerSeed);
          
          int[] enchPowers = new int[3];

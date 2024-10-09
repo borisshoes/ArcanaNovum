@@ -276,7 +276,7 @@ public class StasisPearl extends EnergyItem {
                         foundEntity = possibleEntity;
                      }
                   }
-                  if(foundEntity != null) foundEntity.kill();
+                  if(foundEntity != null) foundEntity.kill(serverWorld);
                   playerEntity.getItemCooldownManager().set(this.getDefaultStack(), 0);
                }
                // Reset data

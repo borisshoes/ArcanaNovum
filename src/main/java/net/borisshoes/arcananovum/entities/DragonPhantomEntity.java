@@ -57,7 +57,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
          setPersistent();
          
          if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getServer().getTicks() % 2 == 0){
-            serverWorld.spawnParticles(new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),3f),getX(),getY(),getZ(),1,1.5,1,1.5,0);
+            serverWorld.spawnParticles(new DustParticleEffect(16711892,3f),getX(),getY(),getZ(),1,1.5,1,1.5,0);
             
             
             if(serverWorld.getRegistryKey().equals(World.END) && this.circlingCenter.getY() > 120){

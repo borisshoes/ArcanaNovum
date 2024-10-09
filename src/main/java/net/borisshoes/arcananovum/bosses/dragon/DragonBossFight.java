@@ -456,7 +456,7 @@ public class DragonBossFight {
             if(age % 3000 == 0){
                List<ShulkerBulletEntity> bullets = endWorld.getEntitiesByType(EntityType.SHULKER_BULLET, new Box(new BlockPos(-400,0,-400).toCenterPos(), new BlockPos(400,256,400).toCenterPos()), e -> true);
                for(ShulkerBulletEntity bullet : bullets){
-                  bullet.kill();
+                  bullet.kill(endWorld);
                }
             }
             
@@ -766,7 +766,7 @@ public class DragonBossFight {
       for(EndSpikeFeature.Spike spike : list){
          List<EndCrystalEntity> nearCrystals = endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(BlockPos.ofFloored(spike.getCenterX()-10,0,spike.getCenterZ()-10).toCenterPos(), BlockPos.ofFloored(spike.getCenterX()+10,255,spike.getCenterZ()+10).toCenterPos()), EndCrystalEntity::shouldShowBottom);
          for(EndCrystalEntity nearCrystal : nearCrystals){
-            nearCrystal.kill();
+            nearCrystal.kill(endWorld);
          }
          
          Iterator<BlockPos> var16 = BlockPos.iterate(BlockPos.ofFloored(spike.getCenterX() - 10, spike.getHeight() - 10, spike.getCenterZ() - 10), BlockPos.ofFloored(spike.getCenterX() + 10, spike.getHeight() + 10, spike.getCenterZ() + 10)).iterator();
@@ -848,7 +848,7 @@ public class DragonBossFight {
       if(guardianPhantoms != null && phase == 1){
          for(PhantomEntity phantom : guardianPhantoms){
             if(phantom != null && phantom.isAlive())
-               phantom.kill();
+               phantom.kill(endWorld);
          }
          for(CommandBossBar bossBar : phantomBossBars){
             if(bossBar != null){
@@ -861,7 +861,7 @@ public class DragonBossFight {
       if(wizards != null && (phase == 1 || phase == 2)){
          for(DragonWizardEntity wizard : wizards){
             if(wizard != null && wizard.isAlive())
-               wizard.kill();
+               wizard.kill(endWorld);
          }
       }
    
@@ -876,11 +876,11 @@ public class DragonBossFight {
       List<SkeletonEntity> skeletons = endWorld.getEntitiesByType(EntityType.SKELETON, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
       List<PhantomEntity> phantoms = endWorld.getEntitiesByType(EntityType.PHANTOM, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
       List<IllusionerEntity> illusioners = endWorld.getEntitiesByType(EntityType.ILLUSIONER, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
-      mites.forEach(LivingEntity::kill);
-      shulkers.forEach(LivingEntity::kill);
-      skeletons.forEach(LivingEntity::kill);
-      phantoms.forEach(LivingEntity::kill);
-      illusioners.forEach(LivingEntity::kill);
+      mites.forEach(mite -> mite.kill(endWorld));
+      shulkers.forEach(shulker -> shulker.kill(endWorld));
+      skeletons.forEach(skeleton -> skeleton.kill(endWorld));
+      phantoms.forEach(phantom -> phantom.kill(endWorld));
+      illusioners.forEach(illusioner -> illusioner.kill(endWorld));
    
       GameRules rules = server.getGameRules();
       GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);
@@ -1324,14 +1324,14 @@ public class DragonBossFight {
             if(entity instanceof LivingEntity living){
                if(scoreboardPlayerScore != null)
                   scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + 50);
-               living.damage(endWorld.getDamageSources().playerAttack(player),5f);
+               living.damage(endWorld,endWorld.getDamageSources().playerAttack(player),5f);
             }
          }
          if(MiscUtils.distToLine(dragon.getPos(),player.getPos(),hit) < 10){
             float damage = Math.min(100,20f+numPlayers*4);
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));
-            dragon.damage(endWorld.getDamageSources().playerAttack(player),damage);
+            dragon.damage(endWorld,endWorld.getDamageSources().playerAttack(player),damage);
          }
       }
    

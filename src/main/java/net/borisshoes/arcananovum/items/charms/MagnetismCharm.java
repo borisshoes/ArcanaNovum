@@ -251,20 +251,21 @@ public class MagnetismCharm extends ArcanaItem {
                equipment.put(EquipmentSlot.OFFHAND,hand2);
                
                
-               
-               for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
-                  ItemStack item = entry.getValue();
-                  if(NEODYMIUM_TARGETS.contains(item.getItem())){
-                     ItemEntity droppedItem = e.dropStack(item);
-                     if(droppedItem != null){
-                        double x = playerPos.getX() - droppedItem.getX();
-                        double y = playerPos.getY() - droppedItem.getY();
-                        double z = playerPos.getZ() - droppedItem.getZ();
-                        double speed = .1;
-                        double heightMod = .08;
-                        droppedItem.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+               if(world instanceof ServerWorld serverWorld){
+                  for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
+                     ItemStack item = entry.getValue();
+                     if(NEODYMIUM_TARGETS.contains(item.getItem())){
+                        ItemEntity droppedItem = e.dropStack((ServerWorld) world, item);
+                        if(droppedItem != null){
+                           double x = playerPos.getX() - droppedItem.getX();
+                           double y = playerPos.getY() - droppedItem.getY();
+                           double z = playerPos.getZ() - droppedItem.getZ();
+                           double speed = .1;
+                           double heightMod = .08;
+                           droppedItem.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+                        }
+                        e.equipStack(entry.getKey(),ItemStack.EMPTY);
                      }
-                     e.equipStack(entry.getKey(),ItemStack.EMPTY);
                   }
                }
             }

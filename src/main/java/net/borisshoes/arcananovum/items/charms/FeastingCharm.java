@@ -216,9 +216,11 @@ public class FeastingCharm extends ArcanaItem {
                   hunger.add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
                   // Apply Status Effects
                   ConsumableComponent consumableComponent = selectedFood.get(DataComponentTypes.CONSUMABLE);
-                  if (!world.isClient && consumableComponent != null) {
+                  if(!world.isClient && consumableComponent != null) {
                      foodComponent.onConsume(world, player, selectedFood, consumableComponent);
                   }
+
+                  // TODO: Verify this is needed, foodComponent.onComsume might solve this
                   SuspiciousStewEffectsComponent suspiciousStewEffectsComponent = selectedFood.getOrDefault(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffectsComponent.DEFAULT);
                   for(SuspiciousStewEffectsComponent.StewEffect stewEffect : suspiciousStewEffectsComponent.effects()) {
                      player.addStatusEffect(stewEffect.createStatusEffectInstance());

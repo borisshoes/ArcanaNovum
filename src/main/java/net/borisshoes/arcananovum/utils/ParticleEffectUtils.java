@@ -48,7 +48,7 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.WITCH,player.getX(),player.getY()+player.getHeight()/1.5,+player.getZ(),100,0.25,0.6,0.25,0.3);
       
       Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getColorValue();
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(color == null ? 0xffffff : color).toVector3f(),1.4f);
+      ParticleEffect dust = new DustParticleEffect(color == null ? 0xffffff : color,1.4f);
       world.spawnParticles(dust,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),30,0.4,0.8,0.4,1);
    }
    
@@ -58,7 +58,7 @@ public class ParticleEffectUtils {
       world.spawnParticles(player,ParticleTypes.ENCHANT,false,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),5,0.25,0.6,0.25,1);
       
       Integer color = ArcanaRarity.getColor(arcanaItem.getRarity()).getColorValue();
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(color == null ? 0xffffff : color).toVector3f(),0.5f);
+      ParticleEffect dust = new DustParticleEffect(color == null ? 0xffffff : color,0.5f);
       world.spawnParticles(dust,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),4,0.4,0.8,0.4,1);
    }
    
@@ -115,7 +115,7 @@ public class ParticleEffectUtils {
          SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_POWER_SELECT, SoundCategory.BLOCKS, 2f, 0.8f);
       }
       
-      ParticleEffect yellow = new DustParticleEffect(Vec3d.unpackRgb(0xf7ed57).toVector3f(),0.7f);
+      ParticleEffect yellow = new DustParticleEffect(0xf7ed57,0.7f);
       
       double starTicks = 75;
       for(float i = 0; i < Math.PI*2; i+= (float) (Math.PI/4.0f)){
@@ -190,7 +190,7 @@ public class ParticleEffectUtils {
       line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,-S1),yellow,I1,C1,D1,1);
       
       
-      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x79e0fc).toVector3f(),0.7f);
+      ParticleEffect blue = new DustParticleEffect(0x79e0fc,0.7f);
       final double L2 = 1.2 * padScale;
       final double S2 = 0.55 * padScale;
       final int I2 = tick % 4 == 1 ? 10 : 11;
@@ -206,7 +206,7 @@ public class ParticleEffectUtils {
       line(world,null,center.add(-L2,-0.4,-L2),center.add(0,-0.4,-S2),blue,I2,C2,D2,1);
       line(world,null,center.add(-L2,-0.4,-L2),center.add(-S2,-0.4,0),blue,I2,C2,D2,1);
       
-      ParticleEffect white = new DustParticleEffect(Vec3d.unpackRgb(0xe6fff6).toVector3f(),0.7f);
+      ParticleEffect white = new DustParticleEffect(0xe6fff6,0.7f);
       final double L3 = 1.8 * padScale;
       final double S3 = 1.15 * padScale;
       final int I3 = tick % 4 == 1 ? 30 : 31;
@@ -272,7 +272,7 @@ public class ParticleEffectUtils {
          SoundUtils.playSound(world, forgePos, SoundEvents.BLOCK_BEACON_POWER_SELECT, SoundCategory.BLOCKS, 2f, 0.8f);
       }
       
-      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0x9404d6).toVector3f(),0.7f);
+      ParticleEffect purple = new DustParticleEffect(0x9404d6,0.7f);
       
       double starTicks = 75;
       for(float i = 0; i < Math.PI*2; i+= (float) (Math.PI/4.0f)){
@@ -349,7 +349,7 @@ public class ParticleEffectUtils {
       line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,-S1),purple,I1,C1,D1,1);
       
       
-      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x79e0fc).toVector3f(),0.7f);
+      ParticleEffect blue = new DustParticleEffect(0x79e0fc,0.7f);
       final double L2 = 1.2 * padScale;
       final double S2 = 0.55 * padScale;
       final int I2 = tick % 4 == 1 ? 10 : 11;
@@ -365,7 +365,7 @@ public class ParticleEffectUtils {
       line(world,null,center.add(-L2,-0.4,-L2),center.add(0,-0.4,-S2),blue,I2,C2,D2,1);
       line(world,null,center.add(-L2,-0.4,-L2),center.add(-S2,-0.4,0),blue,I2,C2,D2,1);
       
-      ParticleEffect white = new DustParticleEffect(Vec3d.unpackRgb(0xd9daff).toVector3f(),0.7f);
+      ParticleEffect white = new DustParticleEffect(0xd9daff,0.7f);
       final double L3 = 1.8 * padScale;
       final double S3 = 1.15 * padScale;
       final int I3 = tick % 4 == 1 ? 30 : 31;
@@ -388,7 +388,7 @@ public class ParticleEffectUtils {
       double circleHeight = eHeight*0.6;
       double circleRadius = eWidth / 1.6;
       Vec3d circleCenter = living.getPos().add(0,eHeight/1.8,0);
-      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
+      ParticleEffect purple = new DustParticleEffect(0xa100e6,0.7f);
       
       int intervals = (int) (15 * Math.sqrt(circleRadius*circleRadius+circleHeight*circleHeight));
       double dA = Math.PI * 2 / intervals;
@@ -410,10 +410,10 @@ public class ParticleEffectUtils {
    }
    
    public static void aequalisTransmuteAnim(ServerWorld world, Vec3d center, double rawTick, Vec2f rotation, double speedMod, ItemStack input, ItemStack output, ItemStack reagent1, ItemStack reagent2, ItemStack aequalis){
-      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
-      ParticleEffect blueSmall = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.4f);
-      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.5f);
-      ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.8f);
+      ParticleEffect blue = new DustParticleEffect(0x12ccff,0.7f);
+      ParticleEffect blueSmall = new DustParticleEffect(0x12ccff,0.4f);
+      ParticleEffect purple = new DustParticleEffect(0xa100e6,0.5f);
+      ParticleEffect pink = new DustParticleEffect(0xd300e6,0.8f);
       
       int tick = (int)(rawTick);
       int intBonus = tick % 3;
@@ -609,9 +609,9 @@ public class ParticleEffectUtils {
    }
    
    public static void transmutationAltarAnim(ServerWorld world, Vec3d center, double rawTick, Direction direction, double speedMod){
-      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
-      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
-      ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.7f);
+      ParticleEffect blue = new DustParticleEffect(0x12ccff,0.7f);
+      ParticleEffect purple = new DustParticleEffect(0xa100e6,0.7f);
+      ParticleEffect pink = new DustParticleEffect(0xd300e6,0.7f);
       Vec3d effectCenter = center.add(0,0.6,0);
       
       int tick = (int)(rawTick);
@@ -807,7 +807,7 @@ public class ParticleEffectUtils {
       double phi = Math.PI * (3 - Math.sqrt(5));
       double theta = 2*Math.PI / 100 * tick;
       int points = 100;
-      ParticleEffect black = new DustParticleEffect(Vec3d.unpackRgb(0x000000).toVector3f(),2.0f);
+      ParticleEffect black = new DustParticleEffect(0x000000,2.0f);
       double blackDelta = tick < 100 || tick > 400 ? 0.05 : 0.4;
       int blackCount = tick < 100 || tick > 400 ? 1 : 4;
       
@@ -829,8 +829,8 @@ public class ParticleEffectUtils {
          world.spawnParticles(black,point.x,point.y,point.z,blackCount,blackDelta,blackDelta,blackDelta,0);
       }
       
-      ParticleEffect sun = new DustParticleEffect(Vec3d.unpackRgb(0xd1a400).toVector3f(),2.0f);
-      ParticleEffect moon = new DustParticleEffect(Vec3d.unpackRgb(0x1670f0).toVector3f(),2.0f);
+      ParticleEffect sun = new DustParticleEffect(0xd1a400,2.0f);
+      ParticleEffect moon = new DustParticleEffect(0x1670f0,2.0f);
       
       if(tick > 100){
          if(tick % 3 == 0){
@@ -880,7 +880,7 @@ public class ParticleEffectUtils {
       double phi = Math.PI * (3 - Math.sqrt(5));
       double theta = 2*Math.PI / 100 * tick;
       int points = 100;
-      ParticleEffect black = new DustParticleEffect(Vec3d.unpackRgb(0x000000).toVector3f(),2.0f);
+      ParticleEffect black = new DustParticleEffect(0x000000,2.0f);
       double blackDelta = tick < 100 ? 0.05 : 0.4;
       int blackCount = tick < 100 ? 1 : 4;
       
@@ -942,7 +942,7 @@ public class ParticleEffectUtils {
          }
          
          if(tick >= 140){
-            ParticleEffect white = new DustParticleEffect(Vec3d.unpackRgb(0x944ec7).toVector3f(),0.5f);
+            ParticleEffect white = new DustParticleEffect(0x944ec7,0.5f);
             int connections = Math.min(8,(tick-140) / 30);
             for(int i = 0; i < connections+1; i++){
                line(world,null,skyStars.get(i),skyStars.get(i+1),white,20,1,0.05,0);
@@ -969,7 +969,7 @@ public class ParticleEffectUtils {
       
       world.spawnParticles(ParticleTypes.ENCHANT,center.getX(),center.getY()+0.75,center.getZ(),5,0.1,0.1,0.1,1);
       
-      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x12ccff).toVector3f(),0.7f);
+      ParticleEffect blue = new DustParticleEffect(0x12ccff,0.7f);
       final double L1 = 2.35;
       final double S1 = 0.85;
       final int I1 = tick % 4 == 1 ? 10 : 11;
@@ -986,7 +986,7 @@ public class ParticleEffectUtils {
       line(world,null,center.add(L1,-0.4,0),center.add(S1,-0.4,-S1),blue,I1,C1,D1,1);
       
       
-      ParticleEffect purple = new DustParticleEffect(Vec3d.unpackRgb(0xa100e6).toVector3f(),0.7f);
+      ParticleEffect purple = new DustParticleEffect(0xa100e6,0.7f);
       final double L2 = 1.4;
       final double S2 = 0.6;
       final int I2 = tick % 4 == 1 ? 10 : 11;
@@ -1002,7 +1002,7 @@ public class ParticleEffectUtils {
       line(world,null,center.add(-L2,-0.4,-L2),center.add(0,-0.4,-S2),purple,I2,C2,D2,1);
       line(world,null,center.add(-L2,-0.4,-L2),center.add(-S2,-0.4,0),purple,I2,C2,D2,1);
       
-      ParticleEffect pink = new DustParticleEffect(Vec3d.unpackRgb(0xd300e6).toVector3f(),0.7f);
+      ParticleEffect pink = new DustParticleEffect(0xd300e6,0.7f);
       final double L3 = 2.0;
       final double S3 = 1.15;
       final int I3 = tick % 4 == 1 ? 30 : 31;
@@ -1031,8 +1031,8 @@ public class ParticleEffectUtils {
       double L = 300.0;
       double animPercent = tick/L;
       double piPercent = Math.PI*2*animPercent;
-      ParticleEffect black = new DustParticleEffect(Vec3d.unpackRgb(0x000000).toVector3f(),2.0f);
-      ParticleEffect blue = new DustParticleEffect(Vec3d.unpackRgb(0x00ECFF).toVector3f(),0.75f);
+      ParticleEffect black = new DustParticleEffect(0x000000,2.0f);
+      ParticleEffect blue = new DustParticleEffect(0x00ECFF,0.75f);
       sphere(world,null,center,black,0.2+0.65*fillPercent,(int)(20*fillPercent+5),1,0.025,0,5*piPercent);
       sphere(world,null,center,ParticleTypes.WITCH,0.5+0.85*fillPercent,(int)(30*fillPercent+12),1,0.05,0,3*piPercent);
       sphere(world,null,center,blue,0.4+0.75*fillPercent,(int)(70*fillPercent+12),1,0.01,0,-3*piPercent);
@@ -1118,7 +1118,7 @@ public class ParticleEffectUtils {
       world.spawnParticles(ParticleTypes.DRAGON_BREATH,pos.x,pos.y+0.75,pos.z,3,0.3,0.3,0.3,0.03);
       
       if(tick%2 == 0){
-         ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xFF00D4).toVector3f(),0.75f);
+         ParticleEffect dust = new DustParticleEffect(0xFF00D4,0.75f);
          Vec3d circleCenter = pos.add(0,-1,0);
          double r = 2.5;
          float t = (float)(Math.PI/220.0*tick);
@@ -1150,7 +1150,7 @@ public class ParticleEffectUtils {
    }
    
    public static void nulConstructDarkConversion(ServerWorld world, Vec3d pos){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x9e0945).toVector3f(),0.8f);
+      ParticleEffect dust = new DustParticleEffect(0x9e0945,0.8f);
       world.spawnParticles(dust, pos.getX(), pos.getY() + 1.75, pos.getZ(), 10,0.75,1,0.75,0.03);
    }
    
@@ -1164,7 +1164,7 @@ public class ParticleEffectUtils {
    
    public static void nulConstructReflexiveBlast(ServerWorld world, Vec3d pos, int calls){
       double radius = .5+calls*4;
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x36332b).toVector3f(),1.5f);
+      ParticleEffect dust = new DustParticleEffect(0x36332b,1.5f);
       sphere(world,null,pos,dust,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,calls*Math.PI*2/5);
       if(calls < 5){
          ArcanaNovum.addTickTimerCallback(world, new GenericTimer(1, () -> nulConstructReflexiveBlast(world,pos,calls + 1)));
@@ -1237,8 +1237,8 @@ public class ParticleEffectUtils {
    }
    
    public static void gravitonArrowEmit(ServerWorld world, Vec3d center, List<Entity> entities){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x000ea8).toVector3f(),1f);
-      ParticleEffect dust2 = new DustParticleEffect( Vec3d.unpackRgb(0x000754).toVector3f(),1.5f);
+      ParticleEffect dust = new DustParticleEffect(0x000ea8,1f);
+      ParticleEffect dust2 = new DustParticleEffect( 0x000754,1.5f);
       int count = 30;
       double range = .3;
    
@@ -1253,7 +1253,7 @@ public class ParticleEffectUtils {
    }
    
    public static void expulsionArrowEmit(ServerWorld world, Vec3d pos, double range, int calls){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x0085de).toVector3f(),1.4f);
+      ParticleEffect dust = new DustParticleEffect(0x0085de,1.4f);
       double radius = .5+calls*(range/5);
       sphere(world,null,pos,dust,radius,(int)(radius*radius+radius*20+10),3,0.3,0.05,0);
       if(calls < 5){
@@ -1295,7 +1295,7 @@ public class ParticleEffectUtils {
          float hue = i/((float)intervals);
          float trueBrightness = (float) Math.min(1,-0.01*(new Vec3d(x,y,z).distanceTo(entity.getEyePos())-100)+0.25) * brightness;
          Color c = Color.getHSBColor(hue, 1f, trueBrightness);
-         ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(c.getRGB()).toVector3f(),.6f);
+         ParticleEffect dust = new DustParticleEffect(c.getRGB(),.6f);
          
          spawnLongParticle(world,dust,x,y,z,delta,delta,delta,speed,count);
       }
@@ -1303,13 +1303,13 @@ public class ParticleEffectUtils {
    }
    
    public static void tetherArrowEntity(ServerWorld world, LivingEntity entity, ServerPlayerEntity player){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xa6a58a).toVector3f(),.4f);
+      ParticleEffect dust = new DustParticleEffect(0xa6a58a,.4f);
       double len = player.getPos().subtract(entity.getPos()).length();
       longDistLine(world,player.getPos().add(0,player.getHeight()/2,0),entity.getPos().add(0,entity.getHeight()/2,0),dust,(int)(20*len),3,0.03,1);
    }
    
    public static void tetherArrowGrapple(ServerWorld world, ServerPlayerEntity player, Vec3d pos){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0xa6a58a).toVector3f(),.4f);
+      ParticleEffect dust = new DustParticleEffect(0xa6a58a,.4f);
       double len = player.getPos().subtract(pos).length();
       longDistLine(world,player.getPos(),pos,dust,(int)(20*len),3,0.03,1);
    }
@@ -1402,8 +1402,8 @@ public class ParticleEffectUtils {
    }
    
    public static void dragonBossTowerCircleInvuln(ServerWorld world, Vec3d center, int period, int calls){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(9109665).toVector3f(),.8f);
-      ParticleEffect dust2 = new DustParticleEffect(Vec3d.unpackRgb(9109665).toVector3f(),1.5f);
+      ParticleEffect dust = new DustParticleEffect(9109665,.8f);
+      ParticleEffect dust2 = new DustParticleEffect(9109665,1.5f);
       double r = 2.5;
       float t = (float)(Math.PI/(period/100)*calls);
       double sqrt3 = Math.sqrt(3);
@@ -1449,8 +1449,8 @@ public class ParticleEffectUtils {
    }
    
    public static void dragonBossTowerCirclePush(ServerWorld world, Vec3d center, int period, int calls){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),2f);
-      ParticleEffect dustLarge = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),3f);
+      ParticleEffect dust = new DustParticleEffect(16711892,2f);
+      ParticleEffect dustLarge = new DustParticleEffect(16711892,3f);
       double r = 1.05*4;
       float t = -(float)(Math.PI/(period/100)*calls + Math.PI);
       double sqrt3 = Math.sqrt(3);
@@ -1476,7 +1476,7 @@ public class ParticleEffectUtils {
    }
    
    public static void dragonReclaimTowerCircle(ServerWorld world, Vec3d center, int period, int calls){
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(4044031).toVector3f(),1.5f);
+      ParticleEffect dust = new DustParticleEffect(4044031,1.5f);
       double r = 1.05*4;
       float t = -(float)(Math.PI/(period/100)*calls + Math.PI);
       double sqrt3 = Math.sqrt(3);
@@ -1501,7 +1501,7 @@ public class ParticleEffectUtils {
    
    public static void dragonReclaimTowerShield(ServerWorld world, Vec3d center, int calls){
       int period = 15000;
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(9694975).toVector3f(),1.5f);
+      ParticleEffect dust = new DustParticleEffect(9694975,1.5f);
       float t = -(float)(Math.PI/(period/200)*calls + Math.PI);
       
       longDistSphere(world,center.add(0,2,0),dust,5.5,75,1,0,1,-t);
@@ -1514,7 +1514,7 @@ public class ParticleEffectUtils {
    public static void dragonBossWizardPulse(ServerWorld world, Vec3d center, int ticks){
       double radius = ticks/4.0;
       double theta = 2*Math.PI / 20.0;
-      ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),(float)radius/2);
+      ParticleEffect dust = new DustParticleEffect(16711892,(float)radius/2);
       sphere(world,null,center,dust,radius,(int)(radius*radius+radius*10+radius),1,0,1,theta*ticks);
    }
    

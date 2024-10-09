@@ -48,7 +48,7 @@ public class VengeanceTotemTimerCallback extends TickTimerCallback{
             }
             
             if(!survives){
-               player1.damage(ArcanaDamageTypes.of(player1.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,attacker), player1.getMaxHealth()*10);
+               player1.damage(player1.getServerWorld(), ArcanaDamageTypes.of(player1.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,attacker), player1.getMaxHealth()*10);
             }else{
                PLAYER_DATA.get(player).addXP(4000); // Give XP
             }

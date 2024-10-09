@@ -171,7 +171,7 @@ public class TickCallback {
          if((boolean) ArcanaNovum.config.getValue("doConcentrationDamage")){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
-            player.damage(ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
+            player.damage(player.getServerWorld(), ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
          }
          if(!player.isDead()){
             if(player.getHealth() <= 1.5f){

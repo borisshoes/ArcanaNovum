@@ -165,7 +165,7 @@ public class StormArrows extends RunicArrow {
                
                DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow.getOwner(),arrow.getOwner());
                e.timeUntilRegen = 1;
-               e.damage(source,6);
+               if(world instanceof ServerWorld serverWorld) e.damage(serverWorld, source,6);
                hits.add(e);
             }
          }

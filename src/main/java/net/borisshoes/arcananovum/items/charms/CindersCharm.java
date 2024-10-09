@@ -313,7 +313,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          if(inCone(playerEntity,e.getEyePos())){
             if(!entity.isFireImmune()){
                entity.setOnFireFor((2*energy+60)/20);
-               entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 5f : 2.5f);
+               entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 5f : 2.5f);
                if(entity instanceof MobEntity) ignited++;
                
                if(playerEntity instanceof ServerPlayerEntity serverPlayer){
@@ -413,7 +413,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          if(!entity.isFireImmune()){
             float dmg = (float) (Math.max(0,(1.2 - (entity.getPos().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
+            entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
             ignited++;
             
             PLAYER_DATA.get(player).addXP(5); // Add xp
@@ -466,7 +466,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          if(!entity.isFireImmune()){
             float dmg = (float) ((consumedEnergy/15.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
+            entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
             
             PLAYER_DATA.get(player).addXP(5); // Add xp
             hits.add(entity);

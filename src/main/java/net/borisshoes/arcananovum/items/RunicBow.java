@@ -267,7 +267,7 @@ public class RunicBow extends ArcanaItem {
                if(ArcanaItemUtils.identifyRunicArrow(arrowStack) instanceof PhotonicArrows photonArrows){
                   int alignmentLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(arrowStack, ArcanaAugments.PRISMATIC_ALIGNMENT.id));
                   photonArrows.shoot(world, shooter, projectileEntity, alignmentLvl);
-                  projectileEntity.kill();
+                  projectileEntity.kill(world);
                }
                
                bow.damage(this.getWeaponStackDamage(arrowStack), shooter, LivingEntity.getSlotForHand(hand));
