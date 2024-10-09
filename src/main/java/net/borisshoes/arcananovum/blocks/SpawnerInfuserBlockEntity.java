@@ -305,7 +305,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       nbt.putInt("spentPoints",this.spentPoints);
       nbt.putBoolean("active",this.active);
       if(this.soulstone != null){
-         nbt.put("soulstone",soulstone.encodeAllowEmpty(registryLookup));
+         nbt.put("soulstone",soulstone.toNbtAllowEmpty(registryLookup));
       }
       
       nbt.put("spawnerStats",getSpawnerStats());

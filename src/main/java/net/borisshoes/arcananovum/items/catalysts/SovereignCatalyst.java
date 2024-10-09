@@ -19,6 +19,7 @@ import net.minecraft.block.CarvedPumpkinBlock;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -151,7 +152,7 @@ public class SovereignCatalyst extends ArcanaItem {
          if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY() && canSpawn){ // Check construct
             BlockPattern.Result patternResult = getConstructPattern().searchAround(world, pos);
             if (patternResult != null) {
-               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world);
+               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, SpawnReason.TRIGGERED);
                if (constructEntity != null && world instanceof ServerWorld serverWorld) {
                   CarvedPumpkinBlock.breakPatternBlocks(world, patternResult);
                   BlockPos blockPos = patternResult.translate(1, 1, 0).getBlockPos();

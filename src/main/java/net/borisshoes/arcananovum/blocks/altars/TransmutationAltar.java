@@ -32,7 +32,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -42,6 +42,7 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -182,7 +183,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public class TransmutationAltarBlock extends ArcanaPolymerBlockEntity {
-      public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
       
       public TransmutationAltarBlock(AbstractBlock.Settings settings){
          super(settings);
@@ -241,7 +242,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
             if(playerEntity instanceof ServerPlayerEntity player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
+                  player.getItemCooldownManager().set(playerEntity.getMainHandStack(), 1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);

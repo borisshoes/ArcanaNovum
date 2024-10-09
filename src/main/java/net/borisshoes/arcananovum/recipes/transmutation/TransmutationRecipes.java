@@ -178,15 +178,16 @@ public class TransmutationRecipes {
             new ItemStack(Items.DEAD_TUBE_CORAL), new ItemStack(Items.DEAD_BRAIN_CORAL), new ItemStack(Items.DEAD_BUBBLE_CORAL), new ItemStack(Items.DEAD_FIRE_CORAL), new ItemStack(Items.DEAD_HORN_CORAL),
             new ItemStack(Items.DEAD_TUBE_CORAL_FAN), new ItemStack(Items.DEAD_BRAIN_CORAL_FAN), new ItemStack(Items.DEAD_BUBBLE_CORAL_FAN), new ItemStack(Items.DEAD_FIRE_CORAL_FAN), new ItemStack(Items.DEAD_HORN_CORAL_FAN)
       )),new ItemStack(Items.COPPER_INGOT,32),new ItemStack(Items.LAPIS_LAZULI,32)));
-      
-      ArrayList<ItemStack> goatHorns = new ArrayList<>();
-      for(RegistryEntry<Instrument> instrument : Registries.INSTRUMENT.getOrCreateEntryList(InstrumentTags.REGULAR_GOAT_HORNS)){
-         goatHorns.add(GoatHornItem.getStackForInstrument(Items.GOAT_HORN, instrument));
-      }
-      for(RegistryEntry<Instrument> instrument : Registries.INSTRUMENT.getOrCreateEntryList(InstrumentTags.SCREAMING_GOAT_HORNS)){
-         goatHorns.add(GoatHornItem.getStackForInstrument(Items.GOAT_HORN, instrument));
-      }
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Goat Horns",goatHorns,new ItemStack(Items.DIAMOND,4),new ItemStack(Items.AMETHYST_SHARD,12)));
+
+      // TODO: These need to be moved to something that can access the world registry as instrument is now a dynamic registry
+//      ArrayList<ItemStack> goatHorns = new ArrayList<>();
+//      for(RegistryEntry<Instrument> instrument : Registries.INSTRUMENT.getOrCreateEntryList(InstrumentTags.REGULAR_GOAT_HORNS)){
+//         goatHorns.add(GoatHornItem.getStackForInstrument(Items.GOAT_HORN, instrument));
+//      }
+//      for(RegistryEntry<Instrument> instrument : Registries.INSTRUMENT.getOrCreateEntryList(InstrumentTags.SCREAMING_GOAT_HORNS)){
+//         goatHorns.add(GoatHornItem.getStackForInstrument(Items.GOAT_HORN, instrument));
+//      }
+//      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Goat Horns",goatHorns,new ItemStack(Items.DIAMOND,4),new ItemStack(Items.AMETHYST_SHARD,12)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Banner Patterns",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.CREEPER_BANNER_PATTERN), new ItemStack(Items.FLOWER_BANNER_PATTERN), new ItemStack(Items.MOJANG_BANNER_PATTERN), new ItemStack(Items.PIGLIN_BANNER_PATTERN), new ItemStack(Items.GLOBE_BANNER_PATTERN),
@@ -379,7 +380,7 @@ public class TransmutationRecipes {
          stewStack.set(DataComponentTypes.RARITY, Rarity.RARE);
          stewStack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+".faeries_stew"));
          List<SuspiciousStewEffectsComponent.StewEffect> effects = new ArrayList<>();
-         Registry<StatusEffect> effectRegistry = server.getRegistryManager().get(RegistryKeys.STATUS_EFFECT);
+         Registry<StatusEffect> effectRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.STATUS_EFFECT);
          List<RegistryEntry.Reference<StatusEffect>> effectEntries = effectRegistry.streamEntries().toList();
          int i = 0;
          while(i < 10 && (Math.random() < 0.25 || i == 0)){
@@ -394,7 +395,7 @@ public class TransmutationRecipes {
       TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Book Exchange", new ItemStack(Items.ENCHANTED_BOOK,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 15)), new ItemStack(Items.LAPIS_LAZULI,5),  (stack, server) -> {
          ItemStack newBook = new ItemStack(Items.BOOK);
          ArrayList<RegistryEntry<Enchantment>> enchants = new ArrayList<>();
-         server.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getIndexedEntries().forEach(enchants::add);
+         server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries().forEach(enchants::add);
          return EnchantmentHelper.enchant(Random.create(), newBook, (int)(Math.random()*30+1),enchants.stream());
       }, Text.literal("A Random ").append(Text.translatable(Items.ENCHANTED_BOOK.getTranslationKey()))));
       

@@ -120,7 +120,8 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       combinedRepairCost += (long) input1.getOrDefault(DataComponentTypes.REPAIR_COST, 0) + (long) input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
       if (!input2.isEmpty()) {
          boolean input2Enchanted = input2.contains(DataComponentTypes.STORED_ENCHANTMENTS);
-         if (output.isDamageable() && output.getItem().canRepair(input1, input2)) {
+         // TODO: I'm not sure how the previous output.getItem().canRepair(input1, input2) worked...
+         if (output.isDamageable() && input1.canRepairWith(input2)) {
             int repairCount;
             repairedDamage = Math.min(output.getDamage(), output.getMaxDamage() / 4);
             if (repairedDamage <= 0) {

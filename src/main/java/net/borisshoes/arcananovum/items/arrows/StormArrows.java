@@ -71,7 +71,7 @@ public class StormArrows extends RunicArrow {
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GRAY))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(12040354),new ArrayList<>()))
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(12040354),new ArrayList<>(),Optional.empty()))
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
@@ -165,7 +165,7 @@ public class StormArrows extends RunicArrow {
                
                DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow.getOwner(),arrow.getOwner());
                e.timeUntilRegen = 1;
-               e.damage(source,6);
+               if(world instanceof ServerWorld serverWorld) e.damage(serverWorld, source,6);
                hits.add(e);
             }
          }

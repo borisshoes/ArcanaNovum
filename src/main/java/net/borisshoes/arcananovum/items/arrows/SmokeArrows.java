@@ -54,7 +54,7 @@ public class SmokeArrows extends RunicArrow {
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_GRAY))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(6908265),new ArrayList<>()))
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(6908265),new ArrayList<>(),Optional.empty()))
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));

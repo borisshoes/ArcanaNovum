@@ -7,7 +7,7 @@ import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.item.BannerItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.ShieldDecorationRecipe;
-import net.minecraft.recipe.SpecialRecipeSerializer;
+import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
 import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
@@ -24,7 +24,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
       ItemStack itemStack = ItemStack.EMPTY;
       ItemStack itemStack2 = ItemStack.EMPTY;
       
-      for (int i = 0; i < craftingRecipeInput.getSize(); ++i) {
+      for (int i = 0; i < craftingRecipeInput.size(); ++i) {
          ItemStack itemStack3 = craftingRecipeInput.getStackInSlot(i);
          if (!itemStack3.isEmpty()) {
             if (itemStack3.getItem() instanceof BannerItem) {
@@ -62,7 +62,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
       ItemStack itemStack = ItemStack.EMPTY;
       ItemStack itemStack2 = ItemStack.EMPTY;
       
-      for(int i = 0; i < craftingRecipeInput.getSize(); ++i) {
+      for(int i = 0; i < craftingRecipeInput.size(); ++i) {
          ItemStack itemStack3 = craftingRecipeInput.getStackInSlot(i);
          if (!itemStack3.isEmpty()) {
             if (itemStack3.getItem() instanceof BannerItem) {
@@ -86,7 +86,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
       return width * height >= 2;
    }
    
-   public static class ShieldRecipeSerializer extends SpecialRecipeSerializer implements PolymerObject {
+   public static class ShieldRecipeSerializer extends SpecialCraftingRecipe.SpecialRecipeSerializer implements PolymerObject {
       public ShieldRecipeSerializer(Factory factory){
          super(factory);
       }

@@ -231,7 +231,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
             if(playerEntity instanceof ServerPlayerEntity player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
+                  player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);

@@ -264,11 +264,11 @@ public class EverlastingRocket extends EnergyItem {
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
             }
          }
-         return ActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+      public ActionResult use(World world, PlayerEntity user, Hand hand) {
          ItemStack itemStack = user.getStackInHand(hand);
          if(user.isSneaking() && ArcanaAugments.getAugmentOnItem(itemStack, ArcanaAugments.ADJUSTABLE_FUSE.id) > 0 && user instanceof ServerPlayerEntity player){
             FireworksComponent fireworks = itemStack.getOrDefault(DataComponentTypes.FIREWORKS, new FireworksComponent(1,List.of()));
@@ -277,7 +277,7 @@ public class EverlastingRocket extends EnergyItem {
             itemStack.set(DataComponentTypes.FIREWORKS, new FireworksComponent(flight,fireworks.explosions()));
             player.sendMessage(Text.literal("Fuse Adjusted to "+flight).formatted(Formatting.YELLOW),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_SNARE, 1,0.8f);
-         }else if (user.isFallFlying()) {
+         }else if (user.isGliding()) {
             if (!world.isClient && user instanceof ServerPlayerEntity player) {
                if(((EnergyItem)getThis()).getEnergy(itemStack) > 0){
                   FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, getFireworkStack(itemStack), user);
@@ -296,9 +296,9 @@ public class EverlastingRocket extends EnergyItem {
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
                }
             }
-            return TypedActionResult.success(user.getStackInHand(hand), world.isClient());
+            return ActionResult.SUCCESS;
          }
-         return TypedActionResult.pass(user.getStackInHand(hand));
+         return ActionResult.PASS;
       }
    }
 }

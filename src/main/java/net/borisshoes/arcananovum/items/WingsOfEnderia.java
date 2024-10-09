@@ -13,10 +13,11 @@ import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.item.ArmorMaterials;
+import net.minecraft.item.equipment.ArmorMaterials;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -114,7 +115,7 @@ public class WingsOfEnderia extends EnergyItem {
    
    public class WingsOfEnderiaItem extends ArcanaPolymerArmorItem {
       public WingsOfEnderiaItem(Item.Settings settings){
-         super(getThis(),ArmorMaterials.NETHERITE,Type.CHESTPLATE,settings);
+         super(getThis(),ArmorMaterials.NETHERITE, EquipmentType.CHESTPLATE,settings);
       }
       
       @Override

@@ -31,6 +31,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenHandlerType;
@@ -44,7 +45,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -202,7 +203,7 @@ public class LevitationHarness extends EnergyItem {
          putProperty(stack,STONE_DATA_TAG,new NbtCompound());
          putProperty(stack,SOULS_TAG,-1);
       }else{
-         putProperty(stack,STONE_DATA_TAG,stone.encodeAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,stone.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
          putProperty(stack,SOULS_TAG,Soulstone.getSouls(stone));
       }
    }
@@ -325,7 +326,7 @@ public class LevitationHarness extends EnergyItem {
    
    public class LevitationHarnessItem extends ArcanaPolymerArmorItem {
       public LevitationHarnessItem(Item.Settings settings){
-         super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL,Type.CHESTPLATE,settings);
+         super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL, EquipmentType.CHESTPLATE,settings);
       }
       
       @Override
@@ -398,11 +399,11 @@ public class LevitationHarness extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
             ItemStack item = playerEntity.getStackInHand(hand);
             openGui(playerEntity,item);
-            return TypedActionResult.success(item);
+            return ActionResult.SUCCESS;
          }else{
             return super.use(world, playerEntity, hand);
          }

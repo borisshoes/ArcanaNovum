@@ -95,7 +95,7 @@ public class ArcanaIngredient {
       });
       
       OptionalInt colorOpt = PotionContentsComponent.mixColors(List.of(effects));
-      PotionContentsComponent newComp = new PotionContentsComponent(Optional.empty(),colorOpt.isPresent() ? Optional.of(colorOpt.getAsInt()) : Optional.empty(),List.of(effects));
+      PotionContentsComponent newComp = new PotionContentsComponent(Optional.empty(),colorOpt.isPresent() ? Optional.of(colorOpt.getAsInt()) : Optional.empty(),List.of(effects),Optional.empty());
       this.exampleStack.set(DataComponentTypes.POTION_CONTENTS,newComp);
       
       if(this.exampleStack.isOf(Items.POTION)){

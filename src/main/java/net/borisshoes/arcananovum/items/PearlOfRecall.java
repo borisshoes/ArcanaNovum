@@ -20,6 +20,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -31,13 +32,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -200,8 +203,7 @@ public class PearlOfRecall extends EnergyItem {
             break;
          }
       }
-      
-      player.teleport(to,x,y,z,yaw,pitch);
+      player.teleport(to, x, y, z, new HashSet(), yaw, pitch, false);
       setEnergy(item,0);
       if(to.getRegistryKey().getValue().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL.id);
       if(to.getRegistryKey().getValue().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN.id);
@@ -296,7 +298,7 @@ public class PearlOfRecall extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack item = playerEntity.getStackInHand(hand);
          boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR.id) >= 1;
          if (playerEntity instanceof ServerPlayerEntity player){
@@ -335,7 +337,7 @@ public class PearlOfRecall extends EnergyItem {
                }
             }
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

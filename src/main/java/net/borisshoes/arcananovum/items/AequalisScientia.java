@@ -37,6 +37,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -537,10 +538,10 @@ public class AequalisScientia extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
          String transmutationId = getStringProperty(stack,TRANSMUTATION_TAG);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.SUCCESS;
          
          if(transmutationId.isEmpty()){
             TransmutationAltarRecipeGui transmutationGui = new TransmutationAltarRecipeGui(player,null, Optional.empty());
@@ -568,20 +569,20 @@ public class AequalisScientia extends ArcanaItem {
                      }
                      if(input == null){
                         player.sendMessage(Text.literal("You do not have a valid input item.").formatted(Formatting.RED,Formatting.ITALIC),false);
-                        return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                        return ActionResult.SUCCESS;
                      }
                      ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                      if(reagent1 == null){
                         MiscUtils.returnItems(new SimpleInventory(input),player);
-                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getTranslationKey())),false);
-                        return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getItem().getTranslationKey())),false);
+                        return ActionResult.SUCCESS;
                      }
                      ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                      if(reagent2 == null){
                         MiscUtils.returnItems(new SimpleInventory(input),player);
                         MiscUtils.returnItems(new SimpleInventory(reagent1),player);
-                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getTranslationKey())),false);
-                        return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getItem().getTranslationKey())),false);
+                        return ActionResult.SUCCESS;
                      }
                      ItemStack focus = playerEntity.getStackInHand(Hand.OFF_HAND).split(1);
                      
@@ -590,26 +591,26 @@ public class AequalisScientia extends ArcanaItem {
                   }else{
                      results = null;
                      player.sendMessage(Text.literal("Your offhand must be a valid focus item.").formatted(Formatting.RED,Formatting.ITALIC),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     return ActionResult.SUCCESS;
                   }
                }else if(recipe instanceof InfusionTransmutationRecipe infusionRecipe){
                   ItemStack input = getAndSplitValidStack(infusionRecipe.getInput(),player,true);
                   if(input == null){
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(infusionRecipe.getInput().getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(infusionRecipe.getInput().getItem().getTranslationKey())),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getItem().getTranslationKey())),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      MiscUtils.returnItems(new SimpleInventory(reagent1),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getItem().getTranslationKey())),false);
+                     return ActionResult.SUCCESS;
                   }
                   
                   items = List.of(input,ItemStack.EMPTY,reagent1,reagent2,stack);
@@ -617,21 +618,21 @@ public class AequalisScientia extends ArcanaItem {
                }else if(recipe instanceof PermutationTransmutationRecipe permutationRecipe){
                   ItemStack input = getAndSplitValidStack(permutationRecipe.getInput(),player,true);
                   if(input == null){
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(permutationRecipe.getInput().getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(permutationRecipe.getInput().getItem().getTranslationKey())),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getItem().getTranslationKey())),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      MiscUtils.returnItems(new SimpleInventory(reagent1),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getItem().getTranslationKey())),false);
+                     return ActionResult.SUCCESS;
                   }
                   
                   items = List.of(input,ItemStack.EMPTY,reagent1,reagent2,stack);
@@ -655,7 +656,7 @@ public class AequalisScientia extends ArcanaItem {
                putProperty(stack, AequalisScientia.TRANSMUTATION_TAG,"");
             }
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
       
       private ItemStack getAndSplitValidStack(ItemStack stack, ServerPlayerEntity player, boolean repeat){

@@ -123,7 +123,7 @@ public class AftershockAreaEffectTracker extends AreaEffectTracker{
       public void affectEntity(ServerWorld world, Entity entity){
          if(entity instanceof LivingEntity e){
             DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,contributor);
-            e.damage(source,damage);
+            e.damage(world, source,damage);
          }
       }
       

@@ -67,7 +67,7 @@ public class PhotonicArrows extends RunicArrow {
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(11271167),new ArrayList<>()))
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(11271167),new ArrayList<>(),Optional.empty()))
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
@@ -148,8 +148,8 @@ public class PhotonicArrows extends RunicArrow {
                }
             }
          }
-         if(!ignore){
-            hit.damage(ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,entity,proj), finalDmg);
+         if(!ignore && world instanceof ServerWorld serverWorld){
+            hit.damage(serverWorld, ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,entity,proj), finalDmg);
          }
          if(hit instanceof MobEntity mob && mob.isDead()){
             killCount++;

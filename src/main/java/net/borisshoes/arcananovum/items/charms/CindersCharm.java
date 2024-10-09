@@ -30,9 +30,9 @@ import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.recipe.ServerRecipeManager;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.input.SingleStackRecipeInput;
 import net.minecraft.registry.RegistryKey;
@@ -47,7 +47,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
@@ -234,8 +234,8 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          int energyToConsume = (int)Math.ceil(stack.getCount() / 2.0);
          if(active && getEnergy(charm) >= energyToConsume){
             // Smelting registry and auto smelt
-            RecipeManager.MatchGetter<SingleStackRecipeInput, ? extends AbstractCookingRecipe> matchGetter = RecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
-            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(new SingleStackRecipeInput(stack),player.getEntityWorld()).orElse(null);
+            ServerRecipeManager.MatchGetter<SingleStackRecipeInput, ? extends AbstractCookingRecipe> matchGetter = ServerRecipeManager.createCachedMatchGetter(RecipeType.SMELTING);
+            RecipeEntry<? extends AbstractCookingRecipe> recipeEntry = matchGetter.getFirstMatch(new SingleStackRecipeInput(stack),(ServerWorld)player.getEntityWorld()).orElse(null);
             if(recipeEntry == null) return null;
             AbstractCookingRecipe recipe = recipeEntry.value();
             if(recipe == null) return null;
@@ -275,9 +275,9 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       return null;
    }
    
-   private TypedActionResult<ItemStack> coneOfFlame(PlayerEntity playerEntity, World world, Hand hand){
+   private ActionResult coneOfFlame(PlayerEntity playerEntity, World world, Hand hand){
       ItemStack itemStack = playerEntity.getStackInHand(hand);
-      if(!(world instanceof ServerWorld serverWorld)) return TypedActionResult.pass(itemStack);
+      if(!(world instanceof ServerWorld serverWorld)) return ActionResult.PASS;
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
@@ -286,7 +286,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       if(energy < 12) {
          playerEntity.sendMessage(Text.literal("The Charm has no Cinders").formatted(color), true);
-         return TypedActionResult.pass(itemStack);
+         return ActionResult.PASS;
       }
       addEnergy(itemStack,-3);
       
@@ -313,7 +313,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          if(inCone(playerEntity,e.getEyePos())){
             if(!entity.isFireImmune()){
                entity.setOnFireFor((2*energy+60)/20);
-               entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 5f : 2.5f);
+               entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 5f : 2.5f);
                if(entity instanceof MobEntity) ignited++;
                
                if(playerEntity instanceof ServerPlayerEntity serverPlayer){
@@ -369,11 +369,11 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          
          serverWorld.spawnParticles(particleType,pos.getX(),pos.getY(),pos.getZ(),1,0.1,0.1,0.1,0);
       }
-      return TypedActionResult.success(itemStack);
+      return ActionResult.SUCCESS;
    }
    
-   private TypedActionResult<ItemStack> pyroblast(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
-      if(!(world instanceof ServerWorld serverWorld && playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(itemStack);
+   private ActionResult pyroblast(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
+      if(!(world instanceof ServerWorld serverWorld && playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
@@ -382,7 +382,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       if(energy < 50) {
          player.sendMessage(Text.literal("Not Enough Cinders").formatted(color), true);
-         return TypedActionResult.pass(itemStack);
+         return ActionResult.PASS;
       }
       int consumedEnergy = energy;
       addEnergy(itemStack,-energy);
@@ -413,7 +413,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          if(!entity.isFireImmune()){
             float dmg = (float) (Math.max(0,(1.2 - (entity.getPos().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
+            entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
             ignited++;
             
             PLAYER_DATA.get(player).addXP(5); // Add xp
@@ -428,11 +428,11 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       ParticleEffectUtils.line(serverWorld,null,startPos.subtract(0,.3,0),center,particleType,(int)(center.distanceTo(startPos)*4),1,0,0);
       serverWorld.spawnParticles(particleType,center.getX(),center.getY(),center.getZ(),100,0.1,0.1,0.1,0.4);
       
-      return TypedActionResult.success(itemStack);
+      return ActionResult.SUCCESS;
    }
    
-   private TypedActionResult<ItemStack> fireweb(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
-      if(!(world instanceof ServerWorld serverWorld && playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(itemStack);
+   private ActionResult fireweb(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
+      if(!(world instanceof ServerWorld serverWorld && playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
       
       int energy = getEnergy(itemStack);
       boolean cremation = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CREMATION.id) >= 1;
@@ -441,7 +441,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       
       if(energy < 50) {
          player.sendMessage(Text.literal("Not Enough Cinders").formatted(color), true);
-         return TypedActionResult.pass(itemStack);
+         return ActionResult.PASS;
       }
       int consumedEnergy = energy;
       
@@ -455,7 +455,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       if(entities.isEmpty()){
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, .3f,.8f);
          player.sendMessage(Text.literal("No Targets in Range").formatted(color), true);
-         return TypedActionResult.pass(itemStack);
+         return ActionResult.PASS;
       }
       
       SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, 0.5f);
@@ -466,7 +466,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          if(!entity.isFireImmune()){
             float dmg = (float) ((consumedEnergy/15.0) * (.8+lvl*.2));
             entity.setOnFireFor(consumedEnergy/20);
-            entity.damage(new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
+            entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
             
             PLAYER_DATA.get(player).addXP(5); // Add xp
             hits.add(entity);
@@ -491,10 +491,10 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          player.sendMessage(Text.literal(message.toString()).formatted(color), true);
       }
       
-      return TypedActionResult.success(itemStack);
+      return ActionResult.SUCCESS;
    }
    
-   private TypedActionResult<ItemStack> toggleActive(ServerPlayerEntity player, ItemStack item){
+   private ActionResult toggleActive(ServerPlayerEntity player, ItemStack item){
       boolean active = !getBooleanProperty(item,ACTIVE_TAG);
       boolean cremation = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CREMATION.id) >= 1;
       Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
@@ -506,7 +506,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          player.sendMessage(Text.literal("The Charm's Heat Calms").formatted(color,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, .3f,.8f);
       }
-      return TypedActionResult.success(item);
+      return ActionResult.SUCCESS;
    }
    
    private boolean inCone(PlayerEntity user, Vec3d targetPos){
@@ -588,7 +588,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
             return toggleActive((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
          }else{

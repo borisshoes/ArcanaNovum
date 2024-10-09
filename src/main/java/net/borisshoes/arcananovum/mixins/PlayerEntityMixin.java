@@ -83,16 +83,17 @@ public class PlayerEntityMixin {
          cir.setReturnValue(player.isCreative() ? new ItemStack(Items.ARROW) : ItemStack.EMPTY);
       }
    }
-   
-   @Redirect(method="checkFallFlying", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
-   private boolean arcananovum_elytraTick(ItemStack stack, Item item){
-      return stack.isOf(item) || ArcanaItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
-   }
+
+   // TODO: Move this to LivingEntity.canGlideWith
+//   @Redirect(method="checkGliding", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
+//   private boolean arcananovum_elytraTick(ItemStack stack, Item item){
+//      return stack.isOf(item) || ArcanaItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
+//   }
    
    @Inject(method = "disableShield", at = @At(value="INVOKE",target="Lnet/minecraft/entity/player/PlayerEntity;getItemCooldownManager()Lnet/minecraft/entity/player/ItemCooldownManager;"))
    private void arcananovum_mobDisableShield(CallbackInfo ci){
       PlayerEntity player = (PlayerEntity) (Object) this;
-      player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(), 100);
+      player.getItemCooldownManager().set(player.getBlockingItem(), 100);
    }
    
    @Inject(method = "addExperience", at = @At(value= "RETURN"))

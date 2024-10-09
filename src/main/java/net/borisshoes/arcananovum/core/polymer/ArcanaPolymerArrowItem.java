@@ -56,7 +56,7 @@ public abstract class ArcanaPolymerArrowItem extends ArrowItem implements Polyme
       PotionContentsComponent stackComp = itemStack.get(DataComponentTypes.POTION_CONTENTS);
       if(stackComp != null){
          PotionContentsComponent cur = superStack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-         superStack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(cur.potion(), Optional.of(stackComp.getColor()),cur.customEffects()));
+         superStack.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(cur.potion(), Optional.of(stackComp.getColor()),cur.customEffects(),Optional.empty()));
       }
       return superStack;
    }

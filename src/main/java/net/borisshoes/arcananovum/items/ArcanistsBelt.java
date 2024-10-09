@@ -36,7 +36,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -110,7 +110,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          ContainerComponent beltItems = itemStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
          SimpleInventory inv = new SimpleInventory(9);
          beltItems.streamNonEmpty().forEachOrdered(inv::addStack);
-         
+
          if(inv.isEmpty()){
             lore.add(Text.literal(""));
             lore.add(Text.literal("")
@@ -185,7 +185,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       }
       return items;
    }
-   
+
    @Override
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
       int size = 9;
@@ -256,7 +256,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          // Open GUI
          if(playerEntity instanceof ServerPlayerEntity player){
             ItemStack stack = playerEntity.getStackInHand(hand);
@@ -264,7 +264,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
             gui.build();
             gui.open();
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

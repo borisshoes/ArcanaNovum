@@ -27,7 +27,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.ToolMaterials;
+import net.minecraft.item.ToolMaterial;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -238,7 +238,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    
    public class PickaxeOfCeptyusItem extends ArcanaPolymerPickaxeItem {
       public PickaxeOfCeptyusItem(Item.Settings settings){
-         super(getThis(),ToolMaterials.NETHERITE,1,-2.8f,settings);
+         super(getThis(),ToolMaterial.NETHERITE,1,-2.8f,settings);
       }
       
       @Override

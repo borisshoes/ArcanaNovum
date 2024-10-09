@@ -41,7 +41,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -233,9 +233,9 @@ public class MagmaticEversource extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          int mode = getIntProperty(stack,MODE_TAG);
          int charges = getIntProperty(stack,USES_TAG);
          
@@ -249,27 +249,27 @@ public class MagmaticEversource extends EnergyItem {
                player.sendMessage(Text.literal("The Eversource Condenses").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_FILL_LAVA,1.0f,1.0f);
             }
-            return TypedActionResult.success(stack);
+            return ActionResult.SUCCESS;
          }
          
          if(mode != 1 && charges <= 0){
             player.sendMessage(Text.literal("The Eversource is Recharging").formatted(Formatting.RED,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
-            return TypedActionResult.pass(stack);
+            return ActionResult.PASS;
          }
          
          Fluid fluid = mode == 1 ? Fluids.EMPTY : Fluids.LAVA;
          
          BlockHitResult blockHitResult = BucketItem.raycast(world, playerEntity, fluid == Fluids.EMPTY ? RaycastContext.FluidHandling.SOURCE_ONLY : RaycastContext.FluidHandling.NONE);
          if (blockHitResult.getType() == HitResult.Type.MISS) {
-            return TypedActionResult.pass(stack);
+            return ActionResult.PASS;
          }
          if (blockHitResult.getType() == HitResult.Type.BLOCK) {
             BlockPos blockPos = blockHitResult.getBlockPos();
             Direction direction = blockHitResult.getSide();
             BlockPos blockPos2 = blockPos.offset(direction);
             if (!world.canPlayerModifyAt(playerEntity, blockPos) || !playerEntity.canPlaceOn(blockPos2, direction, stack)) {
-               return TypedActionResult.fail(stack);
+               return ActionResult.FAIL;
             }
             if (fluid == Fluids.EMPTY) {
                FluidDrainable fluidDrainable;
@@ -282,9 +282,9 @@ public class MagmaticEversource extends EnergyItem {
                   if (!world.isClient) {
                      PLAYER_DATA.get(player).addXP(5); // Add xp
                   }
-                  return TypedActionResult.success(stack, world.isClient());
+                  return ActionResult.SUCCESS;
                }
-               return TypedActionResult.fail(stack);
+               return ActionResult.FAIL;
             }
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof FluidFillable ? blockPos : blockPos2;
@@ -294,11 +294,11 @@ public class MagmaticEversource extends EnergyItem {
                putProperty(stack,USES_TAG,charges-1);
                buildItemLore(stack, playerEntity.getServer());
                playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-               return TypedActionResult.success(stack);
+               return ActionResult.SUCCESS;
             }
-            return TypedActionResult.fail(stack);
+            return ActionResult.FAIL;
          }
-         return TypedActionResult.pass(stack);
+         return ActionResult.PASS;
       }
       
       

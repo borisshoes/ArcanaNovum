@@ -271,9 +271,9 @@ public class BrainJar extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          openGui(playerEntity, playerEntity.getStackInHand(hand));
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
       
       @Override

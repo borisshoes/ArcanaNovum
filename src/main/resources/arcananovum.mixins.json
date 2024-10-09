@@ -12,7 +12,7 @@
     "EnchantmentMixin",
     "EntityAccessor",
     "ExperienceOrbEntityMixin",
-    "ExplosionMixin",
+    "ExplosionImplMixin",
     "FamlandBlockMixin",
     "FishingBobberEntityMixin",
     "FleeEntityGoalMixin",
@@ -47,7 +47,6 @@
     "SpawnHelperMixin",
     "StructurePoolAccessor",
     "ThrownItemEntityAccessor",
-    "VoiceChatServerMixin",
     "WanderingTraderEntityMixin",
     "WitherEntityAccessor",
     "WitherEntityMixin"

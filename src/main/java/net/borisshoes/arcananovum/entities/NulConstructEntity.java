@@ -88,12 +88,12 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    }
    
    private void initializeAttributes(){
-      getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024.0);
-      getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.85);
-      getAttributeInstance(EntityAttributes.GENERIC_FLYING_SPEED).setBaseValue(0.85);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10.0);
-      getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(10.0);
-      getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(128);
+      getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(1024.0);
+      getAttributeInstance(EntityAttributes.MOVEMENT_SPEED).setBaseValue(0.85);
+      getAttributeInstance(EntityAttributes.FLYING_SPEED).setBaseValue(0.85);
+      getAttributeInstance(EntityAttributes.ARMOR).setBaseValue(10.0);
+      getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).setBaseValue(10.0);
+      getAttributeInstance(EntityAttributes.FOLLOW_RANGE).setBaseValue(128);
       initializedAttributes = true;
    }
    
@@ -112,12 +112,12 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    public static DefaultAttributeContainer.Builder createConstructAttributes() {
       return HostileEntity.createHostileAttributes()
-            .add(EntityAttributes.GENERIC_MAX_HEALTH, 1024.0)
-            .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.85)
-            .add(EntityAttributes.GENERIC_FLYING_SPEED, 0.85)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 128)
-            .add(EntityAttributes.GENERIC_ARMOR, 10.0)
-            .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10.0);
+            .add(EntityAttributes.MAX_HEALTH, 1024.0)
+            .add(EntityAttributes.MOVEMENT_SPEED, 0.85)
+            .add(EntityAttributes.FLYING_SPEED, 0.85)
+            .add(EntityAttributes.FOLLOW_RANGE, 128)
+            .add(EntityAttributes.ARMOR, 10.0)
+            .add(EntityAttributes.ARMOR_TOUGHNESS, 10.0);
    }
    
    @Override
@@ -139,14 +139,14 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    }
    
    @Override
-   protected void mobTick() {
+   protected void mobTick(ServerWorld world) {
       try{
          MinecraftServer server = getServer();
          if(server == null) return;
          if(spells == null || spells.isEmpty()) createSpells();
          if(!initializedAttributes) initializeAttributes();
          
-         if(shouldHaveSummoner && (summoner == null || summoner.isDead() || !summoner.getWorld().getRegistryKey().equals(getWorld().getRegistryKey()) || distanceTo(summoner) > 128)){
+         if(shouldHaveSummoner && (summoner == null || summoner.isDead() || !summoner.getWorld().getRegistryKey().equals(world.getRegistryKey()) || distanceTo(summoner) > 128)){
             deconstruct();
          }
          
@@ -157,7 +157,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          }
          
         if(this.age % 20 == 0){
-           if(this.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)){
+           if(world.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)){
               destructiveAura();
            }
            if(isExalted){
@@ -220,7 +220,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             }
          }
          
-         super.mobTick();
+         super.mobTick(world);
          prevHP = curHP;
       }catch(Exception e){
          e.printStackTrace();
@@ -247,7 +247,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       if(spells.get("reflective_armor").isActive()){
          Entity attacker = source.getAttacker();
          if(attacker != null){
-            attacker.damage(getDamageSources().thorns(this), amount * 0.5f);
+            if (this.getEntityWorld() instanceof ServerWorld serverWorld) attacker.damage(serverWorld, getDamageSources().thorns(this), amount * 0.5f);
             if(spells.get("dark_conversion").isActive()){
                heal(amount*0.25f);
             }
@@ -382,7 +382,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                if(!(entity1 instanceof LivingEntity living)) continue;;
                float dmg = living.getMaxHealth() / 7.0f;
                float mod = living instanceof ServerPlayerEntity ? 0.66f : 0.25f;
-               living.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),dmg);
+               living.damage(world, ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),dmg);
                
                if(conversionActive) heal(dmg*mod);
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS,10,1,false,true,true);
@@ -408,14 +408,14 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             
             for(Entity hit : hits){
                if(hit instanceof LivingEntity living){
-                  living.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this), damage);
+                  living.damage(world, ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this), damage);
                   StatusEffectInstance wither = new StatusEffectInstance(StatusEffects.WITHER, 40, 1, false, true, true);
                   living.addStatusEffect(wither);
                   if(conversionActive) heal(damage*0.8f);
                }
             }
             
-            ParticleEffect dust = new DustParticleEffect(Vec3d.unpackRgb(0x36332b).toVector3f(),1.5f);
+            ParticleEffect dust = new DustParticleEffect(0x36332b,1.5f);
             int intervals = (int)(startPos.subtract(raycast.getPos()).length() * 4);
             ParticleEffectUtils.line(world,null,startPos,raycast.getPos(),dust,intervals,1,0.08,0);
          }
@@ -446,7 +446,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
             double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,3);
             Vec3d motion = diff.multiply(1,0,1).add(0,1,0).normalize().multiply(multiplier);
             entity1.setVelocity(motion.x,motion.y,motion.z);
-            entity1.damage(ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),4f);
+            entity1.damage(world, ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),4f);
             if(conversionActive) heal(4f);
             if(entity1 instanceof ServerPlayerEntity player) player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          }
@@ -640,7 +640,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    private WitherSkeletonEntity makeWitherSkeleton(ServerWorld world){
       WitherSkeletonEntity skeleton = new WitherSkeletonEntity(EntityType.WITHER_SKELETON, world);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(50f);
+      skeleton.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(50f);
       skeleton.setHealth(50f);
       skeleton.setPersistent();
       ItemStack axe = new ItemStack(Items.NETHERITE_AXE);
@@ -655,11 +655,11 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       skeleton.addStatusEffect(slowFall);
       skeleton.addStatusEffect(fireRes);
       skeleton.addStatusEffect(res);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_ARMOR).setBaseValue(10f);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).setBaseValue(4f);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_FOLLOW_RANGE).setBaseValue(64f);
+      skeleton.getAttributeInstance(EntityAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
+      skeleton.getAttributeInstance(EntityAttributes.ARMOR).setBaseValue(10f);
+      skeleton.getAttributeInstance(EntityAttributes.ARMOR_TOUGHNESS).setBaseValue(4f);
+      skeleton.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
+      skeleton.getAttributeInstance(EntityAttributes.FOLLOW_RANGE).setBaseValue(64f);
       return skeleton;
    }
    

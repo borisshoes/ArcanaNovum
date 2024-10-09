@@ -16,6 +16,7 @@ accessible method net/minecraft/block/PlantBlock canPlaceAt (Lnet/minecraft/bloc
 accessible method net/minecraft/block/ExperienceDroppingBlock onStacksDropped (Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;Z)V
 accessible method net/minecraft/block/RedstoneOreBlock onStacksDropped (Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;Z)V
 accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
+accessible method net/minecraft/entity/EntityType register (Ljava/lang/String;Lnet/minecraft/entity/EntityType$Builder;)Lnet/minecraft/entity/EntityType;
 
 accessible class net/minecraft/entity/ai/control/MoveControl$State
 accessible class net/minecraft/entity/mob/DrownedEntity$DrownedMoveControl

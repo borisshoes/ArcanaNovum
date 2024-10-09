@@ -28,10 +28,11 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.ArmorMaterials;
+import net.minecraft.item.equipment.ArmorMaterials;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -650,7 +651,7 @@ public class NulMemento extends EnergyItem {
    
    public class NulMementoItem extends ArcanaPolymerArmorItem {
       public NulMementoItem(Item.Settings settings){
-         super(getThis(),ArmorMaterials.NETHERITE,Type.HELMET,settings);
+         super(getThis(),ArmorMaterials.NETHERITE, EquipmentType.HELMET,settings);
       }
       
       @Override

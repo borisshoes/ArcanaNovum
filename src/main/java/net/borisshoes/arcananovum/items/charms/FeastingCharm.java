@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ConsumableComponent;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.SuspiciousStewEffectsComponent;
@@ -34,7 +35,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -214,17 +215,17 @@ public class FeastingCharm extends ArcanaItem {
                   hunger.eat(foodComponent);
                   hunger.add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
                   // Apply Status Effects
-                  List<FoodComponent.StatusEffectEntry> list = foodComponent.effects();
-                  for(FoodComponent.StatusEffectEntry entry : list) {
-                     if(!world.isClient && player.random.nextFloat() < entry.probability()){
-                        player.addStatusEffect(entry.effect());
-                     }
+                  ConsumableComponent consumableComponent = selectedFood.get(DataComponentTypes.CONSUMABLE);
+                  if(!world.isClient && consumableComponent != null) {
+                     foodComponent.onConsume(world, player, selectedFood, consumableComponent);
                   }
+
+                  // TODO: Verify this is needed, foodComponent.onComsume might solve this
                   SuspiciousStewEffectsComponent suspiciousStewEffectsComponent = selectedFood.getOrDefault(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffectsComponent.DEFAULT);
                   for(SuspiciousStewEffectsComponent.StewEffect stewEffect : suspiciousStewEffectsComponent.effects()) {
                      player.addStatusEffect(stewEffect.createStatusEffectInstance());
                   }
-                  
+
                   if(selectedFood.isOf(Items.POISONOUS_POTATO)){
                      ArcanaAchievements.setCondition(player,ArcanaAchievements.TARRARE.id,"Poisonous Potato",true);
                   }else if(selectedFood.isOf(Items.SPIDER_EYE)){
@@ -251,9 +252,9 @@ public class FeastingCharm extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          toggleMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

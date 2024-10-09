@@ -27,12 +27,12 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    }
    
    @Override
-   public boolean applyUpdateEffect(LivingEntity entity, int amplifier){
+   public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier){
       if(entity.getWorld() instanceof ServerWorld serverWorld && amplifier == 0){
          Vec3d pos = entity.getPos();
          serverWorld.spawnParticles(ParticleTypes.SMOKE,pos.x,pos.y+entity.getHeight()/2,pos.z,1,.4,.4,.4,0);
       }
-      return super.applyUpdateEffect(entity,amplifier);
+      return super.applyUpdateEffect(world,entity,amplifier);
    }
    
    @Override

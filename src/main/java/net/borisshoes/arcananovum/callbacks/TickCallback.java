@@ -171,7 +171,7 @@ public class TickCallback {
          if((boolean) ArcanaNovum.config.getValue("doConcentrationDamage")){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
-            player.damage(ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
+            player.damage(player.getServerWorld(), ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
          }
          if(!player.isDead()){
             if(player.getHealth() <= 1.5f){
@@ -195,7 +195,7 @@ public class TickCallback {
    private static void wingsTick(ServerPlayerEntity player){
       ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
       if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
-         if(player.isFallFlying()){ // Wings of Enderia
+         if(player.isGliding()){ // Wings of Enderia
             wings.addEnergy(item,1); // Add 1 energy for each tick of flying
             if(wings.getEnergy(item) % 1000 == 999)
                player.sendMessage(Text.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).formatted(Formatting.DARK_PURPLE),true);

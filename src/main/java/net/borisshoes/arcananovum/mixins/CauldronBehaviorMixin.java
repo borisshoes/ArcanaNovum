@@ -17,7 +17,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.ItemActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.event.GameEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -35,11 +35,11 @@ public interface CauldronBehaviorMixin {
    @Inject(method="registerBehavior",at=@At("TAIL"),locals = LocalCapture.CAPTURE_FAILHARD)
    private static void arcananovum_eversourceCauldrons(CallbackInfo ci, Map<Item, CauldronBehavior> emptyCauldronMap, Map<Item, CauldronBehavior> waterCauldronMap, Map<Item, CauldronBehavior> lavaCauldronMap, Map<Item, CauldronBehavior> snowCauldronMap){
       emptyCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
          if (mode == 1) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          }
          if (!world.isClient) {
             player.incrementStat(Stats.USE_CAULDRON);
@@ -50,12 +50,12 @@ public interface CauldronBehaviorMixin {
             PLAYER_DATA.get(player).addXP(5); // Add xp
             ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN.id,1);
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
       
       waterCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
          if (!world.isClient) {
             if(mode == 1) {
@@ -73,12 +73,12 @@ public interface CauldronBehaviorMixin {
             }
             serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
       
       lavaCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
          if (!world.isClient) {
             if(mode == 1) {
@@ -88,15 +88,15 @@ public interface CauldronBehaviorMixin {
                world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
                serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
             }else{
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
       
       snowCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AquaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,AquaticEversource.MODE_TAG);
          if (!world.isClient) {
             if(mode == 1) {
@@ -106,27 +106,27 @@ public interface CauldronBehaviorMixin {
                world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
                serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
             }else{
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
       
       
       emptyCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
          int charges = ArcanaItem.getIntProperty(stack,MagmaticEversource.USES_TAG);
          
          if(mode != 1 && charges <= 0){
             player.sendMessage(Text.literal("The Eversource is Recharging").formatted(Formatting.RED,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(serverPlayer, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          }
          
          if (mode == 1) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          }
          if (!world.isClient) {
             player.incrementStat(Stats.USE_CAULDRON);
@@ -140,12 +140,12 @@ public interface CauldronBehaviorMixin {
             ArcanaItem.putProperty(stack,MagmaticEversource.USES_TAG,charges-1);
             eversource.buildItemLore(stack, serverPlayer.getServer());
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
       
       lavaCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
          
          if (!world.isClient) {
@@ -156,15 +156,15 @@ public interface CauldronBehaviorMixin {
                world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
                serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
             }else{
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
       
       waterCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
          
          
@@ -176,15 +176,15 @@ public interface CauldronBehaviorMixin {
                world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
                serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
             }else{
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
       
       snowCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
-         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         if(!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof MagmaticEversource eversource)) return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
          int mode = ArcanaItem.getIntProperty(stack,MagmaticEversource.MODE_TAG);
          
          if (!world.isClient) {
@@ -195,10 +195,10 @@ public interface CauldronBehaviorMixin {
                world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
                serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
             }else{
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ItemActionResult.success(world.isClient);
+         return ActionResult.SUCCESS;
       });
    }
 }

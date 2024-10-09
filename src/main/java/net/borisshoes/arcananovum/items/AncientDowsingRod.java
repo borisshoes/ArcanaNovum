@@ -33,7 +33,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -170,7 +170,7 @@ public class AncientDowsingRod extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack item = playerEntity.getStackInHand(hand);
          if (playerEntity instanceof ServerPlayerEntity player){
             int curEnergy = getEnergy(item);
@@ -273,7 +273,7 @@ public class AncientDowsingRod extends EnergyItem {
             }
          }
          
-         return TypedActionResult.success(item);
+         return ActionResult.SUCCESS;
       }
    }
 }

@@ -21,7 +21,7 @@ import java.util.List;
 public abstract class ArcanaPolymerPickaxeItem extends PickaxeItem implements PolymerItem {
    protected ArcanaItem arcanaItem;
    public ArcanaPolymerPickaxeItem(ArcanaItem arcanaItem, ToolMaterial material, int attackDamage, float attackSpeed, Settings settings){
-      super(material, settings.attributeModifiers(PickaxeItem.createAttributeModifiers(material, attackDamage, attackSpeed)));
+      super(material, attackDamage, attackSpeed, settings);
       this.arcanaItem = arcanaItem;
    }
    

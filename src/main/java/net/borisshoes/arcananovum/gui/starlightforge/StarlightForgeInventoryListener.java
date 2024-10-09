@@ -128,7 +128,7 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
             craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Click Here ").formatted(Formatting.GREEN))
                   .append(Text.literal("to begin forging this ").formatted(Formatting.DARK_AQUA))
-                  .append(Text.translatable(output.getTranslationKey()).formatted(Formatting.YELLOW))
+                  .append(Text.translatable(output.getItem().getTranslationKey()).formatted(Formatting.YELLOW))
                   .append(Text.literal("!").formatted(Formatting.DARK_AQUA)))));
             gui.setSlot(15,craftingItem);
          }else{

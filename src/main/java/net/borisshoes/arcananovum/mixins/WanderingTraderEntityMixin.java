@@ -32,7 +32,7 @@ public class WanderingTraderEntityMixin {
       WanderingTraderEntity trader = (WanderingTraderEntity) (Object) this;
       if(trader.getRandom().nextDouble() < 0.1){
          List<RegistryEntry<Item>> items = new ArrayList<>();
-         Registry<Item> itemRegistry = trader.getRegistryManager().get(RegistryKeys.ITEM);
+         Registry<Item> itemRegistry = trader.getRegistryManager().getOrThrow(RegistryKeys.ITEM);
          itemRegistry.iterateEntries(ArcanaRegistry.VILLAGE_ITEMS).forEach(items::add);
          itemRegistry.iterateEntries(ArcanaRegistry.WORKSHOP_ITEMS).forEach(items::add);
          

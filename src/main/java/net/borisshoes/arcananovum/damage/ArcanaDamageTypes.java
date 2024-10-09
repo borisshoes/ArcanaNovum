@@ -19,14 +19,14 @@ public class ArcanaDamageTypes {
    public static final RegistryKey<DamageType> ARCANE_LIGHTNING = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(ArcanaNovum.MOD_ID,"arcane_lightning"));
    
    public static DamageSource of(World world, RegistryKey<DamageType> key){
-      return new DamageSource((world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(key)));
+      return new DamageSource((world.getRegistryManager().getOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(key)));
    }
    
    public static DamageSource of(World world, RegistryKey<DamageType> key, Entity attacker){
-      return new DamageSource((world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(key)),attacker);
+      return new DamageSource((world.getRegistryManager().getOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(key)),attacker);
    }
    
    public static DamageSource of(World world, RegistryKey<DamageType> key, Entity source, Entity attacker){
-      return new DamageSource((world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(key)),attacker,source);
+      return new DamageSource((world.getRegistryManager().getOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(key)),attacker,source);
    }
 }

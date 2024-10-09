@@ -22,7 +22,9 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.*;
-import net.minecraft.item.trim.ArmorTrim;
+import net.minecraft.item.equipment.ArmorMaterials;
+import net.minecraft.item.equipment.EquipmentType;
+import net.minecraft.item.equipment.trim.ArmorTrim;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -64,10 +66,10 @@ public class SojournerBoots extends EnergyItem {
             .component(DataComponentTypes.DYED_COLOR,new DyedColorComponent(0x33A900,false))
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
             .attributeModifiers(new AttributeModifiersComponent(List.of(
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().getProtection(ArmorItem.Type.BOOTS), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().toughness(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().knockbackResistance(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
+                  new AttributeModifiersComponent.Entry(EntityAttributes.STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
+                  new AttributeModifiersComponent.Entry(EntityAttributes.ARMOR, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.defense().get(EquipmentType.BOOTS), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
+                  new AttributeModifiersComponent.Entry(EntityAttributes.ARMOR_TOUGHNESS, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.toughness(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
+                  new AttributeModifiersComponent.Entry(EntityAttributes.KNOCKBACK_RESISTANCE, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.knockbackResistance(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
             ),false))
       );
       models = new ArrayList<>();
@@ -153,10 +155,10 @@ public class SojournerBoots extends EnergyItem {
       
       if(active){
          double height = 0.65 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS.id));
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_STEP_HEIGHT,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,STEP_TAG),height,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.FEET));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.STEP_HEIGHT,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,STEP_TAG),height,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.FEET));
       }
       
-      attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_MOVEMENT_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,SPEED_TAG),getEnergy(stack)/100.0,EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),AttributeModifierSlot.FEET));
+      attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.MOVEMENT_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,SPEED_TAG),getEnergy(stack)/100.0,EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),AttributeModifierSlot.FEET));
       
       AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,false);
       stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
@@ -220,7 +222,7 @@ public class SojournerBoots extends EnergyItem {
    
    public class SojournerBootsItem extends ArcanaPolymerArmorItem {
       public SojournerBootsItem(Item.Settings settings){
-         super(getThis(),ArmorMaterials.NETHERITE,Type.BOOTS,settings);
+         super(getThis(),ArmorMaterials.NETHERITE,EquipmentType.BOOTS,settings);
       }
       
       @Override
@@ -234,7 +236,7 @@ public class SojournerBoots extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+      public ActionResult use(World world, PlayerEntity user, Hand hand) {
          if(user.isSneaking()){
             ItemStack stack = user.getStackInHand(hand);
             boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
@@ -250,7 +252,7 @@ public class SojournerBoots extends EnergyItem {
             
             rebuildAttributes(stack);
             
-            return TypedActionResult.success(stack);
+            return ActionResult.SUCCESS;
          }else{
             return super.use(world,user,hand);
          }

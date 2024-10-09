@@ -138,7 +138,7 @@ public class DragonAbilities {
                   List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getPos()) <= 5*5);
                   for(ServerPlayerEntity player : nearbyPlayers){
                      if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
-                     player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),2f);
+                     player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),2f);
                   }
                }
             }
@@ -182,7 +182,7 @@ public class DragonAbilities {
             float damage = ArcanaItemUtils.getUsedConcentration(player)/8f * (player.getMaxHealth()/20f);
             if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
             
-            player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),damage);
+            player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),damage);
             player.sendMessage(Text.literal("Your Arcana Items surge with corrupted Arcana!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
          }
@@ -308,7 +308,7 @@ public class DragonAbilities {
             player.setVelocity(vec.x,-3,vec.z);
             player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
             int dist = player.getBlockY()-SpawnPile.getSurfaceY(endWorld,player.getBlockY(),player.getBlockX(),player.getBlockZ());
-            player.damage(endWorld.getDamageSources().fall(),(dist*0.25f));
+            player.damage(endWorld,endWorld.getDamageSources().fall(),(dist*0.25f));
          }
          
          ampTicks = 0;
@@ -318,9 +318,9 @@ public class DragonAbilities {
          ArrayList<BlockPos> poses = makeSpawnLocations(goons.length,50,endWorld);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
             goons[i].setHealth(MathHelper.clamp(20 + 4*nearbyPlayers300.size(),40,100));
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
+            goons[i].getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
       
@@ -366,8 +366,8 @@ public class DragonAbilities {
                if(item.isEmpty()){
                   continue;
                }
-               if(ArcanaItemUtils.isArcane(item) && !manager.isCoolingDown(item.getItem())){
-                  manager.set(item.getItem(),200);
+               if(ArcanaItemUtils.isArcane(item) && !manager.isCoolingDown(item)){
+                  manager.set(item,200);
                }
             }
          }

@@ -42,7 +42,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
@@ -216,8 +216,8 @@ public class TotemOfVengeance extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
-         return TypedActionResult.pass(playerEntity.getStackInHand(hand));
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
+         return ActionResult.PASS;
       }
    }
 }

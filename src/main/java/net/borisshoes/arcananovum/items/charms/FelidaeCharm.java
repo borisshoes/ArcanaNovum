@@ -30,7 +30,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -149,11 +149,11 @@ public class FelidaeCharm extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_AMBIENT, 1f, (float) (0.5*(Math.random()-0.5)+1));
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
       
       @Override
