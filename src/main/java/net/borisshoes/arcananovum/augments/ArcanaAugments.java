@@ -566,7 +566,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment SALVAGEABLE_FRAME = ArcanaAugments.register(
          new ArcanaAugment("Salvageable Frame", "salvageable_frame", new ItemStack(Items.NETHERITE_SCRAP), ArcanaRegistry.SPAWNER_HARNESS,
-         new String[]{"Gives 8 Netherite Scrap back when the Spawner Harness breaks"},
+         new String[]{"Gives Netherite Scrap back when the Spawner Harness breaks"},
          new ArcanaRarity[]{MUNDANE}
    ));
    
@@ -618,7 +618,7 @@ public class ArcanaAugments {
    
    // Wings of Enderia
    public static final ArcanaAugment SCALES_OF_THE_CHAMPION = ArcanaAugments.register(
-         new ArcanaAugment("Scales of the Champion", "scales_of_the_champion", new ItemStack(Items.NETHERITE_CHESTPLATE), ArcanaRegistry.WINGS_OF_ENDERIA,
+         new ArcanaAugment("Scales of the Ascendant", "scales_of_the_champion", new ItemStack(Items.NETHERITE_CHESTPLATE), ArcanaRegistry.WINGS_OF_ENDERIA,
          new String[]{"First Level: Gives the Wings max enhanced stats","Second Level: Unlocks the ability for the Wings to"," use stored energy to mitigate all damage types"},
          new ArcanaRarity[]{DIVINE, DIVINE}
    ));

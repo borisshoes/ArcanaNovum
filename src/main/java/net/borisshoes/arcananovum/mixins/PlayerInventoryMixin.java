@@ -1,9 +1,13 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
@@ -29,28 +33,8 @@ public abstract class PlayerInventoryMixin {
    private void arcananovum_onPickup(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       try{
          PlayerInventory playerInv = (PlayerInventory) (Object) this;
-         List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
+         List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(playerInv.player);
          if(playerInv.player.isSneaking()) return;
-         
-         List<ItemStack> invItems = new ArrayList<>();
-         for(int i=0; i<playerInv.size();i++){
-            ItemStack item = playerInv.getStack(i);
-            if(item.isEmpty()){
-               continue;
-            }
-            
-            invItems.add(item);
-            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-            if(arcanaItem instanceof ArcanistsBelt belt){
-               SimpleInventory beltInv = belt.deserialize(item);
-               ArrayList<ItemStack> beltList = new ArrayList<>();
-               for(int j = 0; j < beltInv.size(); j++){
-                  beltList.add(beltInv.getStack(j));
-               }
-               allItems.add(new Pair<>(beltList,item));
-            }
-         }
-         allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
          
          for(int i = 0; i < allItems.size(); i++){
             List<ItemStack> itemList = allItems.get(i).getLeft();
@@ -79,7 +63,7 @@ public abstract class PlayerInventoryMixin {
             }
             
             if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-               belt.serialize(carrier, sinv);
+               belt.buildItemLore(carrier, ArcanaNovum.SERVER);
             }
          }
          

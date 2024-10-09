@@ -3,20 +3,18 @@ package net.borisshoes.arcananovum.gui.quivers;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.QuiverItem;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class QuiverGui extends SimpleGui {
    
@@ -48,14 +46,12 @@ public class QuiverGui extends SimpleGui {
          setSlotRedirect(i, new QuiverSlot(inv,runic,i,i%3,i/3));
       }
       
-      NbtList arrows = ArcanaItem.getListProperty(item, QuiverItem.ARROWS_TAG, NbtElement.COMPOUND_TYPE);
-      for(int i = 0; i < arrows.size(); i++){
-         NbtCompound arrow = arrows.getCompound(i);
-         int slot = arrow.getByte("Slot");
-         ItemStack stack = ItemStack.fromNbt(player.getRegistryManager(),arrow).orElse(ItemStack.EMPTY);
-         if(stack.getCount() > 0 && !stack.isEmpty())
-            inv.setStack(slot,stack);
-      }
+      ContainerComponent arrows = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+      AtomicInteger i = new AtomicInteger();
+      arrows.stream().forEachOrdered(stack -> {
+         inv.setStack(i.get(),stack);
+         i.getAndIncrement();
+      });
       
       setTitle(quiver.getTranslatedName());
       listener.finishUpdate();
@@ -79,16 +75,7 @@ public class QuiverGui extends SimpleGui {
    
    @Override
    public void onClose(){
-      NbtList arrows = new NbtList();
-      
-      for(int i = 0; i < inv.size(); i++){
-         ItemStack arrowStack = inv.getStack(i);
-         if(arrowStack.isEmpty()) continue;
-         NbtCompound arrow = (NbtCompound) arrowStack.toNbtAllowEmpty(player.getRegistryManager());
-         arrow.putByte("Slot", (byte) i);
-         arrows.add(arrow);
-      }
-      ArcanaItem.putProperty(item,QuiverItem.ARROWS_TAG,arrows);
+      item.set(DataComponentTypes.CONTAINER,ContainerComponent.fromStacks(inv.heldStacks));
    
       List<Integer> tippedTypes = new ArrayList<>();
       if(!runic){

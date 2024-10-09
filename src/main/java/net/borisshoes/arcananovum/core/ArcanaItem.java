@@ -10,10 +10,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.inventory.Inventory;
@@ -47,6 +44,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public static final String ID_TAG = "id";
    public static final String CATALYSTS_TAG = "catalysts";
    public static final String AUGMENTS_TAG = "augments";
+   public static final String UNINITIALIZED_TAG = "uninitialized";
    
    public static final String MODE_TAG = "mode";
    public static final String ACTIVE_TAG = "active";
@@ -247,6 +245,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public ItemStack getNewItem(){
       ItemStack stack = getPrefItem();
       putProperty(stack,UUID_TAG,UUID.randomUUID().toString());
+      removeProperty(stack,UNINITIALIZED_TAG);
       return stack;
    }
    
@@ -286,7 +285,12 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       // For default just replace everything but UUID and crafter and update version
       ItemStack newStack = getNewItem();
-      putProperty(newStack,UUID_TAG,getStringProperty(stack,UUID_TAG));
+      String uuid = getStringProperty(stack,UUID_TAG);
+      if(uuid.isEmpty() || uuid.equals("-") || uuid.equals(ArcanaNovum.BLANK_UUID)){
+         putProperty(newStack,UUID_TAG,UUID.randomUUID().toString());
+      }else{
+         putProperty(newStack,UUID_TAG,uuid);
+      }
       NbtCompound augments = getCompoundProperty(stack,AUGMENTS_TAG);
       NbtList catalysts = getListProperty(stack,CATALYSTS_TAG,NbtElement.COMPOUND_TYPE);
       if(!augments.isEmpty()) putProperty(newStack, AUGMENTS_TAG, augments);
@@ -312,18 +316,31 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       if(stack.contains(DataComponentTypes.CUSTOM_NAME)){
          newStack.set(DataComponentTypes.CUSTOM_NAME,stack.get(DataComponentTypes.CUSTOM_NAME));
       }
+      
+      if(stack.contains(DataComponentTypes.CONTAINER)){
+         newStack.set(DataComponentTypes.CONTAINER,stack.get(DataComponentTypes.CONTAINER));
+      }
    
       return buildItemLore(newStack,server);
    }
    
-   public ItemStack initializeArcanaTag(ItemStack stack){
+   public ItemStack initializeArcanaTag(ItemStack stack, boolean creativeMenuItem){
       putProperty(stack,ID_TAG,id);
       putProperty(stack,RARITY_TAG, ArcanaRarity.getRarityInt(rarity));
       putProperty(stack,VERSION_TAG, ArcanaItem.VERSION + getItemVersion());
-      putProperty(stack,UUID_TAG,"-");
+      putProperty(stack,UUID_TAG,ArcanaNovum.BLANK_UUID);
       putProperty(stack,AUGMENTS_TAG, new NbtCompound());
       putProperty(stack,CATALYSTS_TAG,new NbtList());
+      if(creativeMenuItem){
+         putProperty(stack,UNINITIALIZED_TAG,true);
+      }else{
+         removeProperty(stack,UNINITIALIZED_TAG);
+      }
       return stack;
+   }
+   
+   public ItemStack initializeArcanaTag(ItemStack stack){
+      return initializeArcanaTag(stack,true);
    }
    
    public static String getUUID(ItemStack item){

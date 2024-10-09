@@ -141,7 +141,7 @@ public class SpawnerHarness extends ArcanaItem {
    private void giveScrap(PlayerEntity player){
       ItemStack stack = new ItemStack(Items.NETHERITE_SCRAP);
       int reduction = (int) ArcanaNovum.config.getValue("ingredientReduction");
-      int scrapCost = (int) Math.ceil(4.0 / reduction) * 4;
+      int scrapCost = (int) Math.ceil(4.0 / reduction);
       stack.setCount(scrapCost/2);
       MiscUtils.giveStacks(player,stack);
    }

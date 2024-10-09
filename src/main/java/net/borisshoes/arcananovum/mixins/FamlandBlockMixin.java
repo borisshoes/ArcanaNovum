@@ -1,11 +1,14 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.WildGrowthCharm;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FarmlandBlock;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -27,39 +30,8 @@ public class FamlandBlockMixin {
    
    @Inject(method = "setToDirt",at=@At(value = "HEAD"),cancellable = true)
    private static void arcananovum_wildGrowthStopTrample(Entity entity, BlockState state, World world, BlockPos pos, CallbackInfo ci){
-      if(entity instanceof ServerPlayerEntity player){
-         List<Pair<List<ItemStack>, ItemStack>> allItems = new ArrayList<>();
-         PlayerInventory playerInv = player.getInventory();
-         
-         List<ItemStack> invItems = new ArrayList<>();
-         for(int i = 0; i < playerInv.size(); i++){
-            ItemStack item = playerInv.getStack(i);
-            if(item.isEmpty()){
-               continue;
-            }
-            
-            invItems.add(item);
-            ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-            if(arcanaItem instanceof ArcanistsBelt belt){
-               SimpleInventory beltInv = belt.deserialize(item);
-               ArrayList<ItemStack> beltList = new ArrayList<>();
-               for(int j = 0; j < beltInv.size(); j++){
-                  beltList.add(beltInv.getStack(j));
-               }
-               allItems.add(new Pair<>(beltList, item));
-            }
-         }
-         allItems.add(new Pair<>(invItems, ItemStack.EMPTY));
-         
-         for(Pair<List<ItemStack>, ItemStack> allItem : allItems){
-            List<ItemStack> itemList = allItem.getLeft();
-            for(ItemStack item : itemList){
-               if(ArcanaItemUtils.identifyItem(item) instanceof WildGrowthCharm){
-                  ci.cancel();
-                  return;
-               }
-            }
-         }
+      if(entity instanceof ServerPlayerEntity player && ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.WILD_GROWTH_CHARM.getItem())){
+         ci.cancel();
       }
    }
 }

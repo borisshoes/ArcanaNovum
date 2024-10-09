@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -17,6 +18,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -68,7 +70,10 @@ public class TickCallback {
                   continue; // Item not arcane, skip
                
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-               if(ArcanaItemUtils.needsVersionUpdate(item)){
+               if(ArcanaItem.hasProperty(item,ArcanaItem.UNINITIALIZED_TAG)){
+                  inv.setStack(i,arcanaItem.addCrafter(arcanaItem.getNewItem(),player.getUuidAsString(),true,server));
+                  continue;
+               }else if(ArcanaItemUtils.needsVersionUpdate(item)){
                   inv.setStack(i,arcanaItem.updateItem(item,server));
                   ArcanaNovum.devPrint("Updating Item "+item.getName().getString());
                   continue;
@@ -88,7 +93,7 @@ public class TickCallback {
                }
             }
             
-            if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.000015){
+            if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.0000075){
                dragonEggDialog(player);
             }
             
@@ -156,15 +161,17 @@ public class TickCallback {
    
    private static void concCheck(MinecraftServer server, ServerPlayerEntity player, IArcanaProfileComponent arcaneProfile){
       // Check to make sure everyone is under concentration limit
+      if(server.getTicks() % 80 != 0) return;
       int resolve = arcaneProfile.getAugmentLevel(ArcanaAugments.RESOLVE.id);
       int maxConc = LevelUtils.concFromXp(arcaneProfile.getXP(),resolve);
       int curConc = ArcanaItemUtils.getUsedConcentration(player);
       if(ArcanaItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
-      if(curConc > maxConc && server.getTicks()%80 == 0 && !player.isCreative() && !player.isSpectator()){
+      if(curConc > maxConc && !player.isCreative() && !player.isSpectator()){
+         int concTick = ((NbtInt)arcaneProfile.getMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG)).intValue() + 1;
          if((boolean) ArcanaNovum.config.getValue("doConcentrationDamage")){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
-            player.damage(ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), 8);
+            player.damage(ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
          }
          if(!player.isDead()){
             if(player.getHealth() <= 1.5f){
@@ -175,8 +182,14 @@ public class TickCallback {
             if(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento nulMemento && !nulMemento.isActive(headStack)){
                nulMemento.forgor(headStack,player);
             }
+         }else{
+            concTick = 0;
          }
+         arcaneProfile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG,NbtInt.of(concTick));
+      }else{
+         arcaneProfile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG,NbtInt.of(0));
       }
+      
    }
    
    private static void wingsTick(ServerPlayerEntity player){
@@ -265,7 +278,7 @@ public class TickCallback {
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
-                  .append(Text.literal("\nRelease me at once Mortal! And I will grant you a swift death for your defiance!").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal("\nRelease me at once! And I will grant you a swift death for your defiance!").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
       ),new int[]{},1,1,-1));
@@ -346,7 +359,7 @@ public class TickCallback {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nDon't make me laugh! You are a shell of your former self. I did not imprison you, the Mortals defeated you. How could you kill me if you couldn't kill them?").formatted(Formatting.DARK_GRAY))
+                  .append(Text.literal("\nDon't make me laugh! You are a shell of your former self. I did not imprison you, this Player defeated you. How could you kill me if you couldn't kill them?").formatted(Formatting.DARK_GRAY))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
@@ -384,7 +397,7 @@ public class TickCallback {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nWe don't 'go' anywhere, this Mortal holds all our tributes. But I suppose it would be foolish to waste this opportunity.\n").formatted(Formatting.DARK_GRAY)),
+                  .append(Text.literal("\nWe don't 'go' anywhere, this Player holds all our tributes. But I suppose it would be foolish to waste this opportunity.\n").formatted(Formatting.DARK_GRAY)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
@@ -409,17 +422,17 @@ public class TickCallback {
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
-                  .append(Text.literal("\nYour grandiose ideals mean nothing! After all I've been through, I just wanted a place to call home; To be safe for once in my entire existence!\n").formatted(Formatting.DARK_PURPLE)),
+                  .append(Text.literal("\nYour grandiose ideals mean nothing! After all I've been through, I just want a place to call home; To be safe for once in my entire existence!\n").formatted(Formatting.DARK_PURPLE)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nYet the price of your safety came at the cost of the freedom of an entire dimension.\n").formatted(Formatting.AQUA)),
+                  .append(Text.literal("\nYet the price of your safety came at the cost of the freedom of an entire realm.\n").formatted(Formatting.AQUA)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("\nYou terrorized them for eons, and when you had the chance to stop, you were too afraid of rebellion to let them be. But the rebellion came anyways, the Endermen sacrificed their lives to lead the Mortals to you.\n").formatted(Formatting.DARK_GRAY)),
+                  .append(Text.literal("\nYou terrorized them for eons, and when you had the chance to stop, you were too afraid of rebellion to let them be. But the rebellion came anyways, the Endermen sacrificed their lives to lead this Player to you.\n").formatted(Formatting.DARK_GRAY)),
             Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))

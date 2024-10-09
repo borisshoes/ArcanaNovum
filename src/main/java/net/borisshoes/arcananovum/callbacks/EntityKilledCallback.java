@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
@@ -7,6 +8,9 @@ import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -33,29 +37,9 @@ public class EntityKilledCallback {
             String entityTypeId = EntityType.getId(livingEntity.getType()).toString();
             
             // Check for soulstone then activate
-            List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
+            List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(player);
             PlayerInventory playerInv = player.getInventory();
             boolean procdStone = false;
-            
-            List<ItemStack> invItems = new ArrayList<>();
-            for(int i=0; i<playerInv.size();i++){
-               ItemStack item = playerInv.getStack(i);
-               if(item.isEmpty()){
-                  continue;
-               }
-               
-               invItems.add(item);
-               ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
-               if(arcanaItem instanceof ArcanistsBelt belt){
-                  SimpleInventory beltInv = belt.deserialize(item);
-                  ArrayList<ItemStack> beltList = new ArrayList<>();
-                  for(int j = 0; j < beltInv.size(); j++){
-                     beltList.add(beltInv.getStack(j));
-                  }
-                  allItems.add(new Pair<>(beltList,item));
-               }
-            }
-            allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
             
             for(int i = 0; i < allItems.size(); i++){
                List<ItemStack> itemList = allItems.get(i).getLeft();
@@ -83,7 +67,7 @@ public class EntityKilledCallback {
                }
                
                if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-                  belt.serialize(carrier, sinv);
+                  belt.buildItemLore(carrier, ArcanaNovum.SERVER);
                }
             }
    

@@ -65,7 +65,7 @@ public class ServerPlayNetworkHandlerMixin {
             
             int cooldown = ((NbtInt)profile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
             if(cooldown <= 0){
-               QuiverItem.switchArrowOption(player,runic);
+               QuiverItem.switchArrowOption(player,runic,true);
                profile.addMiscData(QuiverItem.QUIVER_CD_TAG,NbtInt.of(3));
             }
             

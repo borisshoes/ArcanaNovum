@@ -3,9 +3,12 @@ package net.borisshoes.arcananovum.utils;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -36,6 +39,30 @@ import net.minecraft.util.math.Vec3d;
 import java.util.*;
 
 public class MiscUtils {
+   
+   public static List<Pair<List<ItemStack>,ItemStack>> getAllItems(PlayerEntity player){
+      List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
+      PlayerInventory playerInv = player.getInventory();
+      
+      List<ItemStack> invItems = new ArrayList<>();
+      for(int i=0; i<playerInv.size();i++){
+         ItemStack item = playerInv.getStack(i);
+         if(item.isEmpty()){
+            continue;
+         }
+         
+         invItems.add(item);
+         ArcanaItem mitem = ArcanaItemUtils.identifyItem(item);
+         if(mitem instanceof ArcanistsBelt belt){
+            ContainerComponent beltItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+            ArrayList<ItemStack> beltList = new ArrayList<>();
+            beltItems.iterateNonEmpty().forEach(beltList::add);
+            allItems.add(new Pair<>(beltList,item));
+         }
+      }
+      allItems.add(new Pair<>(invItems,ItemStack.EMPTY));
+      return allItems;
+   }
    
    public static void outlineGUI(SimpleGui gui, int color, Text borderText){
       outlineGUI(gui,color,borderText,null);
@@ -93,7 +120,7 @@ public class MiscUtils {
       try{
          return UUID.fromString(str);
       }catch(Exception e){
-         return UUID.fromString("00000000-0000-4000-8000-000000000000");
+         return UUID.fromString(ArcanaNovum.BLANK_UUID);
       }
    }
    

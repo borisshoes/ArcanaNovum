@@ -14,6 +14,8 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.block.ShulkerBoxBlock;
+import net.minecraft.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.*;
@@ -39,10 +41,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -395,12 +394,14 @@ public class MagnetismCharm extends ArcanaItem {
          if(!player.isSneaking()){
             int mode = getIntProperty(stack,MODE_TAG);
             
-            if(mode > 0 && world.getServer().getTicks() % 6 == 0){
+            if(mode > 0 && world.getServer().getTicks() % 10 == 0){
                Vec3d playerPos = player.getEyePos();
                
                Box box = new Box(playerPos,playerPos).expand(passiveRange);
                List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (e) -> canAffectItem(stack,e.getStack().getItem()));
+               Collections.shuffle(items);
                
+               int i = 0;
                for(ItemEntity item : items){
                   double x = playerPos.getX() - item.getX();
                   double y = playerPos.getY() - item.getY();
@@ -412,6 +413,11 @@ public class MagnetismCharm extends ArcanaItem {
                      z = -z;
                   }
                   item.setVelocity(x * speed, y * speed + Math.sqrt(Math.sqrt(x * x + y * y + z * z)) * heightMod, z * speed);
+                  if(i >= 25){
+                     break;
+                  }else{
+                     i++;
+                  }
                }
             }
          }

@@ -4,7 +4,9 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.PickaxeOfCeptyus;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.ActionResult;
@@ -32,8 +34,10 @@ public class ServerPlayerInteractionManagerMixin {
    private void arcananovum_continueMining(BlockState state, BlockPos pos, int failedStartMiningTime, CallbackInfoReturnable<Float> cir) {
       if(player != null && mining){
          ItemStack mineStack = player.getMainHandStack();
-         if(ArcanaItemUtils.identifyItem(mineStack) instanceof PickaxeOfCeptyus pick){
-            pick.mining(player,mineStack);
+         if(ArcanaItemUtils.identifyItem(mineStack) instanceof PickaxeOfCeptyus pick && mineStack.contains(DataComponentTypes.TOOL)){
+            if(mineStack.get(DataComponentTypes.TOOL).getSpeed(state) > mineStack.get(DataComponentTypes.TOOL).defaultMiningSpeed()){
+               pick.mining(player,mineStack);
+            }
          }
       }
    }

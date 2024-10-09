@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.block.GrindstoneBlock;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -29,6 +30,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.EnchantmentTags;
+import net.minecraft.screen.GrindstoneScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -586,7 +588,7 @@ public class MidnightEnchanterGui extends SimpleGui {
          }
       }
       if(stack.isOf(Items.BOOK)){
-         stack = stack.copyComponentsToNewStack(Items.ENCHANTED_BOOK, stack.getCount());
+         stack = stack.withItem(Items.ENCHANTED_BOOK);
       }
       
       EnchantmentHelper.set(stack,enchantBuilder.build());
@@ -599,7 +601,7 @@ public class MidnightEnchanterGui extends SimpleGui {
       
       EnchantmentHelper.apply(stack, components -> components.remove(enchantment -> true));
       if(stack.isOf(Items.ENCHANTED_BOOK)){
-         stack = stack.copyComponentsToNewStack(Items.BOOK, stack.getCount());
+         stack = stack.withItem(Items.BOOK);
       }
       
       if(ArcanaItemUtils.isArcane(stack)){

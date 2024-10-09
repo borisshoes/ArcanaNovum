@@ -224,9 +224,6 @@ public class AquaticEversource extends ArcanaItem {
                   playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
                   fluidDrainable.getBucketFillSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
                   world.emitGameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
-                  if (!world.isClient) {
-                     PLAYER_DATA.get(player).addXP(1); // Add xp
-                  }
                   return ActionResult.SUCCESS;
                }
                return ActionResult.FAIL;
@@ -239,14 +236,15 @@ public class AquaticEversource extends ArcanaItem {
                   for(BlockPos floodPos : BlockPos.iterate(blockPos3.add(-1, 0, -1), blockPos3.add(1, 0, 1))){
                      if(floodPos.equals(blockPos3)) continue;
                      if(placeFluid(fluid,playerEntity, world, floodPos, null, true) > 0){
-                        PLAYER_DATA.get(player).addXP(5); // Add xp
+                        PLAYER_DATA.get(player).addXP(1); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                      }
                   }
                }
-               PLAYER_DATA.get(player).addXP(5); // Add xp
+               PLAYER_DATA.get(player).addXP(1); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
+               playerEntity.getItemCooldownManager().set(stack,5);
                return ActionResult.SUCCESS;
             }
             return ActionResult.FAIL;

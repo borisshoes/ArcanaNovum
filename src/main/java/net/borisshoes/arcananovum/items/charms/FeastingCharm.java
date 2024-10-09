@@ -19,6 +19,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ConsumableComponent;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.SuspiciousStewEffectsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -185,6 +186,7 @@ public class FeastingCharm extends ArcanaItem {
                
                if(!ArcanaItemUtils.isArcane(invItem) && invItem.getItem() != Items.ENCHANTED_GOLDEN_APPLE){
                   FoodComponent foodComponent = invItem.get(DataComponentTypes.FOOD);
+                  if(foodComponent.nutrition() < 1) continue;
                   availableFoods.add(new Pair<>(i,foodComponent));
                   if(bestFoodInd == -1 || inv.getStack(bestFoodInd).get(DataComponentTypes.FOOD).nutrition() < foodComponent.nutrition()){
                      bestFoodInd = i;
@@ -214,8 +216,12 @@ public class FeastingCharm extends ArcanaItem {
                   hunger.add(gluttonyFoodBoost[gluttony],gluttonySatBoost[gluttony]);
                   // Apply Status Effects
                   ConsumableComponent consumableComponent = selectedFood.get(DataComponentTypes.CONSUMABLE);
-                  if (consumableComponent != null) {
+                  if (!world.isClient && consumableComponent != null) {
                      foodComponent.onConsume(world, player, selectedFood, consumableComponent);
+                  }
+                  SuspiciousStewEffectsComponent suspiciousStewEffectsComponent = selectedFood.getOrDefault(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffectsComponent.DEFAULT);
+                  for(SuspiciousStewEffectsComponent.StewEffect stewEffect : suspiciousStewEffectsComponent.effects()) {
+                     player.addStatusEffect(stewEffect.createStatusEffectInstance());
                   }
 
                   if(selectedFood.isOf(Items.POISONOUS_POTATO)){

@@ -758,7 +758,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("Mortal").formatted(Formatting.GOLD))
+                     .append(Text.literal("Player").formatted(Formatting.GOLD))
                      .append(Text.literal(" knocks on the door of the ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal("? They know not what they are toying with...").formatted(Formatting.DARK_GRAY)),
@@ -775,15 +775,15 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
-                     .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("Mortals").formatted(Formatting.GOLD))
+                     .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal("Player").formatted(Formatting.GOLD))
                      .append(Text.literal(" grow bolder by the minute. Perhaps they need to be put in their place.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
          )),new ArrayList<>(),new int[]{},3,3,-1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("Mortal").formatted(Formatting.GOLD))
+                     .append(Text.literal("Player").formatted(Formatting.GOLD))
                      .append(Text.literal(" seeks to harness ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal("? Let them try...").formatted(Formatting.DARK_GRAY)),
@@ -890,7 +890,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You have impressed me ").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("Mortal").formatted(Formatting.GOLD))
+                     .append(Text.literal("Player").formatted(Formatting.GOLD))
                      .append(Text.literal(", you have earned a taste of my ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" power.").formatted(Formatting.DARK_GRAY)),
@@ -1008,7 +1008,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
                      .append(Text.literal(" gambit").formatted(Formatting.GOLD))
                      .append(Text.literal(" paid off... I am ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("impressed").formatted(Formatting.BLUE))
-                     .append(Text.literal(" mortal, let my ").formatted(Formatting.DARK_GRAY))
+                     .append(Text.literal(" Player, let my ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Memento").formatted(Formatting.BLACK, Formatting.BOLD))
                      .append(Text.literal(" offer you ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("wisdom").formatted(Formatting.BLUE))
@@ -1032,7 +1032,7 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Another arrogant ").formatted(Formatting.DARK_GRAY))
-                     .append(Text.literal("Mortal").formatted(Formatting.GOLD))
+                     .append(Text.literal("Player").formatted(Formatting.GOLD))
                      .append(Text.literal(", not worthy of my time.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
          )),new ArrayList<>(),new int[]{},5,5,-1));

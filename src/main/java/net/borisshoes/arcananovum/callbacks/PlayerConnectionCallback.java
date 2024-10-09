@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.items.QuiverItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
@@ -95,6 +96,12 @@ public class PlayerConnectionCallback {
       }
       if(profile.getMiscData(QuiverItem.ARROW_INV_SLOT_TAG) == null){
          profile.addMiscData(QuiverItem.ARROW_INV_SLOT_TAG,NbtInt.of(0));
+      }
+      if(profile.getMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG) == null){
+         profile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG,NbtInt.of(0));
+      }
+      if(profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG) == null){
+         profile.addMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG,NbtInt.of(0));
       }
    }
    

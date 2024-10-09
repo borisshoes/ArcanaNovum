@@ -4,7 +4,9 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
 
 import java.util.ArrayList;
@@ -43,6 +45,10 @@ public class ArcanistsBeltSlot extends Slot {
          ArcanaRegistry.AEQUALIS_SCIENTIA
    ));
    
+   public static final List<Item> BELT_NORMAL_ITEMS = new ArrayList<>(Arrays.asList(
+         Items.SPYGLASS
+   ));
+   
    public ArcanistsBeltSlot(Inventory inventory, int index, int x, int y){
       super(inventory, index, x, y);
    }
@@ -53,6 +59,6 @@ public class ArcanistsBeltSlot extends Slot {
       if(arcanaItem != null){
          return BELT_ARCANA_ITEMS.contains(arcanaItem);
       }
-      return stack.isDamageable();
+      return stack.isDamageable() || BELT_NORMAL_ITEMS.contains(stack.getItem());
    }
 }

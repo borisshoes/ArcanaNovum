@@ -43,7 +43,7 @@ public class PlayerEntityMixin {
       
       if(player instanceof ServerPlayerEntity serverPlayer){
          ItemStack arrowStack = QuiverItem.getArrowStack(serverPlayer,runic,false);
-         Pair<String,Integer> option = QuiverItem.getArrowOption(serverPlayer,runic);
+         Pair<String,Integer> option = QuiverItem.getArrowOption(serverPlayer,runic,false);
          if(arrowStack != null && option != null){
             ItemStack returnStack = arrowStack.copy();
             ArcanaItem.putProperty(returnStack, QuiverItem.QUIVER_SLOT_TAG, option.getRight());

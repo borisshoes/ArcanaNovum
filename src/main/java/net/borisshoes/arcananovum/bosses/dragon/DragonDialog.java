@@ -16,6 +16,12 @@ public class DragonDialog {
    
    public static void announce(Announcements type, MinecraftServer server, @Nullable String extra){
       ArrayList<MutableText> mainMessage = new ArrayList<>();
+      ArrayList<MutableText> subMessage1 = new ArrayList<>();
+      ArrayList<MutableText> subMessage2 = new ArrayList<>();
+      ArrayList<MutableText> subMessage3 = new ArrayList<>();
+      ArrayList<MutableText> subMessage4 = new ArrayList<>();
+      ArrayList<MutableText> subMessage5 = new ArrayList<>();
+      ArrayList<MutableText> subMessage6 = new ArrayList<>();
       
       switch(type){
          case EVENT_PREP:
@@ -46,13 +52,29 @@ public class DragonDialog {
             mainMessage.add(Text.literal(""));
             mainMessage.add(Text.literal("")
                   .append(Text.literal("=======================================").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
+            
+            subMessage1.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal("   So the Players have re-awoken the old gateways? What do you say Brother, shall we pay Enderia a visit?").formatted(Formatting.AQUA,Formatting.ITALIC)));
+            subMessage1.add(Text.literal(""));
+            
+            subMessage2.add(Text.literal(""));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal("   I have been waiting for this moment for eons! No longer will Enderia be allowed to hide away in her realm!").formatted(Formatting.GRAY,Formatting.ITALIC)));
+            subMessage2.add(Text.literal(""));
+            
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
             break;
          case EVENT_START:
-            ArrayList<MutableText> subMessage1 = new ArrayList<>();
-            ArrayList<MutableText> subMessage2 = new ArrayList<>();
-            ArrayList<MutableText> subMessage3 = new ArrayList<>();
-            ArrayList<MutableText> subMessage4 = new ArrayList<>();
-            
             mainMessage.add(Text.literal("")
                   .append(Text.literal("=======================================").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             mainMessage.add(Text.literal("")
@@ -73,7 +95,7 @@ public class DragonDialog {
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             subMessage1.add(Text.literal("")
-                  .append(Text.literal("   So you pitiful mortals think you can usurp ME? Behold the Empress of The End, for I will be the last thing you see.").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+                  .append(Text.literal("   So you pitiful Players think you can usurp ME? Behold the Empress of The End, for I will be the last thing you see.").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             subMessage1.add(Text.literal(""));
             
             subMessage2.add(Text.literal(""));
@@ -82,7 +104,7 @@ public class DragonDialog {
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
             subMessage2.add(Text.literal("")
-                  .append(Text.literal("   It appears as though the mortals have come to slay you, dear Sister. I do hope you haven't forgotten how to fight after all these eons.").formatted(Formatting.GRAY,Formatting.ITALIC)));
+                  .append(Text.literal("   It appears as though the Players have come to slay you, dear Sister. I do hope you haven't forgotten how to fight after all this time.").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage2.add(Text.literal(""));
             
             subMessage3.add(Text.literal(""));
@@ -91,7 +113,9 @@ public class DragonDialog {
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             subMessage3.add(Text.literal("")
-                  .append(Text.literal("   Oh, please! They are mere flies under my wings!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+                  .append(Text.literal("   Oh, of course ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC))
+                  .append(Text.literal("you").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC,Formatting.UNDERLINE))
+                  .append(Text.literal(" would be among them. These Players are mere ants under my wings!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             subMessage3.add(Text.literal(""));
             
             subMessage4.add(Text.literal(""));
@@ -103,10 +127,10 @@ public class DragonDialog {
                   .append(Text.literal("   By all means... prove to me you aren't an indolent waste as you've led me to believe.").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage4.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () ->{ announceHelper(server,subMessage2); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage3); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(400, () ->{ announceHelper(server,subMessage4); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(360, () ->{ announceHelper(server,subMessage3); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(480, () ->{ announceHelper(server,subMessage4); }));
             break;
          case PHASE_ONE_START:
             mainMessage.add(Text.literal("")
@@ -189,11 +213,29 @@ public class DragonDialog {
             mainMessage.add(Text.literal("")
                   .append(Text.literal("   RELENTLESS INSECTS!! I WILL VANQUISH YOU MYSELF!!!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
+            
+            subMessage1.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal("   It is time for your scarred realm to heal from the wounds left by your and your predecessor.").formatted(Formatting.AQUA,Formatting.ITALIC))
+                  .append(Text.literal("\n    Players, will you help me reclaim her corrupted crystal towers?").formatted(Formatting.AQUA,Formatting.ITALIC)));
+            subMessage1.add(Text.literal(""));
+            
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal("   You have no right to equate our actions! You know what Tenbrous did to me!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+            subMessage2.add(Text.literal(""));
+            
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage2); }));
             break;
          case DRAGON_HALF_HP:
-            ArrayList<MutableText> subMessage5 = new ArrayList<>();
-            ArrayList<MutableText> subMessage6 = new ArrayList<>();
-            ArrayList<MutableText> subMessage7 = new ArrayList<>();
             
             mainMessage.add(Text.literal(""));
             mainMessage.add(Text.literal("")
@@ -204,43 +246,48 @@ public class DragonDialog {
                   .append(Text.literal("   AARGH!! THIS DIMENSION BELONGS TO ME! YOU ARE ALL UNWORTHY OF ITS POWER!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             
-            subMessage5.add(Text.literal(""));
-            subMessage5.add(Text.literal("")
+            subMessage1.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal("   We do not possess our realms. We are here to help them renew what has been lost.").formatted(Formatting.AQUA,Formatting.ITALIC)));
+            subMessage1.add(Text.literal(""));
+            
+            subMessage2.add(Text.literal(""));
+            subMessage2.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage5.add(Text.literal("")
-                  .append(Text.literal("   And to think you used to be your Progenitor's Champion! And the First Ascendant no less! How far you've fallen!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage5.add(Text.literal(""));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal("   Haha... Behold the First Ascendant; Bane of Tenbrous! Oh, how far you've fallen!").formatted(Formatting.GRAY,Formatting.ITALIC)));
+            subMessage2.add(Text.literal(""));
             
-            subMessage6.add(Text.literal(""));
-            subMessage6.add(Text.literal("")
+            subMessage3.add(Text.literal(""));
+            subMessage3.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
-            subMessage6.add(Text.literal("")
-                  .append(Text.literal("   Now is not the time to mock me, Brother! Come and help me fight these insects!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
-            subMessage6.add(Text.literal(""));
+            subMessage3.add(Text.literal("")
+                  .append(Text.literal("   Now is not the time to mock me! Why are you two helping these insects!?").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+            subMessage3.add(Text.literal(""));
             
-            subMessage7.add(Text.literal(""));
-            subMessage7.add(Text.literal("")
+            subMessage4.add(Text.literal(""));
+            subMessage4.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage7.add(Text.literal("")
-                  .append(Text.literal("   Ho ho... No, no, this is what you deserve. If they are mere insects, squish them yourself!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage7.add(Text.literal(""));
+            subMessage4.add(Text.literal("")
+                  .append(Text.literal("   This is what you deserve for your actions. If they are mere insects, you should be able to squish them yourself!").formatted(Formatting.GRAY,Formatting.ITALIC)));
+            subMessage3.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage5); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () ->{ announceHelper(server,subMessage6); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage7); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(360, () ->{ announceHelper(server,subMessage3); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(480, () ->{ announceHelper(server,subMessage4); }));
             break;
          case DRAGON_QUARTER_HP:
-            ArrayList<MutableText> subMessage8 = new ArrayList<>();
-            ArrayList<MutableText> subMessage9 = new ArrayList<>();
-            ArrayList<MutableText> subMessage10 = new ArrayList<>();
-            ArrayList<MutableText> subMessage11 = new ArrayList<>();
-            ArrayList<MutableText> subMessage12 = new ArrayList<>();
             
             mainMessage.add(Text.literal(""));
             mainMessage.add(Text.literal("")
@@ -251,78 +298,75 @@ public class DragonDialog {
                   .append(Text.literal("   MY REIGN IS ETERNAL! I WILL DESTROY YOU ALL!!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             
-            subMessage8.add(Text.literal(""));
-            subMessage8.add(Text.literal("")
+            subMessage1.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
-            subMessage8.add(Text.literal("")
-                  .append(Text.literal("   BROTHER, PLEASE! You're one of US, we shouldn't turn our backs on each other!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
-            subMessage8.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal("   NUL... EQUAYUS... PLEASE! We shouldn't turn our backs on each other!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+            subMessage1.add(Text.literal(""));
             
-            subMessage9.add(Text.literal(""));
-            subMessage9.add(Text.literal("")
+            subMessage2.add(Text.literal(""));
+            subMessage2.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage9.add(Text.literal("")
-                  .append(Text.literal("   Your Ascension inspired me!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage9.add(Text.literal("")
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal("   You turned your back on US! Your Ascension inspired us!").formatted(Formatting.GRAY,Formatting.ITALIC)));
+            subMessage2.add(Text.literal("")
                   .append(Text.literal("   You were the first to reject the Progenitors' ideology, and proved that things could change!").formatted(Formatting.GRAY,Formatting.ITALIC)));
+            subMessage2.add(Text.literal(""));
             
-            subMessage9.add(Text.literal(""));
-            
-            subMessage10.add(Text.literal(""));
-            subMessage10.add(Text.literal("")
+            subMessage3.add(Text.literal(""));
+            subMessage3.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage10.add(Text.literal("")
+            subMessage3.add(Text.literal("")
                   .append(Text.literal("   When ").formatted(Formatting.GRAY,Formatting.ITALIC))
                   .append(Text.literal("Gaialtus").formatted(Formatting.AQUA,Formatting.ITALIC))
                   .append(Text.literal(" disappeared, you rose up and defeated ").formatted(Formatting.GRAY,Formatting.ITALIC))
-                  .append(Text.literal("Tenbrous").formatted(Formatting.BLACK,Formatting.ITALIC,Formatting.OBFUSCATED))
+                  .append(Text.literal("Tenbrous").formatted(Formatting.DARK_GREEN,Formatting.ITALIC))
                   .append(Text.literal("!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage10.add(Text.literal("")
+            subMessage3.add(Text.literal("")
                   .append(Text.literal("   Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.ITALIC))
                   .append(Text.literal(" sealed themselves away out of fear!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage10.add(Text.literal("")
+            subMessage3.add(Text.literal("")
                   .append(Text.literal("   And ").formatted(Formatting.GRAY,Formatting.ITALIC))
-                  .append(Text.literal("Brimsüth").formatted(Formatting.RED,Formatting.ITALIC,Formatting.OBFUSCATED))
+                  .append(Text.literal("Brimsüth").formatted(Formatting.RED,Formatting.ITALIC))
                   .append(Text.literal(" took a ").formatted(Formatting.GRAY,Formatting.ITALIC))
                   .append(Text.literal("fuck").formatted(Formatting.GRAY,Formatting.ITALIC,Formatting.OBFUSCATED))
                   .append(Text.literal("ing nap!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage10.add(Text.literal("")
+            subMessage3.add(Text.literal("")
                   .append(Text.literal("   So what do you do, as the only God remaining?").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage10.add(Text.literal(""));
+            subMessage3.add(Text.literal(""));
             
-            subMessage11.add(Text.literal(""));
-            subMessage11.add(Text.literal("")
+            subMessage4.add(Text.literal(""));
+            subMessage4.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
-            subMessage11.add(Text.literal("")
+            subMessage4.add(Text.literal("")
                   .append(Text.literal("   I...").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
-            subMessage11.add(Text.literal(""));
+            subMessage4.add(Text.literal(""));
             
-            subMessage12.add(Text.literal(""));
-            subMessage12.add(Text.literal("")
+            subMessage5.add(Text.literal(""));
+            subMessage5.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage12.add(Text.literal("")
+            subMessage5.add(Text.literal("")
                   .append(Text.literal("   You cowered in your realm, and became just like them!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage12.add(Text.literal(""));
+            subMessage5.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(150, () ->{ announceHelper(server,subMessage8); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(250, () ->{ announceHelper(server,subMessage9); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(400, () ->{ announceHelper(server,subMessage10); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(650, () ->{ announceHelper(server,subMessage11); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(690, () ->{ announceHelper(server,subMessage12); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(150, () ->{ announceHelper(server,subMessage1); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage2); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(450, () ->{ announceHelper(server,subMessage3); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(700, () ->{ announceHelper(server,subMessage4); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(750, () ->{ announceHelper(server,subMessage5); }));
             break;
          case DRAGON_DEATH:
-            ArrayList<MutableText> subMessage13 = new ArrayList<>();
-            
             mainMessage.add(Text.literal(""));
             mainMessage.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
@@ -332,20 +376,28 @@ public class DragonDialog {
                   .append(Text.literal("   NO! I AM THE GOD OF THIS REALM! I won't go back! ...Nul... please don...").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             
-            subMessage13.add(Text.literal(""));
-            subMessage13.add(Text.literal("")
+            subMessage1.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage13.add(Text.literal("")
-                  .append(Text.literal("   I'm sorry Sister. You had your chance, and now I have mine. The mortals are our best shot at restoring this world. I'll see if they are worthy...").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage13.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
+                  .append(Text.literal("   I'm sorry Sister. You had your chance, and now we have ours. The Players are our best shot at restoring this world. We'll see if they are worthy...").formatted(Formatting.GRAY,Formatting.ITALIC)));
+            subMessage1.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () ->{ announceHelper(server,subMessage13); }));
+            subMessage2.add(Text.literal(""));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal("   Once you are ready to heal, and if the Players wish to give you a second chance, I will be here to help you.").formatted(Formatting.AQUA,Formatting.ITALIC)));
+            subMessage2.add(Text.literal(""));
+            
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
             break;
          case EVENT_END:
-            ArrayList<MutableText> subMessage14 = new ArrayList<>();
-            ArrayList<MutableText> subMessage15 = new ArrayList<>();
             mainMessage.add(Text.literal(""));
             mainMessage.add(Text.literal("")
                   .append(Text.literal("==================================").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
@@ -360,41 +412,40 @@ public class DragonDialog {
                   .append(Text.literal("  Her burning body crackles in the sky as a lone egg falls atop her perch!").formatted(Formatting.AQUA,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             mainMessage.add(Text.literal("")
-                  .append(Text.literal("  You have freed The End from its dictator and unlocked new lands to explore!").formatted(Formatting.AQUA,Formatting.ITALIC)));
+                  .append(Text.literal("  You have freed The End from its tyrant and unlocked new lands to explore!").formatted(Formatting.AQUA,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             mainMessage.add(Text.literal("")
                   .append(Text.literal("==================================").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             mainMessage.add(Text.literal(""));
             
-            
-            subMessage14.add(Text.literal(""));
-            subMessage14.add(Text.literal("")
+            subMessage1.add(Text.literal(""));
+            subMessage1.add(Text.literal("")
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
                   .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage14.add(Text.literal("")
+            subMessage1.add(Text.literal("")
                   .append(Text.literal("   You all ARE worthy, right?").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage14.add(Text.literal("")
+            subMessage1.add(Text.literal("")
                   .append(Text.literal("   ...We shall see...").formatted(Formatting.DARK_GRAY,Formatting.ITALIC)));
-            subMessage14.add(Text.literal(""));
+            subMessage1.add(Text.literal(""));
             
             ItemStack wings = ArcanaRegistry.WINGS_OF_ENDERIA.getPrefItem();
             
-            subMessage15.add(Text.literal(""));
-            subMessage15.add(Text.literal("")
-                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
-                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)));
-            subMessage15.add(Text.literal("")
-                  .append(Text.literal("   Nevertheless, your efforts will be rewarded. You will receive a portion of my Sister's Divine power.").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage15.add(Text.literal("")
-                  .append(Text.literal("   Take these ").formatted(Formatting.GRAY,Formatting.ITALIC))
+            subMessage2.add(Text.literal(""));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal("   Nevertheless, your efforts will be rewarded. You will receive a portion of our Sister's Divine power.").formatted(Formatting.AQUA,Formatting.ITALIC)));
+            subMessage2.add(Text.literal("")
+                  .append(Text.literal("   Take these ").formatted(Formatting.AQUA,Formatting.ITALIC))
                   .append(wings.toHoverableText())
-                  .append(Text.literal(" and let them guide you to new heights!").formatted(Formatting.GRAY,Formatting.ITALIC)));
-            subMessage15.add(Text.literal(""));
+                  .append(Text.literal(" and let them guide you to new heights!").formatted(Formatting.AQUA,Formatting.ITALIC)));
+            subMessage2.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(100, () -> announceHelper(server,subMessage14)));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(200, () -> announceHelper(server,subMessage15)));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () -> announceHelper(server,subMessage1)));
+            ArcanaNovum.addTickTimerCallback(new GenericTimer(360, () -> announceHelper(server,subMessage2)));
             
             break;
          case PHASE_ONE_GOONS:
@@ -424,7 +475,7 @@ public class DragonDialog {
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             mainMessage.add(Text.literal("")
-                  .append(Text.literal("   My children, repel these invaders from our land!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+                  .append(Text.literal("   My subjects, repel these invaders from our land!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             break;
          case ABILITY_DRACONIC_RESILIENCE:

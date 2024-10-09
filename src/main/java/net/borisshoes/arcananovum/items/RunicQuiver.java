@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -17,6 +18,7 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
@@ -44,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -55,6 +58,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    private static final int[] refillReduction = {0,100,200,400,600,900};
    private static final double[] efficiencyChance = {0,.05,.1,.15,.2,.3};
    private static final String TXT = "item/runic_quiver";
+   private static final Item textureItem = Items.ARROW;
    
    public RunicQuiver(){
       id = ID;
@@ -63,6 +67,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.ITEMS};
       color = Formatting.LIGHT_PURPLE;
       vanillaItem = Items.LEATHER;
+      itemVersion = 1;
       item = new RunicQuiverItem(new Item.Settings().maxCount(1).fireproof()
             .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
@@ -70,12 +75,12 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
+      models.add(new Pair<>(textureItem,TXT));
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_OVERFLOWING_QUIVER,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.CONCENTRATION_DAMAGE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getMaxCount());
-      putProperty(stack,ARROWS_TAG,new NbtList());
       setPrefStack(stack);
    }
    
@@ -139,7 +144,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    public ItemStack forgeItem(Inventory inv){
       ItemStack quiverStack = inv.getStack(12); // Should be the old quiver
       ItemStack newArcanaItem = getNewItem();
-      putProperty(newArcanaItem,ARROWS_TAG,getListProperty(quiverStack,ARROWS_TAG,NbtElement.COMPOUND_TYPE));
+      newArcanaItem.set(DataComponentTypes.CONTAINER,quiverStack.getOrDefault(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT));
       ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.OVERFLOWING_BOTTOMLESS.id,ArcanaAugments.RUNIC_BOTTOMLESS.id);
       ArcanaAugments.copyAugment(quiverStack,newArcanaItem,ArcanaAugments.ABUNDANT_AMMO.id,ArcanaAugments.QUIVER_DUPLICATION.id);
       return newArcanaItem;
@@ -178,14 +183,9 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    @Override
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
       int size = 9;
-      NbtList arrows = getListProperty(item,ARROWS_TAG,NbtElement.COMPOUND_TYPE);
+      ContainerComponent arrows = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
       SimpleInventory inv = new SimpleInventory(size);
-      
-      for(int i = 0; i < arrows.size(); i++){
-         NbtCompound stack = arrows.getCompound(i);
-         ItemStack itemStack = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stack).orElse(ItemStack.EMPTY);
-         inv.setStack(i,itemStack);
-      }
+      arrows.stream().forEachOrdered(inv::addStack);
       double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES.id) > 0 ? 0.25 : 0.5;
       
       return new ArcanaItemContainer(inv, size,3, "RQ", "Runic Quiver", concMod);
@@ -197,8 +197,16 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       }
       
       @Override
+      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+         if(PolymerResourcePackUtils.hasMainPack(player)){
+            return textureItem;
+         }
+         return super.getPolymerItem(itemStack, player);
+      }
+      
+      @Override
       public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
+         return ArcanaRegistry.getModelData(TXT+"-"+getPolymerItem(itemStack,player).getTranslationKey()).value();
       }
       
       @Override

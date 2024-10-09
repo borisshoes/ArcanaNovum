@@ -47,6 +47,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final boolean DEV_MODE = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
+   public static final String BLANK_UUID = "00000000-0000-4000-8000-000000000000";
    public static ConfigUtils config;
    public static int DEBUG_VALUE = 0;
    
@@ -75,11 +76,11 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       logger.info("Arcana Surges Through The World!");
       
       config = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, Arrays.asList(new ConfigUtils.IConfigValue[] {
-            new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true,
+            new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true, "Whether players are damaged for going over their concentration limit",
                   new ConfigUtils.Command("Do Concentration Damage is %s", "Do Concentration Damage is now %s")),
-            new ConfigUtils.BooleanConfigValue("announceAchievements", true,
+            new ConfigUtils.BooleanConfigValue("announceAchievements", true, "Whether it is announced in chat when players complete achievements, reach levels, or craft new items",
                   new ConfigUtils.Command("Announce Achievements is %s", "Announce Achievements is now %s")),
-            new ConfigUtils.IntegerConfigValue("ingredientReduction", 1, new ConfigUtils.IntegerConfigValue.IntLimits(1,64),
+            new ConfigUtils.IntegerConfigValue("ingredientReduction", 1, new ConfigUtils.IntegerConfigValue.IntLimits(1,64), "The divisor for recipe ingredient costs",
                   new ConfigUtils.Command("Recipe ingredient counts are divided by %s", "Recipe ingredient count will now be divided by %s")),
       }));
    }

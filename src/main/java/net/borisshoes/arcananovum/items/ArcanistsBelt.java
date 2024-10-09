@@ -13,11 +13,9 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -39,6 +37,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,12 +60,13 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       name = "Arcanist's Belt";
       rarity = ArcanaRarity.EXOTIC;
       categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
-      itemVersion = 0;
+      itemVersion = 1;
       vanillaItem = Items.LEAD;
       item = new ArcanistsBeltItem(new Item.Settings().maxCount(1).fireproof()
             .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD), ArcanaColors.BELT_COLOR))
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT)
       );
       models = new ArrayList<>();
       models.add(new Pair<>(vanillaItem,TXT));
@@ -75,7 +75,6 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getMaxCount());
-      putProperty(stack,ITEMS_TAG,new NbtList());
       setPrefStack(stack);
    }
    
@@ -108,7 +107,10 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
             .append(Text.literal(".").formatted(Formatting.YELLOW)));
       
       if(itemStack != null){
-         SimpleInventory inv = deserialize(itemStack);
+         ContainerComponent beltItems = itemStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+         SimpleInventory inv = new SimpleInventory(9);
+         beltItems.streamNonEmpty().forEachOrdered(inv::addStack);
+
          if(inv.isEmpty()){
             lore.add(Text.literal(""));
             lore.add(Text.literal("")
@@ -148,9 +150,12 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtList itemsList = getListProperty(stack,ITEMS_TAG,NbtElement.COMPOUND_TYPE);
+      if(getIntProperty(stack,VERSION_TAG) <= 12){ // Migrate from ITEMS_TAG to ContainerComponent
+         NbtList arrowsList = getListProperty(stack,ITEMS_TAG,NbtElement.COMPOUND_TYPE).copy();
+         stack.set(DataComponentTypes.CONTAINER, DataFixer.nbtListToComponent(arrowsList,server));
+         removeProperty(stack,ITEMS_TAG);
+      }
       ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,ITEMS_TAG,itemsList);
       return buildItemLore(newStack,server);
    }
    
@@ -171,51 +176,24 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    }
    
    public ArrayList<ItemStack> getMatchingItems(Item item, ItemStack belt){
+      ContainerComponent beltItems = belt.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
       ArrayList<ItemStack> items = new ArrayList<>();
-      SimpleInventory inv = deserialize(belt);
-      for(int i = 0; i < inv.size(); i++){
-         ItemStack itemStack = inv.getStack(i);
-         if(itemStack.isOf(item)){
-            items.add(itemStack);
+      for(ItemStack stack : beltItems.iterateNonEmpty()){
+         if(stack.isOf(item)){
+            items.add(stack);
          }
       }
       return items;
    }
-   
-   public SimpleInventory deserialize(ItemStack stack){
-      NbtList items = getListProperty(stack,ITEMS_TAG,NbtElement.COMPOUND_TYPE);
-      SimpleInventory inv = new SimpleInventory(9);
-      
-      for(int i = 0; i < items.size(); i++){ // De-serialize and Tick
-         NbtCompound item = items.getCompound(i);
-         int beltSlot = item.getByte("Slot");
-         Optional<ItemStack> optional = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),item);
-         ItemStack itemStack = optional.orElse(ItemStack.EMPTY);
-         if( itemStack.getCount() > 0 && !itemStack.isEmpty())
-            inv.setStack(beltSlot,itemStack);
-      }
-      return inv;
-   }
-   
-   public void serialize(ItemStack stack, SimpleInventory inv){
-      NbtList items = new NbtList();
-      for(int i = 0; i < inv.size(); i++){ // Re-serialize
-         ItemStack itemStack = inv.getStack(i);
-         if(itemStack.isEmpty()) continue;
-         NbtCompound item = (NbtCompound) itemStack.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager());
-         item.putByte("Slot", (byte) i);
-         items.add(item);
-      }
-      putProperty(stack,ITEMS_TAG,items);
-      buildItemLore(stack,ArcanaNovum.SERVER);
-   }
-   
-   
+
    @Override
    public ArcanaItemContainer getArcanaItemContainer(ItemStack item){
       int size = 9;
       boolean padding = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.MENTAL_PADDING.id) >= 1;
-      return new ArcanaItemContainer(deserialize(item), size,1, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
+      ContainerComponent beltItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+      SimpleInventory inv = new SimpleInventory(size);
+      beltItems.stream().forEachOrdered(inv::addStack);
+      return new ArcanaItemContainer(inv, size,1, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
    }
    
    private ArcanistsBelt getOuter(){
@@ -270,12 +248,11 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         SimpleInventory inv = deserialize(stack);
-         for(int i = 0; i < inv.size(); i++){
-            ItemStack invStack = inv.getStack(i);
+         ContainerComponent beltItems = stack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+         for(ItemStack invStack : beltItems.iterateNonEmpty()){
             invStack.getItem().inventoryTick(invStack,world,entity,-1,false);
          }
-         serialize(stack,inv);
+         buildItemLore(stack,ArcanaNovum.SERVER);
       }
       
       @Override
