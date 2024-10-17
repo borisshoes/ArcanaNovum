@@ -31,10 +31,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.Unit;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +59,7 @@ public class AlchemicalArbalest extends ArcanaItem {
             .component(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE)
       );
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_OL_BETSY,ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW,ResearchTasks.ADVANCEMENT_ARBALISTIC,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
+      attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.inspired_by"),Text.literal("Sethzilla42"))};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -224,6 +222,8 @@ public class AlchemicalArbalest extends ArcanaItem {
          verifyEnchantments(itemStack);
          return super.use(world,user,hand);
       }
+      
+      
    }
 }
 

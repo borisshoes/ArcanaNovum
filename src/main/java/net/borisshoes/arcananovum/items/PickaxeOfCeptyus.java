@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -48,7 +50,6 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class PickaxeOfCeptyus extends ArcanaItem {
 	public static final String ID = "pickaxe_of_ceptyus";
@@ -203,7 +204,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          if(type instanceof RedstoneOreBlock ore){
             ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, veinPick,true);
          }
-         PLAYER_DATA.get(player).addXP(5);
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
       }
       for(ItemStack stack : drops){
          Block.dropStack(world, pos, stack);
@@ -215,7 +216,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       int wHaste = Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
       int energyGain = 5+(wHaste * 2);
       int maxEnergy = 1000 + 100 * wHaste;
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       
       profile.addMiscData(CEPTYUS_TICK, NbtInt.of(0));
       NbtInt energy = (NbtInt) profile.getMiscData(CEPTYUS_ENERGY);
@@ -255,7 +256,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
-         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         IArcanaProfileComponent profile = ArcanaNovum.data(player);
          NbtInt energyEle = (NbtInt) profile.getMiscData(CEPTYUS_ENERGY);
          int energy = energyEle == null ? 0 : energyEle.intValue();
          
@@ -277,7 +278,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          if(miner instanceof ServerPlayerEntity player){
             int energyGain = 3 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
             int maxEnergy = 1000 + 100 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack, ArcanaAugments.WARDENS_HASTE.id));
-            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+            IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
             profile.addMiscData(CEPTYUS_TICK, NbtInt.of(0));
             NbtInt energy = (NbtInt) profile.getMiscData(CEPTYUS_ENERGY);

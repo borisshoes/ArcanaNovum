@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.achievements;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -18,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public abstract class ArcanaAchievement {
    public final String name;
@@ -155,7 +156,7 @@ public abstract class ArcanaAchievement {
             
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PLAYER_LEVELUP,1,1);
          }
-         if((boolean) ArcanaNovum.config.getValue("announceAchievements")){
+         if(ArcanaConfig.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
             for(MutableText msg : msgs){
                server.getPlayerManager().broadcast(msg, false);
             }
@@ -165,7 +166,7 @@ public abstract class ArcanaAchievement {
             }
          }
       }
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       profile.addXP(xpReward); // Add xp
    
       boolean abyssCheck = true;

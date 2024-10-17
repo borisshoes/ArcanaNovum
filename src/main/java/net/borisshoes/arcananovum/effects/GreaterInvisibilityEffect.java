@@ -1,20 +1,19 @@
 package net.borisshoes.arcananovum.effects;
 
-import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -59,38 +58,37 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
             }
             
             playerEntity.networkHandler.sendPacket(new EntitiesDestroyS2CPacket(invisEntity.getId()));
-            updateEquipment(invisEntity, playerEntity);
+            //updateEquipment(invisEntity, playerEntity);
          }
       });
    }
    
    public static void removeInvis(MinecraftServer server, LivingEntity invisEntity){
+      EntitySpawnS2CPacket addPacket = new EntitySpawnS2CPacket(invisEntity.getId(), invisEntity.getUuid(), invisEntity.getX(), invisEntity.getY(), invisEntity.getZ(), invisEntity.getPitch(), invisEntity.getYaw(), invisEntity.getType(), 0, Vec3d.ZERO, invisEntity.headYaw);
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
-         if (!playerEntity.equals(invisEntity)) {
+         if(!playerEntity.equals(invisEntity) && invisEntity.getEntityWorld().equals(playerEntity.getEntityWorld())) {
             
             AbstractTeam abstractTeam = invisEntity.getScoreboardTeam();
-            if (abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()) {
+            if(abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()) {
                return;
             }
             
-            playerEntity.networkHandler.sendPacket(new EntitySpawnS2CPacket(invisEntity.getId(), invisEntity.getUuid(), invisEntity.getX(), invisEntity.getY(), invisEntity.getZ(), invisEntity.getPitch(), invisEntity.getYaw(), invisEntity.getType(), 0, Vec3d.ZERO, invisEntity.headYaw));
-            updateEquipment(invisEntity, playerEntity);
+            Vec3d distVec = playerEntity.getPos().subtract(invisEntity.getPos());
+            int viewDist = MathHelper.clamp(playerEntity.getViewDistance(), 2, playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.watchDistance);
+            double maxTrackDist = Math.min(playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId()).getMaxTrackDistance(), viewDist * 16);
+            double horizDistSq = distVec.x * distVec.x + distVec.z * distVec.z;
+            double maxTrackDistSq = maxTrackDist * maxTrackDist;
+            boolean reveal = horizDistSq <= maxTrackDistSq && !invisEntity.isSpectator();
+            
+            if(reveal){
+               List<Packet<? super ClientPlayPacketListener>> list = new ArrayList<>();
+               playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(invisEntity.getId()).entry.sendPackets(playerEntity, list::add);
+               playerEntity.networkHandler.sendPacket(new BundleS2CPacket(list));
+            }
          }
       });
-   }
-   
-   private static void updateEquipment(LivingEntity invisEntity, ServerPlayerEntity receiver) {
-      List<Pair<EquipmentSlot, ItemStack>> equipmentList = new ArrayList<>();
       
-      for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
-         ItemStack itemStack = invisEntity.getEquippedStack(equipmentSlot);
-         if (!itemStack.isEmpty()) {
-            equipmentList.add(Pair.of(equipmentSlot, itemStack.copy()));
-         }
-      }
-      
-      if (!equipmentList.isEmpty()) {
-         receiver.networkHandler.sendPacket(new EntityEquipmentUpdateS2CPacket(invisEntity.getId(), equipmentList));
-      }
+      // This might be simpler to use in the future, but loses some of the logic and might cause issues
+      // server.getWorlds().forEach(serverWorld -> serverWorld.getChunkManager().chunkLoadingManager.entityTrackers.get(invisEntity.getId()).sendToOtherNearbyPlayers(addPacket));
    }
 }

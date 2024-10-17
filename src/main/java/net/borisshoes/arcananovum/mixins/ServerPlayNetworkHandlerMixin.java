@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -7,12 +8,15 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
@@ -22,6 +26,9 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,8 +38,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Set;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
    
@@ -41,6 +46,21 @@ public class ServerPlayNetworkHandlerMixin {
    
    @Inject(method = "onHandSwing", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V"))
    private void arcananovum_handSwing(HandSwingC2SPacket packet, CallbackInfo ci) {
+      ServerPlayNetworkHandler networkHandler = (ServerPlayNetworkHandler) (Object) this;
+      
+      // Hit through Greater Invisibility
+      double range = player.getEntityInteractionRange();
+      Vec3d startPos = player.getEyePos();
+      Vec3d view = player.getRotationVecClient();
+      Vec3d rayEnd = startPos.add(view.multiply(range));
+      Box box = player.getBoundingBox().stretch(view.multiply(range)).expand(1.0, 1.0, 1.0);
+      EntityHitResult hitEntity = ProjectileUtil.raycast(player,startPos,rayEnd,box, e -> e instanceof LivingEntity living && !e.isSpectator() && living.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT),range);
+      
+      if(hitEntity != null && hitEntity.getEntity() != null){
+         networkHandler.onPlayerInteractEntity(PlayerInteractEntityC2SPacket.attack(hitEntity.getEntity(),player.isSneaking()));
+      }
+      
+      // Quiver arrow swap
       ItemStack bow = player.getStackInHand(Hand.MAIN_HAND);
       boolean arbalest = (ArcanaItemUtils.identifyItem(bow) instanceof AlchemicalArbalest);
       boolean crossbow = bow.isOf(Items.CROSSBOW) || arbalest;
@@ -60,7 +80,7 @@ public class ServerPlayNetworkHandlerMixin {
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          if(arcanaItem instanceof RunicQuiver || arcanaItem instanceof OverflowingQuiver){
             // Quiver found allow switching
-            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+            IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
             int cooldown = ((NbtInt)profile.getMiscData(QuiverItem.QUIVER_CD_TAG)).intValue();
             if(cooldown <= 0){

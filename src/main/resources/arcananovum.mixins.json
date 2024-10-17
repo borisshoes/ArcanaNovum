@@ -11,6 +11,7 @@
     "EnchantmentHelperMixin",
     "EnchantmentMixin",
     "EntityAccessor",
+    "EntityTrackerEntryMixin",
     "ExperienceOrbEntityMixin",
     "ExplosionMixin",
     "FamlandBlockMixin",

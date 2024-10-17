@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
@@ -24,8 +26,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(targets = "net.minecraft.entity.mob.PhantomEntity$SwoopMovementGoal")
 public abstract class PhantomSwoopGoalMixin extends Goal {
@@ -54,7 +54,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
                }
                
                SoundUtils.playSongToPlayer(player,SoundEvents.ENTITY_CAT_HISS, .1f, 1);
-               PLAYER_DATA.get(player).addXP(2); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
                cir.setReturnValue(false);
             }
          }
@@ -65,7 +65,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    private void arcananovum_phantomScare(CallbackInfoReturnable<Boolean> cir, @Local CatEntity catEntity){
       if(catEntity.getWorld() instanceof ServerWorld serverWorld){
          for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(catEntity.getBlockPos(), 10.0))){
-            PLAYER_DATA.get(player).setResearchTask(ResearchTasks.CAT_SCARE, true);
+            ArcanaNovum.data(player).setResearchTask(ResearchTasks.CAT_SCARE, true);
          }
       }
    }

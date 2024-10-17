@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
@@ -30,8 +32,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
 public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    
    private int lvl;
@@ -53,7 +53,7 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
       initFromStack(arrowStack, weaponStack);
       
       if(owner instanceof ServerPlayerEntity player){
-         PLAYER_DATA.get(player).addXP(25); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.ALCHEMICAL_ARBALEST_SHOOT)); // Add xp
       }
    }
    

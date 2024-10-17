@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -42,7 +43,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class Soulstone extends ArcanaItem {
 	public static final String ID = "soulstone";
@@ -161,12 +161,12 @@ public class Soulstone extends ArcanaItem {
          player.sendMessage(Text.literal("Your Soulstone crackles with new power!").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1,1f);
          if(tier > maxTier){
-            PLAYER_DATA.get(player).addXP(souls*50); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
             putProperty(stack,MAX_TIER_TAG,maxTier);
          }
          if(tier == 7) ArcanaAchievements.grant(player,ArcanaAchievements.PRIME_EVIL.id);
          if(tier == 5) ArcanaAchievements.grant(player,ArcanaAchievements.PHILOSOPHER_STONE.id);
-         if(tier == 3 && entityTypeId.equals("minecraft:villager")) ArcanaAchievements.grant(player,ArcanaAchievements.TOOK_A_VILLAGE.id);
+         if(tier == 3 && entityTypeId.equals(EntityType.getId(EntityType.VILLAGER).toString())) ArcanaAchievements.grant(player,ArcanaAchievements.TOOK_A_VILLAGE.id);
       }
       putProperty(stack,SOULS_TAG,souls);
       buildItemLore(stack,player.getServer());

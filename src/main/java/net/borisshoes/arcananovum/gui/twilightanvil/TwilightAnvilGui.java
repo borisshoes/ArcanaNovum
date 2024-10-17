@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -35,8 +36,6 @@ import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.TreeMap;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TwilightAnvilGui extends SimpleGui {
    private final TwilightAnvilBlockEntity blockEntity;
@@ -93,7 +92,7 @@ public class TwilightAnvilGui extends SimpleGui {
             if(EnhancedStatUtils.isEnhanced(outputSet.output()) && ArcanaItem.getDoubleProperty(outputSet.output(),EnhancedStatUtils.ENHANCED_STAT_TAG) >= 1){
                ArcanaAchievements.grant(player,ArcanaAchievements.TINKER_TO_THE_TOP.id);
             }
-            PLAYER_DATA.get(player).addXP(Math.min(1000,points));
+            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.TWILIGHT_ANVIL_CAP),ArcanaConfig.getInt(ArcanaRegistry.TWILIGHT_ANVIL_PER_10)*points/10.0));
             
             listener.setUpdating();
             inv.setStack(0, ItemStack.EMPTY);
@@ -171,7 +170,7 @@ public class TwilightAnvilGui extends SimpleGui {
             redrawGui(inv);
          }else if(index == 31){
             if(arcanaItem != null){
-               if(PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+               if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
                   MiscUtils.returnItems(inv,player);
                   blockEntity.openGui(4,player, arcanaItem.getId());
                }else{
@@ -193,7 +192,7 @@ public class TwilightAnvilGui extends SimpleGui {
                }
                
                if(augment != null){
-                  IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+                  IArcanaProfileComponent profile = ArcanaNovum.data(player);
                   int augmentLvl = profile.getAugmentLevel(augment.id);
                   ArcanaRarity[] tiers = augment.getTiers();
                   int curItemLevel = ArcanaAugments.getAugmentOnItem(item, augment.id);
@@ -213,7 +212,7 @@ public class TwilightAnvilGui extends SimpleGui {
                      player.sendMessage(Text.literal("This augment is incompatible with existing augments").formatted(Formatting.RED), false);
                   }else{ // Item level = 0 | (Item level != max & < player level): Augment Catalyst
                      if(attemptAugment(item, augment, curItemLevel + 1)){
-                        PLAYER_DATA.get(player).addXP(tiers[curItemLevel] == ArcanaRarity.DIVINE ? 10000 : ArcanaRarity.getCraftXp(tiers[curItemLevel])/10);
+                        ArcanaNovum.data(player).addXP(tiers[curItemLevel] == ArcanaRarity.DIVINE ? 10000 : ArcanaRarity.getCraftXp(tiers[curItemLevel])/10);
                         SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_PLING, 1, (.5f+((float)(curItemLevel+1)/(tiers.length-1))));
                      }
                   }
@@ -238,7 +237,7 @@ public class TwilightAnvilGui extends SimpleGui {
             }
             
             if(augment != null){
-               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+               IArcanaProfileComponent profile = ArcanaNovum.data(player);
                int augmentLvl = profile.getAugmentLevel(augment.id);
                ArcanaRarity[] tiers = augment.getTiers();
                if(augmentLvl >= tiers.length) return true;
@@ -435,7 +434,7 @@ public class TwilightAnvilGui extends SimpleGui {
          }
          
          if(arcanaItem != null){
-            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+            IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
             boolean generic = arcanaItem.getId().equals(ArcaneTome.ID);
             

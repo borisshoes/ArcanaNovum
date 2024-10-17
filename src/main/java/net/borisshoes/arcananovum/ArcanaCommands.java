@@ -60,7 +60,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.*;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.getGuideBook;
 
@@ -80,7 +79,7 @@ public class ArcanaCommands {
          ServerCommandSource source = ctx.getSource();
       
          for (ServerPlayerEntity player : targets) {
-            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+            IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
             NbtInt pointsEle = (NbtInt) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
             int oldPoints = pointsEle == null ? 0 : pointsEle.intValue();
@@ -108,7 +107,7 @@ public class ArcanaCommands {
    public static int skillpointsCommandQuery(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target){
       try{
          ServerCommandSource source = ctx.getSource();
-         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         IArcanaProfileComponent profile = ArcanaNovum.data(target);
          NbtInt pointsEle = (NbtInt) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
          int adminPoints = pointsEle == null ? 0 : pointsEle.intValue();
          MutableText feedback = Text.literal("")
@@ -129,7 +128,7 @@ public class ArcanaCommands {
          ServerCommandSource source = ctx.getSource();
          
          for (ServerPlayerEntity player : targets) {
-            IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+            IArcanaProfileComponent profile = ArcanaNovum.data(player);
             int oldValue = points ? profile.getXP() : profile.getLevel();
             int newAmount = set ? Math.max(amount, 0) : Math.max(oldValue + amount, 0);
             if(points){
@@ -261,7 +260,7 @@ public class ArcanaCommands {
    public static int xpCommandQuery(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target){
       try{
          ServerCommandSource source = ctx.getSource();
-         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         IArcanaProfileComponent profile = ArcanaNovum.data(target);
          MutableText feedback = Text.literal("")
                .append(target.getDisplayName())
                .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
@@ -609,10 +608,10 @@ public class ArcanaCommands {
             return -1;
          }
          if(level == 0){
-            PLAYER_DATA.get(player).removeAugment(id);
+            ArcanaNovum.data(player).removeAugment(id);
             src.sendMessage(Text.literal("Successfully removed ").append(augment.getTranslatedName()).append(" from ").append(player.getDisplayName()));
          }else{
-            PLAYER_DATA.get(player).setAugmentLevel(id,level);
+            ArcanaNovum.data(player).setAugmentLevel(id,level);
             src.sendMessage(Text.literal("Successfully set ").append(augment.getTranslatedName()).append(" to level "+level+" for ").append(player.getDisplayName()));
          }
          return 1;
@@ -717,11 +716,11 @@ public class ArcanaCommands {
          for (ServerPlayerEntity player : targets) {
             if(grant){
                for(ArcanaItem item : items){
-                  PLAYER_DATA.get(player).addResearchedItem(item.getId());
+                  ArcanaNovum.data(player).addResearchedItem(item.getId());
                }
             }else{
                for(ArcanaItem item : items){
-                  PLAYER_DATA.get(player).removeResearchedItem(item.getId());
+                  ArcanaNovum.data(player).removeResearchedItem(item.getId());
                }
             }
          }
@@ -754,7 +753,7 @@ public class ArcanaCommands {
    public static int getResearch(CommandContext<ServerCommandSource> ctx, String id, ServerPlayerEntity target){
       try{
          ServerCommandSource source = ctx.getSource();
-         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         IArcanaProfileComponent profile = ArcanaNovum.data(target);
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
          
          if(arcanaItem == null){
@@ -823,7 +822,7 @@ public class ArcanaCommands {
    public static int getAchievement(CommandContext<ServerCommandSource> ctx, String id, ServerPlayerEntity target){
       try{
          ServerCommandSource source = ctx.getSource();
-         IArcanaProfileComponent profile = PLAYER_DATA.get(target);
+         IArcanaProfileComponent profile = ArcanaNovum.data(target);
          ArcanaAchievement baseAch = ArcanaAchievements.registry.get(id);
          if(baseAch == null){
             source.sendError(Text.literal("That is not a valid Achievement"));

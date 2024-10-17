@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks;
 
 import com.google.common.collect.Lists;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -49,7 +50,6 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.block.Block.dropStacks;
 
 public class FractalSponge extends ArcanaBlock {
@@ -185,7 +185,7 @@ public class FractalSponge extends ArcanaBlock {
       int absorbed = absorb(item, world, pos);
       if(absorbed > 0){
          SoundUtils.playSound(player.getServerWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
-         PLAYER_DATA.get(player).addXP(absorbed); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
          ArcanaAchievements.progress(player,ArcanaAchievements.OCEAN_CLEANUP.id, absorbed);
       }
       return absorbed;

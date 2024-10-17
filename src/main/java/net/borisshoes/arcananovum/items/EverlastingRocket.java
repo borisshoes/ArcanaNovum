@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -46,7 +48,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class EverlastingRocket extends EnergyItem {
 	public static final String ID = "everlasting_rocket";
@@ -173,7 +174,7 @@ public class EverlastingRocket extends EnergyItem {
             rocket.addEnergy(item,-1);
             rocket.buildItemLore(stack,player.getServer());
             ArcanaAchievements.progress(player,ArcanaAchievements.MISSILE_LAUNCHER.id, 1);
-            PLAYER_DATA.get(player).addXP(100); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
             return;
          }
       }
@@ -258,7 +259,7 @@ public class EverlastingRocket extends EnergyItem {
                world.spawnEntity(fireworkRocketEntity);
                ((EnergyItem)getThis()).addEnergy(context.getStack(),-1);
                buildItemLore(itemStack,player.getServer());
-               PLAYER_DATA.get(player).addXP(100); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
             }else{
                player.sendMessage(Text.literal("The Rocket is out of Charges").formatted(Formatting.YELLOW),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
@@ -285,7 +286,7 @@ public class EverlastingRocket extends EnergyItem {
                   if (!user.getAbilities().creativeMode) {
                      ((EnergyItem)getThis()).addEnergy(itemStack,-1);
                      buildItemLore(itemStack,player.getServer());
-                     PLAYER_DATA.get(player).addXP(100); // Add xp
+                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
                   }
                   user.incrementStat(Stats.USED.getOrCreateStat(this));
                   if(player.getPos().getY() > 500){

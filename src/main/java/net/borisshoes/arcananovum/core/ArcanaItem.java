@@ -10,7 +10,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.inventory.Inventory;
@@ -62,6 +65,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    protected Item vanillaItem;
    protected ArrayList<Pair<Item,String>> models;
    protected RegistryKey<ResearchTask>[] researchTasks = new RegistryKey[0];
+   protected Pair<MutableText,MutableText>[] attributions = new Pair[0];
+   
+   public Pair<MutableText, MutableText>[] getAttributions(){
+      return attributions;
+   }
    
    public ArrayList<Pair<Item,String>> getModels(){
       return models;
@@ -71,7 +79,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return false;
    }
    
-   public int getItemVersion() { return itemVersion; }
+   public int getItemVersion(){ return itemVersion; }
    
    public String getNameString(){
       return name;

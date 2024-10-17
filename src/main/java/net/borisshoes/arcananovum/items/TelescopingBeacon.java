@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -50,7 +51,6 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TelescopingBeacon extends ArcanaItem {
 	public static final String ID = "telescoping_beacon";
@@ -271,14 +271,13 @@ public class TelescopingBeacon extends ArcanaItem {
          
          
          player.requestTeleport(pos.getX()+.5,pos.getY()+2,pos.getZ()+.5);
-         PLAYER_DATA.get(player).addXP(index); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TELESCOPING_BEACON_PER_BLOCK)*index); // Add xp
          
          
          for(int i = 0; i <= tier; i++){
             int j = i;
             ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
          }
-         PLAYER_DATA.get(player).addXP(10); // Add xp
          
          if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){
             BlockState blockType = blocks.get(0);
@@ -385,6 +384,7 @@ public class TelescopingBeacon extends ArcanaItem {
                putProperty(stack,BLOCKS_TAG,new NbtList());
                putProperty(stack,BEACON_TAG,false);
                buildItemLore(stack,player.getServer());
+               player.getItemCooldownManager().set(this,20);
             }else{
                playerEntity.sendMessage(Text.literal("The Beacon cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -456,6 +456,7 @@ public class TelescopingBeacon extends ArcanaItem {
             }
             
             buildItemLore(stack,player.getServer());
+            player.getItemCooldownManager().set(this,20);
          }
          
          return ActionResult.SUCCESS;

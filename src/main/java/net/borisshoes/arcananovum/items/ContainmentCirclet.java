@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -54,7 +56,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ContainmentCirclet extends ArcanaItem {
 	public static final String ID = "containment_circlet";
@@ -201,7 +202,7 @@ public class ContainmentCirclet extends ArcanaItem {
          entity.discard();
          user.sendMessage(Text.literal("The Circlet contains the creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
-         PLAYER_DATA.get(user).addXP(5); // Add xp
+         ArcanaNovum.data(user).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTAINMENT_CIRCLET_USE)); // Add xp
          buildItemLore(stack,user.getServer());
       }
       
@@ -277,7 +278,6 @@ public class ContainmentCirclet extends ArcanaItem {
             if(context.getPlayer() instanceof ServerPlayerEntity player){
                player.sendMessage(Text.literal("The Circlet releases its captive").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
-               PLAYER_DATA.get(player).addXP(10); // Add xp
                
                if(newEntity instanceof TameableEntity tameable && tameable.isOwner(player)){
                   ArcanaAchievements.grant(player,ArcanaAchievements.I_CHOOSE_YOU.id);

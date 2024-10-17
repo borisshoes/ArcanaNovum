@@ -10,8 +10,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
 public class ArcanaAchievements {
    public static final HashMap<String, ArcanaAchievement> registry = new HashMap<>();
    public static final List<ArcanaAchievement> excludedAchievements = new ArrayList<>();
@@ -233,7 +231,7 @@ public class ArcanaAchievements {
          ));
    public static final ArcanaAchievement AMNESIAC = ArcanaAchievements.register(
          new ProgressAchievement("Amnesiac", "amnesiac", new ItemStack(Items.SKELETON_SKULL), ArcanaRegistry.NUL_MEMENTO, 100000, 5,
-               new String[]{"Use a Nul Memento 5 times"}, 5
+               new String[]{"Use a Nul Memento twice"}, 2
          ));
    public static final ArcanaAchievement DEATHS_DOOR = ArcanaAchievements.register(
          new EventAchievement("Death's Door", "deaths_door", new ItemStack(Items.TOTEM_OF_UNDYING), ArcanaRegistry.NUL_MEMENTO, 2500, 1,
@@ -421,7 +419,7 @@ public class ArcanaAchievements {
          ));
    public static final ArcanaAchievement BOUNTIFUL_HARVEST = ArcanaAchievements.register(
          new ProgressAchievement("Bountiful Harvest", "bountiful_harvest", new ItemStack(Items.WHEAT), ArcanaRegistry.WILD_GROWTH_CHARM, 5000, 2,
-               new String[]{"Use The Charm to grow 10,000 plants to maturity"}, 10000
+               new String[]{"Use The Charm to grow 10,000 crops to maturity"}, 10000
          ));
    
    // Arcanist's Belt
@@ -677,7 +675,7 @@ public class ArcanaAchievements {
    }
    
    public static void grant(ServerPlayerEntity player, String id){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -738,7 +736,7 @@ public class ArcanaAchievements {
    }
    
    public static void setCondition(ServerPlayerEntity player, String id, String condition, boolean set){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ConditionalsAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -759,7 +757,7 @@ public class ArcanaAchievements {
    }
    
    public static void progress(ServerPlayerEntity player, String id, int toAdd){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -796,7 +794,7 @@ public class ArcanaAchievements {
    }
    
    public static int getProgress(ServerPlayerEntity player, String id){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof ProgressAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -818,7 +816,7 @@ public class ArcanaAchievements {
    }
    
    public static void revoke(ServerPlayerEntity player, String id){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       ArcanaAchievement achieve = registry.get(id);
       if(achieve != null){
          profile.removeAchievement(achieve.getArcanaItem().getId(), id);
@@ -826,7 +824,7 @@ public class ArcanaAchievements {
    }
    
    public static void reset(ServerPlayerEntity player, String id){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -839,7 +837,7 @@ public class ArcanaAchievements {
    }
    
    public static boolean isTimerActive(ServerPlayerEntity player, String id){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(registry.get(id) instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);

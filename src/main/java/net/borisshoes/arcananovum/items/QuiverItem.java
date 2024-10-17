@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -18,7 +19,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -28,11 +32,9 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.item.RangedWeaponItem.BOW_PROJECTILES;
 
 public abstract class QuiverItem extends ArcanaItem {
@@ -80,7 +82,7 @@ public abstract class QuiverItem extends ArcanaItem {
       if(eligible.isEmpty()) return;
       eligible.get((int)(Math.random()*eligible.size())).increment(1);
       
-      PLAYER_DATA.get(player).addXP(50); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.QUIVER_REFILL)); // Add xp
       if(this instanceof OverflowingQuiver){
          ArcanaAchievements.progress(player,ArcanaAchievements.SPARE_STOCK.id,1);
       }else if(this instanceof RunicQuiver){
@@ -120,7 +122,7 @@ public abstract class QuiverItem extends ArcanaItem {
    }
    
    public static Pair<String,Integer> getArrowOption(ServerPlayerEntity player, boolean runic, boolean display){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString();
       int invSlot = ((NbtInt)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    
@@ -137,7 +139,7 @@ public abstract class QuiverItem extends ArcanaItem {
    }
    
    public static Pair<String,Integer> switchArrowOption(ServerPlayerEntity player, boolean runic, boolean display){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString();
       int invSlot = ((NbtInt)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    

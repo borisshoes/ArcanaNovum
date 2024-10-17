@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
@@ -39,7 +41,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class StasisPearl extends EnergyItem {
 	public static final String ID = "stasis_pearl";
@@ -258,7 +259,7 @@ public class StasisPearl extends EnergyItem {
                      putProperty(stack,PEARL_ID_TAG,newPearlID);
                      
                      setEnergy(stack,0);
-                     PLAYER_DATA.get(playerEntity).addXP(250);
+                     ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.STASIS_PEARL_USE));
                   }
                }else{
                   playerEntity.getItemCooldownManager().set(this, 0);

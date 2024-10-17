@@ -8,6 +8,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TextUtils {
+   
+   public static String camelToSnake(String str){
+      return str.replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
+   }
+   
    public static Text withColor(MutableText text, int color){
       return text.setStyle(text.getStyle().withColor(color));
    }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.catalysts;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -42,7 +43,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstructPattern;
 
 public class SovereignCatalyst extends ArcanaItem {
@@ -145,7 +145,7 @@ public class SovereignCatalyst extends ArcanaItem {
          BlockState state = world.getBlockState(pos);
          boolean canSpawn = true;
          if(playerEntity instanceof ServerPlayerEntity serverPlayer){
-            canSpawn = PLAYER_DATA.get(serverPlayer).hasResearched(ArcanaRegistry.DIVINE_CATALYST);
+            canSpawn = ArcanaNovum.data(serverPlayer).hasResearched(ArcanaRegistry.DIVINE_CATALYST);
          }
          
          if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY() && canSpawn){ // Check construct

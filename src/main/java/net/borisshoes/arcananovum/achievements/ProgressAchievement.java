@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.achievements;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.item.ItemStack;
@@ -9,8 +10,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ProgressAchievement extends ArcanaAchievement{
    
@@ -64,7 +63,7 @@ public class ProgressAchievement extends ArcanaAchievement{
    
    @Override
    public MutableText[] getStatusDisplay(ServerPlayerEntity player){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
       MutableText[] text = new MutableText[achievement != null && achievement.isAcquired() ? 2 : 1];

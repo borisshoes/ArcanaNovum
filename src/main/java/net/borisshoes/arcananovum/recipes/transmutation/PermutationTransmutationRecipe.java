@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -16,8 +17,6 @@ import net.minecraft.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class PermutationTransmutationRecipe extends TransmutationRecipe{
    
@@ -149,7 +148,7 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe{
       if(ArcanaItemUtils.isArcane(inputStack) && altar.getWorld() instanceof ServerWorld serverWorld){
          ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
          ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
-         return player == null || PLAYER_DATA.get(player).hasResearched(arcanaInputItem);
+         return player == null || ArcanaNovum.data(player).hasResearched(arcanaInputItem);
       }
       
       return true;

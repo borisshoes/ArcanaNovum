@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
@@ -9,8 +12,6 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShieldLoginCallback extends LoginCallback{
    
@@ -36,7 +37,7 @@ public class ShieldLoginCallback extends LoginCallback{
          float removed = Math.max(0,player.getAbsorptionAmount()-hearts);
          float diff = hearts - player.getAbsorptionAmount() + removed;
          if(diff != 0){
-            PLAYER_DATA.get(player).addXP((int)diff*20); // Give XP
+            ArcanaNovum.data(player).addXP((int) (ArcanaConfig.getInt(ArcanaRegistry.SHIELD_OF_FORTITUDE_ABSORB_DAMAGE)*diff)); // Give XP
          }
          if(player.getAbsorptionAmount() != 0){
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_AMETHYST_CLUSTER_FALL, .3f, .3f);

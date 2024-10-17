@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
 public class PlayerConnectionCallback {
@@ -38,7 +37,7 @@ public class PlayerConnectionCallback {
          LOGIN_CALLBACK_LIST.get(server.getOverworld()).removeCallback(callback);
       }
    
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(profile.getLevel() == 0){ // Profile needs initialization
          profile.setLevel(1);
       }

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
@@ -51,7 +52,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "transmutation_altar";
@@ -110,13 +110,13 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    
    public static List<TransmutationRecipe> getUnlockedRecipes(ServerPlayerEntity player){
       return TransmutationRecipes.TRANSMUTATION_RECIPES.stream().filter(recipe -> {
-         if(recipe instanceof InfusionTransmutationRecipe r && ArcanaItemUtils.isArcane(r.getOutput()) && !PLAYER_DATA.get(player).hasResearched(ArcanaItemUtils.identifyItem(r.getOutput()))){
+         if(recipe instanceof InfusionTransmutationRecipe r && ArcanaItemUtils.isArcane(r.getOutput()) && !ArcanaNovum.data(player).hasResearched(ArcanaItemUtils.identifyItem(r.getOutput()))){
             return false;
          }
-         if(recipe instanceof AequalisCatalystTransmutationRecipe && !(PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && PLAYER_DATA.get(player).getAugmentLevel(ArcanaAugments.EQUIVALENT_EXCHANGE.id) > 0)){
+         if(recipe instanceof AequalisCatalystTransmutationRecipe && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.EQUIVALENT_EXCHANGE.id) > 0)){
             return false;
          }
-         if(recipe instanceof AequalisSkillTransmutationRecipe && !PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA)){
+         if(recipe instanceof AequalisSkillTransmutationRecipe && !ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA)){
             return false;
          }
          return true;

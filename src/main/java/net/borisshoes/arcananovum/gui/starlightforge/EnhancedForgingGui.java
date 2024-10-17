@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.starlightforge;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -29,8 +30,6 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 import java.util.*;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class EnhancedForgingGui extends SimpleGui {
    private final StarlightForgeBlockEntity blockEntity;
@@ -333,7 +332,7 @@ public class EnhancedForgingGui extends SimpleGui {
          if(percentile >= 0.99){
             ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
          }
-         PLAYER_DATA.get(player).addXP(finalCost*10);
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARDUST_INFUSION_PER_STARDUST)*finalCost);
          Vec3d pos = blockEntity.getPos().toCenterPos().add(0,2,0);
          ItemScatterer.spawn(world,pos.x,pos.y,pos.z,enhancedStack);
       }));

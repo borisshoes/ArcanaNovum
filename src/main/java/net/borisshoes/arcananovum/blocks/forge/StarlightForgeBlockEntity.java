@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.*;
+import net.minecraft.inventory.DoubleInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
@@ -149,10 +150,9 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       for(BlockPos blockPos : BlockPos.iterate(pos.add(range), pos.subtract(range))){
          BlockEntity be = serverWorld.getBlockEntity(blockPos);
          BlockState state = serverWorld.getBlockState(blockPos);
-         if(be instanceof ChestBlockEntity chestBe && state.getBlock() instanceof ChestBlock chestBlock){
-            Inventory inv = ChestBlock.getInventory(chestBlock,state,serverWorld,blockPos,true);
-            if(inv != null && !invs.contains(inv)){
-               invs.add(inv);
+         if(be instanceof ChestBlockEntity chestBe){
+            if(!invs.contains(chestBe)){
+               invs.add(chestBe);
             }
          }else if(be instanceof BarrelBlockEntity barrelBe){
             if(!invs.contains(barrelBe)){

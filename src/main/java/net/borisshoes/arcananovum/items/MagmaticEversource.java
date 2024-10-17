@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -56,7 +58,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class MagmaticEversource extends EnergyItem {
 	public static final String ID = "magmatic_eversource";
@@ -279,9 +280,6 @@ public class MagmaticEversource extends EnergyItem {
                   playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
                   fluidDrainable.getBucketFillSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
                   world.emitGameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
-                  if (!world.isClient) {
-                     PLAYER_DATA.get(player).addXP(5); // Add xp
-                  }
                   return TypedActionResult.success(stack, world.isClient());
                }
                return TypedActionResult.fail(stack);
@@ -289,7 +287,7 @@ public class MagmaticEversource extends EnergyItem {
             BlockState blockState = world.getBlockState(blockPos);
             BlockPos blockPos3 = blockState.getBlock() instanceof FluidFillable ? blockPos : blockPos2;
             if (placeFluid(fluid,playerEntity, world, blockPos3, blockHitResult)) {
-               PLAYER_DATA.get(player).addXP(25); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE.id,1);
                putProperty(stack,USES_TAG,charges-1);
                buildItemLore(stack, playerEntity.getServer());

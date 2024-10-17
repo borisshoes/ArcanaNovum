@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -48,7 +49,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class SpawnerHarness extends ArcanaItem {
 	public static final String ID = "spawner_harness";
@@ -140,7 +140,7 @@ public class SpawnerHarness extends ArcanaItem {
    
    private void giveScrap(PlayerEntity player){
       ItemStack stack = new ItemStack(Items.NETHERITE_SCRAP);
-      int reduction = (int) ArcanaNovum.config.getValue("ingredientReduction");
+      int reduction = ArcanaConfig.getInt(ArcanaRegistry.INGREDIENT_REDUCTION);
       int scrapCost = (int) Math.ceil(4.0 / reduction);
       stack.setCount(scrapCost/2);
       MiscUtils.giveStacks(player,stack);
@@ -226,7 +226,7 @@ public class SpawnerHarness extends ArcanaItem {
                      stack.decrementUnlessCreative(stack.getCount(),player);
                      if(scrap) giveScrap(player);
                   }
-                  PLAYER_DATA.get(player).addXP((int) Math.max(0,20000*breakChance)); // Add xp
+                  ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaConfig.getInt(ArcanaRegistry.SPAWNER_HARNESS_USE)*breakChance)); // Add xp
                   return ActionResult.SUCCESS;
                }else{
                   player.sendMessage(Text.literal("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.achievements;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.minecraft.item.ItemStack;
@@ -8,8 +9,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class EventAchievement extends ArcanaAchievement{
    
@@ -35,7 +34,7 @@ public class EventAchievement extends ArcanaAchievement{
    
    @Override
    public MutableText[] getStatusDisplay(ServerPlayerEntity player){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       EventAchievement achievement = (EventAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       if(achievement == null) return null;
       

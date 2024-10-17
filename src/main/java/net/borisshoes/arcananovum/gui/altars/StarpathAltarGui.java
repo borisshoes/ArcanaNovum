@@ -3,8 +3,12 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.altars.StarpathAltar;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
@@ -18,6 +22,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -28,9 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
-public class StarpathAltarGui  extends SimpleGui {
+public class StarpathAltarGui extends SimpleGui {
    private final StarpathAltarBlockEntity blockEntity;
    
    public StarpathAltarGui(ServerPlayerEntity player, StarpathAltarBlockEntity blockEntity){
@@ -78,7 +81,16 @@ public class StarpathAltarGui  extends SimpleGui {
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(index == 2){
-         blockEntity.openTargetGui(player);
+         boolean starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STAR_CHARTS.id) > 0;
+         
+         if(starcharts){
+            StarpathAltarChartsGui gui = new StarpathAltarChartsGui(player,this,blockEntity);
+            gui.buildGui();
+            gui.open();
+         }else{
+            StarpathTargetGui gui = new StarpathTargetGui(player,blockEntity,true,this,(obj) -> blockEntity.setTargetCoords((BlockPos) obj));
+            gui.open();
+         }
       }else if(index == 4){
          if(blockEntity.getCooldown() <= 0){
             if(MiscUtils.removeItems(player,Items.ENDER_EYE,blockEntity.calculateCost())){
@@ -87,7 +99,7 @@ public class StarpathAltarGui  extends SimpleGui {
                blockEntity.resetCooldown();
                ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(500, () -> {
                   teleport();
-                  PLAYER_DATA.get(player).addXP(1000);
+                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARPATH_ALTAR_ACTIVATE));
                }));
                close();
             }else{
@@ -163,12 +175,20 @@ public class StarpathAltarGui  extends SimpleGui {
             .append(Text.literal("").formatted(Formatting.DARK_PURPLE)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("This Journey Costs: ").formatted(Formatting.AQUA)))));
-      activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal(cost+" Eye"+(cost != 1 ? "s" : "")+" of Ender").formatted(Formatting.DARK_AQUA)))));
-      if(cost > 64){
-         activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal(stacks+" Stacks + "+leftover).formatted(Formatting.DARK_AQUA)))));
+      
+      MutableText text = Text.literal("")
+            .append(Text.literal(cost+"").formatted(Formatting.DARK_GREEN))
+            .append(Text.literal(" - ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.translatable(Items.ENDER_EYE.getTranslationKey()).formatted(Formatting.DARK_AQUA));
+      if(cost > Items.ENDER_EYE.getMaxCount()){
+         text.append(Text.literal(" - ").formatted(Formatting.DARK_PURPLE));
+         if(cost > 0){
+            text.append("("+stacks+" Stacks + "+leftover+")").formatted(Formatting.YELLOW);
+         }else{
+            text.append("("+stacks+" Stacks)").formatted(Formatting.YELLOW);
+         }
       }
+      activateItem.addLoreLine(TextUtils.removeItalics(text));
       setSlot(4,activateItem);
    }
    

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
@@ -41,8 +42,6 @@ import org.joml.Vector2d;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    
@@ -207,7 +206,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    
    public void incArrowForEveryFoe(ServerPlayerEntity player){
       // Do this bit manually so extra data can be saved
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(ArcanaAchievements.ARROW_FOR_EVERY_FOE instanceof TimedAchievement baseAch){
          String itemId = baseAch.getArcanaItem().getId();
          TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
@@ -235,6 +234,10 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          if(entry.getKey().id.equals(id)) return entry.getValue();
       }
       return 0;
+   }
+   
+   public RunicArrow getArrowType(){
+      return arrowType;
    }
    
    @Override

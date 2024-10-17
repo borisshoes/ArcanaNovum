@@ -31,10 +31,13 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -47,7 +50,6 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.log;
 import static net.borisshoes.arcananovum.ArcanaRegistry.RECOMMENDED_LIST;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TomeGui extends SimpleGui {
    private TomeMode mode;
@@ -55,6 +57,8 @@ public class TomeGui extends SimpleGui {
    private CompendiumSettings settings;
    public static final int[][] DYNAMIC_SLOTS = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
    public static final int[] CRAFTING_SLOTS = {1,2,3,4,5,10,11,12,13,14,19,20,21,22,23,28,29,30,31,32,37,38,39,40,41};
+   private ArcanaRecipe selectedRecipe;
+   private boolean permaCloseFlag = false;
    
    /**
     * Constructs a new simple container gui for the supplied player.
@@ -100,7 +104,7 @@ public class TomeGui extends SimpleGui {
                
                if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
                   ArcanaItem arcanaItem = arcanaEntry.getArcanaItem();
-                  if(!PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+                  if(!ArcanaNovum.data(player).hasResearched(arcanaItem)){
                      tome.openResearchGui(player,settings,arcanaItem.getId());
                   }else{
                      if(type == ClickType.MOUSE_RIGHT){
@@ -267,6 +271,18 @@ public class TomeGui extends SimpleGui {
                }
             }else if(index == 25 || index == 26){
                tome.openGui(player,TomeMode.COMPENDIUM,settings);
+            }else if (index == 43){
+               if(selectedRecipe != null){
+                  StringBuilder copyString = new StringBuilder();
+                  HashMap<String, Pair<Integer,ItemStack>> ingredList = selectedRecipe.getIngredientList();
+                  for(Map.Entry<String, Pair<Integer,ItemStack>> ingred : ingredList.entrySet()){
+                     copyString.append(getIngredStr(ingred).getString()).append("\n");
+                  }
+                  
+                  player.sendMessage(Text.translatable("text.arcananovum.materials_copy_message").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("text.arcananovum.materials_copy_message"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyString.toString()))));
+                  permaCloseFlag = true;
+                  close();
+               }
             }else if(index > 9 && index < 36 && (index % 9 == 1 || index % 9 == 2 || index % 9 == 3 || index % 9 == 4 ||index % 9 == 5)){
                ItemStack ingredStack = this.getSlot(index).getItemStack();
                ArcanaItem arcanaItem1 = ArcanaItemUtils.identifyItem(ingredStack);
@@ -280,9 +296,40 @@ public class TomeGui extends SimpleGui {
             
             if(index == 0){
                if(arcanaItem instanceof MultiblockCore multicore){
-                  multicore.getMultiblock().displayStructure(new Multiblock.MultiblockCheck(player.getServerWorld(),player.getBlockPos(),player.getServerWorld().getBlockState(player.getBlockPos()),new BlockPos(multicore.getCheckOffset()),null),player);
-                  close();
-                  close();
+                  if(type == ClickType.MOUSE_RIGHT){
+                     LinkedHashMap<Item, Integer> mbMats = new LinkedHashMap<>();
+                     StringBuilder copyString = new StringBuilder();
+                     multicore.getMultiblock().getMaterialList().entrySet().stream()
+                           .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                           .forEachOrdered(entry -> mbMats.put(entry.getKey(), entry.getValue()));
+                     
+                     for(Map.Entry<Item, Integer> entry : mbMats.entrySet()){
+                        Item matItem = entry.getKey();
+                        int num = entry.getValue();
+                        int stacks = num / matItem.getMaxCount();
+                        int rem = num % matItem.getMaxCount();
+                        
+                        copyString.append(matItem.getName().getString()).append(" - ").append(num);
+                        
+                        if(num > matItem.getMaxCount()){
+                           copyString.append(" - ");
+                           if(rem > 0){
+                              copyString.append("(").append(stacks).append(" Stacks + ").append(rem).append(")");
+                           }else{
+                              copyString.append("(").append(stacks).append(" Stacks)");
+                           }
+                        }
+                        copyString.append("\n");
+                     }
+                     
+                     player.sendMessage(Text.translatable("text.arcananovum.materials_copy_message").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("text.arcananovum.materials_copy_message"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyString.toString()))));
+                     permaCloseFlag = true;
+                     close();
+                  }else{
+                     multicore.getMultiblock().displayStructure(new Multiblock.MultiblockCheck(player.getServerWorld(),player.getBlockPos(),player.getServerWorld().getBlockState(player.getBlockPos()),new BlockPos(multicore.getCheckOffset()),null),player);
+                     permaCloseFlag = true;
+                     close();
+                  }
                }
             }else if(index == 2){
                if(arcanaItem.getRecipe() != null){
@@ -306,7 +353,7 @@ public class TomeGui extends SimpleGui {
                if(type == ClickType.MOUSE_RIGHT){
                   tome.openResearchGui(player,settings,arcanaItem.getId());
                }else{
-                  IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+                  IArcanaProfileComponent profile = ArcanaNovum.data(player);
                   ArcanaRarity rarity = arcanaItem.getRarity();
                   Item paperType = ArcanaRarity.getArcanePaper(rarity);
                   int cost = profile.getArcanePaperRequirement(rarity);
@@ -339,7 +386,7 @@ public class TomeGui extends SimpleGui {
                }
                
                if(augment != null){
-                  IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+                  IArcanaProfileComponent profile = ArcanaNovum.data(player);
                   int augmentLvl = profile.getAugmentLevel(augment.id);
                   ArcanaRarity[] tiers = augment.getTiers();
                   if(augmentLvl >= tiers.length) return true;
@@ -388,7 +435,7 @@ public class TomeGui extends SimpleGui {
                }
             }else if(index == 49){
                List<ResearchTask> tasks = ResearchTasks.getUniqueTasks(arcanaItem.getResearchTasks()).stream().toList();
-               IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+               IArcanaProfileComponent profile = ArcanaNovum.data(player);
                ArcanaRarity rarity = arcanaItem.getRarity();
                boolean allAcquired = tasks.stream().allMatch(task -> task.isAcquired(player));
                Item paperType = ArcanaRarity.getArcanePaper(rarity);
@@ -419,7 +466,7 @@ public class TomeGui extends SimpleGui {
    }
    
    public void buildProfileGui(ServerPlayerEntity player){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       setMode(TomeMode.PROFILE);
       MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       setSlot(27,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
@@ -615,7 +662,7 @@ public class TomeGui extends SimpleGui {
    }
    
    public void buildAchievementsGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       setMode(TomeMode.ACHIEVEMENTS);
       List<ArcanaAchievement> items = sortedFilteredAchievementList(player,settings);
       List<ArcanaAchievement> pageItems = MiscUtils.listToPage(items, settings.getAchPage(),28);
@@ -726,7 +773,7 @@ public class TomeGui extends SimpleGui {
    }
    
    public void buildLeaderboardGui(ServerPlayerEntity player, TomeGui.CompendiumSettings settings){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       setMode(TomeMode.LEADERBOARD);
       List<UUID> items = sortedFilteredLeaderboardList(settings);
       List<UUID> pageItems = MiscUtils.listToPage(items, settings.getLeaderboardPage(),28);
@@ -842,7 +889,7 @@ public class TomeGui extends SimpleGui {
    public static void buildItemGui(SimpleGui gui, ServerPlayerEntity player, String id){
       if(gui instanceof TomeGui tomeGui) tomeGui.setMode(TomeMode.ITEM);
       boolean isTwilightAnvil = gui instanceof TwilightAnvilGui;
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
       if(arcanaItem == null){
          gui.close();
@@ -880,6 +927,9 @@ public class TomeGui extends SimpleGui {
          structure.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click ").formatted(Formatting.YELLOW))
                .append(Text.literal("to view this block's Structure").formatted(Formatting.LIGHT_PURPLE))));
+         structure.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Right Click ").formatted(Formatting.GREEN))
+               .append(Text.literal("to copy the materials list to your clipboard").formatted(Formatting.LIGHT_PURPLE))));
          structure.addLoreLine(Text.literal(""));
          structure.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Materials ").formatted(Formatting.DARK_PURPLE))));
@@ -913,6 +963,14 @@ public class TomeGui extends SimpleGui {
       book.addLoreLine(TextUtils.removeItalics(Text.literal("")
             .append(Text.literal("Click ").formatted(Formatting.YELLOW))
             .append(Text.literal("to read about this Arcana Item").formatted(Formatting.LIGHT_PURPLE))));
+      if(arcanaItem.getAttributions().length > 0){
+         book.addLoreLine(Text.literal(""));
+         for(Pair<MutableText, MutableText> attribution : arcanaItem.getAttributions()){
+            book.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                  .append(attribution.getLeft().formatted(Formatting.DARK_PURPLE))
+                  .append(attribution.getRight().formatted(Formatting.LIGHT_PURPLE))));
+         }
+      }
       if(!isTwilightAnvil) gui.setSlot(6,book);
       
       GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
@@ -1067,6 +1125,7 @@ public class TomeGui extends SimpleGui {
    public void buildRecipeGui(SimpleGui gui, Text name, ArcanaRecipe recipe, ItemStack output){
       if(gui instanceof TomeGui tomeGui){
          tomeGui.setMode(TomeMode.RECIPE);
+         selectedRecipe = recipe;
       }
       
       for(int i = 0; i < gui.getSize(); i++){
@@ -1085,12 +1144,21 @@ public class TomeGui extends SimpleGui {
       gui.setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       gui.setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
-      if(ArcanaItemUtils.isArcane(output)){
+      ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(output);
+      if(arcanaItem != null){
          GuiElementBuilder book = new GuiElementBuilder(Items.WRITTEN_BOOK).hideDefaultTooltip();
          book.setName(Text.literal("Item Lore").formatted(Formatting.DARK_PURPLE));
          book.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click ").formatted(Formatting.YELLOW))
                .append(Text.literal("to read about this Arcana Item.").formatted(Formatting.LIGHT_PURPLE))));
+         if(arcanaItem.getAttributions().length > 0){
+            book.addLoreLine(Text.literal(""));
+            for(Pair<MutableText, MutableText> attribution : arcanaItem.getAttributions()){
+               book.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                     .append(attribution.getLeft().formatted(Formatting.DARK_PURPLE))
+                     .append(attribution.getRight().formatted(Formatting.LIGHT_PURPLE))));
+            }
+         }
          gui.setSlot(7,book);
       }
       
@@ -1139,13 +1207,19 @@ public class TomeGui extends SimpleGui {
       }
       if(!recipe.getForgeRequirementList().isEmpty()) recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("Does not include item data").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC)));
+      
+      recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+      recipeItem.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click ").formatted(Formatting.GREEN))
+            .append(Text.literal("to copy the materials list to your clipboard").formatted(Formatting.LIGHT_PURPLE))));
+      
       gui.setSlot(43,recipeItem);
       
       gui.setTitle(Text.literal("Recipe for ").append(name));
    }
    
    public void buildResearchGui(ServerPlayerEntity player, CompendiumSettings settings, String id){
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       setMode(TomeMode.RESEARCH);
       
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
@@ -1284,9 +1358,8 @@ public class TomeGui extends SimpleGui {
    
    @Override
    public void onClose(){
+      if(permaCloseFlag) return;
       if(mode == TomeMode.RECIPE){ // Recipe gui to compendium
-         ItemStack item = this.getSlot(25).getItemStack();
-         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          tome.openGui(player,TomeMode.COMPENDIUM,settings);
       }else if(mode == TomeMode.ITEM || mode == TomeMode.RESEARCH){ // Item gui to compendium
          tome.openGui(player,TomeMode.COMPENDIUM,settings);
@@ -1708,9 +1781,9 @@ public class TomeGui extends SimpleGui {
          if(filter == RESEARCHED || filter == NOT_RESEARCHED){
             if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
                if(filter == RESEARCHED){
-                  return PLAYER_DATA.get(player).hasResearched(arcanaEntry.getArcanaItem());
+                  return ArcanaNovum.data(player).hasResearched(arcanaEntry.getArcanaItem());
                }else{
-                  return !PLAYER_DATA.get(player).hasResearched(arcanaEntry.getArcanaItem());
+                  return !ArcanaNovum.data(player).hasResearched(arcanaEntry.getArcanaItem());
                }
             }
             return false;
@@ -1840,7 +1913,7 @@ public class TomeGui extends SimpleGui {
       
       public static boolean matchesFilter(ServerPlayerEntity player, AchievementFilter filter, ArcanaAchievement ach){
          if(filter == AchievementFilter.NONE) return true;
-         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         IArcanaProfileComponent profile = ArcanaNovum.data(player);
          boolean acquired = profile.hasAcheivement(ach.getArcanaItem().getId(),ach.id);
          
          if(filter == AchievementFilter.ACQUIRED) return acquired;

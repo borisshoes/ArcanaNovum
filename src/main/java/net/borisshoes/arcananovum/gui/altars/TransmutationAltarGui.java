@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class TransmutationAltarGui extends SimpleGui {
    private final TransmutationAltarBlockEntity blockEntity;
@@ -68,18 +68,18 @@ public class TransmutationAltarGui extends SimpleGui {
             Vec3d outputPos = blockEntity.getOutputPos(outputPair.getRight());
             transmuteCount += output.getCount();
             if(output.isOf(ArcanaRegistry.DIVINE_CATALYST.getItem())){
-               PLAYER_DATA.get(player).addCraftedSilent(output);
+               ArcanaNovum.data(player).addCraftedSilent(output);
                ArcanaAchievements.grant(player,ArcanaAchievements.DIVINE_TRANSMUTATION.id);
             }
             if(output.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())){
-               PLAYER_DATA.get(player).addCraftedSilent(output);
+               ArcanaNovum.data(player).addCraftedSilent(output);
                ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE.id);
             }
             
             blockEntity.getWorld().spawnEntity(new ItemEntity(blockEntity.getWorld(),outputPos.x,outputPos.y+0.25,outputPos.z,output, 0, 0, 0));
          }
          if(transmuteCount > 0){
-            PLAYER_DATA.get(player).addXP(transmuteCount*10+100);
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM)*transmuteCount + ArcanaConfig.getInt(ArcanaRegistry.TRANSMUTATION_ALTAR_TRANSMUTE));
          }
          
          boolean canRecurse = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.TRADE_AGREEMENT.id) > 0;

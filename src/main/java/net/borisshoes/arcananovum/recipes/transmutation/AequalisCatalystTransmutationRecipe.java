@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -20,8 +21,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
 
 import java.util.*;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
    
@@ -173,7 +172,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          }
       }
       if(player != null){
-         PLAYER_DATA.get(player).addXP(1000);
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE));
       }
       return outputs;
    }
@@ -196,7 +195,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
          if(!hasAugment) return false;
          ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(as.getCrafter(aequalisInput)));
          if(player != null){
-            return PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
+            return ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
          }else{
             return false;
          }

@@ -1,10 +1,14 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
@@ -13,17 +17,23 @@ import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ArmorMaterials;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -125,6 +135,27 @@ public class WingsOfEnderia extends EnergyItem {
       @Override
       public ItemStack getDefaultStack(){
          return prefItem;
+      }
+      
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
+         if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
+            if(player.isFallFlying()){ // Wings of Enderia
+               wings.addEnergy(item,1); // Add 1 energy for each tick of flying
+               if(wings.getEnergy(item) % 1000 == 999)
+                  player.sendMessage(Text.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).formatted(Formatting.DARK_PURPLE),true);
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_FLY)); // Add xp
+            }
+            NbtCompound leftShoulder = player.getShoulderEntityLeft();
+            NbtCompound rightShoulder = player.getShoulderEntityRight();
+            if(leftShoulder != null && rightShoulder != null && leftShoulder.contains("id") && rightShoulder.contains("id")){
+               if(leftShoulder.getString("id").equals(EntityType.getId(EntityType.PARROT).toString()) && rightShoulder.getString("id").equals(EntityType.getId(EntityType.PARROT).toString())){
+                  ArcanaAchievements.grant(player, ArcanaAchievements.CROW_FATHER.id);
+               }
+            }
+         }
       }
    }
 }

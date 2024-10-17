@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.FleeEntityGoal;
@@ -14,8 +15,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(FleeEntityGoal.class)
 public class FleeEntityGoalMixin<T extends LivingEntity> {
@@ -32,7 +31,7 @@ public class FleeEntityGoalMixin<T extends LivingEntity> {
       if(mob instanceof CreeperEntity && targetEntity instanceof CatEntity cat){
          if(cat.getWorld() instanceof ServerWorld serverWorld){
             for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(cat.getBlockPos(), 10.0))){
-               PLAYER_DATA.get(player).setResearchTask(ResearchTasks.CAT_SCARE, true);
+               ArcanaNovum.data(player).setResearchTask(ResearchTasks.CAT_SCARE, true);
             }
          }
       }

@@ -37,7 +37,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
                return false;
          }
 
-         if(!allowBosses){
+         if(!allowBosses){ // TODO Entity Tag
             if((Soulstone.getType(stack).equals(EntityType.getId(EntityType.ENDER_DRAGON).toString()) ||
                   Soulstone.getType(stack).equals(EntityType.getId(ArcanaRegistry.NUL_CONSTRUCT_ENTITY).toString()) ||
                   Soulstone.getType(stack).equals(EntityType.getId(EntityType.WITHER).toString())))
@@ -47,6 +47,11 @@ public class SoulstoneIngredient extends ArcanaIngredient {
       }else{
          return false;
       }
+   }
+   
+   @Override
+   public boolean validStackIgnoreCount(ItemStack stack){
+      return this.validStack(stack);
    }
    
    @Override

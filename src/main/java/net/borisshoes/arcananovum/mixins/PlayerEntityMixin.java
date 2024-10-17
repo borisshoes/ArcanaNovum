@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -26,8 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.function.Predicate;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
@@ -99,7 +98,7 @@ public class PlayerEntityMixin {
    private void arcananovum_addExperience(CallbackInfo ci){
       PlayerEntity player = (PlayerEntity) (Object) this;
       if(player instanceof ServerPlayerEntity serverPlayer && player.experienceLevel >= 100){
-         PLAYER_DATA.get(serverPlayer).setResearchTask(ResearchTasks.LEVEL_100, true);
+         ArcanaNovum.data(serverPlayer).setResearchTask(ResearchTasks.LEVEL_100, true);
       }
    }
    
@@ -107,7 +106,7 @@ public class PlayerEntityMixin {
    private void arcananovum_useRiptide(int riptideTicks, float riptideAttackDamage, ItemStack stack, CallbackInfo ci){
       PlayerEntity player = (PlayerEntity) (Object) this;
       if(player instanceof ServerPlayerEntity serverPlayer && stack.isOf(Items.TRIDENT)){
-         PLAYER_DATA.get(serverPlayer).setResearchTask(ResearchTasks.RIPTIDE_TRIDENT, true);
+         ArcanaNovum.data(serverPlayer).setResearchTask(ResearchTasks.RIPTIDE_TRIDENT, true);
       }
    }
 }

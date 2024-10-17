@@ -6,17 +6,11 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.minecraft.command.argument.BlockRotationArgumentType;
-import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.BlockRotation;
 import net.minecraft.util.StringIdentifiable;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -25,8 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -45,17 +37,34 @@ public class ConfigUtils {
    }
    
    public void read(){
-      Properties props = new Properties();
-      try(InputStream input = new FileInputStream(file)){
+      try(BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(file)))){
          logger.debug("Reading Arcana Novum config...");
-         props.load(input);
          
          for(IConfigValue value : this.values){
-            Object defaultValue = value.defaultValue;
-            try{
-               value.value = value.getFromProps(props);
-            }catch(Exception e){
-               value.value = defaultValue;
+            value.value = value.defaultValue;
+         }
+         
+         while(input.ready()){
+            String configLine = input.readLine();
+            String trimmed = configLine.trim();
+            if(trimmed.isEmpty()) continue;
+            char firstChar = trimmed.charAt(0);
+            
+            if(firstChar == '!' || firstChar == '#') continue;
+            if(!configLine.contains("=")) continue;
+            
+            int splitIndex = configLine.indexOf('=');
+            String valueName = configLine.substring(0, splitIndex);
+            String valueValue = configLine.substring(splitIndex + 1);
+            
+            for(IConfigValue value : this.values){
+               if(!valueName.equals(value.name)) continue;
+               Object defaultValue = value.defaultValue;
+               try{
+                  value.value = value.getFromString(valueValue);
+               }catch(Exception e){
+                  value.value = defaultValue;
+               }
             }
          }
       }catch(FileNotFoundException ignored){
@@ -71,11 +80,20 @@ public class ConfigUtils {
    }
    
    public void save(){
-      Properties props = new Properties();
-      this.values.forEach(value -> value.setToProps(props));
       logger.debug("Updating Arcana Novum config...");
-      try(OutputStream output = new FileOutputStream(file)){
-         props.store(output, null);
+      try(BufferedWriter output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))){
+         output.write("# Arcana Novum Configuration File" + " | " + new Date());
+         output.newLine();
+         output.newLine();
+         
+         for(IConfigValue value : this.values){
+            if(value.comment != null){
+               output.write("# "+value.comment);
+               output.newLine();
+            }
+            output.write(value.name + " = " + value.value);
+            output.newLine();
+         }
       }catch(IOException e){
          logger.fatal("Failed to save Arcana Novum config file!");
          e.printStackTrace();
@@ -84,22 +102,22 @@ public class ConfigUtils {
    
    public LiteralArgumentBuilder<ServerCommandSource> generateCommand(){
       LiteralArgumentBuilder<ServerCommandSource> out =
-            literal("arcana").then(literal("gamerule").requires(source -> source.hasPermissionLevel(4))
+            literal("arcana").then(literal("config").requires(source -> source.hasPermissionLevel(4))
                   .executes(ctx -> {
                      values.stream().filter(v -> v.command != null).forEach(value ->
-                           ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {value.value})), false));
+                           ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {String.valueOf(value.value)})), false));
                      return 1;
                   }));
       values.stream().filter(v -> v.command != null).forEach(value ->
-            out.then(literal("gamerule").then(literal(value.name)
+            out.then(literal("config").then(literal(value.name)
                   .executes(ctx -> {
-                     ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {value.value})), false);
+                     ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {String.valueOf(value.value)})), false);
                      return 1;
                   })
                   .then(argument(value.name, value.getArgumentType()).suggests(value::getSuggestions)
                         .executes(ctx -> {
                            value.value = value.parseArgumentValue(ctx);
-                           ((CommandContext<ServerCommandSource>) ctx).getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.setterText, null, new Object[] {value.value})), true);
+                           ((CommandContext<ServerCommandSource>) ctx).getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.setterText, null, new Object[] {String.valueOf(value.value)})), true);
                            this.save();
                            return 1;
                         })))));
@@ -124,12 +142,11 @@ public class ConfigUtils {
          this.command = command;
       }
       
-      public abstract T getFromProps(Properties props);
-      
-      public void setToProps(Properties props){
-         props.setProperty(name, String.valueOf(value));
-         if(comment != null) props.setProperty(name + ".comment", comment);
+      public String getName(){
+         return name;
       }
+      
+      public abstract T getFromString(String value);
       
       public abstract ArgumentType<?> getArgumentType();
       
@@ -153,8 +170,8 @@ public class ConfigUtils {
       }
       
       @Override
-      public Integer getFromProps(Properties props){
-         return Integer.parseInt(props.getProperty(name));
+      public Integer getFromString(String value){
+         return Integer.parseInt(value);
       }
       
       @Override
@@ -204,8 +221,8 @@ public class ConfigUtils {
       }
       
       @Override
-      public Boolean getFromProps(Properties props){
-         return Boolean.parseBoolean(props.getProperty(name));
+      public Boolean getFromString(String value){
+         return Boolean.parseBoolean(value);
       }
       
       @Override
@@ -239,8 +256,8 @@ public class ConfigUtils {
       }
       
       @Override
-      public String getFromProps(Properties props){
-         return props.getProperty(name);
+      public String getFromString(String value){
+         return value;
       }
       
       @Override
@@ -275,24 +292,24 @@ public class ConfigUtils {
       }
       
       @Override
-      public K getFromProps(Properties props){
-         String property = props.getProperty(name);
+      public K getFromString(String value){
          for(K k : EnumSet.allOf(typeClass)){
-            if(k.asString().equalsIgnoreCase(property)){
+            if(k.asString().equalsIgnoreCase(value)){
                return k;
             }
          }
-         throw new IllegalArgumentException("Could not map "+property+" to enum "+typeClass.getName());
+         throw new IllegalArgumentException("Could not map "+ value +" to enum "+typeClass.getName());
       }
       
       @Override
-      public ArgumentType<K> getArgumentType(){
-         return ConfigEnumArgumentType.enumArgument(typeClass);
+      public ArgumentType<String> getArgumentType(){
+         return StringArgumentType.string();
       }
       
       @Override
       public K parseArgumentValue(CommandContext<ServerCommandSource> ctx){
-         return ConfigEnumArgumentType.enumArgument(typeClass).getEnumValue(ctx, name);
+         String parsedString = StringArgumentType.getString(ctx, name);
+         return K.valueOf(this.typeClass,parsedString);
       }
       
       public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
@@ -322,22 +339,18 @@ public class ConfigUtils {
       }
    }
    
-   public static class ConfigEnumArgumentType<T extends Enum<T> & StringIdentifiable> extends EnumArgumentType<T> {
-      final Class<T> typeClass;
-      
-      private ConfigEnumArgumentType(Class<T> typeClass) {
-         super(StringIdentifiable.createCodec(
-               () -> EnumSet.allOf(typeClass).toArray((T[]) java.lang.reflect.Array.newInstance(typeClass, EnumSet.allOf(typeClass).size()))),
-               () -> EnumSet.allOf(typeClass).toArray((T[]) java.lang.reflect.Array.newInstance(typeClass, EnumSet.allOf(typeClass).size())));
-         this.typeClass = typeClass;
+   public static <K extends Enum<K> & StringIdentifiable> CompletableFuture<Suggestions> getEnumSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, Class<K> enumClass){
+      Set<String> options = new HashSet<>();
+      for(K k : EnumSet.allOf(enumClass)){
+         options.add(k.asString());
       }
-      
-      public static <K extends Enum<K> & StringIdentifiable> ConfigEnumArgumentType<K> enumArgument(Class<K> typeClass) {
-         return new ConfigEnumArgumentType<>(typeClass);
-      }
-      
-      public T getEnumValue(CommandContext<ServerCommandSource> context, String id) {
-         return context.getArgument(id, typeClass);
-      }
+      String start = builder.getRemaining().toLowerCase();
+      options.stream().filter(s -> s.toLowerCase().startsWith(start)).forEach(builder::suggest);
+      return builder.buildFuture();
+   }
+   
+   public static <K extends Enum<K> & StringIdentifiable> K parseEnum(String string, Class<K> enumClass){
+      Optional<K> opt = EnumSet.allOf(enumClass).stream().filter(en -> en.asString().equals(string)).findFirst();
+      return opt.orElse(null);
    }
 }

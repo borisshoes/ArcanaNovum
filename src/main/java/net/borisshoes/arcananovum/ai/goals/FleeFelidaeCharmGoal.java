@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.ai.goals;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
@@ -20,8 +22,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Objects;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal<T> {
    
@@ -74,7 +74,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal
       super.start();
       this.mob.playSound(SoundEvents.ENTITY_CREEPER_HURT, 1, 1);
       if(this.targetEntity instanceof ServerPlayerEntity player){
-         PLAYER_DATA.get(player).addXP(10); // Add xp
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_SCARE_CREEPER)); // Add xp
          SoundUtils.playSongToPlayer(player,SoundEvents.ENTITY_CAT_HISS, .1f, 1);
       }
    }

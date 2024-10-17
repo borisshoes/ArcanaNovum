@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -51,7 +52,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShulkerCore extends EnergyItem {
 	public static final String ID = "shulker_core";
@@ -216,7 +216,7 @@ public class ShulkerCore extends EnergyItem {
                   addEnergy(stack, -(speed / 2 + 1));
                playerEntity.addStatusEffect(levit);
                SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
-               PLAYER_DATA.get(playerEntity).addXP(50 * (speed / 2 + 1)); // Add xp
+               ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
                if(world instanceof ServerWorld serverWorld){
                   ParticleEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }

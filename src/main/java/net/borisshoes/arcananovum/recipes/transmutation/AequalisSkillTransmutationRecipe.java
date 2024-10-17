@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -19,8 +20,6 @@ import net.minecraft.util.Pair;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
    
@@ -79,7 +78,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          ServerPlayerEntity asPlayer = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(aequalis.getCrafter(aequalisStack)));
          if(asPlayer == null) return new ArrayList<>();
          
-         IArcanaProfileComponent profile = PLAYER_DATA.get(asPlayer);
+         IArcanaProfileComponent profile = ArcanaNovum.data(asPlayer);
          List<ArcanaAugment> item1Augments = ArcanaAugments.getAugmentsForItem(arcanaItem1);
          List<ArcanaAugment> item2Augments = ArcanaAugments.getAugmentsForItem(arcanaItem2);
          
@@ -198,7 +197,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      PLAYER_DATA.get(player).addXP(1000);
+      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_SKILL_TRANSMUTE));
       return new ArrayList<>();
    }
    
@@ -217,7 +216,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       try{
          ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(as.getCrafter(aequalisInput)));
          if(player != null){
-            return PLAYER_DATA.get(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
+            return ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
          }else{
             return false;
          }

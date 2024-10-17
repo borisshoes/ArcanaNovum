@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.entity.Entity;
@@ -11,8 +14,6 @@ import net.minecraft.server.world.ServerWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class VengeanceTotemLoginCallback extends LoginCallback{
    private UUID attacker;
@@ -57,7 +58,7 @@ public class VengeanceTotemLoginCallback extends LoginCallback{
          if(!survives){
             player.damage(ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,foundAttacker), player.getMaxHealth()*10);
          }else{
-            PLAYER_DATA.get(player).addXP(4000); // Give XP
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE)); // Give XP
          }
       }
    }

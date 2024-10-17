@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -32,7 +33,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +44,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AequalisScientia extends ArcanaItem {
    public static final String ID = "aequalis_scientia";
@@ -218,8 +217,8 @@ public class AequalisScientia extends ArcanaItem {
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
       // Conditions: 0 - Crafted Wings, 1 - Crafted Memento, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Egg
       boolean[] conditions = new boolean[]{
-            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
-            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
+            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
+            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),
@@ -649,6 +648,7 @@ public class AequalisScientia extends ArcanaItem {
                      for(ItemStack result : results){
                         ItemScatterer.spawn(world, center.x,center.y,center.z,result);
                      }
+                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE));
                   }));
                }
             }else{

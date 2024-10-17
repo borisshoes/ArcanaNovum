@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.effects;
 
 import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.minecraft.entity.LivingEntity;
@@ -10,8 +12,6 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.HashMap;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class DamageAmpEffect extends StatusEffect implements PolymerStatusEffect {
    
@@ -40,7 +40,7 @@ public class DamageAmpEffect extends StatusEffect implements PolymerStatusEffect
          if(target.hasStatusEffect(ArcanaRegistry.DAMAGE_AMP_EFFECT) && AMP_TRACKER.get(target) instanceof ServerPlayerEntity player){
             float buffDmg = buffDamage(damage,level) - damage;
             ArcanaAchievements.progress(player,ArcanaAchievements.SPECTRAL_SUPPORT.id, (int) buffDmg);
-            PLAYER_DATA.get(player).addXP((int) (1*buffDmg)); // Add xp
+            ArcanaNovum.data(player).addXP(Math.min(ArcanaConfig.getInt(ArcanaRegistry.DAMAGE_AMP_CAP),(int) (ArcanaConfig.getInt(ArcanaRegistry.DAMAGE_AMP_PER_10)*buffDmg/10.0))); // Add xp
          }else{
             AMP_TRACKER.remove(target);
          }

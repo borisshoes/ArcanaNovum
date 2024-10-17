@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -57,7 +58,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class EssenceEgg extends ArcanaItem {
 	public static final String ID = "essence_egg";
@@ -257,7 +257,8 @@ public class EssenceEgg extends ArcanaItem {
                      if(playerEntity instanceof ServerPlayerEntity player){
                         player.sendMessage(Text.literal("The Spawner Assumes the Essence of "+EntityType.get(getType(stack)).get().getName().getString()).formatted(Formatting.DARK_AQUA, Formatting.ITALIC), true);
                         SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1, .7f);
-                        PLAYER_DATA.get(playerEntity).addXP(Math.min(0,2500-500*captiveLevel)); // Add xp
+                        int xp = ArcanaConfig.getInt(ArcanaRegistry.ESSENCE_EGG_CONVERT);
+                        ArcanaNovum.data(playerEntity).addXP(Math.min(0,xp-(xp/5)*captiveLevel)); // Add xp
                         ArcanaAchievements.grant(player,ArcanaAchievements.SOUL_CONVERSION.id);
                      }
                      addUses(stack, -5+captiveLevel);
@@ -289,7 +290,7 @@ public class EssenceEgg extends ArcanaItem {
                      }
                      if(playerEntity instanceof ServerPlayerEntity player){
                         SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
-                        PLAYER_DATA.get(playerEntity).addXP(500); // Add xp
+                        ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.ESSENCE_EGG_SPAWN)); // Add xp
                         ArcanaAchievements.progress(player,ArcanaAchievements.SOUL_FOR_SOUL.id,1);
                      }
                   }

@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -44,7 +46,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ShadowStalkersGlaive extends EnergyItem {
 	public static final String ID = "shadow_stalkers_glaive";
@@ -273,7 +274,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                   }
                   player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
-                  PLAYER_DATA.get(player).addXP(500); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
                   
                   if(target instanceof ServerPlayerEntity || target instanceof WardenEntity) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
                   if(target instanceof MobEntity){
@@ -317,7 +318,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                }
                player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
-               PLAYER_DATA.get(player).addXP(100); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
                int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
                StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);

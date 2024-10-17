@@ -37,11 +37,11 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentTypes;
@@ -73,6 +73,7 @@ public class ArcanaRegistry {
    public static final Registry<Item> ITEMS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"item")), Lifecycle.stable());
    public static final Registry<PolymerModelData> MODELS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"model")), Lifecycle.stable());
    public static final Registry<AreaEffectTracker> AREA_EFFECTS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"area_effect")), Lifecycle.stable());
+   public static final Registry<ArcanaConfig.ConfigSetting<?>> CONFIG_SETTINGS = new SimpleRegistry<>(RegistryKey.ofRegistry(Identifier.of(MOD_ID,"config_settings")), Lifecycle.stable());
    public static final ArrayList<CompendiumEntry> RECOMMENDED_LIST = new ArrayList<>();
    
    // Armor Materials
@@ -272,6 +273,92 @@ public class ArcanaRegistry {
    // Loot Functions / Item Modifiers
    public static final LootFunctionType<? extends LootFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
    public static final LootFunctionType<? extends LootFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
+   
+   
+   // Config Settings
+   public static final ArcanaConfig.ConfigSetting<?> DO_CONCENTRATION_DAMAGE = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true, "Whether players are damaged for going over their concentration limit",
+         new ConfigUtils.Command("Do Concentration Damage is %s", "Do Concentration Damage is now %s"))));
+   public static final ArcanaConfig.ConfigSetting<?> ANNOUNCE_ACHIEVEMENTS = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.BooleanConfigValue("announceAchievements", true, "Whether it is announced in chat when players complete achievements, reach levels, or craft new items",
+         new ConfigUtils.Command("Announce Achievements is %s", "Announce Achievements is now %s"))));
+   public static final ArcanaConfig.ConfigSetting<?> INGREDIENT_REDUCTION = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.IntegerConfigValue("ingredientReduction", 1, new ConfigUtils.IntegerConfigValue.IntLimits(1,64), "The divisor for recipe ingredient costs",
+         new ConfigUtils.Command("Recipe ingredient counts are divided by %s", "Recipe ingredient count will now be divided by %s"))));
+   
+   public static final ArcanaConfig.ConfigSetting<?> STORMCALLER_ALTAR_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"StormcallerAltarActivate","activating the altar"));
+   public static final ArcanaConfig.ConfigSetting<?> CELESTIAL_ALTAR_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"CelestialAltarActivate","activating the altar"));
+   public static final ArcanaConfig.ConfigSetting<?> STARPATH_ALTAR_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"StarpathAltarActivate","activating the altar"));
+   public static final ArcanaConfig.ConfigSetting<?> IGNEOUS_COLLIDER_PRODUCE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"IgneousColliderProduce","producing 1 obsidian"));
+   public static final ArcanaConfig.ConfigSetting<?> CONTINUUM_ANCHOR_PER_MINUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"ContinuumAnchorPerMinute","having an anchor active for one minute"));
+   public static final ArcanaConfig.ConfigSetting<?> FRACTAL_SPONGE_ABSORB_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"FractalSpongeAbsorbBlock","absorbing a single block of fluid"));
+   public static final ArcanaConfig.ConfigSetting<?> WINGS_OF_ENDERIA_FLY = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2,"WingsOfEnderiaFly","flying for 1 tick"));
+   public static final ArcanaConfig.ConfigSetting<?> RADIANT_FLETCHERY_TIP_ARROWS = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"RadiantFletcheryTipArrows","making tipped arrows"));
+   public static final ArcanaConfig.ConfigSetting<?> STELLAR_CORE_SALVAGE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"StellarCoreSalvage","salvaging an item"));
+   public static final ArcanaConfig.ConfigSetting<?> STELLAR_CORE_SMELT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"StellarCoreSmelt","smelting ore"));
+   public static final ArcanaConfig.ConfigSetting<?> PICKAXE_OF_CEPTYUS_MINE_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"PickaxeOfCeptyusMineBlock","mining a block"));
+   public static final ArcanaConfig.ConfigSetting<?> PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"PickaxeOfCeptyusVeinMineBlock","vein mining an ore"));
+   public static final ArcanaConfig.ConfigSetting<?> RUNIC_ARROW_SHOOT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"RunicArrowShoot","shooting a runic arrow"));
+   public static final ArcanaConfig.ConfigSetting<?> SHIELD_OF_FORTITUDE_ABSORB_DAMAGE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"ShieldOfFortitudeAbsorbDamage","absorbing 1 damage point"));
+   public static final ArcanaConfig.ConfigSetting<?> TOTEM_OF_VENGEANCE_ACTIVATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"TotemOfVengeanceActivate","activating the totem"));
+   public static final ArcanaConfig.ConfigSetting<?> TOTEM_OF_VENGEANCE_SURVIVE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(4000,"TotemOfVengeanceSurvive","getting revenge"));
+   public static final ArcanaConfig.ConfigSetting<?> DAMAGE_AMP_PER_10 = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"DamageAmpPer10","amplifying 10 damage"));
+   public static final ArcanaConfig.ConfigSetting<?> DAMAGE_AMP_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(200,"DamageAmpCap","amplifying damage",true));
+   public static final ArcanaConfig.ConfigSetting<?> ALCHEMICAL_ARBALEST_SHOOT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"AlchemicalArbalestShoot","shooting an alchemical arrow"));
+   public static final ArcanaConfig.ConfigSetting<?> TRANSMUTATION_ALTAR_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"TransmutationAltarTransmute","successfully transmuting"));
+   public static final ArcanaConfig.ConfigSetting<?> TRANSMUTATION_ALTAR_TRANSMUTE_PER_ITEM = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"TransmutationAltarTransmutePerItem","transmuting 1 item"));
+   public static final ArcanaConfig.ConfigSetting<?> MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"MidnightEnchanterDisenchantPerEssence","getting 1 essence from disenchanting"));
+   public static final ArcanaConfig.ConfigSetting<?> STARDUST_INFUSION_PER_STARDUST = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"StardustInfusionPerStardust","spending 1 stardust on infusion"));
+   public static final ArcanaConfig.ConfigSetting<?> TWILIGHT_ANVIL_PER_10 = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"TwilightAnvilPer10","spending 10 xp in the anvil"));
+   public static final ArcanaConfig.ConfigSetting<?> TWILIGHT_ANVIL_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"TwilightAnvilCap","spending xp in the anvil",true));
+   public static final ArcanaConfig.ConfigSetting<?> ANCIENT_DOWSING_ROD_PER_DEBRIS = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"AncientDowsingRodPerDebris","finding 1 debris"));
+   public static final ArcanaConfig.ConfigSetting<?> ANCIENT_DOWSING_ROD_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1500,"AncientDowsingRodCap","finding debris",true));
+   public static final ArcanaConfig.ConfigSetting<?> AQUATIC_EVERSOURCE_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"AquaticEversourceUse","making water with the eversource"));
+   public static final ArcanaConfig.ConfigSetting<?> MAGMATIC_EVERSOURCE_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"MagmaticEversourceUse","making lava with the eversource"));
+   public static final ArcanaConfig.ConfigSetting<?> BRAIN_JAR_MEND_PER_XP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"BrainJarMendPerXp","spending 1 xp to mend items"));
+   public static final ArcanaConfig.ConfigSetting<?> CHEST_TRANSLOCATOR_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"ChestTranslocatorUse","using the translocator"));
+   public static final ArcanaConfig.ConfigSetting<?> CONTAINMENT_CIRCLET_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"ContainmentCircletUse","using the circlet"));
+   public static final ArcanaConfig.ConfigSetting<?> ESSENCE_EGG_SPAWN = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2500,"EssenceEggSpawn","spawning a creature"));
+   public static final ArcanaConfig.ConfigSetting<?> ESSENCE_EGG_CONVERT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(500,"EssenceEggConvert","converting a spawner"));
+   public static final ArcanaConfig.ConfigSetting<?> EVERLASTING_ROCKET_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"EverlastingRocketUse","using the rocket"));
+   public static final ArcanaConfig.ConfigSetting<?> LEVITATION_HARNESS_PER_SECOND = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"LevitationHarnessPerSecond","flying for one second"));
+   public static final ArcanaConfig.ConfigSetting<?> NUL_MEMENTO_DEALLOCATE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50000,"NulMementoDeallocate","deallocating your skill points"));
+   public static final ArcanaConfig.ConfigSetting<?> NUL_MEMENTO_PROTECT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5000,"NulMementoProtect","having the memento protect you from death"));
+   public static final ArcanaConfig.ConfigSetting<?> PEARL_OF_RECALL_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"PearlOfRecallUse","using the pearl"));
+   public static final ArcanaConfig.ConfigSetting<?> PLANESHIFTER_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"PlaneshifterUse","using the shifter"));
+   public static final ArcanaConfig.ConfigSetting<?> STASIS_PEARL_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(250,"StasisPearlUse","using the pearl"));
+   public static final ArcanaConfig.ConfigSetting<?> QUIVER_REFILL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"QuiverRefill","having a quiver refill an arrow"));
+   public static final ArcanaConfig.ConfigSetting<?> SHADOW_STALKERS_GLAIVE_STALK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(500,"ShadowStalkersGlaiveStalk","using the glaive's stalk ability"));
+   public static final ArcanaConfig.ConfigSetting<?> SHADOW_STALKERS_GLAIVE_BLINK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(100,"ShadowStalkersGlaiveBlink","using the glaive's blink ability"));
+   public static final ArcanaConfig.ConfigSetting<?> SHULKER_CORE_PER_SOUL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"ShulkerCorePerSoul","using a soul in the shulker core"));
+   public static final ArcanaConfig.ConfigSetting<?> SOJOURNERS_BOOTS_RUN_PER_SECOND = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"SojournersBootsRunPerSecond","running for one second"));
+   public static final ArcanaConfig.ConfigSetting<?> SOULSTONE_LEVEL_UP_PER_SOUL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"SoulstoneLevelUpPerSoul","levelling up the soulstone per soul"));
+   public static final ArcanaConfig.ConfigSetting<?> SPAWNER_HARNESS_USE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(20000,"SpawnerHarnessUse","using the harness"));
+   public static final ArcanaConfig.ConfigSetting<?> TELESCOPING_BEACON_PER_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"TelescopingBeaconPerBlock","placing the beacon per block in the base"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"CindersCharmIgniteBlock","igniting a block"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_TNT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"CindersCharmIgniteTNT","igniting a block of TNT"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_ENTITY = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"CindersCharmIgniteEntity","igniting an entity"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_IGNITE_CREEPER = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"CindersCharmIgniteCreeper","igniting a creeper"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_LIGHT_BLOCK = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"CindersCharmLightBlock","lighting a block (ex. candle)"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_SMELT_PER_CINDER = registerConfigSetting(new ArcanaConfig.XPConfigSetting(4,"CindersCharmSmeltPerCinder","spending a cinder on smelting"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_CONE_PER_TARGET = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"CindersCharmConePerTarget","hitting a target with cone of flame"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_PYROBLAST_PER_TARGET = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"CindersCharmPyroblastPerTarget","hitting a target with pyroblast"));
+   public static final ArcanaConfig.ConfigSetting<?> CINDERS_CHARM_WEB_PER_TARGET = registerConfigSetting(new ArcanaConfig.XPConfigSetting(5,"CindersCharmWebPerTarget","hitting a target with web of fire"));
+   public static final ArcanaConfig.ConfigSetting<?> FEASTING_CHARM_PER_FOOD_VALUE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(50,"FeastingCharmPerFoodValue","getting fed per hunger point"));
+   public static final ArcanaConfig.ConfigSetting<?> LIGHT_CHARM_NOVA_PER_LIGHT = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"LightCharmNovaPerLight","placing a light with radiant nova"));
+   public static final ArcanaConfig.ConfigSetting<?> LIGHT_CHARM_AUTOMATIC = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"LightCharmAutomatic","automatically placing a light"));
+   public static final ArcanaConfig.ConfigSetting<?> LIGHT_CHARM_MANUAL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(15,"LightCharmManual","manually placing a light"));
+   public static final ArcanaConfig.ConfigSetting<?> MAGNETISM_CHARM_PER_ITEM = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2,"MagnetismCharmPerItem","attracting an item with the active ability"));
+   public static final ArcanaConfig.ConfigSetting<?> MAGNETISM_CHARM_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"MagnetismCharmPerItemCap","attracting items with the active ability",true));
+   public static final ArcanaConfig.ConfigSetting<?> WILD_GROWTH_CHARM_PER_MATURE_CROP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(25,"WildGrowthCharm","growing a crop to maturity"));
+   public static final ArcanaConfig.ConfigSetting<?> WILD_GROWTH_CHARM_PER_REAPED_CROP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"WildGrowthCharmPerReapedCrop","reaping and replanting a crop"));
+   public static final ArcanaConfig.ConfigSetting<?> WILD_GROWTH_CHARM_PASSIVE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1,"WildGrowthCharmPassive","having the charm affect nearby blocks"));
+   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_FALL = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"FelidaeCharmFall","negating 1 point of fall damage"));
+   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_FALL_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"FelidaeCharmFallCap","negating fall damage",true));
+   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_SCARE_PHANTOM = registerConfigSetting(new ArcanaConfig.XPConfigSetting(2,"FelidaeCharmScarePhantom","scaring a phantom"));
+   public static final ArcanaConfig.ConfigSetting<?> FELIDAE_CHARM_SCARE_CREEPER = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"FelidaeCharmScareCreeper","scaring a creeper"));
+   public static final ArcanaConfig.ConfigSetting<?> WINGS_OF_ENDERIA_CUSHION = registerConfigSetting(new ArcanaConfig.XPConfigSetting(10,"WingsOfEnderiaCushion","negating 1 point of kinetic damage"));
+   public static final ArcanaConfig.ConfigSetting<?> WINGS_OF_ENDERIA_CUSHION_CAP = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"WingsOfEnderiaCushionCap","negating kinetic damage",true));
+   public static final ArcanaConfig.ConfigSetting<?> AEQUALIS_SCIENTIA_CATALYST_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"AequalisScientiaCatalystTransmute","transmuting catalysts"));
+   public static final ArcanaConfig.ConfigSetting<?> AEQUALIS_SCIENTIA_SKILL_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(1000,"AequalisScientiaSkillTransmute","transmuting skill points"));
+   public static final ArcanaConfig.ConfigSetting<?> AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE = registerConfigSetting(new ArcanaConfig.XPConfigSetting(500,"AequalisScientiaAttunedTransmute","using the attuned transmutation"));
    
    public static void initialize(){
       PolymerResourcePackUtils.addModAssets(MOD_ID);
@@ -490,6 +577,11 @@ public class ArcanaRegistry {
    
    private static LootFunctionType<? extends LootFunction> registerLootFunction(String id, MapCodec<? extends LootFunction> codec){
       return Registry.register(Registries.LOOT_FUNCTION_TYPE, Identifier.of(MOD_ID,id), new LootFunctionType<>(codec));
+   }
+   
+   private static ArcanaConfig.ConfigSetting<?> registerConfigSetting(ArcanaConfig.ConfigSetting<?> setting){
+      Registry.register(CONFIG_SETTINGS,Identifier.of(MOD_ID,setting.getId()),setting);
+      return setting;
    }
    
    public static PolymerModelData getModelData(String id){

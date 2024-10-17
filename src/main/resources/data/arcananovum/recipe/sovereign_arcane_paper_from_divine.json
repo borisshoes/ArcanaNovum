@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "arcananovum:divine_arcane_paper"
+    },
+    {
+      "item": "arcananovum:divine_arcane_paper"
+    },
+    {
+      "item": "arcananovum:divine_arcane_paper"
+    },
+    {
+      "item": "arcananovum:divine_arcane_paper"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "arcananovum:sovereign_arcane_paper"
+  }
+}

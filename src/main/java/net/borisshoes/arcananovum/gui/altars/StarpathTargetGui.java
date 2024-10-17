@@ -4,14 +4,19 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
+import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
+import net.borisshoes.arcananovum.items.normal.GraphicItems;
+import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -20,45 +25,36 @@ import net.minecraft.world.World;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.function.Consumer;
 
 public class StarpathTargetGui extends AnvilInputGui {
    private final StarpathAltarBlockEntity blockEntity;
    private String text;
-   private final boolean starcharts;
-   private final HashMap<String,BlockPos> savedTargets;
-   private final ArrayList<String> sortedKeys;
-   private int selectedTarget = -1;
+   private final boolean targetMode;
+   private final SimpleGui returnGui;
+   private final Consumer<Object> onCompletion;
    
    // TODO Multi-player access may have made this unsafe
-   public StarpathTargetGui(ServerPlayerEntity player, StarpathAltarBlockEntity blockEntity){
+   public StarpathTargetGui(ServerPlayerEntity player, StarpathAltarBlockEntity blockEntity, boolean targetMode, SimpleGui returnGui, Consumer<Object> onCompletion){
       super(player,false);
       this.blockEntity = blockEntity;
-      this.starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STAR_CHARTS.id) >= 1;
-      this.savedTargets = blockEntity.getSavedTargets();
-      this.sortedKeys = new ArrayList<>(savedTargets.keySet());
-      Collections.sort(this.sortedKeys);
+      this.targetMode = targetMode;
+      this.returnGui = returnGui;
+      this.onCompletion = onCompletion;
       
-      setTitle(Text.literal("Input Coordinates"));
-      setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultStack()).setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA)));
-      if(!starcharts){
+      setTitle(Text.literal(this.targetMode ? "Input Coordinates" : "Input Name"));
+      if(targetMode){
          GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
-         locationItem.setName((Text.literal("")
-               .append(Text.literal("Use format: x,y,z").formatted(Formatting.GOLD))));
+         locationItem.setName((Text.literal("Enter a Location").formatted(Formatting.GOLD)));
+         locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Use format: x,y,z").formatted(Formatting.YELLOW)))));
          setSlot(0,locationItem);
       }else{
-         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
-         locationItem.setName((Text.literal("")
-               .append(Text.literal("Use format: x,y,z").formatted(Formatting.GOLD))));
-         locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("- New Target -").formatted(Formatting.YELLOW)))));
-         locationItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-         locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Left").formatted(Formatting.GOLD))
-               .append(Text.literal(" and ").formatted(Formatting.RED))
-               .append(Text.literal("Right").formatted(Formatting.GOLD))
-               .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED)))));
+         GuiElementBuilder locationItem = new GuiElementBuilder(Items.WRITABLE_BOOK).hideDefaultTooltip();
+         locationItem.setName((Text.literal("Enter a Name").formatted(Formatting.GOLD)));
          setSlot(0,locationItem);
       }
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,0x1a0136)).hideTooltip());
    }
    
    private BlockPos parseValid(){
@@ -79,64 +75,27 @@ public class StarpathTargetGui extends AnvilInputGui {
    
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
-      BlockPos parsed = parseValid();
       if(index == 2){
-         this.close();
-      }else if(index == 0 && starcharts){
-         if(type == ClickType.MOUSE_LEFT){
-            selectedTarget = ((selectedTarget+2) % (sortedKeys.size()+1))-1;
-         }else if(type == ClickType.MOUSE_RIGHT){
-            selectedTarget = Math.floorMod(selectedTarget,sortedKeys.size()+1)-1;
-         }
-      }else if(index == 1 && starcharts){
-         if(selectedTarget == -1 && parsed != null){ // Create
-            String defaultName = parsed.toShortString();
-            savedTargets.put(defaultName,parsed);
-            sortedKeys.add(defaultName);
-            Collections.sort(sortedKeys);
-            selectedTarget = sortedKeys.indexOf(defaultName);
-         }else if(selectedTarget != -1){
-            String name = sortedKeys.get(selectedTarget);
-            if(type == ClickType.MOUSE_LEFT){ // Update
-               BlockPos target = savedTargets.remove(name);
-               sortedKeys.remove(name);
-               savedTargets.put(text,target);
-               sortedKeys.add(text);
-               Collections.sort(sortedKeys);
-               selectedTarget = sortedKeys.indexOf(text);
-            }else if(type == ClickType.MOUSE_RIGHT){ // Delete
-               savedTargets.remove(name);
-               sortedKeys.remove(name);
-               selectedTarget = -1;
+         if(targetMode){
+            BlockPos parsed = parseValid();
+            if(parsed == null){
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+            }else{
+               onCompletion.accept(parsed);
+               this.close();
+            }
+         }else{
+            String trimmedName = text.trim();
+            if(trimmedName.isBlank() || trimmedName.length() > 50){
+               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
+            }else{
+               onCompletion.accept(trimmedName);
+               this.close();
             }
          }
       }
       
-      if(starcharts && (index == 1 || index == 0)){
-         GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
-         if(selectedTarget == -1){
-            locationItem.setName((Text.literal("")
-                  .append(Text.literal("Use format: x,y,z").formatted(Formatting.GOLD))));
-            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("- New Target -").formatted(Formatting.YELLOW)))));
-         }else{
-            String name = sortedKeys.get(selectedTarget);
-            BlockPos target = savedTargets.get(name);
-            locationItem.setName((Text.literal("")
-                  .append(Text.literal(target.getX()+","+target.getY()+","+target.getZ()).formatted(Formatting.GOLD))));
-            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("- "+name+" -").formatted(Formatting.YELLOW)))));
-         }
-         locationItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-         locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-               .append(Text.literal("Left").formatted(Formatting.GOLD))
-               .append(Text.literal(" and ").formatted(Formatting.RED))
-               .append(Text.literal("Right").formatted(Formatting.GOLD))
-               .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED)))));
-         setSlot(0,locationItem);
-      }
-      
-      ArcanaNovum.addTickTimerCallback(new GenericTimer(1, ()-> GuiHelpers.sendSlotUpdate(player, this.syncId, 2, getSlot(2).getItemStack())));
+      //ArcanaNovum.addTickTimerCallback(new GenericTimer(1, ()-> GuiHelpers.sendSlotUpdate(player, this.syncId, 2, getSlot(2).getItemStack())));
       return true;
    }
    
@@ -145,65 +104,20 @@ public class StarpathTargetGui extends AnvilInputGui {
    public void onInput(String input) {
       text = input;
       
-      BlockPos parsed = parseValid();
-      
-      GuiElementBuilder saveButton = GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultStack()).setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA));
-      GuiElementBuilder resultSlot;
-      if(parsed == null){
-         if(starcharts && selectedTarget == -1 && sortedKeys.contains(text)){
-            this.selectedTarget = sortedKeys.indexOf(text);
-            BlockPos target = savedTargets.get(text);
-            
-            GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
-            locationItem.setName((Text.literal("")
-                  .append(Text.literal(target.getX()+","+target.getY()+","+target.getZ()).formatted(Formatting.GOLD))));
-            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("- "+text+" -").formatted(Formatting.YELLOW)))));
-            locationItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-            locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("Left").formatted(Formatting.GOLD))
-                  .append(Text.literal(" and ").formatted(Formatting.RED))
-                  .append(Text.literal("Right").formatted(Formatting.GOLD))
-                  .append(Text.literal(" click to cycle saved targets").formatted(Formatting.RED)))));
-            setSlot(0,locationItem);
-            saveButton.setName(Text.literal("Valid Location").formatted(Formatting.DARK_AQUA));
-            resultSlot = GuiElementBuilder.from(Items.FILLED_MAP.getDefaultStack()).hideDefaultTooltip().setName(Text.literal("Valid Location: "+target.toShortString()).formatted(Formatting.DARK_AQUA));
+      if(targetMode){
+         BlockPos parsed = parseValid();
+         if(parsed == null){
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL)).setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA)));
          }else{
-            saveButton.setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA));
-            resultSlot = GuiElementBuilder.from(Items.BARRIER.getDefaultStack()).hideDefaultTooltip().setName(Text.literal("Invalid Location").formatted(Formatting.RED));
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CONFIRM)).hideDefaultTooltip().setName(Text.literal("Valid Location: "+parsed.toShortString()).formatted(Formatting.DARK_AQUA)));
          }
       }else{
-         resultSlot = GuiElementBuilder.from(Items.FILLED_MAP.getDefaultStack()).hideDefaultTooltip().setName(Text.literal("Valid Location: "+parsed.toShortString()).formatted(Formatting.DARK_AQUA));
-         saveButton.setName(Text.literal("Valid Location").formatted(Formatting.DARK_AQUA));
-      }
-      
-      if(starcharts){
-         if(this.selectedTarget == -1 && parsed != null){
-            saveButton.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-            saveButton.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("Click").formatted(Formatting.AQUA))
-                  .append(Text.literal(" to ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal("save").formatted(Formatting.GREEN))
-                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE)))));
-         }else if(this.selectedTarget != -1 && !sortedKeys.get(selectedTarget).equals(text)){
-            saveButton.addLoreLine(TextUtils.removeItalics(Text.literal("")));
-            saveButton.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("Click").formatted(Formatting.AQUA))
-                  .append(Text.literal(" to ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal("rename").formatted(Formatting.YELLOW))
-                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE)))));
-            saveButton.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("Right Click").formatted(Formatting.AQUA))
-                  .append(Text.literal(" to ").formatted(Formatting.LIGHT_PURPLE))
-                  .append(Text.literal("delete").formatted(Formatting.RED))
-                  .append(Text.literal(" this target").formatted(Formatting.LIGHT_PURPLE)))));
+         String trimmedName = text.trim();
+         if(trimmedName.isBlank() || trimmedName.length() > 50){
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL)).setName(Text.literal("Invalid Name").formatted(Formatting.DARK_AQUA)));
+         }else{
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CONFIRM)).setName(Text.literal("Valid Name: "+trimmedName).formatted(Formatting.DARK_AQUA)));
          }
-         
-      }
-      setSlot(1, saveButton);
-      
-      if(resultSlot != null){
-         setSlot(2,resultSlot);
       }
    }
    
@@ -219,13 +133,9 @@ public class StarpathTargetGui extends AnvilInputGui {
    
    @Override
    public void onClose(){
-      BlockPos parsed = parseValid();
-      if(parsed != null){
-         blockEntity.setTargetCoords(parsed);
-      }else if(selectedTarget != -1){
-         blockEntity.setTargetCoords(savedTargets.get(sortedKeys.get(selectedTarget)));
+      if(returnGui != null){
+         returnGui.open();
       }
-      blockEntity.openGui(player);
    }
    
    

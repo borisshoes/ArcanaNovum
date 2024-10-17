@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -44,7 +45,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class AncientDowsingRod extends EnergyItem {
 	public static final String ID = "ancient_dowsing_rod";
@@ -255,7 +255,7 @@ public class AncientDowsingRod extends EnergyItem {
                         Vec3d end = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5+3));
                         ParticleEffectUtils.dowsingRodArrow(player.getServerWorld(),start,end,1);
                         
-                        PLAYER_DATA.get(player).addXP(15*debris.size()); // Add xp
+                        ArcanaNovum.data(player).addXP(Math.min(ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_CAP),ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
                         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);
                         
                         if(debris.size() >= 10){

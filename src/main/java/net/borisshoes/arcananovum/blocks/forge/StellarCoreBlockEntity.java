@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.forge;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -45,7 +46,6 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.MOLTEN_CORE_ITEMS;
 import static net.borisshoes.arcananovum.blocks.forge.StellarCore.StellarCoreBlock.HORIZONTAL_FACING;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class StellarCoreBlockEntity extends LootableContainerBlockEntity implements PolymerObject, SidedInventory, InventoryChangedListener, ArcanaBlockEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
@@ -353,7 +353,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
                ItemScatterer.spawn(getWorld(), itemSpawnPos.getX(),itemSpawnPos.getY(),itemSpawnPos.getZ(), itemStack);
             }
             
-            watchingPlayers.forEach(player -> PLAYER_DATA.get(player).addXP(100));
+            watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STELLAR_CORE_SALVAGE)));
             
             SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);
             SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.BLOCKS, 1, 1.2f);
@@ -363,7 +363,8 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
                int returnCount = stack.getCount() * 2;
                inv.setStack(0,ItemStack.EMPTY);
                int finalReturnCount = returnCount;
-               watchingPlayers.forEach(player -> PLAYER_DATA.get(player).addXP(moltenItem instanceof BlockItem ? finalReturnCount * 18 : finalReturnCount * 2));
+               
+               watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STELLAR_CORE_SMELT) * (moltenItem instanceof BlockItem ? finalReturnCount * 9 : finalReturnCount * 1)));
                ArrayList<ItemStack> items = new ArrayList<>();
                
                while(returnCount > 64){

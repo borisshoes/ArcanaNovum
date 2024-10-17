@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -13,8 +14,6 @@ import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class InfusionTransmutationRecipe extends TransmutationRecipe{
    
@@ -143,7 +142,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
          ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
          ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(output);
          ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
-         return player == null || PLAYER_DATA.get(player).hasResearched(arcanaOutputItem);
+         return player == null || ArcanaNovum.data(player).hasResearched(arcanaOutputItem);
       }
       
       return true;

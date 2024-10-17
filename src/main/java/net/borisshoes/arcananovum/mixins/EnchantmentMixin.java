@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.MiscUtils;
@@ -18,8 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(Enchantment.class)
 public class EnchantmentMixin {
@@ -44,7 +43,7 @@ public class EnchantmentMixin {
       if(user instanceof ServerPlayerEntity player){
          Enchantment enchant = (Enchantment) (Object) this;
          if(enchant.toString().equals(MiscUtils.getEnchantment(Enchantments.SOUL_SPEED).value().toString())){
-            PLAYER_DATA.get(player).setResearchTask(ResearchTasks.USE_SOUL_SPEED, true);
+            ArcanaNovum.data(player).setResearchTask(ResearchTasks.USE_SOUL_SPEED, true);
          }
       }
    }
@@ -54,7 +53,7 @@ public class EnchantmentMixin {
       if(user instanceof ServerPlayerEntity player){
          Enchantment enchant = (Enchantment) (Object) this;
          if(enchant.toString().equals(MiscUtils.getEnchantment(Enchantments.FEATHER_FALLING).value().toString())){
-            PLAYER_DATA.get(player).setResearchTask(ResearchTasks.FEATHER_FALL, true);
+            ArcanaNovum.data(player).setResearchTask(ResearchTasks.FEATHER_FALL, true);
          }
       }
    }

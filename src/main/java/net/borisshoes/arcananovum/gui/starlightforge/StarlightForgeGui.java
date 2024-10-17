@@ -21,6 +21,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.utils.*;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -39,12 +40,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.CRAFTING_SLOTS;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.DYNAMIC_SLOTS;
 
@@ -98,7 +95,7 @@ public class StarlightForgeGui extends SimpleGui {
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
                ArcanaRecipe recipe = arcanaItem.getRecipe();
                
-               if(!PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+               if(!ArcanaNovum.data(player).hasResearched(arcanaItem)){
                   player.sendMessage(Text.literal("You must research this item first!").formatted(Formatting.RED),false);
                   return false;
                }
@@ -165,7 +162,7 @@ public class StarlightForgeGui extends SimpleGui {
                if(arcanaItem == null){
                   return false;
                }
-               if(PLAYER_DATA.get(player).hasResearched(arcanaItem)){
+               if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
                   if(arcanaItem.getRecipe() != null){
                      blockEntity.openGui(3,player, arcanaItem.getId(),settings);
                   }else{
@@ -270,8 +267,8 @@ public class StarlightForgeGui extends SimpleGui {
       ParticleEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0,fastAnim ? 1.75 : 1);
       
       ArcanaNovum.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
-         if(!PLAYER_DATA.get(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
-            PLAYER_DATA.get(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
+         if(!ArcanaNovum.data(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
+            ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
          }
          
          if(arcanaItem.getRarity() != ArcanaRarity.MUNDANE){
@@ -301,7 +298,7 @@ public class StarlightForgeGui extends SimpleGui {
          int skillPoints = SKILLED_POINTS[settings.skillLvl];
          int applicableLevel = 0;
          int sumCost = 0;
-         int unlockedLevel = PLAYER_DATA.get(player).getAugmentLevel(augment.id);
+         int unlockedLevel = ArcanaNovum.data(player).getAugmentLevel(augment.id);
          for(ArcanaRarity tier : tiers){
             sumCost += tier.rarity + 1;
             if(sumCost > skillPoints || applicableLevel+1 > unlockedLevel || tier.rarity > maxRarity.rarity){
@@ -415,7 +412,7 @@ public class StarlightForgeGui extends SimpleGui {
       }
       
       boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION.id) >= 1;
-      ArrayList<Inventory> inventories = blockEntity.getIngredientInventories();
+      ArrayList<Inventory> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
       for(int i = 0; i<25;i++){
          setSlotRedirect(CRAFTING_SLOTS[i], new Slot(inv,i,0,0));
       }
@@ -427,42 +424,69 @@ public class StarlightForgeGui extends SimpleGui {
          
          for(int i = 0; i < 25; i++){
             ArcanaIngredient ingredient = ingredients[i/5][i%5];
-            boolean found = false;
+            if(ingredient.ingredientAsStack().isEmpty()) continue;
+            List<ItemStack> matchingStacks = new ArrayList<>(); // Build a list of matching stacks
             
+            // Check player's inventory
             for(int j = 0; j < playerInventory.size(); j++){
                ItemStack invSlot = playerInventory.getStack(j);
+               if(invSlot.isEmpty()) continue;
                
-               if(ingredient.validStack(invSlot)){
-                  ItemStack toMove = invSlot.split(ingredient.getCount());
-                  if(invSlot.getCount() == 0){
-                     invSlot = ItemStack.EMPTY;
+               if(ingredient.validStackIgnoreCount(invSlot)){
+                  matchingStacks.add(invSlot);
+               }
+            }
+            
+            // Check nearby inventories (list is empty without Mystic Collection)
+            for(Inventory inventory : inventories){
+               for(int j = 0; j < inventory.size(); j++){
+                  ItemStack invSlot = inventory.getStack(j);
+                  if(invSlot.isEmpty()) continue;
+                  
+                  if(ingredient.validStackIgnoreCount(invSlot)){
+                     matchingStacks.add(invSlot);
                   }
-                  inv.setStack(i,toMove);
-                  playerInventory.setStack(j,invSlot);
+               }
+            }
+            // Take from smaller stacks first to avoid clutter
+            matchingStacks.sort(Comparator.comparingInt(ItemStack::getCount));
+            
+            boolean found = false;
+            ArrayList<ItemStack> neededStacks = new ArrayList<>();
+            for(ItemStack outerStack : matchingStacks){ // Find combinable stacks with the sufficient amount
+               neededStacks.clear();
+               int remaining = ingredient.getCount() - outerStack.getCount();
+               neededStacks.add(outerStack);
+               
+               for(ItemStack innerStack : matchingStacks){
+                  if(!ItemStack.areItemsAndComponentsEqual(outerStack, innerStack) || innerStack == outerStack) continue;
+                  if(remaining <= 0) break;
+                  remaining -= innerStack.getCount();
+                  neededStacks.add(innerStack);
+               }
+               
+               if(remaining <= 0){
                   found = true;
                   break;
                }
             }
             
-            if(collect && !found){
-               searchBlock: {
-                  for(Inventory inventory : inventories){
-                     for(int j = 0; j < inventory.size(); j++){
-                        ItemStack invSlot = inventory.getStack(j);
-                        if(invSlot.isEmpty()) continue;
-                        
-                        if(ingredient.validStack(invSlot)){
-                           ItemStack toMove = invSlot.split(ingredient.getCount());
-                           if(invSlot.getCount() == 0){
-                              invSlot = ItemStack.EMPTY;
-                           }
-                           inv.setStack(i,toMove);
-                           inventory.setStack(j,invSlot);
-                           break searchBlock;
-                        }
-                     }
+            if(found){ // Take from selected stacks and combine them in the crafting inventory
+               int remaining = ingredient.getCount();
+               ItemStack totalStack = null;
+               for(ItemStack neededStack : neededStacks){
+                  int toRemove = Math.min(remaining, neededStack.getCount());
+                  if(toRemove <= 0) continue;
+                  if(totalStack == null){
+                     totalStack = neededStack.split(toRemove);
+                     remaining -= totalStack.getCount();
+                  }else{
+                     ItemStack removed = neededStack.split(toRemove);
+                     remaining -= removed.getCount();
+                     totalStack.increment(removed.getCount());
                   }
                }
+               inv.setStack(i,totalStack);
             }
          }
          
@@ -566,7 +590,7 @@ public class StarlightForgeGui extends SimpleGui {
    public void buildSkilledGui(String id){
       mode = 5;
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
-      IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+      IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(arcanaItem == null){
          close();
          return;

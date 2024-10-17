@@ -287,6 +287,10 @@
   "block.arcananovum.stormcaller_altar": "Altar of the Stormcaller",
   "block.arcananovum.transmutation_altar": "Transmutation Altar",
   "block.arcananovum.twilight_anvil": "Twilight Anvil",
+  "credits_and_attribution.arcananovum.code_by": "Code By: ",
+  "credits_and_attribution.arcananovum.inspired_by": "Inspired By: ",
+  "credits_and_attribution.arcananovum.model_by": "Model By: ",
+  "credits_and_attribution.arcananovum.texture_by": "Texture By: ",
   "death.attack.arcananovum.arcane_lightning": "%1$s experienced the unlimited power of an arcane lightning bolt",
   "death.attack.arcananovum.arcane_lightning.item": "%1$s experienced the unlimited power of %2$s's arcane lightning bolt produced by %3$s",
   "death.attack.arcananovum.arcane_lightning.player": "%1$s experienced the unlimited power of %2$s's arcane lightning bolt",
@@ -305,6 +309,7 @@
   "death.attack.arcananovum.photonic.item": "%1$s was ionized by %2$s's Photonic Arrow wielding %3$s",
   "death.attack.arcananovum.photonic.player": "%1$s was ionized by %2$s's Photonic Arrow",
   "death.attack.arcananovum.vengeance_totem": "%1$s failed to get revenge",
+  "death.attack.arcananovum.vengeance_totem.item": "%1$s failed to get revenge",
   "effect.arcananovum.damage_amp": "Damage Amplification",
   "effect.arcananovum.death_ward": "Death Ward",
   "effect.arcananovum.ensnarement": "Ensnarement",
@@ -412,5 +417,6 @@
   "tag.item.arcananovum.equayus_research_items": "Equayus Research Items",
   "tag.item.arcananovum.nul_research_items": "Nul Research Items",
   "tag.item.arcananovum.village_research_items": "Village Research Items",
-  "tag.item.arcananovum.workshop_research_items": "Workshop Research Items"
+  "tag.item.arcananovum.workshop_research_items": "Workshop Research Items",
+  "text.arcananovum.materials_copy_message": "Click to copy the materials list"
 }

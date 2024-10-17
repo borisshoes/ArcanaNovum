@@ -66,11 +66,6 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       return this.savedTargets;
    }
    
-   public void openTargetGui(ServerPlayerEntity player){
-      StarpathTargetGui gui = new StarpathTargetGui(player,this);
-      gui.open();
-   }
-   
    public void openGui(ServerPlayerEntity player){
       if(isActive()){
          player.sendMessage(Text.literal("You cannot access an active Altar").formatted(Formatting.RED));

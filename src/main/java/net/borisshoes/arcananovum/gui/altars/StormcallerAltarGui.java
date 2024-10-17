@@ -3,7 +3,9 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
@@ -24,8 +26,6 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class StormcallerAltarGui  extends SimpleGui {
    private final StormcallerAltarBlockEntity blockEntity;
@@ -77,7 +77,7 @@ public class StormcallerAltarGui  extends SimpleGui {
                   blockEntity.setActive(true);
                   ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(100, () -> {
                      changeWeather();
-                     PLAYER_DATA.get(player).addXP(1000);
+                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STORMCALLER_ALTAR_ACTIVATE));
                   }));
                   close();
                }else{

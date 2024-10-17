@@ -130,7 +130,7 @@ public class CommandRegisterCallback {
                               .executes(context ->ArcanaCommands.bossTeleport(context,context.getSource().getPlayer(),true)))))
       );
    
-      dispatcher.register(ArcanaNovum.config.generateCommand());
+      dispatcher.register(ArcanaNovum.CONFIG.generateCommand());
    
       if(DEV_MODE){
          dispatcher.register(literal("arcana")

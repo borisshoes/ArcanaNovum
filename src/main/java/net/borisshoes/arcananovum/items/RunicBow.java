@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -54,7 +56,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class RunicBow extends ArcanaItem {
 	public static final String ID = "runic_bow";
@@ -239,7 +240,7 @@ public class RunicBow extends ArcanaItem {
                   volume = 1.2f;
                }
                
-               PLAYER_DATA.get(playerEntity).addXP(50 * list.size());
+               ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT) * list.size());
                if(playerEntity instanceof ServerPlayerEntity player) ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, list.size());
             }
             

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer.ArcanaItemContainerHaver {
    public static final String ID = "chest_translocator";
@@ -289,7 +289,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                
                putProperty(stack,CONTENTS_TAG,new NbtCompound());
                putProperty(stack,STATE_TAG,new NbtCompound());
-               PLAYER_DATA.get(player).addXP(50); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CHEST_TRANSLOCATOR_USE)); // Add xp
                SoundUtils.playSound(world,placePos,SoundEvents.BLOCK_WOOD_PLACE, SoundCategory.BLOCKS, 1,1);
             }else{
                player.sendMessage(Text.literal("The chest cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);

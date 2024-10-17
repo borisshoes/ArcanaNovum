@@ -1,12 +1,11 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class XPLoginCallback extends LoginCallback{
    
@@ -34,7 +33,7 @@ public class XPLoginCallback extends LoginCallback{
       // Double check that this is the correct player
       ServerPlayerEntity player = netHandler.player;
       if(player.getUuidAsString().equals(playerUUID)){
-         PLAYER_DATA.get(player).addXP(xp);
+         ArcanaNovum.data(player).addXP(xp);
       }
    }
    

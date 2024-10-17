@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -270,7 +272,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
                   server.getPlayerManager().broadcast(lvlUpMsg, false);
                }
                
-               if((boolean) ArcanaNovum.config.getValue("announceAchievements")){
+               if(ArcanaConfig.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
                   for(MutableText msg : msgs){
                      server.getPlayerManager().broadcast(msg, false);
                   }

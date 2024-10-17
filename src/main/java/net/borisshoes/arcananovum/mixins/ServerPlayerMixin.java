@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.SojournerBoots;
@@ -23,8 +24,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
@@ -66,7 +65,7 @@ public class ServerPlayerMixin {
          if(task instanceof EffectResearchTask effectTask){
             if(effect.getEffectType() == effectTask.getEffect()){
                ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-               PLAYER_DATA.get(player).setResearchTask(entry.getKey(), true);
+               ArcanaNovum.data(player).setResearchTask(entry.getKey(), true);
             }
          }
       }
@@ -75,6 +74,6 @@ public class ServerPlayerMixin {
    @Inject(method = "teleportTo", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;getLevelProperties()Lnet/minecraft/world/WorldProperties;"))
    private void arcananovum_teleportDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-      PLAYER_DATA.get(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);
+      ArcanaNovum.data(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);
    }
 }

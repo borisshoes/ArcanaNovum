@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -52,7 +53,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class NulMemento extends EnergyItem {
 	public static final String ID = "nul_memento";
@@ -227,7 +227,7 @@ public class NulMemento extends EnergyItem {
                Text.literal("")
                      .append(Text.literal("Let my gift offer you a second chance.").formatted(Formatting.DARK_GRAY))
          )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
-         PLAYER_DATA.get(player).addXP(5000);
+         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.NUL_MEMENTO_PROTECT));
       }
       
       setEnergy(stack,getMaxEnergy(stack));
@@ -258,8 +258,8 @@ public class NulMemento extends EnergyItem {
       player.addStatusEffect(weakness);
       
       final boolean[] cont = {true};
-      int resolve = PLAYER_DATA.get(player).getAugmentLevel(ArcanaAugments.RESOLVE.id);
-      final int maxConc = LevelUtils.concFromXp(PLAYER_DATA.get(player).getXP(),resolve);
+      int resolve = ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.RESOLVE.id);
+      final int maxConc = LevelUtils.concFromXp(ArcanaNovum.data(player).getXP(),resolve);
       DialogHelper dialogHelper = new DialogHelper();
       
       
@@ -380,8 +380,8 @@ public class NulMemento extends EnergyItem {
                         .append(Text.literal("All of your Skill Points have been deallocated.").formatted(Formatting.AQUA))
             )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
             
-            PLAYER_DATA.get(player).removeAllAugments();
-            PLAYER_DATA.get(player).addXP(5000);
+            ArcanaNovum.data(player).removeAllAugments();
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.NUL_MEMENTO_DEALLOCATE));
             ArcanaAchievements.grant(player,ArcanaAchievements.LOST_KNOWLEDGE.id);
             ArcanaAchievements.progress(player,ArcanaAchievements.AMNESIAC.id,1);
          }
@@ -403,8 +403,8 @@ public class NulMemento extends EnergyItem {
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
       // Conditions: 0 - Crafted Wings, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Aequalis, 4 - Has Egg
       boolean[] conditions = new boolean[]{
-            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
-            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
+            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
+            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),

@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -27,8 +29,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Map;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
 @Mixin(CauldronBehavior.class)
 public interface CauldronBehaviorMixin {
    
@@ -47,7 +47,7 @@ public interface CauldronBehaviorMixin {
             world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0f, 1.0f);
             world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
             serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
-            PLAYER_DATA.get(player).addXP(5); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
             ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN.id,1);
          }
          return ItemActionResult.success(world.isClient);
@@ -68,7 +68,7 @@ public interface CauldronBehaviorMixin {
                world.setBlockState(pos, Blocks.WATER_CAULDRON.getDefaultState().with(LeveledCauldronBlock.LEVEL, 3));
                world.playSound(null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0f, 1.0f);
                world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
-               PLAYER_DATA.get(player).addXP(5); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN.id,1);
             }
             serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
@@ -135,7 +135,7 @@ public interface CauldronBehaviorMixin {
             world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
             serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
             
-            PLAYER_DATA.get(player).addXP(25); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
             ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.HELLGATE.id,1);
             ArcanaItem.putProperty(stack,MagmaticEversource.USES_TAG,charges-1);
             eversource.buildItemLore(stack, serverPlayer.getServer());

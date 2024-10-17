@@ -75,7 +75,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.devPrint;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
 
@@ -556,7 +555,7 @@ public class DragonBossFight {
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
             ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
-            PLAYER_DATA.get(player).addCraftedSilent(wings);
+            ArcanaNovum.data(player).addCraftedSilent(wings);
          
             ItemEntity itemEntity;
             boolean bl = player.getInventory().insertStack(wings);

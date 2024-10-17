@@ -1,11 +1,11 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.*;
-import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -33,7 +33,6 @@ import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ArcanaItemUtils {
    
@@ -377,7 +376,7 @@ public class ArcanaItemUtils {
       }
       
       public int getAugmentConc(ServerPlayerEntity player){
-         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         IArcanaProfileComponent profile = ArcanaNovum.data(player);
          int adaptability = profile.getAugmentLevel(ArcanaAugments.ADAPTABILITY.id);
          int augmentConc = 0;
          
@@ -391,7 +390,7 @@ public class ArcanaItemUtils {
       }
       
       public double getFocusedConcMod(ServerPlayerEntity player){
-         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         IArcanaProfileComponent profile = ArcanaNovum.data(player);
          int focus = profile.getAugmentLevel(ArcanaAugments.FOCUS.id);
          if(focus == 1){
             boolean isEChest = false;

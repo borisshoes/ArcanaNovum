@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum;
 
 import net.borisshoes.arcananovum.callbacks.*;
+import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ClientModInitializer;
@@ -16,8 +17,10 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.registry.SculkSensorFrequencyRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -28,8 +31,13 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
@@ -48,7 +56,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static final String BLANK_UUID = "00000000-0000-4000-8000-000000000000";
-   public static ConfigUtils config;
+   public static ConfigUtils CONFIG;
    public static int DEBUG_VALUE = 0;
    
    @Override
@@ -72,17 +80,9 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       ServerLifecycleEvents.SERVER_STARTED.register(ServerStartedCallback::serverStarted);
       
       ArcanaRegistry.initialize();
+      CONFIG = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, ArcanaRegistry.CONFIG_SETTINGS.stream().map(ArcanaConfig.ConfigSetting::makeConfigValue).collect(Collectors.toList()));
 
       logger.info("Arcana Surges Through The World!");
-      
-      config = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, Arrays.asList(new ConfigUtils.IConfigValue[] {
-            new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true, "Whether players are damaged for going over their concentration limit",
-                  new ConfigUtils.Command("Do Concentration Damage is %s", "Do Concentration Damage is now %s")),
-            new ConfigUtils.BooleanConfigValue("announceAchievements", true, "Whether it is announced in chat when players complete achievements, reach levels, or craft new items",
-                  new ConfigUtils.Command("Announce Achievements is %s", "Announce Achievements is now %s")),
-            new ConfigUtils.IntegerConfigValue("ingredientReduction", 1, new ConfigUtils.IntegerConfigValue.IntLimits(1,64), "The divisor for recipe ingredient costs",
-                  new ConfigUtils.Command("Recipe ingredient counts are divided by %s", "Recipe ingredient count will now be divided by %s")),
-      }));
    }
    
    @Override
@@ -115,6 +115,19 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       existing.forEach(ACTIVE_ARCANA_BLOCKS::remove);
       ACTIVE_ARCANA_BLOCKS.put(pair,30);
       return existing.isEmpty();
+   }
+   
+   public static IArcanaProfileComponent data(PlayerEntity player){
+      if(player == null){
+         return null;
+      }
+      try{
+         return PLAYER_DATA.get(player);
+      }catch(Exception e){
+         log(3,"Failed to get Arcane Profile for "+player.getNameForScoreboard() + " ("+player.getUuidAsString()+")");
+         log(3,e.toString());
+      }
+      return null;
    }
    
    public static void devPrint(String msg){

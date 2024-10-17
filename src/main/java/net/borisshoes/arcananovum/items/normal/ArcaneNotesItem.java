@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items.normal;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
@@ -24,8 +25,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class ArcaneNotesItem extends NormalPolymerItem {
    
@@ -76,7 +75,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
       if(arcanaItem != null && user instanceof ServerPlayerEntity player){
          ParticleEffectUtils.arcaneNotesAnim(player,arcanaItem,remainingUseTicks);
          int maxUseTime = getMaxUseTime(stack,user);
-         boolean alreadyUnlocked = PLAYER_DATA.get(player).hasResearched(arcanaItem);
+         boolean alreadyUnlocked = ArcanaNovum.data(player).hasResearched(arcanaItem);
          
          if(alreadyUnlocked){
             float pitch = 1f + ((float) (maxUseTime - remainingUseTicks) / maxUseTime);
@@ -118,7 +117,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
       String id = ArcanaItem.getStringProperty(stack,UNLOCK_ID_TAG);
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
       if(arcanaItem != null && user instanceof ServerPlayerEntity player){
-         boolean alreadyUnlocked = PLAYER_DATA.get(player).hasResearched(arcanaItem);
+         boolean alreadyUnlocked = ArcanaNovum.data(player).hasResearched(arcanaItem);
          if(alreadyUnlocked){
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_AZALEA_BREAK, 2, 0.6f);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 0.5f);
@@ -129,12 +128,12 @@ public class ArcaneNotesItem extends NormalPolymerItem {
                paper.setCount(cost);
             }else{
                paper.setCount(player.getRandom().nextBetween(5,24));
-               PLAYER_DATA.get(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
+               ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
             }
             MiscUtils.returnItems(new SimpleInventory(paper),player);
          }else{
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 2, 0.8f);
-            PLAYER_DATA.get(player).addResearchedItem(arcanaItem.getId());
+            ArcanaNovum.data(player).addResearchedItem(arcanaItem.getId());
          }
          ParticleEffectUtils.arcaneNotesFinish(player,arcanaItem);
       }

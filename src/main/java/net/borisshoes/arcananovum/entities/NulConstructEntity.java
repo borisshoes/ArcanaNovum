@@ -55,8 +55,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
 public class NulConstructEntity extends WitherEntity implements PolymerEntity {
    
    private PlayerEntity summoner;
@@ -254,13 +252,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
          }
       }
       if(source.isIn(DamageTypeTags.IS_EXPLOSION)){
-         return isExalted ? 0 : modified * 0.25f;
+         return isExalted ? 0 : modified * 0.1f;
       }
       if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)){
-         return isExalted ? modified * 0.33f : modified * 0.5f;
+         return isExalted ? modified * 0.4f : modified * 0.5f;
       }
       
-      return isExalted ? modified * 0.5f : modified * 0.75f;
+      return isExalted ? modified * 0.6f : modified * 0.75f;
    }
    
    private void exaltedAura(){
@@ -347,8 +345,8 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       setCustomNameVisible(true);
       setPersistent();
       
-      summonerHasWings = PLAYER_DATA.get(summoner).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA);
-      summonerHasDivine = summonerHasWings || PLAYER_DATA.get(summoner).hasCrafted(ArcanaRegistry.DIVINE_CATALYST);
+      summonerHasWings = ArcanaNovum.data(summoner).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA);
+      summonerHasDivine = summonerHasWings || ArcanaNovum.data(summoner).hasCrafted(ArcanaRegistry.DIVINE_CATALYST);
       PlayerInventory inv = summoner.getInventory();
       for(int i = 0; i < inv.size(); i++){
          ItemStack stack = inv.getStack(i);
@@ -536,13 +534,13 @@ public class NulConstructEntity extends WitherEntity implements PolymerEntity {
       
       if(dropped){
          ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),false,server);
-         PLAYER_DATA.get(summoner).addCraftedSilent(stack);
+         ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
       if(!isExalted){
          ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
-         PLAYER_DATA.get(summoner).addCraftedSilent(stack);
+         ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       

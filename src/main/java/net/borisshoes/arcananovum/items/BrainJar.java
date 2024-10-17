@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -43,7 +45,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class BrainJar extends EnergyItem {
 	public static final String ID = "brain_jar";
@@ -252,7 +253,7 @@ public class BrainJar extends EnergyItem {
                   int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
                   ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
                   addEnergy(stack,-1);
-                  PLAYER_DATA.get(player).addXP(5);
+                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.BRAIN_JAR_MEND_PER_XP));
                   buildItemLore(stack,player.getServer());
                   tool.setDamage(newDura);
                }

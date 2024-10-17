@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.items.charms;
 
 import com.mojang.datafixers.util.Pair;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -43,7 +45,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class FeastingCharm extends ArcanaItem {
 	public static final String ID = "feasting_charm";
@@ -241,7 +242,7 @@ public class FeastingCharm extends ArcanaItem {
                   
                   selectedFood.decrementUnlessCreative(1,player);
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_GENERIC_EAT, 1,.7f);
-                  PLAYER_DATA.get(player).addXP(50*foodValue); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FEASTING_CHARM_PER_FOOD_VALUE)*foodValue); // Add xp
                }
             }
          }

@@ -40,6 +40,11 @@ public class ShulkerCoreIngredient extends ArcanaIngredient {
    }
    
    @Override
+   public boolean validStackIgnoreCount(ItemStack stack){
+      return this.validStack(stack);
+   }
+   
+   @Override
    public String getName(){
       String name = ArcanaRegistry.SHULKER_CORE.getNameString();
       if(needsStone){

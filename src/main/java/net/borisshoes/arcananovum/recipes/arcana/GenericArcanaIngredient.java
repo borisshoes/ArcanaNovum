@@ -21,6 +21,12 @@ public class GenericArcanaIngredient extends ArcanaIngredient {
    @Override
    public boolean validStack(ItemStack stack){
       ArcanaItem stackItem = ArcanaItemUtils.identifyItem(stack);
+      return stackItem != null && stackItem.getId().equals(item.getId()) && stack.getCount() >= count;
+   }
+   
+   @Override
+   public boolean validStackIgnoreCount(ItemStack stack){
+      ArcanaItem stackItem = ArcanaItemUtils.identifyItem(stack);
       return stackItem != null && stackItem.getId().equals(item.getId());
    }
    

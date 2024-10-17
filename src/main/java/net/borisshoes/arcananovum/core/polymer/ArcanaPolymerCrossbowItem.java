@@ -1,17 +1,28 @@
 package net.borisshoes.arcananovum.core.polymer;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.entities.RunicArrowEntity;
+import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -24,6 +35,27 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
    public ArcanaPolymerCrossbowItem(ArcanaItem arcanaItem, Settings settings){
       super(settings);
       this.arcanaItem = arcanaItem;
+   }
+   
+   @Override
+   protected void shoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target){
+      super.shoot(shooter, projectile, index, speed, divergence, yaw, target);
+      
+      if(projectile instanceof RunicArrowEntity runicArrow){
+         SoundEvent sound = SoundEvents.ITEM_TRIDENT_THROW.value();
+         float volume = 0.8f;
+         
+         if(runicArrow.getArrowType() instanceof PhotonicArrows){
+            sound = SoundEvents.BLOCK_AMETHYST_BLOCK_HIT;
+            volume = 1.2f;
+         }
+         
+         if(shooter instanceof ServerPlayerEntity player){
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT));
+            ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, 1);
+            shooter.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundCategory.PLAYERS,volume, 1.0F / (shooter.getWorld().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
+         }
+      }
    }
    
    @Override

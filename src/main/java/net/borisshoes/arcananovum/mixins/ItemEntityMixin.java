@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
@@ -35,8 +36,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 @Mixin(ItemEntity.class)
 public class ItemEntityMixin {
@@ -93,7 +92,7 @@ public class ItemEntityMixin {
          String playerId = forgeItem.getCrafter(stack);
          ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(playerId));
          
-         if(player != null && !PLAYER_DATA.get(player).hasResearched(forgeItem)){
+         if(player != null && !ArcanaNovum.data(player).hasResearched(forgeItem)){
             proceed = false;
          }
          
@@ -107,8 +106,8 @@ public class ItemEntityMixin {
                   ArcanaPolymerBlockEntity.initializeArcanaBlock(newForgeStack,forge);
                   
                   if(player != null){
-                     if(!PLAYER_DATA.get(player).addCrafted(newForgeStack)){
-                        PLAYER_DATA.get(player).addXP(ArcanaRarity.getCraftXp(forgeItem.getRarity()));
+                     if(!ArcanaNovum.data(player).addCrafted(newForgeStack)){
+                        ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(forgeItem.getRarity()));
                      }
                   }
                   
@@ -165,7 +164,7 @@ public class ItemEntityMixin {
                   tomeCrafter = stackOwner;
                }
                if(tomeCrafter != null){
-                  IArcanaProfileComponent profile = PLAYER_DATA.get(tomeCrafter);
+                  IArcanaProfileComponent profile = ArcanaNovum.data(tomeCrafter);
                   tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getUuidAsString(),false,itemEntity.getServer());
                   if(!profile.addCrafted(tomeStack)){
                      profile.addXP(ArcanaRarity.getFirstCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));

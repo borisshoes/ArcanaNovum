@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
@@ -103,7 +104,7 @@ public class ArcanaRecipe {
    }
    
    private ArcanaIngredient[][] getAlteredIngredients(){
-      int reduction = (int) ArcanaNovum.config.getValue("ingredientReduction");
+      int reduction = ArcanaConfig.getInt(ArcanaRegistry.INGREDIENT_REDUCTION);
       
       ArcanaIngredient[][] alteredIngredients = new ArcanaIngredient[trueIngredients.length][trueIngredients[0].length];
       for(int i = 0; i < trueIngredients.length; i++){

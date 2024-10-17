@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -44,7 +46,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 public class WildGrowthCharm extends ArcanaItem {
 	public static final String ID = "wild_growth_charm";
@@ -209,7 +210,7 @@ public class WildGrowthCharm extends ArcanaItem {
                   
                   if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
                      ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
-                     PLAYER_DATA.get(player).addXP(reaping >= 2 && harvest ? 1 : 25); // Add xp
+                     ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
                   }
                }else if (bloom && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)) {
                   world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
@@ -261,7 +262,7 @@ public class WildGrowthCharm extends ArcanaItem {
             }
             
             if(count >= 2){
-               PLAYER_DATA.get(player).addXP(1); // Add xp
+               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PASSIVE)); // Add xp
             }
          }
       }

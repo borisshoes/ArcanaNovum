@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.items.charms;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -45,7 +47,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.minecraft.block.LightBlock.LEVEL_15;
 
 public class LightCharm extends ArcanaItem {
@@ -216,7 +217,7 @@ public class LightCharm extends ArcanaItem {
          }
       }
       
-      PLAYER_DATA.get(player).addXP(placedCount); // Add xp
+      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LIGHT_CHARM_NOVA_PER_LIGHT)*placedCount); // Add xp
       SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1f,0.5f);
    }
    
@@ -382,7 +383,7 @@ public class LightCharm extends ArcanaItem {
                   world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(LEVEL_15,brightness), Block.NOTIFY_ALL);
                   world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
-                  PLAYER_DATA.get(player).addXP((int) (10*brightness/2.0)); // Add xp
+                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LIGHT_CHARM_AUTOMATIC)); // Add xp
                   ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
                }
             }
@@ -422,7 +423,7 @@ public class LightCharm extends ArcanaItem {
             world.setBlockState(pos,Blocks.LIGHT.getDefaultState().with(LEVEL_15,brightness), Block.NOTIFY_ALL);
             world.emitGameEvent(player, GameEvent.BLOCK_PLACE, pos);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
-            PLAYER_DATA.get(player).addXP(15); // Add xp
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LIGHT_CHARM_MANUAL)); // Add xp
             ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
             return ActionResult.SUCCESS;
          }

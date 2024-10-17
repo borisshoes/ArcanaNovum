@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
@@ -15,10 +16,10 @@ import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -36,7 +37,6 @@ import net.minecraft.world.World;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.*;
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
 public class TickCallback {
@@ -57,7 +57,7 @@ public class TickCallback {
          
          List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
-            IArcanaProfileComponent arcaneProfile = PLAYER_DATA.get(player);
+            IArcanaProfileComponent arcaneProfile = ArcanaNovum.data(player);
             
             // Check each player's inventory for arcana items
             PlayerInventory inv = player.getInventory();
@@ -97,7 +97,6 @@ public class TickCallback {
                dragonEggDialog(player);
             }
             
-            wingsTick(player);
             flightCheck(player);
             concCheck(server,player,arcaneProfile);
             ArcanaRegistry.AREA_EFFECTS.stream().forEach(areaEffectTracker -> areaEffectTracker.onTick(server));
@@ -168,7 +167,7 @@ public class TickCallback {
       if(ArcanaItemUtils.countItemsTakingConc(player) >= 30) ArcanaAchievements.grant(player,ArcanaAchievements.ARCANE_ADDICT.id);
       if(curConc > maxConc && !player.isCreative() && !player.isSpectator()){
          int concTick = ((NbtInt)arcaneProfile.getMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG)).intValue() + 1;
-         if((boolean) ArcanaNovum.config.getValue("doConcentrationDamage")){
+         if(ArcanaConfig.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
             player.damage(ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
@@ -190,25 +189,6 @@ public class TickCallback {
          arcaneProfile.addMiscData(ArcanaProfileComponent.CONCENTRATION_TICK_TAG,NbtInt.of(0));
       }
       
-   }
-   
-   private static void wingsTick(ServerPlayerEntity player){
-      ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
-      if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
-         if(player.isFallFlying()){ // Wings of Enderia
-            wings.addEnergy(item,1); // Add 1 energy for each tick of flying
-            if(wings.getEnergy(item) % 1000 == 999)
-               player.sendMessage(Text.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).formatted(Formatting.DARK_PURPLE),true);
-            PLAYER_DATA.get(player).addXP(2); // Add xp
-         }
-         NbtCompound leftShoulder = player.getShoulderEntityLeft();
-         NbtCompound rightShoulder = player.getShoulderEntityRight();
-         if(leftShoulder != null && rightShoulder != null && leftShoulder.contains("id") && rightShoulder.contains("id")){
-            if(leftShoulder.getString("id").equals("minecraft:parrot") && rightShoulder.getString("id").equals("minecraft:parrot")){
-               ArcanaAchievements.grant(player, ArcanaAchievements.CROW_FATHER.id);
-            }
-         }
-      }
    }
    
    private static void flightCheck(ServerPlayerEntity player){
@@ -254,12 +234,12 @@ public class TickCallback {
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
       // Conditions: 0 - Crafted Memento, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Aequalis, 5 - Crafted Memento and Aequalis, 6 - Has Aequalis and Memento
       boolean[] conditions = new boolean[]{
-            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
-            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
+            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
+            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
-            PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO) && PLAYER_DATA.get(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
+            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO) && ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()) && ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
       };
       

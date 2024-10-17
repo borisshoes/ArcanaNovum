@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
-
 public class ServerStartedCallback {
    
    public static void serverStarted(MinecraftServer server){
@@ -43,7 +41,7 @@ public class ServerStartedCallback {
       ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.clear();
       ArcanaNovum.PLAYER_XP_TRACKER.clear();
       for(ServerPlayerEntity player : allPlayers){
-         IArcanaProfileComponent profile = PLAYER_DATA.get(player);
+         IArcanaProfileComponent profile = ArcanaNovum.data(player);
          
          for(ArcanaAchievement achieve : ArcanaAchievements.registry.values()){
             List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.containsKey(achieve.id) ? ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achieve.id) : new ArrayList<>();

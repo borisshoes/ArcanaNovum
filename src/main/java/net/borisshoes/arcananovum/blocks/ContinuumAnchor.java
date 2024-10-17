@@ -89,7 +89,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("anchor").formatted(Formatting.DARK_BLUE))
-            .append(Text.literal("has the extraordinary ability to manipulate ").formatted(Formatting.DARK_GRAY))
+            .append(Text.literal(" has the extraordinary ability to manipulate ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("spacetime").formatted(Formatting.DARK_PURPLE))
             .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
       lore.add(Text.literal("")
@@ -129,7 +129,7 @@ public class ContinuumAnchor extends ArcanaBlock {
    }
    
    public static List<ChunkPos> getLoadedChunks(ServerWorld serverWorld){
-      return ArcanaNovum.ANCHOR_CHUNKS.get(serverWorld);
+      return ArcanaNovum.ANCHOR_CHUNKS.getOrDefault(serverWorld, new ArrayList<>());
    }
    
    public static boolean isChunkLoaded(ServerWorld serverWorld, ChunkPos chunk){

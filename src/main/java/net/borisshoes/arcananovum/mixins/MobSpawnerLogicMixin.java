@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
@@ -26,8 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Optional;
-
-import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 
 // Credit to xZarex for some of the Chunk Loading mixin code
 @Mixin(MobSpawnerLogic.class)
@@ -62,7 +61,7 @@ public class MobSpawnerLogicMixin {
    private void arcananovum_forPlayersInRange(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
       if(cir.getReturnValue() && world instanceof ServerWorld serverWorld){
          for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(pos, 5.0))){
-            PLAYER_DATA.get(player).setResearchTask(ResearchTasks.FIND_SPAWNER, true);
+            ArcanaNovum.data(player).setResearchTask(ResearchTasks.FIND_SPAWNER, true);
          }
       }
    }

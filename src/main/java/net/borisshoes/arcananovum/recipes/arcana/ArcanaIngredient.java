@@ -25,7 +25,7 @@ public class ArcanaIngredient {
    protected final ItemStack exampleStack;
    protected final boolean ignoresResourceful;
    
-   public static ArcanaIngredient EMPTY = new ArcanaIngredient(Items.AIR,0, true, ItemStack.EMPTY, ItemStack::isEmpty);
+   public static final ArcanaIngredient EMPTY = new ArcanaIngredient(Items.AIR,0, true, ItemStack.EMPTY, ItemStack::isEmpty);
    
    public ArcanaIngredient(Item itemType, int count, boolean ignoresResourceful){
       this.count = count;
@@ -121,6 +121,10 @@ public class ArcanaIngredient {
    
    public boolean validStack(ItemStack stack){
       return this.itemPredicate.test(stack) && stack.getCount() >= this.count;
+   }
+   
+   public boolean validStackIgnoreCount(ItemStack stack){
+      return this.itemPredicate.test(stack);
    }
    
    public ItemStack getRemainder(ItemStack stack, int resourceLvl){

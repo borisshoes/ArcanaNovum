@@ -81,6 +81,11 @@ public class ExplainIngredient extends ArcanaIngredient {
    }
    
    @Override
+   public boolean validStackIgnoreCount(ItemStack stack){
+      return false;
+   }
+   
+   @Override
    public String getName(){
       return ingredientName;
    }
