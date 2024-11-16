@@ -232,7 +232,7 @@ public class Multiblock {
    
    public static Multiblock loadFromFile(String id, String mod_id){
       try{
-         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(mod_id).map(container -> container.findPath("data/"+MOD_ID+"/multiblocks/"+id+".nbt"));
+         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(mod_id).map(container -> container.findPath("data/"+mod_id+"/multiblocks/"+id+".nbt"));
          if(pathOptional.isEmpty() || pathOptional.get().isEmpty()){
             return null;
          }
