@@ -225,10 +225,14 @@ public class Multiblock {
       }
       return newPos.multiply(-1);
    }
+
+   public static Multiblock loadFromFile(String id) {
+      return loadFromFile(id, MOD_ID);
+   }
    
-   public static Multiblock loadFromFile(String id){
+   public static Multiblock loadFromFile(String id, String mod_id){
       try{
-         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/multiblocks/"+id+".nbt"));
+         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(mod_id).map(container -> container.findPath("data/"+MOD_ID+"/multiblocks/"+id+".nbt"));
          if(pathOptional.isEmpty() || pathOptional.get().isEmpty()){
             return null;
          }
