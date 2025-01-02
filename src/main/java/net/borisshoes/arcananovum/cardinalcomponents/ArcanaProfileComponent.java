@@ -138,6 +138,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          augmentsTag.putInt(entry.getKey().id, entry.getValue());
       }
       tag.put("augments",augmentsTag);
+      if(this.storedOffhand == null) storedOffhand = ItemStack.EMPTY;
       tag.put("storedOffhand",storedOffhand.toNbtAllowEmpty(registryLookup));
    }
    
