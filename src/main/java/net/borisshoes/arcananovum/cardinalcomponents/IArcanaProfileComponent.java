@@ -28,6 +28,7 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    int getTotalSkillPoints();
    int getSpentSkillPoints();
    int getBonusSkillPoints();
+   ItemStack getStoredOffhand();
    
    boolean setXP(int xp);
    boolean addXP(int xp);
@@ -50,4 +51,6 @@ public interface IArcanaProfileComponent extends ComponentV3 {
    boolean removeAugment(String id);
    void removeAllAugments();
    int getArcanePaperRequirement(ArcanaRarity rarity);
+   boolean storeOffhand(ItemStack replacement);
+   boolean restoreOffhand();
 }

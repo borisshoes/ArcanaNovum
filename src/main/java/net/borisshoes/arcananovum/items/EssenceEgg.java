@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -22,14 +23,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.Spawner;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -45,7 +42,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -64,21 +63,14 @@ public class EssenceEgg extends ArcanaItem {
    
    public static final String USES_TAG = "uses";
    
-   private static final String TXT = "item/essence_egg";
-   
    public EssenceEgg(){
       id = ID;
       name = "Essence Egg";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.GHAST_SPAWN_EGG;
-      item = new EssenceEggItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new EssenceEggItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.FIND_SPAWNER,ResearchTasks.OBTAIN_EGG};
       
       ItemStack stack = new ItemStack(item);
@@ -178,7 +170,7 @@ public class EssenceEgg extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv){
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
       // Souls n stuff
       ItemStack soulstoneStack = inv.getStack(12); // Should be the Soulstone
       ItemStack newArcanaItem = null;
@@ -196,9 +188,9 @@ public class EssenceEgg extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Essence Egg\n\nRarity: Empowered\n\nAs making Soulstones has taught me, keeping souls imprisoned is hard.\nMaking so they can be released controllably, is even harder, thankfully I can build off of a Soulstone's solid foundation.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Essence Egg\n\nThis 'Egg' should take the souls from a Soulstone and keep them captive just long enough for me to release them into a new form. \nAlthough it takes 25 souls to make a new body for a single soul to inhabit.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Essence Egg\n\nThe Essence Egg can be used one at a time to spawn a mob, or 5 uses (125 souls) can be used on a spawner to change its attunement to the type of essence contained in the Egg.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Essence Egg").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nAs making Soulstones has taught me, keeping souls imprisoned is hard. Making them so they can be released controllably is even harder. Thankfully, I can build off of a Soulstone’s solid foundation.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Essence Egg").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nThis ‘Egg’ should take the souls from a Soulstone and keep them captive just long enough for me to release them into a new form. Although, it takes 25 souls to form an entirely new creature.\n\nThe Essence Egg can ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Essence Egg").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nbe used one at a time to spawn a mob, or 5 uses (125 souls) can be used on a spawner to change its attunement to the type of essence contained within the Egg.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -222,11 +214,6 @@ public class EssenceEgg extends ArcanaItem {
    public class EssenceEggItem extends ArcanaPolymerItem {
       public EssenceEggItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -275,12 +262,12 @@ public class EssenceEgg extends ArcanaItem {
                      int spawns = Math.random() >= 0.1*splitLevel ? 1 : 2;
                      
                      for(int i = 0; i < spawns; i++){
-                        Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, entity -> {
+                        Entity newEntity = EntityType.loadEntityWithPassengers(nbtCompound, serverWorld, SpawnReason.SPAWN_ITEM_USE, entity -> {
                            entity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), entity.getYaw(), entity.getPitch());
                            return entity;
                         });
                         if(newEntity instanceof MobEntity mobEntity){
-                           mobEntity.initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_EGG, null);
+                           mobEntity.initialize(serverWorld, serverWorld.getLocalDifficulty(newEntity.getBlockPos()), SpawnReason.SPAWN_ITEM_USE, null);
                         }
                         serverWorld.spawnNewEntityAndPassengers(newEntity);
                      }
@@ -305,14 +292,14 @@ public class EssenceEgg extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack item = playerEntity.getStackInHand(hand);
          if(playerEntity.isCreative()){
             if(!getType(item).equals("unattuned"))
                addUses(item,1);
-            return TypedActionResult.success(item);
+            return ActionResult.SUCCESS;
          }
-         return TypedActionResult.pass(item);
+         return ActionResult.PASS;
       }
       
       @Override
@@ -322,13 +309,17 @@ public class EssenceEgg extends ArcanaItem {
          if(playerEntity.isCreative()){
             String type = getType(stack);
             
-            if(type.equals("unattuned") && entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity)){
-               String entityTypeId = EntityType.getId(attackedEntity.getType()).toString();
-               String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
-               
-               setType(stack,entityTypeId);
-               player.sendMessage(Text.literal("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+            if(type.equals("unattuned") && entity instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
+               if(entity.getType().isIn(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)){
+                  player.sendMessage(Text.literal("The Essence Egg cannot attune to this creature.").formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+               }else{
+                  String entityTypeId = EntityType.getId(attackedEntity.getType()).toString();
+                  String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
+                  
+                  setType(stack,entityTypeId);
+                  player.sendMessage(Text.literal("The Essence Egg attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
+               }
             }
          }
          

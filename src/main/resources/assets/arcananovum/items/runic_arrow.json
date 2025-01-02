@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "arcananovum:item/runic_arrow",
+    "tints": [
+      {
+        "type": "minecraft:potion",
+        "default": -1740304
+      }
+    ]
+  }
+}

@@ -65,7 +65,7 @@ public class MidnightEnchanterGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(!(blockEntity.getWorld() instanceof ServerWorld serverWorld)) return true;
       boolean enchanted = EnchantmentHelper.hasEnchantments(stack);
       boolean precision = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PRECISION_DISENCHANTING.id) >= 1;
@@ -199,7 +199,7 @@ public class MidnightEnchanterGui extends SimpleGui {
             
             disenchantItem();
          }else{
-            if(type == ClickType.MOUSE_MIDDLE){
+            if(type == ClickType.MOUSE_LEFT_SHIFT){
                bookshelves = -1;
             }else if(type == ClickType.MOUSE_RIGHT){
                if(bookshelves == -1){
@@ -390,7 +390,7 @@ public class MidnightEnchanterGui extends SimpleGui {
                   .append(Text.literal("Right Click").formatted(Formatting.AQUA))
                   .append(Text.literal(" to decrease bookshelves").formatted(Formatting.DARK_PURPLE)))));
             essenceItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-                  .append(Text.literal("Middle Click").formatted(Formatting.AQUA))
+                  .append(Text.literal("Shift Left Click").formatted(Formatting.AQUA))
                   .append(Text.literal(" to go to ").formatted(Formatting.DARK_PURPLE))
                   .append(Text.literal("Enlightened Enchantment").formatted(Formatting.DARK_AQUA)))));
          }
@@ -412,7 +412,7 @@ public class MidnightEnchanterGui extends SimpleGui {
          setSlot(47,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          
          Random random = Random.create();
-         int playerSeed = player.getEnchantmentTableSeed();
+         int playerSeed = player.getEnchantingTableSeed();
          random.setSeed(playerSeed);
          
          int[] enchPowers = new int[3];
@@ -422,7 +422,7 @@ public class MidnightEnchanterGui extends SimpleGui {
          
          for(int i = 0; i < enchPowers.length; i++){
             List<EnchantmentLevelEntry> list;
-            if (enchPowers[i] >= i + 1 && (list = this.generateEnchantments(stack, i, enchPowers[i],random,playerSeed)) != null && !list.isEmpty()){
+            if(enchPowers[i] >= i + 1 && (list = this.generateEnchantments(stack, i, enchPowers[i],random,playerSeed)) != null && !list.isEmpty()){
                GuiElementBuilder lapisItem = new GuiElementBuilder(Items.LAPIS_LAZULI).hideDefaultTooltip().setCount(i+1);
                lapisItem.setName((Text.literal("")
                      .append(Text.literal("Slot "+(i+1)).formatted(Formatting.BLUE))));
@@ -501,11 +501,11 @@ public class MidnightEnchanterGui extends SimpleGui {
       }else{
          enchantItem.setName((Text.literal("")
                .append(Text.literal("Enchant ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(stack.getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))));
+               .append(Text.translatable(stack.getItem().getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))));
          enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
                .append(Text.literal(" to enchant the ").formatted(Formatting.DARK_PURPLE))
-               .append(Text.translatable(stack.getTranslationKey()).formatted(Formatting.DARK_PURPLE)))));
+               .append(Text.translatable(stack.getItem().getTranslationKey()).formatted(Formatting.DARK_PURPLE)))));
       }
       
       
@@ -622,8 +622,8 @@ public class MidnightEnchanterGui extends SimpleGui {
       listener.setUpdating();
       
       RegistryEntryList<Enchantment> registryEntryList = null;
-      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
-      if (optional.isPresent()) {
+      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
+      if(optional.isPresent()){
          registryEntryList = optional.get();
       }
       
@@ -676,7 +676,7 @@ public class MidnightEnchanterGui extends SimpleGui {
    
    private void setSelectedFromList(List<EnchantmentLevelEntry> entries){
       enchants = new ArrayList<>();
-      RegistryWrapper.Impl<Enchantment> impl = player.getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT);
+      RegistryWrapper.Impl<Enchantment> impl = player.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
       entries.forEach(e -> enchants.add(new EnchantEntry(impl.getOrThrow(e.enchantment.getKey().get()), e.level,true)));
    }
    
@@ -742,14 +742,14 @@ public class MidnightEnchanterGui extends SimpleGui {
    }
    
    private List<EnchantEntry> getEnchantsForItem(ItemStack stack){
-      if(stack.isEmpty() || stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())) return new ArrayList<>();
+      if(stack.isEmpty()) return new ArrayList<>();
       ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
       Object2IntOpenHashMap<RegistryEntry<Enchantment>> curEnchants = new Object2IntOpenHashMap<>();
       comp.getEnchantmentEntries().forEach(entry -> curEnchants.addTo(entry.getKey(),entry.getIntValue()));
       
       List<EnchantEntry> possibleAdditions = new ArrayList<>();
       
-      for(RegistryEntry<Enchantment> entry : player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getIndexedEntries()){
+      for(RegistryEntry<Enchantment> entry : player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries()){
          Enchantment enchantment = entry.value();
          
          if(!EnchantmentHelper.isCompatible(curEnchants.keySet(),entry) && !curEnchants.containsKey(entry)) continue; // Remove incompatible enchants
@@ -774,14 +774,14 @@ public class MidnightEnchanterGui extends SimpleGui {
       return possibleAdditions;
    }
    
-   private List<EnchantmentLevelEntry> generateEnchantments(ItemStack stack, int slot, int level, Random random, int playerSeed) {
+   private List<EnchantmentLevelEntry> generateEnchantments(ItemStack stack, int slot, int level, Random random, int playerSeed){
       random.setSeed(playerSeed + slot);
-      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.IN_ENCHANTING_TABLE);
-      if (optional.isEmpty()){
+      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE);
+      if(optional.isEmpty()){
          return List.of();
       }
       List<EnchantmentLevelEntry> list = EnchantmentHelper.generateEnchantments(random, stack, level, optional.get().stream());
-      if (stack.isOf(Items.BOOK) && list.size() > 1) {
+      if(stack.isOf(Items.BOOK) && list.size() > 1){
          list.remove(random.nextInt(list.size()));
       }
       return list;

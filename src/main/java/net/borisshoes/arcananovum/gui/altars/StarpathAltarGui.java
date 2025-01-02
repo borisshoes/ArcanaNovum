@@ -8,7 +8,6 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.blocks.altars.StarpathAltar;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
@@ -27,11 +26,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class StarpathAltarGui extends SimpleGui {
    private final StarpathAltarBlockEntity blockEntity;
@@ -65,7 +65,7 @@ public class StarpathAltarGui extends SimpleGui {
       for(int i = 0; i < targets.size(); i++){
          LivingEntity target = targets.get(i);
          BlockPos location = locations.get(i);
-         target.teleport(serverWorld, location.getX() + 0.5, location.getY(), location.getZ() + 0.5, Set.of(), target.getYaw(), target.getPitch());
+         target.teleportTo(new TeleportTarget(serverWorld, location.toCenterPos(), Vec3d.ZERO, target.getYaw(), target.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
          ParticleEffectUtils.recallTeleport(serverWorld,target.getPos());
          
          if(target instanceof ServerPlayerEntity p && Math.sqrt(blockEntity.getPos().getSquaredDistance(blockEntity.getTargetCoords())) >= 100000){

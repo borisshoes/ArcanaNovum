@@ -17,7 +17,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.EnchantmentEffectComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
@@ -28,17 +28,22 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,24 +54,16 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class BrainJar extends EnergyItem {
 	public static final String ID = "brain_jar";
    public static final int[] capacities = {1000000,2000000,4000000,6000000,8000000,10000000};
-   private static final String TXT_ON = "item/brain_jar_on";
-   private static final String TXT_OFF = "item/brain_jar_off";
    private static final Item textureItem = Items.TINTED_GLASS;
    
    public BrainJar(){
       id = ID;
       name = "Brain in a Jar";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.ZOMBIE_HEAD;
-      item = new BrainJarItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GREEN))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(textureItem,TXT_OFF));
-      models.add(new Pair<>(textureItem,TXT_ON));
+      item = new BrainJarItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GREEN);
       researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.BREAK_SCULK,ResearchTasks.LEVEL_100,ResearchTasks.ACTIVATE_MENDING,ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING,ResearchTasks.OBTAIN_ZOMBIE_HEAD,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
@@ -97,7 +94,14 @@ public class BrainJar extends EnergyItem {
             .append(Text.literal(" enchantment.").formatted(Formatting.DARK_PURPLE)));
       lore.add(Text.literal("")
             .append(Text.literal("Right click").formatted(Formatting.AQUA))
-            .append(Text.literal(" to configure.").formatted(Formatting.DARK_PURPLE)));
+            .append(Text.literal(" to deposit or withdraw ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("XP").formatted(Formatting.GREEN))
+            .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
+      lore.add(Text.literal("")
+            .append(Text.literal("Sneak Right click").formatted(Formatting.AQUA))
+            .append(Text.literal(" to toggle ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Mending").formatted(Formatting.GREEN))
+            .append(Text.literal(" interaction.").formatted(Formatting.DARK_PURPLE)));
       lore.add(Text.literal(""));
       
       boolean mending = itemStack != null && getBooleanProperty(itemStack, ACTIVE_TAG);
@@ -179,9 +183,9 @@ public class BrainJar extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("     Brain in a Jar\n\nRarity: Exotic\n\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time similar to you or me.\n\nIf I can expand their").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Brain in a Jar\n\ncapacity for knowledge using the extra-dimensional capabilities of Ender Chests it should hold enough XP for practical use.\n\nThere should also be a way to incorporate the use of Mending enchantments to have").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Brain in a Jar\n\ndirect access to the storage.\n\nRight Click the Brain in a Jar to open its internal storage where you can set its Mending interaction or deposit or withdraw XP. It has a base-line internal storage of 1 million XP").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Brain in a Jar").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time, similar to you and me.\nIf I can expand their capacity for ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Brain in a Jar").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nknowledge using the storage capabilities of Ender Chests, it should hold enough XP for practical use.\n\nThere should also be a way to incorporate the use of Mending enchantment to have direct access to the storage.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Brain in a Jar").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nUse the Brain in a Jar to open its internal storage, where you can deposit or withdraw XP.\n \nSneak Use to toggle the Jar’s Mending interaction.\n\nThe Jar can store 1 million XP Points.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -209,19 +213,29 @@ public class BrainJar extends EnergyItem {
       }
       
       @Override
-      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(PolymerResourcePackUtils.hasMainPack(player)){
+      public Item getPolymerItem(ItemStack itemStack, PacketContext context){
+         if(PolymerResourcePackUtils.hasMainPack(context.getPlayer())){
             return textureItem;
          }
-         return super.getPolymerItem(itemStack, player);
+         return super.getPolymerItem(itemStack, context);
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(TXT_OFF).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
-         return active ? ArcanaRegistry.getModelData(TXT_ON).value() : ArcanaRegistry.getModelData(TXT_OFF).value();
+         
+         List<String> stringList = new ArrayList<>();
+         if(active){
+            stringList.add("on");
+         }else{
+            stringList.add("off");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
+      
       
       @Override
       public ItemStack getDefaultStack(){
@@ -247,7 +261,7 @@ public class BrainJar extends EnergyItem {
                
                if(hasMending){
                   int durability = tool.getDamage();
-                  int repairAmount = (int) Math.ceil((EnchantmentHelper.getRepairWithXp(player.getServerWorld(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
+                  int repairAmount = (int) Math.ceil((EnchantmentHelper.getRepairWithExperience(player.getServerWorld(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
                   if(durability <= 0 || !tool.isDamageable())
                      continue;
                   int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
@@ -272,9 +286,23 @@ public class BrainJar extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
-         openGui(playerEntity, playerEntity.getStackInHand(hand));
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
+         ItemStack stack = playerEntity.getStackInHand(hand);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+         if(playerEntity.isSneaking()){
+            boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
+            putProperty(stack,ACTIVE_TAG,active);
+            if(active){
+               playerEntity.sendMessage(Text.literal("The Jar's Experience Mends").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, .5f,1.3f);
+            }else{
+               playerEntity.sendMessage(Text.literal("The Jar's Experience Withdraws").formatted(Formatting.GREEN,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, .5f,0.7f);
+            }
+         }else{
+            openGui(playerEntity, stack);
+         }
+         return ActionResult.SUCCESS;
       }
       
       @Override

@@ -8,7 +8,6 @@ import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
@@ -19,11 +18,9 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.TeleportTarget;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DragonLairActions {
    
@@ -127,7 +124,7 @@ public class DragonLairActions {
             int i = 0;
             for(ServerPlayerEntity player : nearbyPlayers){
                BlockPos pos = locations.get(i);
-               player.teleport(endWorld,pos.getX(),pos.getY(),pos.getZ(), (float) (Math.random()*360-180),(float) (Math.random()*360-180));
+               player.teleportTo(new TeleportTarget(endWorld, pos.toCenterPos(), player.getVelocity(), (float) (Math.random()*360-180),(float) (Math.random()*360-180), TeleportTarget.NO_OP));
                endWorld.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),500,.3,1,.3,3);
                player.sendMessage(Text.literal("Ender Energy Surges Through You!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
                i++;
@@ -167,10 +164,10 @@ public class DragonLairActions {
             List<ServerPlayerEntity> hitPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(finalStar) <= 2*2 && !p.isSpectator() && !p.isCreative() && !starHits.containsKey(p.getUuidAsString()));
    
             for(ServerPlayerEntity player : hitPlayers){
-               if(player.isBlocking() && (player.getMainHandStack().isOf(Items.SHIELD) || player.getOffHandStack().isOf(Items.SHIELD)) && player.getPitch() < -60){
-                  player.disableShield();
+               if(player.isBlocking() && player.getPitch() < -60){
+                  player.disableShield(player.getBlockingItem());
                }else{
-                  player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),10);
+                  player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),10);
                }
                starHits.put(player.getUuidAsString(),10);
             }
@@ -320,9 +317,6 @@ public class DragonLairActions {
          tiers.add(new ArrayList<>());
       }
       
-      //System.out.println("Making Chasm: "+ start.toShortString() +" "+end.toShortString());
-      //System.out.println("Volume: "+((maxX-minX+2*extra)*(85)*(maxZ-minZ+2*extra)));
-      
       //This can be further optimized by only looping through the surface once and adding the depth directly rather than reiterating for all 15 levels
       for(BlockPos blockPos : BlockPos.iterate(minX - extra, midY, minZ - extra, maxX + extra, midY, maxZ + extra)){
          double dist = weightDist(new Vec3d(start.getX()+.5,start.getY()+.5,start.getZ()+.5),new Vec3d(end.getX()+.5,end.getY()+.5,end.getZ()+.5),new Vec3d(blockPos.getX()+.5,blockPos.getY()+.5,blockPos.getZ()+.5));
@@ -442,6 +436,6 @@ public class DragonLairActions {
       QUAKE,
       STARFALL;
       
-      public static DragonLairActionTypes fromLabel(String id){ return DragonLairActionTypes.valueOf(id.toUpperCase()); }
+      public static DragonLairActionTypes fromLabel(String id){ return DragonLairActionTypes.valueOf(id.toUpperCase(Locale.ROOT)); }
    }
 }

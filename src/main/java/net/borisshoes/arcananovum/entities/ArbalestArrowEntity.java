@@ -28,6 +28,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +39,13 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    private static final int[] lvlLookup = new int[]{1,2,3,5};
    private double range;
    
-   public ArbalestArrowEntity(EntityType<? extends ArbalestArrowEntity> entityType, World world) {
+   public ArbalestArrowEntity(EntityType<? extends ArbalestArrowEntity> entityType, World world){
       super(entityType, world);
       this.lvl = 0;
       this.range = 2;
    }
    
-   public ArbalestArrowEntity(World world, LivingEntity owner, int ampLvl, int rangeLvl, ItemStack arrowStack, @Nullable ItemStack weaponStack) {
+   public ArbalestArrowEntity(World world, LivingEntity owner, int ampLvl, int rangeLvl, ItemStack arrowStack, @Nullable ItemStack weaponStack){
       this(ArcanaRegistry.ARBALEST_ARROW_ENTITY, world);
       this.setOwner(owner);
       this.setPosition(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
@@ -61,7 +62,7 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
       setStack(arrowStack);
       
       Unit unit = stack.remove(DataComponentTypes.INTANGIBLE_PROJECTILE);
-      if (unit != null) {
+      if(unit != null){
          this.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
       }
       
@@ -77,7 +78,7 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
          
          if(getWorld() instanceof ServerWorld serverWorld){
             int i = EnchantmentHelper.getProjectilePiercing(serverWorld, weapon, this.stack);
-            if (i > 0) {
+            if(i > 0){
                this.setPierceLevel((byte)i);
             }
             
@@ -87,8 +88,8 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public EntityType<?> getPolymerEntityType(ServerPlayerEntity player){
-      return this.stack.contains(DataComponentTypes.POTION_CONTENTS) ? EntityType.SPECTRAL_ARROW : EntityType.ARROW;
+   public EntityType<?> getPolymerEntityType(PacketContext context){ // TODO: Entity Data Error with tracked data (fixed but keep an eye on it)
+      return this.stack.contains(DataComponentTypes.POTION_CONTENTS) ? EntityType.ARROW : EntityType.SPECTRAL_ARROW;
    }
    
    @Override
@@ -134,14 +135,14 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt) {
+   public void writeCustomDataToNbt(NbtCompound nbt){
       super.writeCustomDataToNbt(nbt);
       nbt.putInt("ampLvl",lvl);
       nbt.putDouble("range",range);
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt) {
+   public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
       if(nbt.contains("ampLvl")){
          lvl = nbt.getInt("ampLvl");

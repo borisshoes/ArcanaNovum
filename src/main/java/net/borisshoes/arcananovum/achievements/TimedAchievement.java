@@ -85,7 +85,7 @@ public class TimedAchievement extends ArcanaAchievement{
       }
    }
    
-   protected int getGoal(){
+   public int getGoal(){
       return goal;
    }
    

@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
@@ -27,7 +28,7 @@ public class ArcanistsBeltGui extends SimpleGui {
    
    private final ArcanistsBelt belt;
    private final ItemStack beltStack;
-   private ArcanistsBeltInventory inv;
+   private SimpleInventory inv;
    private final int slotCount;
    
    /**
@@ -44,7 +45,7 @@ public class ArcanistsBeltGui extends SimpleGui {
    }
    
    public void build(){
-      inv = new ArcanistsBeltInventory();
+      inv = new SimpleInventory(9);
       for(int i = 0; i < inv.size(); i++){
          if(i < slotCount){
             setSlotRedirect(i, new ArcanistsBeltSlot(inv,i,i,0));

@@ -1,7 +1,9 @@
 package net.borisshoes.arcananovum.items;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerCrossbowItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -9,13 +11,14 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.EnchantmentEffectComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -26,6 +29,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
@@ -34,6 +38,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +53,14 @@ public class AlchemicalArbalest extends ArcanaItem {
       id = ID;
       name = "Alchemical Arbalest";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.CROSSBOW;
-      item = new AlchemicalArbalestItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      item = new AlchemicalArbalestItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
             .component(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE)
-      );
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_OL_BETSY,ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW,ResearchTasks.ADVANCEMENT_ARBALISTIC,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
       attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.inspired_by"),Text.literal("Sethzilla42"))};
       
@@ -117,7 +120,25 @@ public class AlchemicalArbalest extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv){
+   public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
+      if(augment == ArcanaAugments.RUNIC_ARBALEST && stack.hasEnchantments()){ // Remove Multi-Shot type enchants
+         ItemEnchantmentsComponent.Builder enchantBuilder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
+         ItemEnchantmentsComponent comp = stack.getEnchantments();
+         Object2IntOpenHashMap<RegistryEntry<Enchantment>> enchants = new Object2IntOpenHashMap<>();
+         comp.getEnchantmentEntries().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
+         
+         enchants.forEach((e,num) -> {
+            if(!e.value().effects().contains(EnchantmentEffectComponentTypes.PROJECTILE_COUNT)){
+               enchantBuilder.add(e,num);
+            }
+         });
+         EnchantmentHelper.set(stack,enchantBuilder.build());
+      }
+      return stack;
+   }
+   
+   @Override
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
       ItemStack bowStack = inv.getStack(12); // Should be the Crossbow
       ItemStack newArcanaItem = getNewItem();
       if(bowStack.hasEnchantments()){
@@ -162,9 +183,10 @@ public class AlchemicalArbalest extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Alchemical Arbalest\n\nRarity: Sovereign\n\nWhile bows are excellent for sustained damage, crossbows have always been good at bursts of damage, and area suppression. \nI believe I can enhance this niche further...\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Alchemical Arbalest\n\nThe Arbalest overcharges Tipped Arrows so that their effects cover a wide space.\nIt also comes with multishot pre-installed\nSpectral Arrows are where things get interesting. They carry no discrete effect but cause ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Alchemical Arbalest\n\ncreatures to glow.\nTweaking this ability a bit when used in the Arbalest, Spectral Arrows now create a zone that makes weakpoints on enemies easier to see, causing them to take increased damage from all sources.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Alchemical\n      Arbalest").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nWhile bows are excellent for sustained damage, crossbows have always been good at bursts of damage and area suppression. I believe I can enhance this niche further…").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Alchemical\n      Arbalest").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nThe Arbalest overcharges Tipped Arrows so that their effects cover a wide space and linger. It also comes with the multishot enchantment.\n\nSpectral Arrows are where things get interesting.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Alchemical\n      Arbalest").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nThey carry no discrete effect but cause creatures to glow. Tweaking that ability a bit when used in the Arbalest, Spectral Arrows now create a cloud that makes weak spots on enemies easier to see, ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Alchemical\n      Arbalest").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\ncausing them to take increased damage from all sources.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -172,6 +194,19 @@ public class AlchemicalArbalest extends ArcanaItem {
       
       public AlchemicalArbalestItem(Item.Settings settings){
          super(getThis(),settings);
+      }
+      
+      @Override
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
+         
+         List<String> stringList = new ArrayList<>();
+         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.RUNIC_ARBALEST.id) > 0){
+            stringList.add("runic");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -217,7 +252,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+      public ActionResult use(World world, PlayerEntity user, Hand hand){
          ItemStack itemStack = user.getStackInHand(hand);
          verifyEnchantments(itemStack);
          return super.use(world,user,hand);

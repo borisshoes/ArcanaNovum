@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -19,8 +20,6 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -43,7 +42,9 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,23 +62,16 @@ public class ShulkerCore extends EnergyItem {
    public static final String STONE_TAG = "stone";
    public static final String STONE_DATA_TAG = "stoneData";
    
-   private static final String TXT = "item/shulker_core";
-   
    public ShulkerCore(){
       id = ID;
       name = "Shulker Core";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
-      item = new ShulkerCoreItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD),0xFFFF99))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new ShulkerCoreItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.SHULKER_CORE_COLOR);
       itemVersion = 1;
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_LEVITATE,ResearchTasks.EFFECT_SLOW_FALLING,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
@@ -305,13 +299,13 @@ public class ShulkerCore extends EnergyItem {
          setEnergy(stack,0);
       }else{
          putProperty(stack,STONE_TAG,true);
-         putProperty(stack,STONE_DATA_TAG,stone.encodeAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,stone.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
          setEnergy(stack,Soulstone.getSouls(stone));
       }
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv){
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
       // Souls n stuff
       ItemStack soulstoneStack = inv.getStack(12); // Should be the Soulstone
       ItemStack newArcanaItem = null;
@@ -345,19 +339,14 @@ public class ShulkerCore extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("     Shulker Core\n\nRarity: Exotic\n\nShulkers are fascinating creatures, their unique levitation effect could be a precursor to true flight if I combined a bit of their essence... er... a lot of their essence... Whats a bit of genocide anyways?").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Shulker Core\n\nAfter a massacre that took too long to comprehend, I have enough essence to control their power.\n\nRight click to grant levitation.\nSneak right click to change the speed.\nLeft click to swap out the Soulstone inside.").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Shulker Core").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nShulkers are fascinating creatures. Their unique levitation effect could be a precursor to true flight if I combined a bit of their essence… er… a lot of their essence… What’s a bit of genocide anyways?").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Shulker Core").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nAfter a massacre that took too long to comprehend, I have enough souls to control their power.\nUse the Core to grant levitation. Sneak Use to change the speed. Sneak Use in my off-hand to access the Soulstone for refuelling.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class ShulkerCoreItem extends ArcanaPolymerItem {
       public ShulkerCoreItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -382,7 +371,7 @@ public class ShulkerCore extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
             if(hand == Hand.MAIN_HAND){
                changeSpeed(playerEntity,world,hand);
@@ -392,7 +381,7 @@ public class ShulkerCore extends EnergyItem {
          }else{
             levitate(playerEntity,world,hand);
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
       
       @Override

@@ -11,6 +11,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 
+import java.text.DecimalFormat;
+
 public class ProgressAchievement extends ArcanaAchievement{
    
    private int goal;
@@ -67,11 +69,15 @@ public class ProgressAchievement extends ArcanaAchievement{
       ProgressAchievement achievement = (ProgressAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
       MutableText[] text = new MutableText[achievement != null && achievement.isAcquired() ? 2 : 1];
+      DecimalFormat df = new DecimalFormat("##0.00");
+      double percent = 100.0 * (achievement == null ? 0 : achievement.getProgress()) / (double) goal;
       text[0] = Text.literal("")
             .append(Text.literal("Progress: ").formatted(Formatting.DARK_AQUA))
             .append(Text.literal("" + (achievement == null ? 0 : achievement.getProgress())).formatted(Formatting.AQUA))
             .append(Text.literal(" / ").formatted(Formatting.AQUA))
-            .append(Text.literal("" + goal).formatted(Formatting.AQUA));
+            .append(Text.literal("" + goal).formatted(Formatting.AQUA))
+            .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal(df.format(percent)+"%").formatted(Formatting.BLUE));
       
       if(achievement != null && achievement.isAcquired()){
          text[1] = Text.literal("Achieved!").formatted(Formatting.AQUA);

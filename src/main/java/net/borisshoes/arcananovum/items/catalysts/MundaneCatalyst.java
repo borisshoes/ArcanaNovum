@@ -11,17 +11,13 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,21 +29,14 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class MundaneCatalyst extends ArcanaItem {
 	public static final String ID = "mundane_catalyst";
    
-   private static final String TXT = "item/mundane_catalyst";
-   
    public MundaneCatalyst(){
       id = ID;
       name = "Mundane Augment Catalyst";
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.CATALYSTS};
       rarity = ArcanaRarity.MUNDANE;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.QUARTZ;
-      item = new MundaneCatalystItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GRAY))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new MundaneCatalystItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_CATALYTIC_MATRIX,ResearchTasks.OBTAIN_QUARTZ,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
@@ -103,18 +92,14 @@ public class MundaneCatalyst extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Mundane Augmentation\n         Catalyst\n\nRarity: Mundane\n\nThe Catalytic Matrix is truly incredible, every day I discover new equations that it can implement.\nWith some extra crystals I can adapt it to augment the abilities of every item.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Mundane\n   Augmentation\n      Catalyst").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe Catalytic Matrix is truly incredible. Everyday, I discover new equations that it can implement. With some extra crystals, I can adapt it to augment the abilities ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Mundane\n   Augmentation\n      Catalyst").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nof every item I’ve made.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class MundaneCatalystItem extends ArcanaPolymerItem {
       public MundaneCatalystItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

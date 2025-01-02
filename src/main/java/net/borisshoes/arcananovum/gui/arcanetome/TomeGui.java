@@ -31,7 +31,6 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.Recipe;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -75,7 +74,7 @@ public class TomeGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(mode == TomeMode.PROFILE){
          if(index == 49){
             tome.openGui(player,TomeMode.COMPENDIUM,settings);
@@ -126,8 +125,8 @@ public class TomeGui extends SimpleGui {
                }
             }else if(index == 0){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
-               boolean middle = type == ClickType.MOUSE_MIDDLE;
-               if(middle){
+               boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+               if(shiftLeft){
                   settings.setSortType(TomeSort.RECOMMENDED);
                }else{
                   settings.setSortType(TomeSort.cycleSort(settings.getSortType(),backwards));
@@ -136,8 +135,8 @@ public class TomeGui extends SimpleGui {
                buildCompendiumGui(this,player,settings);
             }else if(index == 8){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
-               boolean middle = type == ClickType.MOUSE_MIDDLE;
-               if(middle){
+               boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+               if(shiftLeft){
                   settings.setFilterType(TomeFilter.NONE);
                }else{
                   settings.setFilterType(TomeFilter.cycleFilter(settings.getFilterType(),backwards));
@@ -176,8 +175,8 @@ public class TomeGui extends SimpleGui {
                }
             }else if(index == 0){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
-               boolean middle = type == ClickType.MOUSE_MIDDLE;
-               if(middle){
+               boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+               if(shiftLeft){
                   settings.setSortType(AchievementSort.RECOMMENDED);
                }else{
                   settings.setSortType(AchievementSort.cycleSort(settings.getAchSortType(),backwards));
@@ -186,8 +185,8 @@ public class TomeGui extends SimpleGui {
                buildAchievementsGui(player,settings);
             }else if(index == 8){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
-               boolean middle = type == ClickType.MOUSE_MIDDLE;
-               if(middle){
+               boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+               if(shiftLeft){
                   settings.setFilterType(AchievementFilter.NONE);
                }else{
                   settings.setFilterType(AchievementFilter.cycleFilter(settings.getAchFilterType(),backwards));
@@ -217,8 +216,8 @@ public class TomeGui extends SimpleGui {
                buildProfileGui(player);
             }else if(index == 0){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
-               boolean middle = type == ClickType.MOUSE_MIDDLE;
-               if(middle){
+               boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+               if(shiftLeft){
                   settings.setLeaderSortType(LeaderboardSort.XP_DESC);
                }else{
                   settings.setLeaderSortType(LeaderboardSort.cycleSort(settings.getLeaderSortType(),backwards));
@@ -227,8 +226,8 @@ public class TomeGui extends SimpleGui {
                buildLeaderboardGui(player,settings);
             }else if(index == 8){
                boolean backwards = type == ClickType.MOUSE_RIGHT;
-               boolean middle = type == ClickType.MOUSE_MIDDLE;
-               if(middle){
+               boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+               if(shiftLeft){
                   settings.setLeaderFilterType(LeaderboardFilter.NONE);
                }else{
                   settings.setLeaderFilterType(LeaderboardFilter.cycleFilter(settings.getLeaderFilterType(),backwards));
@@ -271,7 +270,7 @@ public class TomeGui extends SimpleGui {
                }
             }else if(index == 25 || index == 26){
                tome.openGui(player,TomeMode.COMPENDIUM,settings);
-            }else if (index == 43){
+            }else if(index == 43){
                if(selectedRecipe != null){
                   StringBuilder copyString = new StringBuilder();
                   HashMap<String, Pair<Integer,ItemStack>> ingredList = selectedRecipe.getIngredientList();
@@ -616,7 +615,7 @@ public class TomeGui extends SimpleGui {
       filterBuilt.setName(Text.literal("Filter Arcana Items").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(TomeFilter.getColoredLabel(settings.getFilterType()))));
       gui.setSlot(8,filterBuilt);
@@ -625,7 +624,7 @@ public class TomeGui extends SimpleGui {
       sortBuilt.setName(Text.literal("Sort Arcana Items").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(TomeSort.getColoredLabel(settings.getSortType()))));
       gui.setSlot(0,sortBuilt);
@@ -682,7 +681,7 @@ public class TomeGui extends SimpleGui {
       filterBuilt.setName(Text.literal("Filter Achievements").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(AchievementFilter.getColoredLabel(settings.getAchFilterType()))));
       setSlot(8,filterBuilt);
@@ -692,7 +691,7 @@ public class TomeGui extends SimpleGui {
       sortBuilt.setName(Text.literal("Sort Achievements").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(AchievementSort.getColoredLabel(settings.getAchSortType()))));
       setSlot(0,sortBuilt);
@@ -809,7 +808,7 @@ public class TomeGui extends SimpleGui {
       filterBuilt.setName(Text.literal("Filter Arcanists").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(LeaderboardFilter.getColoredLabel(settings.getLeaderFilterType()))));
       setSlot(8,filterBuilt);
@@ -818,7 +817,7 @@ public class TomeGui extends SimpleGui {
       sortBuilt.setName(Text.literal("Sort Arcanists").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(LeaderboardSort.getColoredLabel(settings.getLeaderSortType()))));
       setSlot(0,sortBuilt);
@@ -1476,7 +1475,7 @@ public class TomeGui extends SimpleGui {
       
       switch(sortType){
          case RECOMMENDED -> {
-            achs.sort(Comparator.comparingInt(ach -> RECOMMENDED_LIST.indexOf(ach.getArcanaItem())));
+            achs.sort(Comparator.comparingInt(ach -> (RECOMMENDED_LIST.stream().map(entry -> entry instanceof ArcanaItemCompendiumEntry arcanaEntry ? arcanaEntry.getArcanaItem() : null).toList()).indexOf(ach.getArcanaItem())));
          }
          case NAME -> {
             Comparator<ArcanaAchievement> nameComparator = Comparator.comparing(ArcanaAchievement::getName);

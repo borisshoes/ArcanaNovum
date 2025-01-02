@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum;
 import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
+import net.borisshoes.arcananovum.events.ArcanaEvent;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -17,7 +18,6 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.registry.SculkSensorFrequencyRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -51,6 +51,8 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<String,List<UUID>> PLAYER_ACHIEVEMENT_TRACKER = new HashMap<>();
    public static final HashMap<UUID,Integer> PLAYER_XP_TRACKER = new HashMap<>();
    public static final HashMap<ServerPlayerEntity, Pair<Vec3d,Vec3d>> PLAYER_MOVEMENT_TRACKER = new HashMap<>();
+   public static final List<ArcanaEvent> RECENT_EVENTS = new ArrayList<>();
+   public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
    public static MinecraftServer SERVER = null;
    public static final boolean DEV_MODE = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
@@ -61,11 +63,12 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    @Override
    public void onInitialize(){
+      CONFIG = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, ArcanaRegistry.CONFIG_SETTINGS.stream().map(ArcanaConfig.ConfigSetting::makeConfigValue).collect(Collectors.toList()));
+      ArcanaRegistry.initialize();
+      
       ServerTickEvents.END_WORLD_TICK.register(WorldTickCallback::onWorldTick);
       ServerTickEvents.END_SERVER_TICK.register(TickCallback::onTick);
-      //UseItemCallback.EVENT.register(ItemUseCallback::useItem);
       UseEntityCallback.EVENT.register(EntityUseCallback::useEntity);
-      //UseBlockCallback.EVENT.register(BlockUseCallback::useBlock);
       AttackBlockCallback.EVENT.register(BlockAttackCallback::attackBlock);
       PlayerBlockBreakEvents.BEFORE.register(BlockBreakCallback::breakBlock);
       ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(EntityKilledCallback::killedEntity);
@@ -76,18 +79,30 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       ServerEntityEvents.ENTITY_LOAD.register(EntityLoadCallbacks::loadEntity);
       ServerEntityEvents.ENTITY_UNLOAD.register(EntityLoadCallbacks::unloadEntity);
       ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathCallback::afterRespawn);
+      ServerPlayerEvents.COPY_FROM.register(PlayerDeathCallback::onPlayerCopy);
       ServerLifecycleEvents.SERVER_STARTING.register(ServerStartingCallback::serverStarting);
       ServerLifecycleEvents.SERVER_STARTED.register(ServerStartedCallback::serverStarted);
       
-      ArcanaRegistry.initialize();
-      CONFIG = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, ArcanaRegistry.CONFIG_SETTINGS.stream().map(ArcanaConfig.ConfigSetting::makeConfigValue).collect(Collectors.toList()));
-
       logger.info("Arcana Surges Through The World!");
    }
    
    @Override
    public void onInitializeClient(){
       logger.info("Arcana Surges Through Your Client!");
+   }
+   
+   public static <T extends ArcanaEvent> List<T> getEventsOfType(Class<T> eventType){
+      List<T> filteredEvents = new ArrayList<>();
+      for (ArcanaEvent event : RECENT_EVENTS) {
+         if (eventType.isInstance(event)) {
+            filteredEvents.add(eventType.cast(event));
+         }
+      }
+      return filteredEvents;
+   }
+   
+   public static void addArcanaEvent(ArcanaEvent event){
+      RECENT_EVENTS.add(event);
    }
    
    public static boolean addTickTimerCallback(TickTimerCallback callback){

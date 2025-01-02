@@ -22,7 +22,7 @@ public class LevitationHarnessGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       return true;
    }
    
@@ -38,16 +38,16 @@ public class LevitationHarnessGui extends SimpleGui {
          
             ItemEntity itemEntity;
             boolean bl = player.getInventory().insertStack(stack);
-            if (!bl || !stack.isEmpty()) {
+            if(!bl || !stack.isEmpty()){
                itemEntity = player.dropItem(stack, false);
-               if (itemEntity == null) continue;
+               if(itemEntity == null) continue;
                itemEntity.resetPickupDelay();
                itemEntity.setOwner(player.getUuid());
                continue;
             }
             stack.setCount(1);
             itemEntity = player.dropItem(stack, false);
-            if (itemEntity != null) {
+            if(itemEntity != null){
                itemEntity.setDespawnImmediately();
             }
          }

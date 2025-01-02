@@ -19,7 +19,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.CarvedPumpkinBlock;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -32,11 +32,12 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,21 +49,14 @@ import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstruc
 public class SovereignCatalyst extends ArcanaItem {
 	public static final String ID = "sovereign_catalyst";
    
-   private static final String TXT = "item/sovereign_catalyst";
-   
    public SovereignCatalyst(){
       id = ID;
       name = "Sovereign Augment Catalyst";
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.CATALYSTS};
       rarity = ArcanaRarity.MUNDANE;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.GOLD_INGOT;
-      item = new SovereignCatalystItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GOLD))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new SovereignCatalystItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_EXOTIC_CATALYST,ResearchTasks.OBTAIN_GOLD_INGOT,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
@@ -118,18 +112,14 @@ public class SovereignCatalyst extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Sovereign Augment\n         Catalyst\n\nRarity: Mundane\n\nGOLD! The gemstones already provide enough reinforcement. Gold lets the energy be more malleable to more creative applications. But, I think there's a little potential left here...").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Sovereign\n   Augmentation\n      Catalyst").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nGOLD! The gemstones already provide enough reinforcement. Gold lets the energy be more malleable to more creative applications. But, I ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("     Sovereign\n   Augmentation\n      Catalyst").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nthink there’s a little more potential here…").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class SovereignCatalystItem extends ArcanaPolymerItem {
       public SovereignCatalystItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -150,9 +140,9 @@ public class SovereignCatalyst extends ArcanaItem {
          
          if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY() && canSpawn){ // Check construct
             BlockPattern.Result patternResult = getConstructPattern().searchAround(world, pos);
-            if (patternResult != null) {
-               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world);
-               if (constructEntity != null && world instanceof ServerWorld serverWorld) {
+            if(patternResult != null){
+               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, SpawnReason.TRIGGERED);
+               if(constructEntity != null && world instanceof ServerWorld serverWorld){
                   CarvedPumpkinBlock.breakPatternBlocks(world, patternResult);
                   BlockPos blockPos = patternResult.translate(1, 1, 0).getBlockPos();
                   constructEntity.refreshPositionAndAngles((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);

@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.items.GravitonMaul;
 import net.borisshoes.arcananovum.items.PickaxeOfCeptyus;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.block.BlockState;
@@ -25,6 +26,10 @@ public class BlockBreakCallback {
          }
          if(playerEntity instanceof ServerPlayerEntity player && blockState.isIn(BlockTags.BASE_STONE_OVERWORLD)){
             ArcanaAchievements.progress(player,ArcanaAchievements.DIGGY_HOLE.id, 1);
+         }
+      }else if(ArcanaItemUtils.identifyItem(tool) instanceof GravitonMaul maul){
+         if(!playerEntity.isSneaking()){
+            maul.treeFell(world,playerEntity,tool,blockPos);
          }
       }
       return true;

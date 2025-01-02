@@ -17,7 +17,6 @@ import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
@@ -29,7 +28,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.ToolMaterials;
+import net.minecraft.item.ToolMaterial;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -56,8 +55,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    
    public static final String CEPTYUS_TICK = "ceptyusPickTick";
    public static final String CEPTYUS_ENERGY = "ceptyusPickEnergy";
-   
-   private static final String TXT = "item/pickaxe_of_ceptyus";
+
    public static final ArrayList<Block> VEIN_ORES = new ArrayList<>(Arrays.asList(
          Blocks.COAL_ORE,
          Blocks.DEEPSLATE_COAL_ORE,
@@ -88,16 +86,12 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       id = ID;
       name = "Ancient Pickaxe of Ceptyus";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.EQUIPMENT};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_PICKAXE;
-      item = new PickaxeOfCeptyusItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      item = new PickaxeOfCeptyusItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_PICKAXE_OF_CEPTYUS};
       
       ItemStack stack = new ItemStack(item);
@@ -149,6 +143,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    }
    
    public void veinMine(World world, PlayerEntity player, ItemStack item, BlockPos pos){
+      if(!(world instanceof ServerWorld serverWorld)) return;
       Block type = world.getBlockState(pos).getBlock();
       if(!VEIN_ORES.contains(type)) return;
       
@@ -161,7 +156,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       queue.add(new Pair(pos, 0));
       ArrayList<BlockPos> toMine = new ArrayList<>();
       
-      while(!queue.isEmpty()) {
+      while(!queue.isEmpty()){
          Pair<BlockPos, Integer> pair = (Pair)queue.poll();
          BlockPos blockPos = (BlockPos)pair.getLeft();
          int depth = (Integer)pair.getRight();
@@ -171,7 +166,6 @@ public class PickaxeOfCeptyus extends ArcanaItem {
          if(curType == type){
             if(toMine.contains(blockPos)) continue;
             toMine.add(blockPos);
-            //System.out.println("Found Matching Block At: "+blockPos.toShortString());
             if(toMine.size() >= maxBlocks) break;
             // Add Surrounding Blocks to Queue
             for(int i = -1; i <= 1; i++){
@@ -196,13 +190,13 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       veinPick.addEnchantment(MiscUtils.getEnchantment(Enchantments.UNBREAKING),5);
       
       for(BlockPos blockPos : toMine){
-         drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), (ServerWorld)world, blockPos, null, player, veinPick));
+         drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), serverWorld, blockPos, null, player, veinPick));
          world.breakBlock(blockPos,false,player);
          if(type instanceof ExperienceDroppingBlock ore){
-            ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, veinPick,true);
+            ore.onStacksDropped(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
          }
          if(type instanceof RedstoneOreBlock ore){
-            ore.onStacksDropped(world.getBlockState(blockPos),(ServerWorld)world, pos, veinPick,true);
+            ore.onStacksDropped(world.getBlockState(blockPos),serverWorld, pos, veinPick,true);
          }
          ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PICKAXE_OF_CEPTYUS_VEIN_MINE_BLOCK));
       }
@@ -230,21 +224,16 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Ancient Pickaxe\n       Of Ceptyus\n\nRarity: Divine\n\nThe third discovered Divine Artifact left by the Gods.\n\nFound in the deepest parts of the world amongst the rubble of the ancients' dwellings from a calamity long ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Ancient Pickaxe\n       Of Ceptyus\n\npast. A pickaxe that was used to carve through the toughest deepslate like butter, aid in gathering obsidian and harvest vast fortunes from the Earth without suffering even a chip.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Ancient Pickaxe\n       Of Ceptyus\n\nThis unbreakable pickaxe contains the fortune enchantment pushed beyond its limit to the 5th level, as well as efficiency 5 that has been embued with a ramping haste boost that increases as you mine. The pickaxe also mines all").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Ancient Pickaxe\n       Of Ceptyus\n\nnearby ores of the same type and places their contents before you. This does not activate while sneaking.\n\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nA curious Divine Artifact found in the deepest parts of the world amongst the rubble of the ancients’ dwellings from a calamity long past. A Pickaxe that was used to carve  ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nthrough the toughest\ndeepslate like butter, aid in the gathering of obsidian, and harvest fast fortunes from the depths without suffering a single chip.\n\nThis Pickaxe contains  ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nthe Fortune enchantment pushed beyond its limit to the 5th level, as well as Efficiency imbued with a ramping hast boost that increases as I mine.\n\nThe Pickaxe also mines ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Ancient Pickaxe\n     of Ceptyus").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nall nearby ores of the same type in a single swing, and places the resulting valuables before me.\n\nThe ancients were careful folk, and so, such a noisy ability does not activate while sneaking.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class PickaxeOfCeptyusItem extends ArcanaPolymerPickaxeItem {
       public PickaxeOfCeptyusItem(Item.Settings settings){
-         super(getThis(),ToolMaterials.NETHERITE,1,-2.8f,settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
+         super(getThis(), ToolMaterial.NETHERITE,1,-2.8f,settings);
       }
       
       @Override
@@ -266,7 +255,6 @@ public class PickaxeOfCeptyus extends ArcanaItem {
             profile.addMiscData(CEPTYUS_ENERGY, NbtInt.of(Math.max(0,energy-lastTick/3)));
             int speed = energy / 100;
             
-            //System.out.println("Last Tick: "+lastTick + " | Cur energy: "+energy+" | Haste Amp: "+speed);
             StatusEffectInstance haste = new StatusEffectInstance(StatusEffects.HASTE, 100, speed, false, false, false);
             player.addStatusEffect(haste);
             if(speed == 10) ArcanaAchievements.progress(player,ArcanaAchievements.BACK_IN_THE_MINE.id,1);

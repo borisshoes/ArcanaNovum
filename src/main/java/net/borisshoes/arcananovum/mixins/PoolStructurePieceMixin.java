@@ -21,8 +21,8 @@ public class PoolStructurePieceMixin {
    protected StructurePoolElement poolElement;
    
    @Inject(method = "writeNbt", at = @At(value = "TAIL"))
-   private void fixPoolElement(StructureContext context, NbtCompound nbt, CallbackInfo ci) {
-      if (!nbt.contains("pool_element")) {
+   private void fixPoolElement(StructureContext context, NbtCompound nbt, CallbackInfo ci){
+      if(!nbt.contains("pool_element")){
          NbtCompound nbtElement = new NbtCompound();
          String poolId = poolElement.toString();
          String poolId2 = poolId.substring(0,poolId.length()-2);
@@ -30,7 +30,7 @@ public class PoolStructurePieceMixin {
          String[] poolIdArray = poolId2.split(split);
          String poolLocation = poolIdArray[poolIdArray.length - 1];
          Triple<String, String, String> info = FabricStructurePoolRegistry.getPoolStructureElementInfo(poolLocation);
-         if (info != null) {
+         if(info != null){
             nbtElement.putString("element_type", info.getLeft());
             nbtElement.putString("location", poolLocation);
             nbtElement.putString("processors", info.getMiddle());

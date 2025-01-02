@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
+import net.borisshoes.arcananovum.items.BinaryBlades;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.BlockState;
@@ -18,12 +19,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -33,12 +32,22 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
 @Mixin(ItemEntity.class)
 public class ItemEntityMixin {
+   
+   @Inject(method="setStack",at=@At("HEAD"))
+   private void arcananovum_destroyFake(ItemStack stack, CallbackInfo ci){
+      ItemEntity itemEntity = (ItemEntity) (Object) this;
+      if(BinaryBlades.isFakeBlade(stack)){
+         itemEntity.discard();
+      }
+      if(ArcanaItem.hasProperty(stack, BinaryBlades.SPLIT_TAG)){
+         ArcanaItem.putProperty(stack, BinaryBlades.SPLIT_TAG,false);
+      }
+   }
    
    @Inject(method="tick",at=@At("TAIL"))
    private void arcananovum_worldDetection(CallbackInfo ci){
@@ -260,19 +269,6 @@ public class ItemEntityMixin {
          
       }
    }
-   
-   @Inject(method="damage",at=@At(value="HEAD"), cancellable = true)
-   private void arcananovum_explosionImmunity(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
-      ItemEntity itemEntity = (ItemEntity) (Object) this;
-      ItemStack stack = itemEntity.getStack();
-      
-      if (!stack.isEmpty() && source.isIn(DamageTypeTags.IS_EXPLOSION)) {
-         if(ArcanaItemUtils.isArcane(stack)){
-            cir.setReturnValue(false);
-         }
-      }
-   }
-   
    
    @Inject(method="onPlayerCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;insertStack(Lnet/minecraft/item/ItemStack;)Z",shift = At.Shift.BEFORE))
    private void arcananovum_removeCraftData(PlayerEntity player, CallbackInfo ci, @Local LocalRef<ItemStack> itemStackRef){

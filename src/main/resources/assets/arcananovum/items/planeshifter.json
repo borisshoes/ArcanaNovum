@@ -1,0 +1,41 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "none",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/planeshifter_none"
+                }
+            },
+            {
+                "when": "overworld",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/planeshifter_overworld"
+                }
+            },
+            {
+                "when": "nether",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/planeshifter_nether"
+                }
+            },
+            {
+                "when": "end",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/planeshifter_end"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/planeshifter_none"
+        }
+    },
+    "hand_animation_on_swap": false
+}

@@ -1,0 +1,55 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "neo_reverse",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magnetism_charm_neo_reverse"
+                }
+            },
+            {
+                "when": "neo_on",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magnetism_charm_neo_on"
+                }
+            },
+            {
+                "when": "neo_off",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magnetism_charm_neo_off"
+                }
+            },
+            {
+                "when": "reverse",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magnetism_charm_reverse"
+                }
+            },
+            {
+                "when": "on",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magnetism_charm_on"
+                }
+            },
+            {
+                "when": "off",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magnetism_charm_off"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/magnetism_charm_off"
+        }
+    },
+    "hand_animation_on_swap": false
+}

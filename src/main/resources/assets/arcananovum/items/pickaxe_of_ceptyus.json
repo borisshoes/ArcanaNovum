@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/pickaxe_of_ceptyus"
+    },
+    "hand_animation_on_swap": false
+}

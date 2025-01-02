@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -10,17 +9,13 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -32,21 +27,14 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class RunicMatrix extends ArcanaItem {
 	public static final String ID = "runic_matrix";
    
-   private static final String TXT = "item/runic_matrix";
-   
    public RunicMatrix(){
       id = ID;
       name = "Runic Matrix";
       rarity = ArcanaRarity.MUNDANE;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.END_CRYSTAL;
-      item = new RunicMatrixItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new RunicMatrixItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS,ResearchTasks.OBTAIN_AMETHYST_SHARD};
       
       ItemStack stack = new ItemStack(item);
@@ -104,18 +92,14 @@ public class RunicMatrix extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Runic Matrix\n\nRarity: Mundane\n\nRunic language is often used to create magical effects. Being able to freely combine multiple runic words like in a crafting table results in a device capable of producing a vast number of arcane spells.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Runic Matrix").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nRunes are part of the old Arcana that are able to evoke targeted effects. Being able to freely swap and combine runes to dynamically create runic equations, like ingredients in a ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Runic Matrix").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\ncrafting recipe, results in a device capable of producing a vast number of Arcane effects. This device should be capable of quickly switching and recombining runes and activating them with its internal power source.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class RunicMatrixItem extends ArcanaPolymerItem {
       public RunicMatrixItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

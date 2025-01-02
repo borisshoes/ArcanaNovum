@@ -1,0 +1,12 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/gui/menu_left_connector",
+        "tints": [
+            {
+                "type": "minecraft:dye",
+                "default": -1
+            }
+        ]
+    }
+}

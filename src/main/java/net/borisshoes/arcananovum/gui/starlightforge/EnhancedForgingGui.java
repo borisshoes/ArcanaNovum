@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -47,6 +48,7 @@ public class EnhancedForgingGui extends SimpleGui {
    private boolean completed = false;
    private boolean paid = false;
    private boolean fast = false;
+   private boolean showCodes = false;
    
    /**
     * Constructs a new simple container gui for the supplied player.
@@ -77,25 +79,30 @@ public class EnhancedForgingGui extends SimpleGui {
          }else if(type.isLeft){
             this.selectedItem = EFItem.cycleItem(selectedItem,false);
             buildGui();
-         }else if(type == ClickType.MOUSE_MIDDLE){
+         }else if(type == ClickType.MOUSE_LEFT_SHIFT){
             this.selectedItem = EFItem.NOVA;
             buildGui();
          }
       }else if(index == 53){
-         if(game.hasNextTurn()){
-            if(game.getTurn() == 0 && !paid){
-               if(MiscUtils.removeItems(player,ArcanaRegistry.STARDUST,game.getTotalCost())){
-                  blockEntity.addSeedUse();
-                  turnMode = false;
-                  animated = true;
-                  cinematicMode = true;
-                  paid = true;
-                  fast = type == ClickType.MOUSE_LEFT_SHIFT;
-                  buildGui();
-               }else{
-                  player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
-                        .append(Text.translatable(ArcanaRegistry.STARDUST.getTranslationKey()).formatted(Formatting.YELLOW,Formatting.ITALIC)),false);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+         if(type == ClickType.MOUSE_RIGHT){
+            this.showCodes = !showCodes;
+            buildGui();
+         }else{
+            if(game.hasNextTurn()){
+               if(game.getTurn() == 0 && !paid){
+                  if(MiscUtils.removeItems(player,ArcanaRegistry.STARDUST,game.getTotalCost())){
+                     blockEntity.addSeedUse();
+                     turnMode = false;
+                     animated = true;
+                     cinematicMode = true;
+                     paid = true;
+                     fast = type == ClickType.MOUSE_LEFT_SHIFT;
+                     buildGui();
+                  }else{
+                     player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
+                           .append(Text.translatable(ArcanaRegistry.STARDUST.getTranslationKey()).formatted(Formatting.YELLOW,Formatting.ITALIC)),false);
+                     SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
+                  }
                }
             }
          }
@@ -107,10 +114,12 @@ public class EnhancedForgingGui extends SimpleGui {
          int x = (index % 9);
          int y = index / 9;
          
-         if(type == ClickType.MOUSE_MIDDLE){ // Reset tile
-            game.removeChanges(x,y);
-         }else if(type == ClickType.MOUSE_LEFT_SHIFT){ // Tile change
-            game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TILE_CHANGE,x,y,Optional.of(this.selectedItem)));
+         if(type == ClickType.MOUSE_LEFT_SHIFT){ // Tile change / Reset
+            if(this.selectedItem == game.getItemAt(x,y)){
+               game.removeChanges(x,y);
+            }else{
+               game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TILE_CHANGE,x,y,Optional.of(this.selectedItem)));
+            }
          }else if(type == ClickType.MOUSE_LEFT){ // Turn Decrease
             game.addChange(new EnhancedForgingGame.EFChange(EnhancedForgingGame.EFChangeType.TURN_DECREASE,x,y,Optional.empty()));
          }else if(type == ClickType.MOUSE_RIGHT){ // Turn Increase
@@ -221,6 +230,11 @@ public class EnhancedForgingGui extends SimpleGui {
       GuiElementBuilder runItem = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CONFIRM)).hideDefaultTooltip();
       runItem.setName(Text.literal("Activate Forge").formatted(Formatting.YELLOW));
       runItem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to activate the forge.").formatted(Formatting.LIGHT_PURPLE))));
+      if(showCodes){
+         runItem.addLoreLine(Text.literal(""));
+         runItem.addLoreLine(TextUtils.removeItalics(Text.literal("Board ID: "+game.getStartingCode()).formatted(Formatting.DARK_GRAY)));
+         runItem.addLoreLine(TextUtils.removeItalics(Text.literal("Solution ID: "+game.getGameCode()).formatted(Formatting.DARK_GRAY)));
+      }
       setSlot(53,runItem);
       
       int playCost = EnhancedForgingGame.PLAY_COST;
@@ -281,12 +295,15 @@ public class EnhancedForgingGui extends SimpleGui {
             GuiElementBuilder elem = EFItem.getGuiElement(tile.getLeft());
             if(tile.getLeft() != EFItem.PLANET){
                elem.addLoreLine(Text.literal(""));
-               elem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Click").formatted(Formatting.AQUA)).append(Text.literal(" to change tile type to ").formatted(Formatting.LIGHT_PURPLE)).append(this.selectedItem.name)));
+               if(tile.getLeft() == this.selectedItem){
+                  elem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Click").formatted(Formatting.AQUA)).append(Text.literal(" to reset this tile.").formatted(Formatting.LIGHT_PURPLE))));
+               }else{
+                  elem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Click").formatted(Formatting.AQUA)).append(Text.literal(" to change tile type to ").formatted(Formatting.LIGHT_PURPLE)).append(this.selectedItem.name)));
+               }
                if(EFItem.hasTurn(tile.getLeft())){
                   elem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Left Click").formatted(Formatting.GREEN)).append(Text.literal(" to hasten this tile's turn.").formatted(Formatting.LIGHT_PURPLE))));
                   elem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to delay this tile's turn.").formatted(Formatting.LIGHT_PURPLE))));
                }
-               elem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset this tile.").formatted(Formatting.LIGHT_PURPLE))));
             }
             
             if(turnMode){
@@ -313,6 +330,7 @@ public class EnhancedForgingGui extends SimpleGui {
    }
    
    public void onCompletion(){
+      if(!(blockEntity.getWorld()instanceof ServerWorld world)) return;
       completed = true;
       
       double percentile = EnhancedStatUtils.generatePercentile(game.getStarCount());
@@ -321,9 +339,9 @@ public class EnhancedForgingGui extends SimpleGui {
          enhancedStack.setCount((int)(6*Math.pow(percentile,5) + 5*percentile + 5));
       }else{
          EnhancedStatUtils.enhanceItem(enhancedStack, percentile);
+         ArcanaNovum.data(player).setResearchTask(ResearchTasks.INFUSE_ITEM, true);
       }
       
-      ServerWorld world = (ServerWorld) blockEntity.getWorld();
       ParticleEffectUtils.enhancedForgingAnim(world,blockEntity.getPos(),enhancedStack,0,fast ? 1.75 : 1);
       
       final int finalCost = game.getTotalCost();
@@ -911,6 +929,11 @@ class EnhancedForgingGame{
       changes.removeIf(c -> c.y == y && c.x == x);
    }
    
+   public EFItem getItemAt(int x, int y){
+      if(!validSlot(x,y)) return null;
+      return board[x][y].getLeft();
+   }
+   
    public void resetBoard(){
       changes.clear();
    }
@@ -937,6 +960,51 @@ class EnhancedForgingGame{
    
    public int getTotalCost(){
       return getTurnChangeCost() + getTileChangeCost() + PLAY_COST;
+   }
+   
+   private static String boardToCode(Pair<EFItem,Integer>[][] board){
+      StringBuilder binaryString = new StringBuilder();
+      binaryString.append("0001"); // Version #
+      
+      int width = board.length;
+      int height = board[0].length;
+      binaryString.append(String.format("%4s", Integer.toBinaryString(width & ((1 << 4) - 1))).replace(' ', '0')); // Width (0111)
+      binaryString.append(String.format("%4s", Integer.toBinaryString(height & ((1 << 4) - 1))).replace(' ', '0')); // Height (0110)
+      
+      for(int x = 0; x < width; x++){
+         for(int y = 0; y < height; y++){
+            EFItem item = board[x][y].getLeft();
+            
+            // Gas bit
+            if(item == EFItem.GAS){
+               binaryString.append("1");
+               continue;
+            }else{
+               binaryString.append("0");
+            }
+            
+            // Type bits (ex: 00101)
+            binaryString.append(String.format("%5s", Integer.toBinaryString(item.ordinal() & ((1 << 5) - 1))).replace(' ', '0'));
+            
+            // Turn bits
+            if(EFItem.hasTurn(item)){
+               int turn = board[x][y].getRight();
+               binaryString.append("1");
+               binaryString.append(String.format("%7s", Integer.toBinaryString(turn & ((1 << 7) - 1))).replace(' ', '0'));
+            }else{
+               binaryString.append("0");
+            }
+         }
+      }
+      return MiscUtils.convertToBase64(binaryString.toString());
+   }
+   
+   public String getStartingCode(){
+      return boardToCode(this.originalBoard);
+   }
+   
+   public String getGameCode(){
+      return boardToCode(this.board);
    }
    
    public record EFChange(EFChangeType type, int x, int y, Optional<EFItem> newTile){

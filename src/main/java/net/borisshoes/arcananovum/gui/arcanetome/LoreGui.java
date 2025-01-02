@@ -30,7 +30,7 @@ public class LoreGui extends BookGui {
    }
    
    @Override
-   public void onTakeBookButton() {
+   public void onTakeBookButton(){
       this.close();
    }
    

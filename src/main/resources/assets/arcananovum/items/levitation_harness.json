@@ -1,0 +1,13 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/levitation_harness",
+		"tints": [
+            {
+                "type": "minecraft:dye",
+                "default": 	-6919786
+            }
+        ]
+    },
+    "hand_animation_on_swap": false
+}

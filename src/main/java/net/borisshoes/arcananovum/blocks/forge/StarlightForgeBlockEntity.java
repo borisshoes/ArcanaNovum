@@ -14,9 +14,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.*;
-import net.minecraft.inventory.DoubleInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
@@ -98,7 +96,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -176,7 +174,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STARLIGHT_FORGE).getCheckOffset()),null);
@@ -265,21 +263,21 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
-      if (nbt.contains("seedUses")) {
+      if(nbt.contains("seedUses")){
          this.seedUses = nbt.getInt("seedUses");
       }
       augments = new TreeMap<>();
@@ -293,7 +291,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();

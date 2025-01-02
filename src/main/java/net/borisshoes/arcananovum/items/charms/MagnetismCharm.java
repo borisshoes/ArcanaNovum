@@ -17,12 +17,13 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -32,14 +33,14 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,13 +52,6 @@ public class MagnetismCharm extends ArcanaItem {
 	public static final String ID = "magnetism_charm";
    
    public static final String FILTER_TAG = "filter";
-   
-   private static final String ON_TXT = "item/magnetism_charm_on";
-   private static final String OFF_TXT = "item/magnetism_charm_off";
-   private static final String REVERSE_TXT = "item/magnetism_charm_reverse";
-   private static final String NEO_ON_TXT = "item/magnetism_charm_neo_on";
-   private static final String NEO_OFF_TXT = "item/magnetism_charm_neo_off";
-   private static final String NEO_REVERSE_TXT = "item/magnetism_charm_neo_reverse";
    
    private static final ArrayList<Item> NEODYMIUM_TARGETS = new ArrayList<>(Arrays.asList(
          Items.IRON_INGOT,
@@ -127,21 +121,11 @@ public class MagnetismCharm extends ArcanaItem {
       id = ID;
       name = "Charm of Magnetism";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 2;
       vanillaItem = Items.IRON_INGOT;
-      item = new MagnetismCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GRAY))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,OFF_TXT));
-      models.add(new Pair<>(vanillaItem,ON_TXT));
-      models.add(new Pair<>(vanillaItem,REVERSE_TXT));
-      models.add(new Pair<>(vanillaItem,NEO_ON_TXT));
-      models.add(new Pair<>(vanillaItem,NEO_OFF_TXT));
-      models.add(new Pair<>(vanillaItem,NEO_REVERSE_TXT));
+      item = new MagnetismCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_HEAVY_CORE,ResearchTasks.FISH_ITEM};
       
       ItemStack stack = new ItemStack(item);
@@ -200,7 +184,7 @@ public class MagnetismCharm extends ArcanaItem {
       if(cooldown != 0){
          return;
       }else{
-         player.getItemCooldownManager().set(this.item,20);
+         player.getItemCooldownManager().set(charm,20);
          putProperty(charm,COOLDOWN_TAG,1);
       }
       
@@ -229,8 +213,7 @@ public class MagnetismCharm extends ArcanaItem {
             LivingEntity e = (LivingEntity) entity;
             if(e instanceof ServerPlayerEntity hitPlayer){
                if(hitPlayer.isBlocking()){
-                  hitPlayer.getItemCooldownManager().set(Items.SHIELD, 100);
-                  hitPlayer.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(), 100);
+                  hitPlayer.getItemCooldownManager().set(hitPlayer.getBlockingItem(), 100);
                   hitPlayer.clearActiveItem();
                   hitPlayer.getWorld().sendEntityStatus(hitPlayer, (byte)30);
                }
@@ -254,7 +237,7 @@ public class MagnetismCharm extends ArcanaItem {
                for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
                   ItemStack item = entry.getValue();
                   if(NEODYMIUM_TARGETS.contains(item.getItem())){
-                     ItemEntity droppedItem = e.dropStack(item);
+                     ItemEntity droppedItem = e.dropStack(player.getServerWorld(), item);
                      if(droppedItem != null){
                         double x = playerPos.getX() - droppedItem.getX();
                         double y = playerPos.getY() - droppedItem.getY();
@@ -358,8 +341,9 @@ public class MagnetismCharm extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Charm of Magnetism\n\nRarity: Empowered\n\nMagnets, how do they work? Well, they pull stuff sometimes... \nI think I can make one by condensing all the iron I can find and striking it with lightning to charge it, which will leave me with a permanent magnet.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Charm of Magnetism\n\nThe Charm can be toggled to passively pull in items around you.\n\nRight Clicking the charm pulls items from the direction you are looking towards you.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n      Magnetism").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nMagnets, how do they work? Well, they pull stuff sometimes… Unfortunately, they only work on some materials, and with limited range. I believe this Heavy Core that I have found presents  ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n      Magnetism").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\ngravitic properties that can supercharge a magnet’s abilities. Surrounding the Core in iron and striking it with lightning should leave an empowered permanent magnet.\n\nSneak Using the Charm toggles it passively ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n      Magnetism").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\npulling items around me.\n\nUsing the charm directs a magnetic field a greater distance in the direction of my gaze that pulls items towards me. ").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -369,13 +353,32 @@ public class MagnetismCharm extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(OFF_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          int mode = getIntProperty(itemStack,MODE_TAG);
          boolean neo = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.NEODYMIUM.id) >= 1;
-         if(mode == 1) return neo ? ArcanaRegistry.getModelData(NEO_ON_TXT).value() : ArcanaRegistry.getModelData(ON_TXT).value();
-         if(mode == 2) return neo ? ArcanaRegistry.getModelData(NEO_REVERSE_TXT).value() : ArcanaRegistry.getModelData(REVERSE_TXT).value();
-         return neo ? ArcanaRegistry.getModelData(NEO_OFF_TXT).value() : ArcanaRegistry.getModelData(OFF_TXT).value();
+         
+         List<String> stringList = new ArrayList<>();
+         if(neo){
+            if(mode == 2){
+               stringList.add("neo_reverse");
+            }else if(mode == 1){
+               stringList.add("neo_on");
+            }else{
+               stringList.add("neo_off");
+            }
+         }else{
+            if(mode == 2){
+               stringList.add("reverse");
+            }else if(mode == 1){
+               stringList.add("on");
+            }else{
+               stringList.add("off");
+            }
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -427,9 +430,9 @@ public class MagnetismCharm extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          boolean canFilter = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FARADAY_CAGE.id) >= 1;
          ItemStack offHand = playerEntity.getStackInHand(Hand.OFF_HAND);
          
@@ -444,7 +447,7 @@ public class MagnetismCharm extends ArcanaItem {
          }else{
             activeUse((ServerPlayerEntity) playerEntity, world, stack);
          }
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
    }
 }

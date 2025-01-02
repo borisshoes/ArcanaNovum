@@ -25,7 +25,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(targets = "net.minecraft.entity.mob.PhantomEntity$SwoopMovementGoal")
 public abstract class PhantomSwoopGoalMixin extends Goal {
@@ -34,8 +33,8 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    @Shadow
    PhantomEntity field_7333; // Outer class synthetic field
    
-   @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isSpectator()Z"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-   private void arcananovum_shouldContinue(CallbackInfoReturnable<Boolean> cir, LivingEntity livingEntity){
+   @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isSpectator()Z"), cancellable = true)
+   private void arcananovum_shouldContinue(CallbackInfoReturnable<Boolean> cir, @Local LivingEntity livingEntity){
       if(livingEntity instanceof ServerPlayerEntity player){
          PlayerInventory inv = player.getInventory();
          for(int i=0; i<inv.size();i++){
@@ -61,7 +60,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
       }
    }
    
-   @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/CatEntity;hiss()V"), locals = LocalCapture.CAPTURE_FAILHARD)
+   @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/CatEntity;hiss()V"))
    private void arcananovum_phantomScare(CallbackInfoReturnable<Boolean> cir, @Local CatEntity catEntity){
       if(catEntity.getWorld() instanceof ServerWorld serverWorld){
          for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(catEntity.getBlockPos(), 10.0))){

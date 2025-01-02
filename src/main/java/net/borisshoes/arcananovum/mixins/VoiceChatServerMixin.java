@@ -21,7 +21,7 @@ import java.util.UUID;
 public class VoiceChatServerMixin {
    
    @ModifyArgs(method = "processProximityPacket", at = @At(value = "INVOKE", target = "Lde/maxhenkel/voicechat/voice/server/Server;broadcast(Ljava/util/Collection;Lde/maxhenkel/voicechat/voice/common/SoundPacket;Lnet/minecraft/server/network/ServerPlayerEntity;Lde/maxhenkel/voicechat/voice/common/PlayerState;Ljava/util/UUID;Ljava/lang/String;)V"))
-   private void arcananovum_modifyBroadcast(Args args) {
+   private void arcananovum_modifyBroadcast(Args args){
       //Collection<ServerPlayerEntity> players, SoundPacket<?> packet, @Nullable ServerPlayerEntity sender, @Nullable PlayerState senderState, @Nullable UUID groupId, String source
       Collection<ServerPlayerEntity> players = args.get(0);
       SoundPacket<?> packet = args.get(1);

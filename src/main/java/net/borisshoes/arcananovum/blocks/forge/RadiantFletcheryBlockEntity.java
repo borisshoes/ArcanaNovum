@@ -75,7 +75,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -111,7 +111,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.RADIANT_FLETCHERY).getCheckOffset()),null);
@@ -146,23 +146,23 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
       augments = new TreeMap<>();
@@ -176,7 +176,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
@@ -195,7 +195,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
          nbt.putString("customName",this.customName);
       }
       nbt.putBoolean("synthetic",this.synthetic);
-      if (!this.writeLootTable(nbt)) {
+      if(!this.writeLootTable(nbt)){
          Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
       }
    }
@@ -206,7 +206,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+   protected void setHeldStacks(DefaultedList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
          this.inventory.setStack(i,list.get(i));
       }

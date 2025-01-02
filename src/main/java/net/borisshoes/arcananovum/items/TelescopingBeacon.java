@@ -20,9 +20,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -42,6 +43,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,23 +61,14 @@ public class TelescopingBeacon extends ArcanaItem {
    public static final String BEACON_TAG = "beacon";
    public static final String DATA_TAG = "data";
    
-   private static final String FULL_TXT = "item/telescoping_beacon";
-   private static final String EMPTY_TXT = "item/telescoping_beacon_empty";
-   
    public TelescopingBeacon(){
       id = ID;
       name = "Telescoping Beacon";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.BEACON;
-      item = new TelescopingBeaconItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,FULL_TXT));
-      models.add(new Pair<>(vanillaItem,EMPTY_TXT));
+      item = new TelescopingBeaconItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_PISTON};
       
       ItemStack stack = new ItemStack(item);
@@ -155,24 +148,24 @@ public class TelescopingBeacon extends ArcanaItem {
       return buildItemLore(newStack,server);
    }
    
-   private static List<Pair<BlockPos,BlockState>> getBaseBlocks(World world, BlockPos pos) {
+   private static List<Pair<BlockPos,BlockState>> getBaseBlocks(World world, BlockPos pos){
       ArrayList<Pair<BlockPos,BlockState>> blocks = new ArrayList<>();
       int beaconX = pos.getX();
       int beaconY = pos.getY();
       int beaconZ = pos.getZ();
       
       int index = 0;
-      for(int curLevel = 1; curLevel <= 4; curLevel++) {
+      for(int curLevel = 1; curLevel <= 4; curLevel++){
          int curY = beaconY - curLevel;
-         if (curY < world.getBottomY()) {
+         if(curY < world.getBottomY()){
             break;
          }
          
-         for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX) {
-            for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ) {
+         for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX){
+            for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ){
                BlockPos blockPos = new BlockPos(curX, curY, curZ);
                BlockState blockState = world.getBlockState(blockPos);
-               if (blockState.isIn(BlockTags.BEACON_BASE_BLOCKS)) {
+               if(blockState.isIn(BlockTags.BEACON_BASE_BLOCKS)){
                   blocks.add(index,new Pair<>(blockPos,blockState));
                   index++;
                }
@@ -189,15 +182,15 @@ public class TelescopingBeacon extends ArcanaItem {
       int beaconY = pos.getY();
       int beaconZ = pos.getZ();
       
-      for(int curLevel = 1; curLevel <= tier; curLevel++) {
+      for(int curLevel = 1; curLevel <= tier; curLevel++){
          int curY = beaconY - curLevel;
-         if (curY < world.getBottomY()) {
+         if(curY < world.getBottomY()){
             //log("Hit bottom of world, Failed");
             return false;
          }
          
-         for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX) {
-            for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ) {
+         for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX){
+            for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ){
                BlockPos blockPos = new BlockPos(curX, curY, curZ);
                BlockState blockState = world.getBlockState(blockPos);
                
@@ -222,7 +215,7 @@ public class TelescopingBeacon extends ArcanaItem {
             NbtCompound blockType = blockTypes.getCompound(i);
             int count = blockType.getInt("count");
             String id = blockType.getString("id");
-            Block block = Registries.BLOCK.getOrEmpty(Identifier.of(id)).orElse(null);
+            Block block = Registries.BLOCK.getOptionalValue(Identifier.of(id)).orElse(null);
             if(block == null){
                log(1,"Unknown Block Type Stored In Telescoping Beacon: "+id);
                return;
@@ -243,14 +236,14 @@ public class TelescopingBeacon extends ArcanaItem {
          int beaconZ = pos.getZ();
          
          int index = 0;
-         for(int curLevel = 1; curLevel <= tier; curLevel++) {
+         for(int curLevel = 1; curLevel <= tier; curLevel++){
             int curY = beaconY - curLevel;
-            if (curY < world.getBottomY()) {
+            if(curY < world.getBottomY()){
                return;
             }
             
-            for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX) {
-               for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ) {
+            for(int curX = beaconX - curLevel; curX <= beaconX + curLevel; ++curX){
+               for(int curZ = beaconZ - curLevel; curZ <= beaconZ + curLevel; ++curZ){
                   BlockState blockState = blocks.get(index);
                   world.setBlockState(new BlockPos(curX,curY,curZ),blockState,3);
                   index++;
@@ -326,9 +319,9 @@ public class TelescopingBeacon extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Telescoping Beacon\n\nRarity: Empowered\n\nA fully powered beacon is a rather large construct. Breaking them down and setting them up is a lot of effort. Through a combination of pistons and a Netherite reinforced chassis, this beacon").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Telescoping Beacon\n\ncan expand and contract with the press of a button.\n\nCollecting it will store enough metallic blocks to redeploy at the highest possible tier without collecting extra.\n\nThere must be enough").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Telescoping Beacon\n\nroom for the beacon and its base to deploy in order to activate.\n\nThe beacon expands upwards from the location of placement.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Telescoping\n       Beacon").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nA fully empowered beacon is a rather large construct. Their setup and breakdown is a great deal of effort. Through a combination of pistons and a reinforced chassis, the beacon   ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Telescoping\n       Beacon").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\ncan expand and retract with the press of a button.\n\nCollecting it will store enough base blocks to redeploy at the highest possible tier without collecting extra.\n ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Telescoping\n       Beacon").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nThere must be enough room for the beacon and its base to deploy in order to activate.\n\nThe beacon expands upwards from the location of placement.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -338,10 +331,16 @@ public class TelescopingBeacon extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(FULL_TXT).value();
-         boolean hasBeacon = getBooleanProperty(itemStack,BEACON_TAG);
-         return hasBeacon ? ArcanaRegistry.getModelData(FULL_TXT).value() : ArcanaRegistry.getModelData(EMPTY_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
+         
+         List<String> stringList = new ArrayList<>();
+         if(!getBooleanProperty(itemStack,BEACON_TAG)){
+            stringList.add("empty");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -384,7 +383,7 @@ public class TelescopingBeacon extends ArcanaItem {
                putProperty(stack,BLOCKS_TAG,new NbtList());
                putProperty(stack,BEACON_TAG,false);
                buildItemLore(stack,player.getServer());
-               player.getItemCooldownManager().set(this,20);
+               player.getItemCooldownManager().set(stack,20);
             }else{
                playerEntity.sendMessage(Text.literal("The Beacon cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -456,7 +455,7 @@ public class TelescopingBeacon extends ArcanaItem {
             }
             
             buildItemLore(stack,player.getServer());
-            player.getItemCooldownManager().set(this,20);
+            player.getItemCooldownManager().set(stack,20);
          }
          
          return ActionResult.SUCCESS;

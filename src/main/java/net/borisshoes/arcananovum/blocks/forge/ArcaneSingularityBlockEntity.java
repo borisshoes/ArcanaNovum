@@ -24,7 +24,6 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -88,7 +87,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       int ticks = serverWorld.getServer().getTicks();
@@ -164,20 +163,20 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
                combinedLvl = entry1.getIntValue() == entry2.getIntValue() ? combinedLvl+1 : Math.max(entry1.getIntValue(), entry2.getIntValue());
             }
             
-            if (entry1.getKey().value() == entry2.getKey().value() || Enchantment.canBeCombined(entry1.getKey(),entry2.getKey())) continue;
+            if(entry1.getKey().value() == entry2.getKey().value() || Enchantment.canBeCombined(entry1.getKey(),entry2.getKey())) continue;
             canCombine = false;
          }
-         if (!canCombine) {
+         if(!canCombine){
             hasIncompatibleEnchant = true;
             continue;
          }
          hasCompatibleEnchant = true;
-         if (combinedLvl > entry1.getKey().value().getMaxLevel()) {
+         if(combinedLvl > entry1.getKey().value().getMaxLevel()){
             combinedLvl = entry1.getKey().value().getMaxLevel();
          }
          enchantBuilder.add(entry1.getKey(), combinedLvl);
       }
-      if (hasIncompatibleEnchant && !hasCompatibleEnchant) {
+      if(hasIncompatibleEnchant && !hasCompatibleEnchant){
          return SingularityResult.FAIL;
       }
       for(int i = 0; i < inventory.getHeldStacks().size(); i++){
@@ -243,15 +242,15 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
             }
          }
          
-         ItemStack newBook = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(entry.getKey(), entry.getIntValue()-1));
+         ItemStack newBook = EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(entry.getKey(), entry.getIntValue()-1));
          ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG,NbtString.of(UUID.randomUUID().toString()));
          inventory.addStack(newBook.copy());
          ArcanaItem.putProperty(newBook, ArcaneSingularity.SINGULARITY_TAG,NbtString.of(UUID.randomUUID().toString()));
          inventory.addStack(newBook.copy());
       }else{ // Remove top enchant
          RegistryEntryList<Enchantment> registryEntryList = null;
-         Optional<RegistryEntryList.Named<Enchantment>> optional = getWorld().getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
-         if (optional.isPresent()) {
+         Optional<RegistryEntryList.Named<Enchantment>> optional = getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
+         if(optional.isPresent()){
             registryEntryList = optional.get();
          }
          
@@ -289,7 +288,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
                   break;
                }
             }
-            ItemStack newBook1 = EnchantedBookItem.forEnchantment(new EnchantmentLevelEntry(registryEntry, value));
+            ItemStack newBook1 = EnchantmentHelper.getEnchantedBookWith(new EnchantmentLevelEntry(registryEntry, value));
             ArcanaItem.putProperty(newBook1, ArcaneSingularity.SINGULARITY_TAG,NbtString.of(UUID.randomUUID().toString()));
             inventory.addStack(newBook1.copy());
          }
@@ -314,7 +313,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
    }
    
    public int getCapacity(){
-      return 56*(1 + ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE.id));
+      return (7*4*4)*(1 + ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE.id)); // 4 pages per level
    }
    
    public void openGui(ServerPlayerEntity player){
@@ -333,7 +332,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.ARCANE_SINGULARITY).getCheckOffset()),serverWorld.getBlockState(pos).get(HORIZONTAL_FACING));
@@ -367,7 +366,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       if(this.inventory != null){
          NbtList bookList = new NbtList();
          for(ItemStack book : inventory.getHeldStacks()){
-            if(!book.isEmpty()) bookList.add(book.encodeAllowEmpty(registryLookup));
+            if(!book.isEmpty()) bookList.add(book.toNbtAllowEmpty(registryLookup));
          }
          return bookList;
       }else{
@@ -384,18 +383,18 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
       augments = new TreeMap<>();
@@ -408,13 +407,13 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
@@ -433,7 +432,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
          nbt.putString("customName",this.customName);
       }
       nbt.putBoolean("synthetic",this.synthetic);
-      if (!this.writeLootTable(nbt)) {
+      if(!this.writeLootTable(nbt)){
          Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
       }
    }
@@ -449,7 +448,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+   protected void setHeldStacks(DefaultedList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
          this.inventory.setStack(i,list.get(i));
       }

@@ -1,0 +1,15 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "dyeable": {
+          "color_when_undyed": -6919786
+        },
+        "texture": "arcananovum:levitation_harness"
+      },
+      {
+        "texture": "arcananovum:levitation_harness_overlay"
+      }
+    ]
+  }
+}

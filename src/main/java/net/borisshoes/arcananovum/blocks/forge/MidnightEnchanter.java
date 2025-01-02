@@ -18,8 +18,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
@@ -38,6 +36,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,15 +53,12 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Midnight Enchanter";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.ENCHANTING_TABLE;
       block = new MidnightEnchanterBlock(AbstractBlock.Settings.create().mapColor(MapColor.RED).strength(5.0f, 1200.0f).requiresTool().luminance(state -> 7));
-      item = new MidnightEnchanterItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new MidnightEnchanterItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING,ResearchTasks.ADVANCEMENT_READ_POWER_OF_CHISELED_BOOKSHELF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.UNLOCK_STARLIGHT_FORGE};
       
       ItemStack stack = new ItemStack(item);
@@ -163,9 +159,9 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Midnight Enchanter\n\nRarity: Exotic\n\nAn enchanting table is an old, but not ancient, design. It only scratches the surface of how Arcana can be bound to equipment, and relies too much on the random fluctuations of the environment.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Midnight Enchanter\n\nIf my predictive equations are correct, I should be able to cancel out the environmental noise in the Enchantment matrix and reduce Enchantment Arcana to a pure form, afterwhich I can make it take any shape of my choosing. ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Midnight Enchanter\n\nThe Enchanter allows for disenchanting of items to gain Nebulous Essence, which can then be spent to choose exact enchantments and levels to place on items. The Enchanter also gives access to normally unavailable enchantments.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nEnchanting tables are an old design. It only scratches the surface of how Arcana can be bound to equipment, and relies too much on random environmental fluctuations. If my predictive equations ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nare correct, I should be able to cancel out the noise in the enchantment matrix and reduce Enchantment Arcana to a pure form, after which it can take any shape of my choosing.\n\nThe Enchanter allows").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\ndisenchanting of items to gain Nebulous Essence, which can be spent to choose exact enchantments to place on items. The Enchanter also gives access to normally unavailable enchantments.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -182,31 +178,31 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    
    public class MidnightEnchanterBlock extends ArcanaPolymerBlockEntity {
       public MidnightEnchanterBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state) {
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.ENCHANTING_TABLE.getDefaultState();
       }
       
       @Nullable
-      public static MidnightEnchanterBlockEntity getEntity(World world, BlockPos pos) {
+      public static MidnightEnchanterBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof MidnightEnchanterBlock)) {
+         if(!(state.getBlock() instanceof MidnightEnchanterBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof MidnightEnchanterBlockEntity enchanter ? enchanter : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new MidnightEnchanterBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.MIDNIGHT_ENCHANTER_BLOCK_ENTITY, MidnightEnchanterBlockEntity::ticker);
       }
       
@@ -235,9 +231,9 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof MidnightEnchanterBlockEntity enchanter) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof MidnightEnchanterBlockEntity enchanter){
             initializeArcanaBlock(stack,enchanter);
          }
       }

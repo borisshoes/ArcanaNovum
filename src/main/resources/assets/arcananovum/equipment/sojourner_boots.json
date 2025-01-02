@@ -1,0 +1,15 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "dyeable": {
+          "color_when_undyed": 3385600
+        },
+        "texture": "arcananovum:sojourner_boots"
+      },
+      {
+        "texture": "arcananovum:sojourner_boots_overlay"
+      }
+    ]
+  }
+}

@@ -10,7 +10,6 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StarpathAltarGui;
-import net.borisshoes.arcananovum.gui.altars.StarpathTargetGui;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -96,14 +95,14 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STARPATH_ALTAR).getCheckOffset()),null);
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -209,24 +208,24 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
-      if (nbt.contains("cooldown")) {
+      if(nbt.contains("cooldown")){
          this.cooldown = nbt.getInt("cooldown");
       }
-      if (nbt.contains("target")) {
+      if(nbt.contains("target")){
          NbtCompound targetTag = nbt.getCompound("target");
          this.targetCoords = new BlockPos(targetTag.getInt("x"),targetTag.getInt("y"),targetTag.getInt("z"));
       }
@@ -244,7 +243,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();

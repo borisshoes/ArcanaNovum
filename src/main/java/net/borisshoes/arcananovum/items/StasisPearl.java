@@ -15,12 +15,13 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -29,12 +30,12 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,28 +48,15 @@ public class StasisPearl extends EnergyItem {
    
    public static final String PEARL_ID_TAG = "pearlID";
    
-   private static final String CHARGED_TXT = "item/stasis_pearl_charged";
-   private static final String COOLDOWN_TXT = "item/stasis_pearl_cooldown";
-   private static final String FLIGHT_TXT = "item/stasis_pearl_flight";
-   private static final String STASIS_TXT = "item/stasis_pearl_stasis";
-   
    public StasisPearl(){
       id = ID;
       name = "Stasis Pearl";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       initEnergy = 60;
       vanillaItem = Items.ENDER_PEARL;
-      item = new StasisPearlItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.BLUE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,CHARGED_TXT));
-      models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
-      models.add(new Pair<>(vanillaItem,FLIGHT_TXT));
-      models.add(new Pair<>(Items.ENDER_EYE,STASIS_TXT));
+      item = new StasisPearlItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
@@ -176,8 +164,8 @@ public class StasisPearl extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Stasis Pearl\n\nRarity: Exotic\n\nSimilar to the Pearl of\nRecall, except instead of freezing the Pearl during activation its frozen while in flight.\nThe Pearl is highly volitile and can dematerialize if frozen for too long, or unloaded in flight.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Stasis Pearl\n\nRight Click throws the pearl like normal.\nRight Clicking while it is in flight puts it in stasis.\nRight Clicking while frozen will remove it from stasis and continue moving.\nLike the Recall Pearl, this one takes time to resync to the timeline.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Stasis Pearl").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nBy freezing an Ender Pearl in flight, I can leave it hanging in the air until I need it, out of phase from the timeline, unable to be destroyed. When unfrozen, it acts like a normal Ender Pearl.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Stasis Pearl").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nUse the Pearl to throw it like normal.\n\nUsing it again will freeze or unfreeze the Pearl from stasis.\n\nThe Pearl takes time after activation to resync to the timeline before subsequent use.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -187,20 +175,24 @@ public class StasisPearl extends EnergyItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(CHARGED_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         List<String> stringList = new ArrayList<>();
+         
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
          String pearlID = getStringProperty(itemStack,PEARL_ID_TAG);
          
          if(pearlID.isEmpty()){
-            return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.getModelData(CHARGED_TXT).value() : ArcanaRegistry.getModelData(COOLDOWN_TXT).value();
+            stringList.add(getEnergy(itemStack) >= getMaxEnergy(itemStack) ? "charged" : "cooldown");
          }else{
-            return active ? ArcanaRegistry.getModelData(STASIS_TXT).value() : ArcanaRegistry.getModelData(FLIGHT_TXT).value();
+            stringList.add(active ? "stasis" : "flight");
          }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
-      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+      public Item getPolymerItem(ItemStack itemStack, PacketContext context){
          if(!ArcanaItemUtils.isArcane(itemStack)) return vanillaItem;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
          
@@ -240,7 +232,7 @@ public class StasisPearl extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
          String pearlID = getStringProperty(stack,PEARL_ID_TAG);
@@ -250,8 +242,8 @@ public class StasisPearl extends EnergyItem {
             if(pearlID.isEmpty()){ // Throw new pearl
                if(getEnergy(stack) >= getMaxEnergy(stack)){
                   SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.ENTITY_ENDER_PEARL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F);
-                  playerEntity.getItemCooldownManager().set(this, 0);
-                  if (!world.isClient) {
+                  playerEntity.getItemCooldownManager().set(stack, 0);
+                  if(!world.isClient){
                      StasisPearlEntity stasisPearlEntity = new StasisPearlEntity(world, playerEntity, getUUID(stack), getCompoundProperty(stack,AUGMENTS_TAG));
                      stasisPearlEntity.setVelocity(playerEntity, playerEntity.getPitch(), playerEntity.getYaw(), 0.0F, 1.5F, 1.0F);
                      world.spawnEntity(stasisPearlEntity);
@@ -262,7 +254,7 @@ public class StasisPearl extends EnergyItem {
                      ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.STASIS_PEARL_USE));
                   }
                }else{
-                  playerEntity.getItemCooldownManager().set(this, 0);
+                  playerEntity.getItemCooldownManager().set(stack, 0);
                   if(playerEntity instanceof ServerPlayerEntity player){
                      playerEntity.sendMessage(Text.literal("Pearl Recharging: "+(getEnergy(stack)*100/getMaxEnergy(stack))+"%").formatted(Formatting.BLUE),true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
@@ -277,8 +269,8 @@ public class StasisPearl extends EnergyItem {
                         foundEntity = possibleEntity;
                      }
                   }
-                  if(foundEntity != null) foundEntity.kill();
-                  playerEntity.getItemCooldownManager().set(this, 0);
+                  if(foundEntity != null) foundEntity.kill(serverWorld);
+                  playerEntity.getItemCooldownManager().set(stack, 0);
                }
                // Reset data
                putProperty(stack,ACTIVE_TAG,false);
@@ -299,8 +291,8 @@ public class StasisPearl extends EnergyItem {
                   if(foundEntity instanceof StasisPearlEntity pearlEntity){
                      pearlEntity.setStasis(false);
                      putProperty(stack,ACTIVE_TAG,false);
-                     playerEntity.getItemCooldownManager().set(this, 0);
-                     return TypedActionResult.success(stack);
+                     playerEntity.getItemCooldownManager().set(stack, 0);
+                     return ActionResult.SUCCESS;
                   }
                }
                
@@ -319,8 +311,8 @@ public class StasisPearl extends EnergyItem {
                   if(foundEntity instanceof StasisPearlEntity pearlEntity){
                      pearlEntity.setStasis(true);
                      putProperty(stack,ACTIVE_TAG,true);
-                     playerEntity.getItemCooldownManager().set(this, 0);
-                     return TypedActionResult.success(stack);
+                     playerEntity.getItemCooldownManager().set(stack, 0);
+                     return ActionResult.SUCCESS;
                   }
                }
                // If this is reached, something went wrong and the pearl needs to be reset
@@ -330,7 +322,7 @@ public class StasisPearl extends EnergyItem {
          }catch(Exception e){
             e.printStackTrace();
          }
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
    }
 }

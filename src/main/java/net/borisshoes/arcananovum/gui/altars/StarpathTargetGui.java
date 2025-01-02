@@ -1,16 +1,12 @@
 package net.borisshoes.arcananovum.gui.altars;
 
 import eu.pb4.sgui.api.ClickType;
-import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.Items;
@@ -22,9 +18,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.function.Consumer;
 
 public class StarpathTargetGui extends AnvilInputGui {
@@ -74,7 +67,7 @@ public class StarpathTargetGui extends AnvilInputGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(index == 2){
          if(targetMode){
             BlockPos parsed = parseValid();
@@ -101,7 +94,7 @@ public class StarpathTargetGui extends AnvilInputGui {
    
    
    @Override
-   public void onInput(String input) {
+   public void onInput(String input){
       text = input;
       
       if(targetMode){

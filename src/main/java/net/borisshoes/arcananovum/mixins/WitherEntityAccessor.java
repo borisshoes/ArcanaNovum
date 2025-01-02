@@ -9,22 +9,22 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface WitherEntityAccessor {
    
    @Accessor
-   static TrackedData<Integer> getTRACKED_ENTITY_ID_1() {
+   static TrackedData<Integer> getTRACKED_ENTITY_ID_1(){
       throw new UnsupportedOperationException();
    }
    
    @Accessor
-   static TrackedData<Integer> getTRACKED_ENTITY_ID_2() {
+   static TrackedData<Integer> getTRACKED_ENTITY_ID_2(){
       throw new UnsupportedOperationException();
    }
    
    @Accessor
-   static TrackedData<Integer> getTRACKED_ENTITY_ID_3() {
+   static TrackedData<Integer> getTRACKED_ENTITY_ID_3(){
       throw new UnsupportedOperationException();
    }
    
    @Accessor
-   static TrackedData<Integer> getINVUL_TIMER() {
+   static TrackedData<Integer> getINVUL_TIMER(){
       throw new UnsupportedOperationException();
    }
 }

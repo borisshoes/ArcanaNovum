@@ -1,0 +1,69 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "0",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_0"
+                }
+            },
+			{
+                "when": "1",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_1"
+                }
+            },
+			{
+                "when": "2",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_2"
+                }
+            },
+			{
+                "when": "3",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_3"
+                }
+            },
+			{
+                "when": "4",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_4"
+                }
+            },
+			{
+                "when": "5",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_5"
+                }
+            },
+			{
+                "when": "6",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_6"
+                }
+            },
+			{
+                "when": "7",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/soulstone_7"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/soulstone_unattuned"
+        }
+    },
+    "hand_animation_on_swap": false
+}

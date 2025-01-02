@@ -18,12 +18,13 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalBlock;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -32,16 +33,17 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,29 +60,17 @@ public class Planeshifter extends EnergyItem {
    public static final String HEAT_TAG = "heat";
    
    public static final int[] cdReduction = {0,60,120,240,360,480};
-   private static final String TXT_NONE = "item/planeshifter_none";
-   private static final String TXT_OVERWORLD = "item/planeshifter_overworld";
-   private static final String TXT_NETHER = "item/planeshifter_nether";
-   private static final String TXT_END = "item/planeshifter_end";
    
    public Planeshifter(){
       id = ID;
       name = "Planeshifter";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       initEnergy = 600;
       vanillaItem = Items.RECOVERY_COMPASS;
-      item = new PlaneshifterItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT_NONE));
-      models.add(new Pair<>(vanillaItem,TXT_OVERWORLD));
-      models.add(new Pair<>(vanillaItem,TXT_NETHER));
-      models.add(new Pair<>(vanillaItem,TXT_END));
+      item = new PlaneshifterItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.DIMENSION_TRAVEL, ResearchTasks.OBTAIN_EYE_OF_ENDER};
       
       ItemStack stack = new ItemStack(item);
@@ -191,14 +181,14 @@ public class Planeshifter extends EnergyItem {
    private void findPortalAndTeleport(ServerPlayerEntity player, ServerWorld destWorld, boolean destIsNether){
       double scale = DimensionType.getCoordinateScaleFactor(player.getServerWorld().getDimension(), destWorld.getDimension());
       WorldBorder worldBorder = destWorld.getWorldBorder();
-      BlockPos destPos = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
-      Optional<BlockPos> portalRect = destWorld.getPortalForcer().getPortalPos(destPos, destIsNether, worldBorder);
+      Vec3d destPos = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
+      Optional<BlockPos> portalRect = destWorld.getPortalForcer().getPortalPos(BlockPos.ofFloored(destPos), destIsNether, worldBorder);
       if(portalRect.isPresent()){
          player.teleportTo(new TeleportTarget(destWorld,portalRect.get().toCenterPos(),player.getVelocity(),player.getYaw(),player.getPitch(),TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET.then(entityx -> entityx.addPortalChunkTicketAt(portalRect.get()))));
          player.resetPortalCooldown();
          player.sendMessage(Text.literal("The Planeshifter syncs up with a Nether Portal").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
       }else{
-         player.teleport(destWorld,destPos.getX(),destPos.getY(),destPos.getZ(),player.getYaw(),player.getPitch());
+         player.teleportTo(new TeleportTarget(destWorld, destPos, Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
          player.sendMessage(Text.literal("The Planeshifter could not find a Nether Portal").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
          
          for(int y = player.getBlockY(); y >= player.getBlockY()-destWorld.getHeight(); y--){
@@ -225,7 +215,7 @@ public class Planeshifter extends EnergyItem {
       if(inEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The End",true);
       if(inOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The Overworld",true);
       
-      if(mode == 0) { // nether mode
+      if(mode == 0){ // nether mode
          if(inNether){
             world = world.getServer().getWorld(World.OVERWORLD);
             findPortalAndTeleport(player,world,false);
@@ -286,8 +276,10 @@ public class Planeshifter extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Planeshifter\n\nRarity: Exotic\n\nPortals are nice, they create a stable connection between worlds. But they take too much setup, and safety isn't a concern for an Arcanist of my caliber. I can just make an unstable rift long enough to slip in.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Planeshifter\n\nHowever, the Shifter needs some dimensional energy of the destination before it can tear through the dimensional fabric.\nFor some fraction of safety, if the shifter finds a Portal near the destination, it should sync my rift to its location.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Planeshifter").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nPortals are nice, they create a safe, stable connection between worlds, but they take setup. Safety is not a concern for an Arcanist of my caliber. I can just make an unstable rift long enough to slip ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Planeshifter").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nthrough.\n\nHowever, the Shifter needs some dimensional energy from the destination before it can rip open a rift to the destination.\n\nFor some fraction of safety, if the Shifter \n\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Planeshifter").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nfinds a portal near the destination, it should sync my rift to its location.\n\nSneak Use to switch the Shifter’s target dimension.\n\nUsing the Shifter activates its warmup.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Planeshifter").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nTaking damage prematurely disrupts the rift, causing the Shifter to require time to recalibrate.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -297,29 +289,31 @@ public class Planeshifter extends EnergyItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(player == null) return ArcanaRegistry.getModelData(TXT_NONE).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         List<String> stringList = new ArrayList<>();
+         
          int mode = getIntProperty(itemStack,MODE_TAG); // 0 nether - 1 end
-         ServerWorld world = player.getServerWorld();
+         ServerWorld world = context.getPlayer().getServerWorld();
          String worldString = world.getRegistryKey().getValue().toString();
          boolean inEnd = worldString.equals("minecraft:the_end");
          boolean inNether = worldString.equals("minecraft:the_nether");
          
          if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
-            return ArcanaRegistry.getModelData(TXT_NONE).value();
+            stringList.add("none");
          }else if(mode == 0){
-            return inNether ? ArcanaRegistry.getModelData(TXT_OVERWORLD).value() : ArcanaRegistry.getModelData(TXT_NETHER).value();
+            stringList.add(inNether ? "overworld" : "nether");
          }else if(mode == 1){
-            return inEnd ? ArcanaRegistry.getModelData(TXT_OVERWORLD).value() : ArcanaRegistry.getModelData(TXT_END).value();
+            stringList.add(inEnd ? "overworld" : "end");
          }
-         
-         return ArcanaRegistry.getModelData(TXT_NONE).value();
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!ArcanaItemUtils.isArcane(stack)) return TypedActionResult.pass(stack);
+         if(!ArcanaItemUtils.isArcane(stack)) return ActionResult.PASS;
          
          int mode = getIntProperty(stack,MODE_TAG);
          boolean nether = getBooleanProperty(stack,NETHER_UNLOCK_TAG);
@@ -359,7 +353,7 @@ public class Planeshifter extends EnergyItem {
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }
          }
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
       
       @Override

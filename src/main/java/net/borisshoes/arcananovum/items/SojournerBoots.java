@@ -4,9 +4,13 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.achievements.TimedAchievement;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.events.SojournersMaxRunEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -21,9 +25,16 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.*;
-import net.minecraft.item.trim.ArmorTrim;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.equipment.ArmorMaterials;
+import net.minecraft.item.equipment.EquipmentType;
+import net.minecraft.item.equipment.trim.ArmorTrim;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -32,20 +43,23 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.EQUIPMENT_ASSET_REGISTRY_KEY;
 
 public class SojournerBoots extends EnergyItem {
 	public static final String ID = "sojourner_boots";
-   
-   private static final String TXT = "item/sojourner_boots";
    
    public static final String SPEED_TAG = "sojourn_speed";
    public static final String STEP_TAG = "sojourn_step";
@@ -55,23 +69,16 @@ public class SojournerBoots extends EnergyItem {
       id = ID;
       name = "Sojourner's Boots";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.LEATHER_BOOTS;
-      item = new SojournerBootsItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_GREEN))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      item = new SojournerBootsItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
             .component(DataComponentTypes.DYED_COLOR,new DyedColorComponent(0x33A900,false))
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
             .attributeModifiers(new AttributeModifiersComponent(List.of(
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().getProtection(ArmorItem.Type.BOOTS), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().toughness(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET),
-                  new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, ARMOR_TAG), ArmorMaterials.NETHERITE.value().knockbackResistance(), EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
+                  new AttributeModifiersComponent.Entry(EntityAttributes.STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
             ),false))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_GREEN);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_ADVENTURING_TIME,ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_SWIFTNESS,ResearchTasks.EFFECT_JUMP_BOOST,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
@@ -135,6 +142,14 @@ public class SojournerBoots extends EnergyItem {
       return buildItemLore(newStack,server);
    }
    
+   @Override
+   public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
+      if(ArcanaItemUtils.identifyItem(stack) instanceof SojournerBoots && augment == ArcanaAugments.HIKING_BOOTS && level >= 1){
+         rebuildAttributes(stack);
+      }
+      return stack;
+   }
+   
    public void rebuildAttributes(ItemStack stack){
       if(!stack.isOf(this.item)) return;
       boolean active = getBooleanProperty(stack,ACTIVE_TAG);
@@ -153,17 +168,17 @@ public class SojournerBoots extends EnergyItem {
       
       if(active){
          double height = 0.65 + Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HIKING_BOOTS.id));
-         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_STEP_HEIGHT,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,STEP_TAG),height,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.FEET));
+         attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.STEP_HEIGHT,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,STEP_TAG),height,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.FEET));
       }
       
-      attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.GENERIC_MOVEMENT_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,SPEED_TAG),getEnergy(stack)/100.0,EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),AttributeModifierSlot.FEET));
+      attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.MOVEMENT_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,SPEED_TAG),getEnergy(stack)/100.0,EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),AttributeModifierSlot.FEET));
       
       AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,false);
       stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv){
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
       ItemStack bootStack = inv.getStack(12); // Should be the Boots
       ItemStack newArcanaItem = getNewItem();
    
@@ -186,9 +201,9 @@ public class SojournerBoots extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Sojourner's Boots\n\nRarity: Sovereign\n\nInstead on focusing of the combative properties of the Wings of Enderia, I tried to see how I could take inspiration from its storage of energy to enhance the wearer while also keeping the desirable\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Sojourner's Boots\n\nbasic protection of the netherite boots I am trying to infuse.\n\nThe result are a pair of boots equal to unenchanted netherite, although I believe I can add enchantments through books with an anvil.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Sojourner's Boots\n\nThe boots themselves store kinetic energy like the Wings but output it immediately as a speed boost that conserves inertia. I believe my movement can be increased up to 500%. On top of that, the momentum carries me up short hills without effort.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Sojourner's Boots").formatted(Formatting.DARK_GREEN,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nInstead of focusing on combative properties, I have looked into integrating energy storage into armor, all while maintaining the basic protective properties of Netherite. The result is a pair of").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Sojourner's Boots").formatted(Formatting.DARK_GREEN,Formatting.BOLD),Text.literal("\nboots that lack any inherent protective enchantments (which I may be able to add via traditional methods) but come with the ability to store kinetic energy, amplify it and reapply it. This manifests as a ramping speed boost.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Sojourner's Boots").formatted(Formatting.DARK_GREEN,Formatting.BOLD),Text.literal("\nThe stored energy can also be used to carry me up short hills without jumping.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -220,12 +235,16 @@ public class SojournerBoots extends EnergyItem {
    
    public class SojournerBootsItem extends ArcanaPolymerArmorItem {
       public SojournerBootsItem(Item.Settings settings){
-         super(getThis(),ArmorMaterials.NETHERITE,Type.BOOTS,settings);
+         super(getThis(),ArmorMaterials.NETHERITE,EquipmentType.BOOTS,settings);
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         EquippableComponent equippableComponent = baseStack.get(DataComponentTypes.EQUIPPABLE);
+         EquippableComponent newComp = EquippableComponent.builder(equippableComponent.slot()).equipSound(equippableComponent.equipSound()).model(RegistryKey.of(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.of(MOD_ID,ID))).build();
+         baseStack.set(DataComponentTypes.EQUIPPABLE,newComp);
+         return baseStack;
       }
       
       @Override
@@ -234,7 +253,7 @@ public class SojournerBoots extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+      public ActionResult use(World world, PlayerEntity user, Hand hand){
          if(user.isSneaking()){
             ItemStack stack = user.getStackInHand(hand);
             boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
@@ -249,8 +268,12 @@ public class SojournerBoots extends EnergyItem {
             }
             
             rebuildAttributes(stack);
-            
-            return TypedActionResult.success(stack);
+            if(user instanceof ServerPlayerEntity player){
+               PlayerInventory inv = player.getInventory();
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, stack));
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 8, player.getEquippedStack(EquipmentSlot.FEET)));
+            }
+            return ActionResult.SUCCESS;
          }else{
             return super.use(world,user,hand);
          }
@@ -272,7 +295,10 @@ public class SojournerBoots extends EnergyItem {
                         player.sendMessage(Text.literal("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                      if(world.getServer().getTicks() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
                      if(newEnergy >= getMaxEnergy(stack)){
-                        ArcanaAchievements.progress(player,ArcanaAchievements.RUNNING.id, 1);
+                        ArcanaNovum.addArcanaEvent(new SojournersMaxRunEvent(player));
+                        if(ArcanaNovum.getEventsOfType(SojournersMaxRunEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count() >= ((TimedAchievement) ArcanaAchievements.RUNNING).getGoal()){
+                           ArcanaAchievements.grant(player,ArcanaAchievements.RUNNING);
+                        }
                      }
                   }
                }else{

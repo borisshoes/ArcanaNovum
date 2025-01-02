@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.BinaryBlades;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -15,6 +16,7 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.RegistryKey;
@@ -42,6 +44,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    private final HashMap<String,List<ArcanaAchievement>> achievements = new HashMap<>();
    private int level;
    private int xp;
+   private ItemStack storedOffhand;
    
    public ArcanaProfileComponent(PlayerEntity player){
       this.player = player;
@@ -74,7 +77,9 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    
          for(String achieveKey : itemAchsTag.getKeys()){
             NbtCompound achTag = itemAchsTag.getCompound(achieveKey);
-            itemAchs.add(ArcanaAchievements.registry.get(achieveKey).makeNew().fromNbt(achieveKey,achTag));
+            ArcanaAchievement ach = ArcanaAchievements.registry.get(achieveKey);
+            if(ach == null) continue;
+            itemAchs.add(ach.makeNew().fromNbt(achieveKey,achTag));
          }
          achievements.put(itemKey,itemAchs);
       }
@@ -83,8 +88,14 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       Set<String> augmentKeys = augmentsTag.getKeys();
       for(String augmentKey : augmentKeys){
          int augmentLvl = augmentsTag.getInt(augmentKey);
-         if(augmentLvl > 0) augments.put(ArcanaAugments.registry.get(augmentKey),augmentLvl);
+         if(augmentLvl > 0){
+            ArcanaAugment aug = ArcanaAugments.registry.get(augmentKey);
+            if(aug == null) continue;
+            augments.put(ArcanaAugments.registry.get(augmentKey), augmentLvl);
+         }
       }
+      
+      storedOffhand = ItemStack.fromNbtOrEmpty(registryLookup,tag.getCompound("storedOffhand"));
    }
    
    @Override
@@ -127,6 +138,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          augmentsTag.putInt(entry.getKey().id, entry.getValue());
       }
       tag.put("augments",augmentsTag);
+      tag.put("storedOffhand",storedOffhand.toNbtAllowEmpty(registryLookup));
    }
    
    @Override
@@ -315,7 +327,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(arcanaItem == null) return false;
       String itemId = arcanaItem.getId();
-      if (crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
+      if(crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
       addXP(ArcanaRarity.getFirstCraftXp(arcanaItem.getRarity()));
       return crafted.add(itemId);
    }
@@ -325,7 +337,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
       if(arcanaItem == null) return false;
       String itemId = arcanaItem.getId();
-      if (crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
+      if(crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
       if(player instanceof ServerPlayerEntity){
          MinecraftServer server = player.getServer();
          if(server != null){
@@ -346,7 +358,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       if(achievements.containsKey(item)){
          List<ArcanaAchievement> itemAchs = achievements.get(item);
          boolean removed = itemAchs.removeIf(itemAch -> itemAch.id.equals(achievement.id));
-         if(removed) {
+         if(removed){
             // Update data and return
             itemAchs.add(achievement);
             List<UUID> curList = ArcanaNovum.PLAYER_ACHIEVEMENT_TRACKER.get(achievement.id);
@@ -378,13 +390,13 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
 
    @Override
    public boolean addResearchedItem(String item){
-      if (researchedItems.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
+      if(researchedItems.stream().anyMatch(i -> i.equalsIgnoreCase(item))) return false;
       return researchedItems.add(item);
    }
    
    @Override
    public boolean removeCrafted(String item){
-      if (crafted.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
+      if(crafted.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
       return crafted.removeIf(i -> i.equalsIgnoreCase(item));
    }
    
@@ -411,7 +423,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
 
    @Override
    public boolean removeResearchedItem(String item){
-      if (researchedItems.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
+      if(researchedItems.stream().noneMatch(i -> i.equalsIgnoreCase(item))) return false;
       return researchedItems.removeIf(i -> i.equalsIgnoreCase(item));
    }
    
@@ -524,7 +536,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    // Returns if the operation was successful or not
    @Override
    public boolean removeAugment(String id){
-      if (augments.entrySet().stream().noneMatch(e -> e.getKey().id.equals(id))) return false;
+      if(augments.entrySet().stream().noneMatch(e -> e.getKey().id.equals(id))) return false;
       return augments.entrySet().removeIf(e -> e.getKey().id.equals(id));
    }
    
@@ -539,4 +551,30 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       return Math.min(64,(int) (0.025*Math.pow(totalResearched,2.5) + totalResearched + 1));
    }
    
+   
+   @Override
+   public boolean restoreOffhand(){
+      if(storedOffhand == null) storedOffhand = ItemStack.EMPTY;
+      if(storedOffhand.isEmpty()) return false;
+      ItemStack offHand = player.getOffHandStack().copy();
+      player.getInventory().setStack(PlayerInventory.OFF_HAND_SLOT,storedOffhand.copyAndEmpty());
+      if(!offHand.isEmpty() && !BinaryBlades.isFakeBlade(offHand)) {
+         player.getInventory().offerOrDrop(offHand);
+      }
+      return true;
+   }
+   
+   @Override
+   public boolean storeOffhand(ItemStack replacement){
+      if(storedOffhand == null) storedOffhand = ItemStack.EMPTY;
+      if(!storedOffhand.isEmpty()) return false;
+      storedOffhand = player.getOffHandStack();
+      player.getInventory().setStack(PlayerInventory.OFF_HAND_SLOT,replacement);
+      return true;
+   }
+   
+   @Override
+   public ItemStack getStoredOffhand(){
+      return storedOffhand == null ? ItemStack.EMPTY : storedOffhand;
+   }
 }

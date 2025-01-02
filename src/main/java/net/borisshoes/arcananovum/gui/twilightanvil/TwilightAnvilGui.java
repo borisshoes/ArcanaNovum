@@ -69,7 +69,7 @@ public class TwilightAnvilGui extends SimpleGui {
             if(outputSet.output().isEmpty()) return true;
             
             int points = LevelUtils.vanillaLevelToTotalXp(outputSet.levelCost());
-            if (!player.isCreative()) {
+            if(!player.isCreative()){
                if(ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ANVIL_EXPERTISE.id) > 0){
                   if(player.totalExperience < points){
                      player.sendMessage(Text.literal("Not Enough Experience").formatted(Formatting.RED));
@@ -96,15 +96,15 @@ public class TwilightAnvilGui extends SimpleGui {
             
             listener.setUpdating();
             inv.setStack(0, ItemStack.EMPTY);
-            if (outputSet.itemRepairUsage() > 0) {
+            if(outputSet.itemRepairUsage() > 0){
                ItemStack itemStack = inv.getStack(1);
-               if (!itemStack.isEmpty() && itemStack.getCount() > outputSet.itemRepairUsage()) {
+               if(!itemStack.isEmpty() && itemStack.getCount() > outputSet.itemRepairUsage()){
                   itemStack.decrement(outputSet.itemRepairUsage());
                   inv.setStack(1, itemStack);
-               } else {
+               }else{
                   inv.setStack(1, ItemStack.EMPTY);
                }
-            } else {
+            }else{
                inv.setStack(1, ItemStack.EMPTY);
             }
             setSlot(14,ItemStack.EMPTY);
@@ -118,16 +118,16 @@ public class TwilightAnvilGui extends SimpleGui {
             block: {
                ItemEntity itemEntity;
                boolean bl = player.getInventory().insertStack(outputSet.output());
-               if (!bl || !outputSet.output().isEmpty()) {
+               if(!bl || !outputSet.output().isEmpty()){
                   itemEntity = player.dropItem(outputSet.output(), false);
-                  if (itemEntity == null) break block;
+                  if(itemEntity == null) break block;
                   itemEntity.resetPickupDelay();
                   itemEntity.setOwner(player.getUuid());
                   break block;
                }
                outputSet.output().setCount(1);
                itemEntity = player.dropItem(outputSet.output(), false);
-               if (itemEntity != null) {
+               if(itemEntity != null){
                   itemEntity.setDespawnImmediately();
                }
             }

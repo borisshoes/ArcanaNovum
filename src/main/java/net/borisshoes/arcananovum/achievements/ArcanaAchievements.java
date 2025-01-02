@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -652,10 +653,83 @@ public class ArcanaAchievements {
                new String[]{"Have a Tracking Arrow turn at least", " 90 degrees from its initial heading", " and stray 10 blocks from its initial course"}
          ));
    
+   // Binary Blades
+   public static final ArcanaAchievement STARBURST_STREAM = ArcanaAchievements.register(
+         new TimedAchievement("Starburst Stream", "starburst_stream", new ItemStack(Items.NETHER_STAR), ArcanaRegistry.BINARY_BLADES, 2500, 2,
+               new String[]{"Stay at maximum energy for 5 minutes"}, 6000, 6020
+         ));
+   
+   // Graviton Maul
+   public static final ArcanaAchievement QUICK_WAY_DOWN = ArcanaAchievements.register(
+         new EventAchievement("The Quick Way Down", "quick_way_down", new ItemStack(Items.NETHERITE_BOOTS), ArcanaRegistry.GRAVITON_MAUL, 2500, 2,
+               new String[]{"Rapid fall over 300 blocks"}
+         ));
+   public static final ArcanaAchievement RAISE_THE_ROOF = ArcanaAchievements.register(
+         new EventAchievement("Raise the Roof", "raise_the_roof", new ItemStack(Items.NETHERITE_HELMET), ArcanaRegistry.GRAVITON_MAUL, 2500, 2,
+               new String[]{"Almost die from hitting your head"}
+         ));
+   public static final ArcanaAchievement BONE_SMASHER = ArcanaAchievements.register(
+         new EventAchievement("Bone Smasher", "bone_smasher", new ItemStack(Items.BONE), ArcanaRegistry.GRAVITON_MAUL, 5000, 2,
+               new String[]{"Use the Maul to one-hit-kill a wither"}
+         ));
+   
+   // Charm of Cetacea
+   public static final ArcanaAchievement OCEAN_MIGRATION = ArcanaAchievements.register(
+         new ProgressAchievement("Ocean Migration", "ocean_migration", new ItemStack(Items.HEART_OF_THE_SEA), ArcanaRegistry.CETACEA_CHARM, 10000, 3,
+               new String[]{"Swim 10km while using the Charm"}, 1000000
+         ));
+   public static final ArcanaAchievement CEPHALOS_IN_A_POD = ArcanaAchievements.register(
+         new ProgressAchievement("Cephalos in a Pod", "cephalos_in_a_pod", new ItemStack(Items.PRISMARINE_CRYSTALS), ArcanaRegistry.CETACEA_CHARM, 5000, 2,
+               new String[]{"Swim 1km with a dolphin while using the Charm"}, 100000
+         ));
+   
+   // Charm of Cleansing
+   public static final ArcanaAchievement SEPTIC_SHOCK = ArcanaAchievements.register(
+         new EventAchievement("Septic Shock", "septic_shock", new ItemStack(Items.PUFFERFISH), ArcanaRegistry.CLEANSING_CHARM, 2500, 2,
+               new String[]{"Have the Charm activate while having 10 bad effects"}
+         ));
+   public static final ArcanaAchievement FOOD_POISONT = ArcanaAchievements.register(
+         new EventAchievement("Food Poison't", "food_poisont", new ItemStack(Items.ROTTEN_FLESH), ArcanaRegistry.CLEANSING_CHARM, 1000, 1,
+               new String[]{"Have the Charm block food poisoning"}
+         ));
+   public static final ArcanaAchievement CHRONIC_AILMENT = ArcanaAchievements.register(
+         new TimedAchievement("Chronic Ailment", "chronic_ailment", new ItemStack(Items.FERMENTED_SPIDER_EYE), ArcanaRegistry.CLEANSING_CHARM, 1000, 1,
+               new String[]{"Be re-afflicted by the same effect"," within a second of it getting cleansed"}, 1, 20
+         ));
+   
+   // Greaves of Gaialtus
+   public static final ArcanaAchievement TERRAFORMER = ArcanaAchievements.register(
+         new ProgressAchievement("Terraformer", "terraformer", new ItemStack(Items.GRASS_BLOCK), ArcanaRegistry.GREAVES_OF_GAIALTUS, 10000, 3,
+               new String[]{"Have the Greaves refill your hand with"," 10,000 blocks of natural stones or dirt"}, 10000
+         ));
+   public static final ArcanaAchievement MINERS_WALLET = ArcanaAchievements.register(
+         new EventAchievement("Miner's Wallet", "miners_wallet", new ItemStack(Items.DIAMOND_BLOCK), ArcanaRegistry.GREAVES_OF_GAIALTUS, 1000, 1,
+               new String[]{"Have the Greaves refill your hand with a diamond block"}
+         ));
+   
+   // Spear of Tenbrous
+   public static final ArcanaAchievement KILL_THEM_ALL = ArcanaAchievements.register(
+         new ConditionalsAchievement("Kill Them All!", "kill_them_all", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.SPEAR_OF_TENBROUS, 2500, 2,
+               new String[]{"Use the Spear to kill one of each End mob"},
+               new String[]{
+                     EntityType.ENDERMAN.getName().getString(),
+                     EntityType.ENDERMITE.getName().getString(),
+                     EntityType.SHULKER.getName().getString(),
+                     EntityType.ENDER_DRAGON.getName().getString()
+               }
+         ));
+   public static final ArcanaAchievement HISTORY_CARVED_IN_STONE = ArcanaAchievements.register(
+         new EventAchievement("History Carved in Stone", "history_carved_in_stone", new ItemStack(Items.FIRE_CHARGE), ArcanaRegistry.SPEAR_OF_TENBROUS, 100000, 5,
+               new String[]{"Use the Spear to completely fill a max tier Soulstone"}
+         ));
+   
+   
    static{
       excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.PICKAXE_OF_CEPTYUS));
       excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.WINGS_OF_ENDERIA));
       excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.LEADERSHIP_CHARM));
+      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.GREAVES_OF_GAIALTUS));
+      excludedAchievements.addAll(getItemAchievements(ArcanaRegistry.SPEAR_OF_TENBROUS));
       excludedAchievements.add(ALL_ACHIEVEMENTS);
    }
    
@@ -672,6 +746,10 @@ public class ArcanaAchievements {
          if(entry.getValue().getArcanaItem().getId().equals(item.getId())) achs.add(entry.getValue());
       }
       return achs;
+   }
+   
+   public static void grant(ServerPlayerEntity player, ArcanaAchievement achievement){
+      grant(player,achievement.id);
    }
    
    public static void grant(ServerPlayerEntity player, String id){
@@ -754,6 +832,10 @@ public class ArcanaAchievements {
             baseAch.announceAcquired(player);
          }
       }
+   }
+   
+   public static void progress(ServerPlayerEntity player, ArcanaAchievement ach, int toAdd){
+      progress(player,ach.id,toAdd);
    }
    
    public static void progress(ServerPlayerEntity player, String id, int toAdd){

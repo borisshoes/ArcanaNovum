@@ -13,11 +13,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class SoundUtils {
-   public static void playSongToPlayer(ServerPlayerEntity player, RegistryEntry.Reference<SoundEvent> event, float vol, float pitch) {
+   public static void playSongToPlayer(ServerPlayerEntity player, RegistryEntry<SoundEvent> event, float vol, float pitch){
       player.networkHandler.sendPacket(new PlaySoundS2CPacket(event, SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch,0));
    }
    
-   public static void playSongToPlayer(ServerPlayerEntity player, SoundEvent event, float vol, float pitch) {
+   public static void playSongToPlayer(ServerPlayerEntity player, RegistryEntry.Reference<SoundEvent> event, float vol, float pitch){
+      player.networkHandler.sendPacket(new PlaySoundS2CPacket(event, SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch,0));
+   }
+   
+   public static void playSongToPlayer(ServerPlayerEntity player, SoundEvent event, float vol, float pitch){
       player.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(event), SoundCategory.PLAYERS, player.getPos().x,player.getPos().y, player.getPos().z, vol, pitch,0));
    }
    

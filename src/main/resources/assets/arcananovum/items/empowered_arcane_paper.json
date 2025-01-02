@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/empowered_arcane_paper"
+    },
+    "hand_animation_on_swap": false
+}

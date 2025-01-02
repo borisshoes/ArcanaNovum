@@ -10,5 +10,9 @@ public class ArcanaColors {
    public static final int DARK_COLOR = 0x2a1136;
    public static final int LAPIS_COLOR = 0x074bde;
    public static final int LIGHT_COLOR = 0xdbdbdb;
-   public static final int NUL_COLOR = 0x222222;
+   public static final int NUL_COLOR = 0x2a2a2a;
+   public static final int BETTER_DARK_BLUE = 0x152cd6;
+   public static final int STARLIGHT_FORGE_COLOR = 0xFF99FF;
+   public static final int SHULKER_CORE_COLOR = 0xFFFF99;
+   public static final int CONSTRUCT_ABILITY_COLOR = 0x999999;
 }

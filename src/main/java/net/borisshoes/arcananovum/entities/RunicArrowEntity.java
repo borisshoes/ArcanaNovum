@@ -7,8 +7,8 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.events.RunicArrowHitEvent;
 import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.items.arrows.TetherArrows;
@@ -38,6 +38,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2d;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.Map;
@@ -49,11 +50,11 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    private TreeMap<ArcanaAugment,Integer> augments;
    private NbtCompound data;
    
-   public RunicArrowEntity(EntityType<? extends RunicArrowEntity> entityType, World world) {
+   public RunicArrowEntity(EntityType<? extends RunicArrowEntity> entityType, World world){
       super(entityType, world);
    }
    
-   public RunicArrowEntity(World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
+   public RunicArrowEntity(World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom){
       this(ArcanaRegistry.RUNIC_ARROW_ENTITY, world);
       setOwner(owner);
       this.setPosition(owner.getX(), owner.getEyeY() - (double)0.1f, owner.getZ());
@@ -61,7 +62,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
       initFromStack(stack,shotFrom);
    }
    
-   public RunicArrowEntity(World world, double x, double y, double z, ItemStack stack, @Nullable ItemStack shotFrom) {
+   public RunicArrowEntity(World world, double x, double y, double z, ItemStack stack, @Nullable ItemStack shotFrom){
       this(ArcanaRegistry.RUNIC_ARROW_ENTITY, world);
       this.setPosition(x,y,z);
       data = new NbtCompound();
@@ -83,7 +84,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          
          if(getWorld() instanceof ServerWorld serverWorld){
             int i = EnchantmentHelper.getProjectilePiercing(serverWorld, weapon, this.stack);
-            if (i > 0) {
+            if(i > 0){
                this.setPierceLevel((byte)i);
             }
             
@@ -102,7 +103,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public EntityType<?> getPolymerEntityType(ServerPlayerEntity player){
+   public EntityType<?> getPolymerEntityType(PacketContext context){
       return EntityType.ARROW;
    }
    
@@ -205,27 +206,9 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    public void incArrowForEveryFoe(ServerPlayerEntity player){
-      // Do this bit manually so extra data can be saved
-      IArcanaProfileComponent profile = ArcanaNovum.data(player);
-      if(ArcanaAchievements.ARROW_FOR_EVERY_FOE instanceof TimedAchievement baseAch){
-         String itemId = baseAch.getArcanaItem().getId();
-         TimedAchievement achievement = (TimedAchievement) profile.getAchievement(itemId, baseAch.id);
-         if(achievement == null){
-            TimedAchievement newAch = baseAch.makeNew();
-            NbtCompound comp = new NbtCompound();
-            comp.putBoolean(arrowType.getId(),true);
-            newAch.setData(comp);
-            profile.setAchievement(itemId, newAch);
-            ArcanaAchievements.progress(player, ArcanaAchievements.ARROW_FOR_EVERY_FOE.id,1);
-         }else if(!achievement.isAcquired()){
-            NbtCompound comp = achievement.getData();
-            if(!comp.contains(arrowType.getId())){
-               comp.putBoolean(arrowType.getId(), true);
-               achievement.setData(comp);
-               profile.setAchievement(itemId, achievement);
-               ArcanaAchievements.progress(player, ArcanaAchievements.ARROW_FOR_EVERY_FOE.id, 1);
-            }
-         }
+      ArcanaNovum.addArcanaEvent(new RunicArrowHitEvent(player,arrowType));
+      if(ArcanaNovum.getEventsOfType(RunicArrowHitEvent.class).stream().filter(event -> event.getPlayer().equals(player)).map(event -> event.getArrowType().getId()).distinct().count() >= ((TimedAchievement) ArcanaAchievements.ARROW_FOR_EVERY_FOE).getGoal()){
+         ArcanaAchievements.grant(player,ArcanaAchievements.ARROW_FOR_EVERY_FOE);
       }
    }
    
@@ -258,7 +241,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt) {
+   public void writeCustomDataToNbt(NbtCompound nbt){
       super.writeCustomDataToNbt(nbt);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
@@ -276,7 +259,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt) {
+   public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
       augments = new TreeMap<>();
       if(nbt.contains("runicAugments")){

@@ -34,11 +34,11 @@ public class CacheGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(index == 0){
          boolean backwards = type == ClickType.MOUSE_RIGHT;
-         boolean middle = type == ClickType.MOUSE_MIDDLE;
-         if(middle){
+         boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+         if(shiftLeft){
             settings.setSortType(TomeGui.TomeSort.RECOMMENDED);
          }else{
             settings.setSortType(TomeGui.TomeSort.cycleSort(settings.getSortType(),backwards));
@@ -47,8 +47,8 @@ public class CacheGui extends SimpleGui {
          buildCompendiumGui();
       }else if(index == 8){
          boolean backwards = type == ClickType.MOUSE_RIGHT;
-         boolean middle = type == ClickType.MOUSE_MIDDLE;
-         if(middle){
+         boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+         if(shiftLeft){
             settings.setFilterType(TomeGui.TomeFilter.NONE);
          }else{
             settings.setFilterType(TomeGui.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
@@ -88,7 +88,7 @@ public class CacheGui extends SimpleGui {
       filterBuilt.setName(Text.literal("Filter Arcana Items").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(TomeGui.TomeFilter.getColoredLabel(settings.getFilterType()))));
       setSlot(8,filterBuilt);
@@ -97,7 +97,7 @@ public class CacheGui extends SimpleGui {
       sortBuilt.setName(Text.literal("Sort Arcana Items").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(TomeGui.TomeSort.getColoredLabel(settings.getSortType()))));
       setSlot(0,sortBuilt);

@@ -15,7 +15,6 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
@@ -30,11 +29,11 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,22 +47,17 @@ public class SiphoningArrows extends RunicArrow {
    public static final Identifier EFFECT_ID = Identifier.of(ArcanaNovum.MOD_ID,ID+".overheal");
    
    private static final int[] overhealCap = {0,2,4,10};
-   private static final String TXT = "item/runic_arrow";
    
    public SiphoningArrows(){
       id = ID;
       name = "Siphoning Arrows";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ARROWS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new SiphoningArrowsItem(new Item.Settings().maxCount(64).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_RED))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(15866018),new ArrayList<>()))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new SiphoningArrowsItem(addArcanaItemComponents(new Item.Settings().maxCount(64)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(15866018),new ArrayList<>(),Optional.empty()))
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_RED);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.OBTAIN_GLISTERING_MELON};
       
       ItemStack stack = new ItemStack(item);
@@ -145,18 +139,13 @@ public class SiphoningArrows extends RunicArrow {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Siphoning Arrows\n\nRarity: Exotic\n\nLife force is something I have rarely explored. I've invoked some simple life runes to draw upon the health lost from my arrows and channel it back to me.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Siphoning Arrows").formatted(Formatting.DARK_RED,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nHealth manipulation is something that I have rarely explored. I’ve invoked some simple life runes to draw upon the health lost from my arrows and draw it back to me.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class SiphoningArrowsItem extends ArcanaPolymerArrowItem {
       public SiphoningArrowsItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

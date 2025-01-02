@@ -25,6 +25,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    }
    
    @Override
-   public EntityType<?> getPolymerEntityType(ServerPlayerEntity player){
+   public EntityType<?> getPolymerEntityType(PacketContext context){
       return EntityType.ENDER_PEARL;
    }
    
@@ -117,14 +118,14 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    }
    
    @Override
-   protected void onCollision(HitResult hitResult) {
+   protected void onCollision(HitResult hitResult){
       if(inStasis) return; // Stasis'd pearl is immune to collisions
       
       // Find Holder of the item
       ServerPlayerEntity holder = null;
       if(itemStackId != null && getServer() != null){
          holder = ArcanaItemUtils.findHolder(getServer(),itemStackId);
-         if(holder != null && holder.networkHandler.isConnectionOpen() && holder.getWorld() == this.getWorld() && !holder.isSleeping()) {
+         if(holder != null && holder.networkHandler.isConnectionOpen() && holder.getWorld() == this.getWorld() && !holder.isSleeping()){
             setOwner(holder);
             
             if(holder.getPos().distanceTo(getPos()) >= 1000){
@@ -145,7 +146,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt) {
+   public void writeCustomDataToNbt(NbtCompound nbt){
       super.writeCustomDataToNbt(nbt);
       if(augments != null){
          nbt.put("augments",augments);
@@ -159,7 +160,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt) {
+   public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
       if(nbt.contains("augments")){
          augments = nbt.getCompound("augments");

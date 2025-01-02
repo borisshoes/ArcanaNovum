@@ -111,7 +111,7 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
          markDirty();
          if(!player.giveItemStack(returnStack)){
             ItemEntity itemEntity = player.dropItem(returnStack, false);
-            if (itemEntity == null) return true;
+            if(itemEntity == null) return true;
             itemEntity.resetPickupDelay();
             itemEntity.setOwner(player.getUuid());
          }
@@ -137,7 +137,7 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -204,24 +204,24 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
-      if (nbt.contains("fuel")) {
+      if(nbt.contains("fuel")){
          this.fuel = nbt.getInt("fuel");
       }
-      if (nbt.contains("active")) {
+      if(nbt.contains("active")){
          this.active = nbt.getBoolean("active");
       }
       augments = new TreeMap<>();
@@ -234,13 +234,13 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
@@ -261,7 +261,7 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
       nbt.putBoolean("synthetic",this.synthetic);
       nbt.putInt("fuel",this.fuel);
       nbt.putBoolean("active",this.active);
-      if (!this.writeLootTable(nbt)) {
+      if(!this.writeLootTable(nbt)){
          Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
       }
    }
@@ -281,7 +281,7 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+   protected void setHeldStacks(DefaultedList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
          this.inventory.setStack(i,list.get(i));
       }

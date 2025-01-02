@@ -1,0 +1,306 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "cases": [
+      {
+        "when": "accel_1",
+        "model": {
+          "type": "minecraft:condition",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/runic_bow"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "entries": [
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_2"
+                },
+                "threshold": 0.27
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_3"
+                },
+                "threshold": 0.45
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_4"
+                },
+                "threshold": 0.63
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_5"
+                },
+                "threshold": 0.855
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_1"
+            },
+            "property": "minecraft:use_duration",
+            "scale": 0.05
+          },
+          "property": "minecraft:using_item"
+        }
+      },
+      {
+        "when": "accel_2",
+        "model": {
+          "type": "minecraft:condition",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/runic_bow"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "entries": [
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_2"
+                },
+                "threshold": 0.255
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_3"
+                },
+                "threshold": 0.425
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_4"
+                },
+                "threshold": 0.595
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_5"
+                },
+                "threshold": 0.8075
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_1"
+            },
+            "property": "minecraft:use_duration",
+            "scale": 0.05
+          },
+          "property": "minecraft:using_item"
+        }
+      },
+      {
+        "when": "accel_3",
+        "model": {
+          "type": "minecraft:condition",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/runic_bow"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "entries": [
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_2"
+                },
+                "threshold": 0.24
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_3"
+                },
+                "threshold": 0.4
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_4"
+                },
+                "threshold": 0.56
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_5"
+                },
+                "threshold": 0.76
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_1"
+            },
+            "property": "minecraft:use_duration",
+            "scale": 0.05
+          },
+          "property": "minecraft:using_item"
+        }
+      },
+      {
+        "when": "accel_4",
+        "model": {
+          "type": "minecraft:condition",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/runic_bow"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "entries": [
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_2"
+                },
+                "threshold": 0.225
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_3"
+                },
+                "threshold": 0.375
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_4"
+                },
+                "threshold": 0.525
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_5"
+                },
+                "threshold": 0.7125
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_1"
+            },
+            "property": "minecraft:use_duration",
+            "scale": 0.05
+          },
+          "property": "minecraft:using_item"
+        }
+      },
+      {
+        "when": "accel_5",
+        "model": {
+          "type": "minecraft:condition",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/runic_bow"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "entries": [
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_2"
+                },
+                "threshold": 0.15
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_3"
+                },
+                "threshold": 0.25
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_4"
+                },
+                "threshold": 0.35
+              },
+              {
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/runic_bow_pulling_5"
+                },
+                "threshold": 0.475
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_1"
+            },
+            "property": "minecraft:use_duration",
+            "scale": 0.05
+          },
+          "property": "minecraft:using_item"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:condition",
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/runic_bow"
+      },
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "entries": [
+          {
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_2"
+            },
+            "threshold": 0.3
+          },
+          {
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_3"
+            },
+            "threshold": 0.5
+          },
+          {
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_4"
+            },
+            "threshold": 0.7
+          },
+          {
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/runic_bow_pulling_5"
+            },
+            "threshold": 0.95
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "arcananovum:item/runic_bow_pulling_1"
+        },
+        "property": "minecraft:use_duration",
+        "scale": 0.05
+      },
+      "property": "minecraft:using_item"
+    }
+  },
+  "hand_animation_on_swap": false
+}

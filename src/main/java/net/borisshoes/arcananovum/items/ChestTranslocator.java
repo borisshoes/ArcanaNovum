@@ -23,13 +23,14 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.*;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
@@ -37,6 +38,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -47,12 +49,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Clearable;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,26 +68,15 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    public static final String CONTENTS_TAG = "contents";
    public static final String STATE_TAG = "state";
    
-   private static final String CHEST_TXT = "item/chest_translocator_chest";
-   private static final String BARREL_TXT = "item/chest_translocator_barrel";
-   private static final String EMPTY_TXT = "item/chest_translocator_empty";
-   
    public ChestTranslocator(){
       id = ID;
       name = "Chest Translocator";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.SPRUCE_BOAT;
-      item = new ChestTranslocatorItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GOLD))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(Items.SPRUCE_CHEST_BOAT,BARREL_TXT));
-      models.add(new Pair<>(Items.SPRUCE_CHEST_BOAT,CHEST_TXT));
-      models.add(new Pair<>(vanillaItem,EMPTY_TXT));
+      item = new ChestTranslocatorItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.EFFECT_STRENGTH};
       
       ItemStack stack = new ItemStack(item);
@@ -200,8 +191,9 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Chest Translocator\n\nRarity: Empowered\n\nShulker Boxes are amazing, I love them so much. Why can't all chests be like Shulker Boxes?\nMaybe I can do something about that, using an augmented Ender Chest and some additional strength.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Chest Translocator\n\nUsing the Translocator on a Chest, Trapped Chest, or Barrel will pick it up at the cost of a significant movement speed debuff.\n\nUsing the Translocator again places the container down, contents intact.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Chest\n   Translocator").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nChests are great for storage and organization. However, whenever I try to move them, their contents spill all over the place.\nMaybe I can do something about that").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Chest\n   Translocator").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nusing an augmented Ender Chest and some additional strength.\n\nUsing the Translocator on a Chest, Trapped Chest, or Barrel will pick it up at the cost of a significant loss in dexterity.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Chest\n   Translocator").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nUsing the Translocator again places the container down, contents intact.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -211,19 +203,24 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(EMPTY_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
+         
+         List<String> stringList = new ArrayList<>();
          NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
          NbtCompound state = getCompoundProperty(itemStack,STATE_TAG);
          if(!contents.isEmpty()){
-            BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),state);
+            BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK,state);
             if(blockState.isOf(Blocks.CHEST) || blockState.isOf(Blocks.TRAPPED_CHEST)){
-               return ArcanaRegistry.getModelData(CHEST_TXT).value();
+               stringList.add("chest");
             }else if(blockState.isOf(Blocks.BARREL)){
-               return ArcanaRegistry.getModelData(BARREL_TXT).value();
+               stringList.add("barrel");
             }
          }
-         return ArcanaRegistry.getModelData(EMPTY_TXT).value();
+         
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -262,7 +259,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
             Direction side = context.getSide();
             BlockPos placePos = blockPos.add(side.getVector());
             if(world.getBlockState(placePos).isAir()){
-               BlockState blockState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),stateTag);
+               BlockState blockState = NbtHelper.toBlockState(world.createCommandRegistryWrapper(RegistryKeys.BLOCK),stateTag);
                ItemPlacementContext ipc = new ItemPlacementContext(player,context.getHand(),context.getStack(),new BlockHitResult(context.getHitPos(),context.getSide(),context.getBlockPos(),context.hitsInsideBlock()));
                if(blockState.isOf(Blocks.CHEST)){
                   blockState = Blocks.CHEST.getPlacementState(ipc);
@@ -323,7 +320,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       }
       
       @Override
-      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+      public Item getPolymerItem(ItemStack itemStack, PacketContext context){
          if(!ArcanaItemUtils.isArcane(itemStack)) return vanillaItem;
          NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
          

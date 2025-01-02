@@ -20,10 +20,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.Potions;
@@ -33,7 +34,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -42,6 +46,7 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,24 +62,15 @@ public class LightCharm extends ArcanaItem {
    public static final String THRESHOLD_TAG = "threshold";
    public static final String NOVA_TAG = "novaCD";
    
-   private static final String ON_TXT = "item/light_charm_on";
-   private static final String OFF_TXT = "item/light_charm_off";
-   
    public LightCharm(){
       id = ID;
       name = "Charm of Light";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.SUNFLOWER;
-      item = new LightCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,OFF_TXT));
-      models.add(new Pair<>(vanillaItem,ON_TXT));
+      item = new LightCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.EFFECT_NIGHT_VISION, ResearchTasks.PLACE_TORCHES, ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON};
       
       ItemStack stack = new ItemStack(item);
@@ -316,8 +312,10 @@ public class LightCharm extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Charm of Light\n\nRarity: Empowered\n\nA Beacon's empowered light that has the ability to embue power seems like a solid base to start. After throwing in every light source under the sun and a couple of potions for good measure I have an ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Charm of Light\n\nitem that will leave lingering and invisible arcane lights behind me when it gets dark.\n\nThankfully those potions were added so I can see the lights by right clicking and remove them if they become a nuisance.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Charm of Light").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nI’ve placed too many torches, surely there is an alternative beyond risking the darkness. A beacon is a solid place to start.\n\nAfter combining some other light sources and a few potions, I ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Charm of Light").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nhave a renewable light source that leaves lingering, invisible, arcane lights behind in the darkness.\n\nThe potions in the Charm allow me to see the lights when needed, in case I wish to remove them.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Charm of Light").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nUsing the Charm switches its mode.\n\nSneak Using toggles the selected mode.\n\nThe Charm can be toggled to stop leaving lights, or to make the lights become visible.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Charm of Light").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nThe lights are immovable by pistons, and can be removed by placing a block in them.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -355,11 +353,21 @@ public class LightCharm extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(OFF_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
-         return active ? ArcanaRegistry.getModelData(ON_TXT).value() : ArcanaRegistry.getModelData(OFF_TXT).value();
+         
+         List<String> stringList = new ArrayList<>();
+         if(active){
+            stringList.add("on");
+         }else{
+            stringList.add("off");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
+      
       
       @Override
       public ItemStack getDefaultStack(){
@@ -396,10 +404,9 @@ public class LightCharm extends ArcanaItem {
             if(vision){
                // Search 10x10x10 area around player for light blocks
                for(BlockPos block : BlockPos.iterateOutwards(pos, 10, 10, 10)){
-                  //System.out.println("looking at block "+block.toShortString());
                   BlockState state = world.getBlockState(block);
                   if(state.getBlock().equals(Blocks.LIGHT)){
-                     serverWorld.spawnParticles(player, new BlockStateParticleEffect(ParticleTypes.BLOCK_MARKER, state), true, block.getX()+.5,block.getY()+.5,block.getZ()+.5, 1,0,0,0,0);
+                     serverWorld.spawnParticles(player, new BlockStateParticleEffect(ParticleTypes.BLOCK_MARKER, state), true,true, block.getX()+.5,block.getY()+.5,block.getZ()+.5, 1,0,0,0,0);
                   }
                }
             }
@@ -431,14 +438,14 @@ public class LightCharm extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
             selectMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
          }else{
             changeSetting((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
          }
          
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

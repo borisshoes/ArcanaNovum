@@ -13,10 +13,13 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.items.*;
+import net.borisshoes.arcananovum.events.ArcanaEvent;
+import net.borisshoes.arcananovum.items.LevitationHarness;
+import net.borisshoes.arcananovum.items.NulMemento;
+import net.borisshoes.arcananovum.items.QuiverItem;
+import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
@@ -105,6 +108,10 @@ public class TickCallback {
             if(quiverCD > 0){
                arcaneProfile.addMiscData(QuiverItem.QUIVER_CD_TAG,NbtInt.of(quiverCD-1));
             }
+            
+            if(!arcaneProfile.getStoredOffhand().isEmpty() && player.getOffHandStack().isEmpty()){
+               arcaneProfile.restoreOffhand();
+            }
          }
          
          // Tick Timer Callbacks
@@ -127,6 +134,13 @@ public class TickCallback {
             }
          }
          SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
+         
+         
+         // Tick events
+         for(ArcanaEvent event : RECENT_EVENTS){
+            event.tick();
+         }
+         RECENT_EVENTS.removeIf(ArcanaEvent::isExpired);
          
          ContinuumAnchor.updateLoadedChunks(server);
       }catch(Exception e){
@@ -170,7 +184,7 @@ public class TickCallback {
          if(ArcanaConfig.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
-            player.damage(ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
+            player.damage(player.getServerWorld(), ArcanaDamageTypes.of(player.getServerWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
          }
          if(!player.isDead()){
             if(player.getHealth() <= 1.5f){
@@ -268,7 +282,7 @@ public class TickCallback {
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
-                  .append(Text.literal("\nI have been banished to this Egg more times than there are stars in my sky! My return is inevitable!").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal("\nI have been banished to this Egg more times than there are islands in my sky! My return is inevitable!").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
       ),new int[]{},1,1,-1));

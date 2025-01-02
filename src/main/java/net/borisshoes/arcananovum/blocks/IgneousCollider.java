@@ -19,8 +19,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
@@ -36,6 +34,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,15 +50,12 @@ public class IgneousCollider extends ArcanaBlock {
    public IgneousCollider(){
       id = ID;
       name = "Igneous Collider";
-      rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.BLOCKS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.LODESTONE;
       block = new IgneousColliderBlock(AbstractBlock.Settings.create().requiresTool().strength(3.5f, 1200.0f).sounds(BlockSoundGroup.LODESTONE));
-      item = new IgneousColliderItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new IgneousColliderItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE,ResearchTasks.BREAK_OBSIDIAN,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
@@ -83,7 +79,7 @@ public class IgneousCollider extends ArcanaBlock {
             .append(Text.literal("Place ").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.literal("lava ").formatted(Formatting.GOLD))
             .append(Text.literal("and ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("water ").formatted(Formatting.DARK_BLUE))
+            .append(Text.literal("water ").formatted(Formatting.BLUE))
             .append(Text.literal("sources or cauldrons adjacent to the ").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.literal("Collider").formatted(Formatting.DARK_PURPLE))
             .append(Text.literal(".").formatted(Formatting.LIGHT_PURPLE)));
@@ -129,8 +125,8 @@ public class IgneousCollider extends ArcanaBlock {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Igneous Collider\n\nRarity: Exotic\n\nMining Obsidian sucks, its time intensive and boring.\nMaking a contraption to do it for me would be of great benefit.\nI guess was as simple as enchanting some pickaxes to move by themself.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Igneous Collider\n\nThe Igneous Collider takes water and lava from either a source block or a cauldron that is adjacent to its side and spits out an Obsidian into a chest above it every minute.\nA Collider with a Netherite block below it produces Crying Obsidian. ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Igneous Collider").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nMining Obsidian sucks. It's time intensive and mindlessly boring. Making a contraption to do it for me would be of great benefit. Some ductwork and enchanted pickaxes should work nicely.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Igneous Collider").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nThe Igneous Collider takes water and lava from either a source block or a cauldron that is adjacent to its side and spits out an Obsidian above it every minute. A Netherite block below the Collider produces Crying Obsidian.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -147,38 +143,38 @@ public class IgneousCollider extends ArcanaBlock {
    
    public class IgneousColliderBlock extends ArcanaPolymerBlockEntity {
       public IgneousColliderBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state) {
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.LODESTONE.getDefaultState();
       }
       
       @Nullable
-      public static IgneousColliderBlockEntity getEntity(World world, BlockPos pos) {
+      public static IgneousColliderBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof IgneousColliderBlock)) {
+         if(!(state.getBlock() instanceof IgneousColliderBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof IgneousColliderBlockEntity collider ? collider : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new IgneousColliderBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.IGNEOUS_COLLIDER_BLOCK_ENTITY, IgneousColliderBlockEntity::ticker);
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity && entity instanceof IgneousColliderBlockEntity collider) {
+         if(placer instanceof ServerPlayerEntity && entity instanceof IgneousColliderBlockEntity collider){
             initializeArcanaBlock(stack,collider);
          }
       }

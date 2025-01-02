@@ -1,0 +1,27 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "charged",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/pearl_of_recall_charged"
+                }
+            },
+            {
+                "when": "cooldown",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/pearl_of_recall_cooldown"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/pearl_of_recall_charged"
+        }
+    },
+    "hand_animation_on_swap": false
+}

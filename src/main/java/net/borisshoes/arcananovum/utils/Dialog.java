@@ -16,7 +16,7 @@ public record Dialog(ArrayList<MutableText> message, ArrayList<DialogSound> soun
       return (args.length > condInd && args[condInd]) ? weightWithCond : weightNoCond;
    }
    
-   public record DialogSound(SoundEvent soundEvent, float volume, float pitch) {
+   public record DialogSound(SoundEvent soundEvent, float volume, float pitch){
       public void playSound(ServerPlayerEntity player){
          SoundUtils.playSongToPlayer(player,soundEvent,volume,pitch);
       }

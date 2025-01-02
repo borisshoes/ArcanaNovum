@@ -186,7 +186,7 @@ public class ConfigUtils {
       
       public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
          if(limits.max - limits.min < 10000){
-            String start = builder.getRemaining().toLowerCase();
+            String start = builder.getRemaining().toLowerCase(Locale.ROOT);
             Set<String> nums = new HashSet<>();
             for(int i = limits.min; i <= limits.max; i++){
                nums.add(String.valueOf(i));
@@ -239,8 +239,8 @@ public class ConfigUtils {
          Set<String> options = new HashSet<>();
          options.add("true");
          options.add("false");
-         String start = builder.getRemaining().toLowerCase();
-         options.stream().filter(s -> s.toLowerCase().startsWith(start)).forEach(builder::suggest);
+         String start = builder.getRemaining().toLowerCase(Locale.ROOT);
+         options.stream().filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start)).forEach(builder::suggest);
          return builder.buildFuture();
       }
    }
@@ -271,8 +271,8 @@ public class ConfigUtils {
       }
       
       public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
-         String start = builder.getRemaining().toLowerCase();
-         Arrays.stream(options).filter(s -> s.toLowerCase().startsWith(start)).forEach(builder::suggest);
+         String start = builder.getRemaining().toLowerCase(Locale.ROOT);
+         Arrays.stream(options).filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start)).forEach(builder::suggest);
          return builder.buildFuture();
       }
    }
@@ -317,8 +317,8 @@ public class ConfigUtils {
          for(K k : EnumSet.allOf(typeClass)){
             options.add(k.asString());
          }
-         String start = builder.getRemaining().toLowerCase();
-         options.stream().filter(s -> s.toLowerCase().startsWith(start)).forEach(builder::suggest);
+         String start = builder.getRemaining().toLowerCase(Locale.ROOT);
+         options.stream().filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start)).forEach(builder::suggest);
          return builder.buildFuture();
       }
    }
@@ -344,8 +344,8 @@ public class ConfigUtils {
       for(K k : EnumSet.allOf(enumClass)){
          options.add(k.asString());
       }
-      String start = builder.getRemaining().toLowerCase();
-      options.stream().filter(s -> s.toLowerCase().startsWith(start)).forEach(builder::suggest);
+      String start = builder.getRemaining().toLowerCase(Locale.ROOT);
+      options.stream().filter(s -> s.toLowerCase(Locale.ROOT).startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
    }
    

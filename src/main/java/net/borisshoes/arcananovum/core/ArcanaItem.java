@@ -3,23 +3,22 @@ package net.borisshoes.arcananovum.core;
 import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.trim.ArmorTrim;
+import net.minecraft.item.equipment.trim.ArmorTrim;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -33,7 +32,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -63,16 +61,12 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public int itemVersion;
    protected Item item;
    protected Item vanillaItem;
-   protected ArrayList<Pair<Item,String>> models;
+   protected Text displayName;
    protected RegistryKey<ResearchTask>[] researchTasks = new RegistryKey[0];
    protected Pair<MutableText,MutableText>[] attributions = new Pair[0];
    
    public Pair<MutableText, MutableText>[] getAttributions(){
       return attributions;
-   }
-   
-   public ArrayList<Pair<Item,String>> getModels(){
-      return models;
    }
    
    public boolean blocksHandInteractions(ItemStack item){
@@ -114,6 +108,10 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
          if(category == tomeFilter) return true;
       }
       return false;
+   }
+   
+   public Text getDisplayName(){
+      return displayName;
    }
    
    public Item getItem(){
@@ -344,11 +342,23 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }else{
          removeProperty(stack,UNINITIALIZED_TAG);
       }
+      if(displayName != null){
+         stack.set(DataComponentTypes.ITEM_NAME,displayName);
+      }
       return stack;
    }
    
    public ItemStack initializeArcanaTag(ItemStack stack){
       return initializeArcanaTag(stack,true);
+   }
+   
+   public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){ return stack; }
+   
+   public Item.Settings addArcanaItemComponents(Item.Settings settings){
+      return settings
+            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
+            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+            .component(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO));
    }
    
    public static String getUUID(ItemStack item){
@@ -366,7 +376,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }
    }
    
-   public ItemStack forgeItem(Inventory inv){
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
       return getNewItem();
    }
    

@@ -12,39 +12,37 @@ import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
 public class NebulousEssenceItem extends NormalPolymerItem {
    
-   private static final String TXT = "item/nebulous_essence";
-   
-   public NebulousEssenceItem(Settings settings){
-      super(settings);
+   public NebulousEssenceItem(String id, Settings settings){
+      super(id, settings);
    }
    
    @Override
-   public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-      return ArcanaRegistry.getModelData(TXT).value();
-   }
-   
-   @Override
-   public ArrayList<Pair<Item, String>> getModels(){
-      ArrayList<Pair<Item, String>> models = new ArrayList<>();
-      models.add(new Pair<>(Items.SCULK_VEIN,TXT));
-      return models;
-   }
-   
-   @Override
-   public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+   public Item getPolymerItem(ItemStack itemStack, PacketContext context){
       return Items.SCULK_VEIN;
+   }
+   
+   @Override
+   public ItemStack getDefaultStack(){
+      ItemStack defStack = super.getDefaultStack();
+      defStack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+".nebulous_essence").formatted(Formatting.DARK_PURPLE,Formatting.BOLD));
+      return defStack;
+   }
+   
+   @Override
+   public Text getName(ItemStack stack) {
+      return Text.translatable("item."+MOD_ID+".nebulous_essence").formatted(Formatting.DARK_PURPLE,Formatting.BOLD);
    }
    
    public static LoreComponent getDefaultLore(){

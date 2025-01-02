@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ThrownItemEntity.class)
 public interface ThrownItemEntityAccessor {
    @Accessor
-   static TrackedData<ItemStack> getITEM() {
+   static TrackedData<ItemStack> getITEM(){
       throw new UnsupportedOperationException();
    }
 }

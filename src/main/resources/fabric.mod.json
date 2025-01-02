@@ -14,6 +14,9 @@
   "icon": "assets/arcananovum/icon.png",
   "environment": "*",
   "entrypoints": {
+    "fabric-datagen": [
+      "net.borisshoes.arcananovum.datagen.DataGenerator"
+    ],
     "main": [
       "net.borisshoes.arcananovum.ArcanaNovum"
     ],

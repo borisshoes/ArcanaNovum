@@ -91,7 +91,7 @@ public class BrainJarGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(index == 0){
          jar.depositXP(player, stack, type != ClickType.MOUSE_RIGHT,this);
       }else if(index == 2){

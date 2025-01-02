@@ -10,6 +10,9 @@ accessible field net/minecraft/entity/mob/PhantomEntity targetPosition Lnet/mine
 accessible field net/minecraft/server/world/ServerChunkLoadingManager watchDistance I
 accessible field net/minecraft/server/world/ServerChunkLoadingManager entityTrackers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 accessible field net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker entry Lnet/minecraft/server/network/EntityTrackerEntry;
+accessible field net/minecraft/entity/damage/DamageTracker recentDamage Ljava/util/List;
+accessible field net/minecraft/item/Item components Lnet/minecraft/component/ComponentMap;
+accessible field net/minecraft/server/network/ServerPlayNetworkHandler floatingTicks I
 
 accessible method net/minecraft/entity/LivingEntity getEquipmentChanges ()Ljava/util/Map;
 accessible method net/minecraft/entity/passive/TadpoleEntity increaseAge (I)V

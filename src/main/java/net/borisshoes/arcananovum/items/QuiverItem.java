@@ -88,6 +88,7 @@ public abstract class QuiverItem extends ArcanaItem {
       }else if(this instanceof RunicQuiver){
          ArcanaAchievements.progress(player,ArcanaAchievements.UNLIMITED_STOCK.id,1);
       }
+      buildItemLore(item,player.getServer());
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayerEntity player, ItemStack bow){
@@ -112,12 +113,13 @@ public abstract class QuiverItem extends ArcanaItem {
       }
       
       PlayerInventory inv = player.getInventory();
-      for(int j = 0; j < inv.size(); j++){
-         player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, j, inv.getStack(j)));
-      }
-      player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, PlayerInventory.OFF_HAND_SLOT, inv.getStack(PlayerInventory.OFF_HAND_SLOT)));
+//      for(int j = 0; j < inv.size(); j++){
+//         player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), j, inv.getStack(j)));
+//      }
+      player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 45, inv.getStack(PlayerInventory.OFF_HAND_SLOT)));
       
       item.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(arrows));
+      buildItemLore(item,player.getServer());
       return true;
    }
    
@@ -185,7 +187,7 @@ public abstract class QuiverItem extends ArcanaItem {
          PlayerInventory inv = player.getInventory();
          if(invId.equals("inventory")){
             ItemStack stack = inv.getStack(invSlot);
-            if (PROJECTILES.test(stack)) {
+            if(PROJECTILES.test(stack)){
                if(display){
                   Text name = stack.getName();
                   ArcanaItem arcanaArrow = ArcanaItemUtils.identifyItem(stack);
@@ -292,7 +294,7 @@ public abstract class QuiverItem extends ArcanaItem {
             }
          }
    
-         if (PROJECTILES.test(item)) {
+         if(PROJECTILES.test(item)){
             if(!runic && arcanaItem instanceof RunicArrow){
                continue;
             }
@@ -326,7 +328,7 @@ public abstract class QuiverItem extends ArcanaItem {
          if(isInvArrow){
             ItemStack arrowStack = inv.getStack(slot);
             arrowStack.decrement(1);
-            if (arrowStack.isEmpty()) {
+            if(arrowStack.isEmpty()){
                playerEntity.getInventory().removeOne(arrowStack);
             }
          }else{

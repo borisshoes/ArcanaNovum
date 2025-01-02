@@ -161,7 +161,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       newLogic.putShort("Delay", (short) Math.min(oldDelay,maxDelay));
       
       logic.readNbt(world,spawnerPos,newLogic); // Inject new data
-      logic.serverTick((ServerWorld)world, spawnerPos); // Tick with new data
+      if(world instanceof ServerWorld serverWorld) logic.serverTick(serverWorld, spawnerPos); // Tick with new data
       short newDelay = logic.writeNbt(new NbtCompound()).getShort("Delay");
       savedLogic.putShort("Delay",newDelay); // Extract new delay and put in saved data
       logic.readNbt(world,spawnerPos,savedLogic); // Return saved default data with new delay
@@ -229,18 +229,18 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
       augments = new TreeMap<>();
@@ -253,23 +253,23 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
-      if (nbt.contains("active")) {
+      if(nbt.contains("active")){
          this.active = nbt.getBoolean("active");
       }
-      if (nbt.contains("soulstone")) {
+      if(nbt.contains("soulstone")){
          this.soulstone = ItemStack.fromNbt(registryLookup, nbt.getCompound("soulstone")).orElse(ItemStack.EMPTY);
       }
-      if (nbt.contains("points")) {
+      if(nbt.contains("points")){
          this.points = nbt.getInt("points");
       }
-      if (nbt.contains("spentPoints")) {
+      if(nbt.contains("spentPoints")){
          this.spentPoints = nbt.getInt("spentPoints");
       }
       
-      if (nbt.contains("spawnerStats")) {
+      if(nbt.contains("spawnerStats")){
          NbtCompound stats = nbt.getCompound("spawnerStats");
          setSpawnerStats(stats);
       }
@@ -278,7 +278,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
@@ -297,7 +297,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          nbt.putString("customName",this.customName);
       }
       nbt.putBoolean("synthetic",this.synthetic);
-      if (!this.writeLootTable(nbt)) {
+      if(!this.writeLootTable(nbt)){
          Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
       }
       
@@ -305,7 +305,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       nbt.putInt("spentPoints",this.spentPoints);
       nbt.putBoolean("active",this.active);
       if(this.soulstone != null){
-         nbt.put("soulstone",soulstone.encodeAllowEmpty(registryLookup));
+         nbt.put("soulstone",soulstone.toNbtAllowEmpty(registryLookup));
       }
       
       nbt.put("spawnerStats",getSpawnerStats());
@@ -349,7 +349,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+   protected void setHeldStacks(DefaultedList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
          this.inventory.setStack(i,list.get(i));
       }
@@ -443,12 +443,12 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
             DefaultedList<ItemStack> drops = DefaultedList.of();
             if(points > 0){
                while(points/ratio > 64){
-                  ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+                  ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
                   dropItem.setCount(64);
                   drops.add(dropItem.copy());
                   points -= 64*ratio;
                }
-               ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+               ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
                dropItem.setCount(points/ratio);
                drops.add(dropItem.copy());
             }

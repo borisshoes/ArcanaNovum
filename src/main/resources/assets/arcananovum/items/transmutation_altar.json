@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "minecraft:block/diamond_block"
+    },
+    "hand_animation_on_swap": false
+}

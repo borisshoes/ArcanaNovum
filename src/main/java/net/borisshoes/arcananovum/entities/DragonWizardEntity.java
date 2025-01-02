@@ -38,6 +38,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
 import java.util.UUID;
@@ -60,19 +61,19 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       this.numPlayers = 5;
    }
    
-   public static DefaultAttributeContainer.Builder createWizardAttributes() {
+   public static DefaultAttributeContainer.Builder createWizardAttributes(){
       return HostileEntity.createHostileAttributes()
-            .add(EntityAttributes.GENERIC_GRAVITY,0.0)
-            .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.0)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
-            .add(EntityAttributes.GENERIC_MAX_HEALTH, 64.0)
-            .add(EntityAttributes.GENERIC_ARMOR, 10)
-            .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10)
-            .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
+            .add(EntityAttributes.GRAVITY,0.0)
+            .add(EntityAttributes.MOVEMENT_SPEED, 0.0)
+            .add(EntityAttributes.FOLLOW_RANGE, 64.0)
+            .add(EntityAttributes.MAX_HEALTH, 64.0)
+            .add(EntityAttributes.ARMOR, 10)
+            .add(EntityAttributes.ARMOR_TOUGHNESS, 10)
+            .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0);
    }
    
    @Override
-   public IllagerEntity.State getState() {
+   public IllagerEntity.State getState(){
       boolean castingLaser = laserTick < 100; // 5 Second channel
       boolean castingSummon = summonTick < 60; // 3 Second channel
       boolean castingPulse = pulseTick < 20; // 1 Second channel
@@ -84,7 +85,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    }
    
    @Override
-   public EntityType<?> getPolymerEntityType(ServerPlayerEntity player){
+   public EntityType<?> getPolymerEntityType(PacketContext context){
       return EntityType.ILLUSIONER;
    }
    
@@ -118,7 +119,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    }
    
    @Override
-   protected float modifyAppliedDamage(DamageSource source, float amount) {
+   protected float modifyAppliedDamage(DamageSource source, float amount){
       float scale = numPlayers > 0 ? 2f/numPlayers : 1;
       scale = Math.max(scale,0.1f);
       if(source.getAttacker() instanceof EnderDragonEntity) amount = 0;
@@ -185,7 +186,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
          if(player != null){
             double dist = player.getPos().distanceTo(this.getPos());
             if(laserTick % 10 == 0){ // Damage every half second
-               player.damage(new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this,this),1.25f);
+               player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this,this),1.25f);
             }
             if(laserTick % 2 == 0){ // Particles every other tick
                ParticleEffectUtils.line(endWorld,null,this.getPos(),player.getPos(), ParticleTypes.WITCH,(int)(dist*1.75),1,0.2,0);
@@ -243,7 +244,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    private SkeletonEntity makeSkeleton(ServerWorld endWorld, int numPlayers){
       SkeletonEntity skeleton = new SkeletonEntity(EntityType.SKELETON, endWorld);
       float skeletonHP = MathHelper.clamp(20+numPlayers * 2,20,80);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(skeletonHP);
+      skeleton.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(skeletonHP);
       skeleton.setHealth(skeletonHP);
       skeleton.setPersistent();
       ItemStack bow = new ItemStack(Items.BOW);
@@ -272,14 +273,14 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       StatusEffectInstance slowFall = new StatusEffectInstance(StatusEffects.SLOW_FALLING,100000,0,false,false,false);
       skeleton.addStatusEffect(fireRes);
       skeleton.addStatusEffect(slowFall);
-      skeleton.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(1);
+      skeleton.getAttributeInstance(EntityAttributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
       skeleton.setInvulnerable(true);
       skeleton.setAiDisabled(true);
       return skeleton;
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt) {
+   public void writeCustomDataToNbt(NbtCompound nbt){
       super.writeCustomDataToNbt(nbt);
       nbt.putInt("laserTick",laserTick);
       nbt.putInt("summonTick",summonTick);
@@ -299,7 +300,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt) {
+   public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
       laserTick = nbt.getInt("laserTick");
       summonTick = nbt.getInt("summonTick");

@@ -1,0 +1,33 @@
+{
+	"model": {
+		"type": "minecraft:select",
+		"property": "minecraft:display_context",
+		"cases": [
+			{
+				"when": [
+					"thirdperson_lefthand",
+					"thirdperson_righthand",
+					"firstperson_lefthand",
+					"firstperson_righthand"
+				],
+				"model": {
+					"type": "minecraft:condition",
+					"property": "minecraft:using_item",
+					"on_true": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/spear_of_tenbrous_full_throwing"
+					},
+					"on_false": {
+						"type": "minecraft:model",
+						"model": "arcananovum:item/spear_of_tenbrous_full"
+					}
+				}
+			}
+		],
+		"fallback": {
+			"type": "minecraft:model",
+			"model": "arcananovum:item/spear_of_tenbrous"
+		}
+	},
+	"hand_animation_on_swap": false
+}

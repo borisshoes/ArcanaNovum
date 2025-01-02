@@ -1,26 +1,18 @@
 package net.borisshoes.arcananovum.augments;
 
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.minecraft.component.EnchantmentEffectComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.potion.Potions;
-import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.*;
 
@@ -29,45 +21,46 @@ import static net.borisshoes.arcananovum.utils.ArcanaRarity.*;
 public class ArcanaAugments {
    public static final HashMap<String, ArcanaAugment> registry = new HashMap<>();
    public static final HashMap<ArcanaAugment,String> linkedAugments = new HashMap<>();
+   public static final List<List<ArcanaAugment>> exclusiveAugments = new ArrayList<>();
    
    // Arcane Flak Arrows
    public static final ArcanaAugment AIRBURST = ArcanaAugments.register(
          new ArcanaAugment("Airburst", "airburst", new ItemStack(Items.FIREWORK_STAR), ArcanaRegistry.ARCANE_FLAK_ARROWS,
          new String[]{"Grants an extra 1.25 blocks burst radius per level"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EMPOWERED}
    ));
    
    // Blink Arrows
    public static final ArcanaAugment PHASE_IN = ArcanaAugments.register(
          new ArcanaAugment("Phase In", "phase_in", new ItemStack(Items.ENDER_PEARL), ArcanaRegistry.BLINK_ARROWS,
          new String[]{"Grants brief resistance on teleport","Duration per level: 1/3/5 seconds"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC}
    ));
    
    // Concussion Arrows
    public static final ArcanaAugment SHELLSHOCK = ArcanaAugments.register(
          new ArcanaAugment("Shellshock", "shellshock", new ItemStack(Items.GLOWSTONE_DUST), ArcanaRegistry.CONCUSSION_ARROWS,
          new String[]{"Increases effect strength and duration per level"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EMPOWERED}
    ));
    
    // Detonation Arrows
    public static final ArcanaAugment ANTI_PERSONNEL = ArcanaAugments.register(
          new ArcanaAugment("Anti-Personnel", "anti_personnel", new ItemStack(Items.ROTTEN_FLESH), ArcanaRegistry.DETONATION_ARROWS,
          new String[]{"Increases damage to creatures per level","Final level grants no terrain damage","Mutually Exclusive with Blast Mine"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC}
    ));
    public static final ArcanaAugment BLAST_MINE = ArcanaAugments.register(
          new ArcanaAugment("Blast Mine", "blast_mine", new ItemStack(Items.COBBLESTONE), ArcanaRegistry.DETONATION_ARROWS,
          new String[]{"Increases terrain and lowers mob damage","Final level grants no creature damage","Mutually Exclusive with Anti-Personnel"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC}
    ));
    
    // Expulsion Arrows
    public static final ArcanaAugment REPULSION = ArcanaAugments.register(
          new ArcanaAugment("Repulsion", "repulsion", new ItemStack(Items.LIGHT_BLUE_STAINED_GLASS), ArcanaRegistry.EXPULSION_ARROWS,
          new String[]{"Increases expulsion range by 1.5 blocks per level","Mutually Exclusive with Eviction Burst"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EMPOWERED}
    ));
    public static final ArcanaAugment EVICTION_BURST = ArcanaAugments.register(
          new ArcanaAugment("Eviction Burst", "eviction_burst", new ItemStack(Items.WIND_CHARGE), ArcanaRegistry.EXPULSION_ARROWS,
@@ -79,14 +72,14 @@ public class ArcanaAugments {
    public static final ArcanaAugment GRAVITY_WELL = ArcanaAugments.register(
          new ArcanaAugment("Gravity Well", "gravity_well", new ItemStack(Items.OBSIDIAN), ArcanaRegistry.GRAVITON_ARROWS,
          new String[]{"Increases attraction range by 1 block per level"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EMPOWERED}
    ));
    
    // Photonic Arrows
    public static final ArcanaAugment PRISMATIC_ALIGNMENT = ArcanaAugments.register(
          new ArcanaAugment("Prismatic Alignment", "prismatic_alignment", new ItemStack(Items.BEACON), ArcanaRegistry.PHOTONIC_ARROWS,
          new String[]{"Increases damage for each enemy pierced","Higher levels increase damage more","Final level gives extra base damage"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE}
+         new ArcanaRarity[]{EMPOWERED,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE}
    ));
    
    // Siphoning Arrows
@@ -100,7 +93,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment TEAR_GAS = ArcanaAugments.register(
          new ArcanaAugment("Tear Gas", "tear_gas", new ItemStack(Items.LIGHT_GRAY_STAINED_GLASS), ArcanaRegistry.SMOKE_ARROWS,
          new String[]{"Amplifies debilitating effects","Higher levels increase effect duration"},
-         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EMPOWERED}
    ));
    
    // Storm Arrows
@@ -163,19 +156,19 @@ public class ArcanaAugments {
    public static final ArcanaAugment ENZYMES = ArcanaAugments.register(
          new ArcanaAugment("Digestive Enzymes", "enzymes", new ItemStack(Items.FROGSPAWN), ArcanaRegistry.FEASTING_CHARM,
          new String[]{"Reduces cooldown between eating by 5 seconds per level"},
-         new ArcanaRarity[]{EMPOWERED,EXOTIC,SOVEREIGN}
+         new ArcanaRarity[]{EXOTIC,EXOTIC,SOVEREIGN}
    ));
    public static final ArcanaAugment GLUTTONY = ArcanaAugments.register(
          new ArcanaAugment("Charm of Gluttony", "gluttony", new ItemStack(Items.GOLDEN_APPLE), ArcanaRegistry.FEASTING_CHARM,
          new String[]{"Food consumed gives better stats than normal","Higher levels gives a bigger boost"},
-         new ArcanaRarity[]{EMPOWERED,EXOTIC,SOVEREIGN}
+         new ArcanaRarity[]{EXOTIC,EXOTIC,SOVEREIGN}
    ));
    
    // Charm of Felidae
    public static final ArcanaAugment FELINE_GRACE = ArcanaAugments.register(
          new ArcanaAugment("Feline's Grace", "feline_grace", new ItemStack(Items.FEATHER), ArcanaRegistry.FELIDAE_CHARM,
          new String[]{"Stronger fall damage reduction for each level","Final Level negates all fall damage"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN}
+         new ArcanaRarity[]{EMPOWERED,EXOTIC,EXOTIC,SOVEREIGN}
    ));
    public static final ArcanaAugment PANTHERA = ArcanaAugments.register(
          new ArcanaAugment("Charm of Panthera", "panthera", new ItemStack(Items.PHANTOM_MEMBRANE), ArcanaRegistry.FELIDAE_CHARM,
@@ -380,8 +373,8 @@ public class ArcanaAugments {
    // Nul Memento
    public static final ArcanaAugment DEATHS_CHAMPION = ArcanaAugments.register(
          new ArcanaAugment("Death's Champion", "deaths_champion", new ItemStack(Items.NETHERITE_HELMET), ArcanaRegistry.NUL_MEMENTO,
-         new String[]{"Gives the Nul Memento max enhanced stats"},
-         new ArcanaRarity[]{DIVINE}
+         new String[]{"Nul Memento becomes fully infused with Stardust"},
+         new ArcanaRarity[]{SOVEREIGN}
    ));
    public static final ArcanaAugment TEMPO_MORTUUS = ArcanaAugments.register(
          new ArcanaAugment("Tempo Mortuus", "tempo_mortuus", new ItemStack(Items.CLOCK), ArcanaRegistry.NUL_MEMENTO,
@@ -410,7 +403,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment PHASE_DEFENSE = ArcanaAugments.register(
          new ArcanaAugment("Phase Defense", "phase_defense", new ItemStack(Items.DIAMOND_CHESTPLATE), ArcanaRegistry.PEARL_OF_RECALL,
          new String[]{"Grants a chance to not cancel when taking damage","while teleporting and negate the damage taken","Chance per level: 15%/35%/50%"},
-         new ArcanaRarity[]{EXOTIC,EXOTIC,SOVEREIGN}
+         new ArcanaRarity[]{EMPOWERED,EXOTIC,SOVEREIGN}
    ));
    public static final ArcanaAugment CHRONO_TEAR = ArcanaAugments.register(
          new ArcanaAugment("Chrono-Tear", "chrono_tear", new ItemStack(Items.END_PORTAL_FRAME), ArcanaRegistry.PEARL_OF_RECALL,
@@ -422,7 +415,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment WITH_THE_DEPTHS = ArcanaAugments.register(
          new ArcanaAugment("One With The Depths", "with_the_depths", new ItemStack(Items.DIAMOND_PICKAXE), ArcanaRegistry.PICKAXE_OF_CEPTYUS,
          new String[]{"Increases vein mine range and max blocks","Gives +2 range and +32 blocks per level"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,SOVEREIGN}
+         new ArcanaRarity[]{MUNDANE,MUNDANE,EMPOWERED,EMPOWERED,EXOTIC}
    ));
    public static final ArcanaAugment GREED = ArcanaAugments.register(
          new ArcanaAugment("Greed of the Deep Dark", "greed", new ItemStack(Items.DIAMOND_BLOCK), ArcanaRegistry.PICKAXE_OF_CEPTYUS,
@@ -439,17 +432,17 @@ public class ArcanaAugments {
    public static final ArcanaAugment BOW_STABILIZATION = ArcanaAugments.register(
          new ArcanaAugment("Stabilization Runes", "bow_stabilization", new ItemStack(Items.TARGET), ArcanaRegistry.RUNIC_BOW,
          new String[]{"Decreases the Runic Bow's firing randomness","Final level removes randomness entirely"},
-         new ArcanaRarity[]{EXOTIC,SOVEREIGN,DIVINE}
+         new ArcanaRarity[]{EMPOWERED,EXOTIC,SOVEREIGN}
    ));
    public static final ArcanaAugment BOW_ACCELERATION = ArcanaAugments.register(
          new ArcanaAugment("Acceleration Runes", "bow_acceleration", new ItemStack(Items.CLOCK), ArcanaRegistry.RUNIC_BOW,
          new String[]{"Runic Bow reaches max charge at lower draw strength","Max charge % per level: 90%/85%/80%/75%/50%"},
-         new ArcanaRarity[]{EXOTIC,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE}
+         new ArcanaRarity[]{EXOTIC,EXOTIC,SOVEREIGN,SOVEREIGN,DIVINE}
    ));
    public static final ArcanaAugment ENHANCED_INFINITY = ArcanaAugments.register(
          new ArcanaAugment("Enhanced Infinity", "enhanced_infinity", new ItemStack(Items.SPECTRAL_ARROW), ArcanaRegistry.RUNIC_BOW,
          new String[]{"Applies infinity to tipped and spectral arrows"},
-         new ArcanaRarity[]{SOVEREIGN}
+         new ArcanaRarity[]{EXOTIC}
    ));
    
    // Runic Quiver
@@ -513,7 +506,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment LEVITATIVE_REABSORPTION = ArcanaAugments.register(
          new ArcanaAugment("Levitative Reabsorption", "levitative_reabsorption", new ItemStack(Items.FEATHER), ArcanaRegistry.SHULKER_CORE,
          new String[]{"Unlocks the Cleanse Levitation ability","This can be activated through speed selection"},
-         new ArcanaRarity[]{EXOTIC}
+         new ArcanaRarity[]{EMPOWERED}
    ));
    public static final ArcanaAugment SHULKER_RECYCLER = ArcanaAugments.register(
          new ArcanaAugment("Soul Recycler", "shulker_recycler", new ItemStack(Items.FIRE_CHARGE), ArcanaRegistry.SHULKER_CORE,
@@ -535,7 +528,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment SPRINTER = ArcanaAugments.register(
          new ArcanaAugment("Sprinter", "sprinter", new ItemStack(Items.GOLDEN_BOOTS), ArcanaRegistry.SOJOURNER_BOOTS,
          new String[]{"Increases energy gain rate when sprinting","Increase per level: 2x/3x"},
-         new ArcanaRarity[]{EMPOWERED,SOVEREIGN}
+         new ArcanaRarity[]{EXOTIC,EXOTIC}
    ));
    public static final ArcanaAugment JUGGERNAUT = ArcanaAugments.register(
          new ArcanaAugment("Juggernaut", "juggernaut", new ItemStack(Items.NETHERITE_HELMET), ArcanaRegistry.SOJOURNER_BOOTS,
@@ -561,8 +554,8 @@ public class ArcanaAugments {
    // Spawner Harness
    public static final ArcanaAugment REINFORCED_CHASSIS = ArcanaAugments.register(
          new ArcanaAugment("Reinforced Chassis", "reinforced_chassis", new ItemStack(Items.REINFORCED_DEEPSLATE), ArcanaRegistry.SPAWNER_HARNESS,
-         new String[]{"Decreases Harness break chance by 2% per level","Final level grants zero chance of breaking"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE}
+         new String[]{"Makes the Harness unbreakable"},
+         new ArcanaRarity[]{DIVINE}
    ));
    public static final ArcanaAugment SALVAGEABLE_FRAME = ArcanaAugments.register(
          new ArcanaAugment("Salvageable Frame", "salvageable_frame", new ItemStack(Items.NETHERITE_SCRAP), ArcanaRegistry.SPAWNER_HARNESS,
@@ -601,7 +594,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment STASIS_RECONSTRUCTION = ArcanaAugments.register(
          new ArcanaAugment("Reconstructive Teleport", "stasis_reconstruction", new ItemStack(Items.GOLDEN_APPLE), ArcanaRegistry.STASIS_PEARL,
          new String[]{"Grants regeneration and resistance on teleport","Higher levels increase the effect strength"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC}
+         new ArcanaRarity[]{EXOTIC,EXOTIC,SOVEREIGN}
    ));
    
    // Telescoping Beacon
@@ -619,13 +612,13 @@ public class ArcanaAugments {
    // Wings of Enderia
    public static final ArcanaAugment SCALES_OF_THE_CHAMPION = ArcanaAugments.register(
          new ArcanaAugment("Scales of the Ascendant", "scales_of_the_champion", new ItemStack(Items.NETHERITE_CHESTPLATE), ArcanaRegistry.WINGS_OF_ENDERIA,
-         new String[]{"First Level: Gives the Wings max enhanced stats","Second Level: Unlocks the ability for the Wings to"," use stored energy to mitigate all damage types"},
-         new ArcanaRarity[]{DIVINE,DIVINE}
+         new String[]{"First Level: The Wings become fully infused with Stardust","Second Level: Unlocks the ability for the Wings to"," use stored energy to mitigate all damage types"},
+         new ArcanaRarity[]{SOVEREIGN,DIVINE}
    ));
    public static final ArcanaAugment WING_BUFFET = ArcanaAugments.register(
          new ArcanaAugment("Wing Buffet", "wing_buffet", new ItemStack(Items.FEATHER), ArcanaRegistry.WINGS_OF_ENDERIA,
-         new String[]{"Gives a chance to blow mobs back when hit","This ability costs energy for each enemy","Chance per level: 10%/20%/30%/40%/100%"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE}
+         new String[]{"Getting hit causes a gust that blows mobs back","This ability costs energy for each enemy","Level 2 causes the gust to affect players"},
+         new ArcanaRarity[]{SOVEREIGN,SOVEREIGN}
    ));
    
    // Charm of Wild Growth
@@ -666,7 +659,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment HEALING_CIRCLET = ArcanaAugments.register(
          new ArcanaAugment("Healing Circlet", "healing_circlet", new ItemStack(Items.GOLDEN_APPLE), ArcanaRegistry.CONTAINMENT_CIRCLET,
          new String[]{"Slowly heals the contained creature"},
-         new ArcanaRarity[]{EXOTIC}
+         new ArcanaRarity[]{EMPOWERED}
    ));
    
    // Alchemical Arbalest
@@ -794,7 +787,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment ENHANCED_ENHANCEMENTS = ArcanaAugments.register(
          new ArcanaAugment("Enhanced Enhancements", "enhanced_enhancements", new ItemStack(Items.GLOWSTONE_DUST), ArcanaRegistry.TWILIGHT_ANVIL,
          new String[]{"Stardust Infusion increases when being combined","Grants an additional 2.5% infusion boost per level"},
-         new ArcanaRarity[]{EMPOWERED,EXOTIC,SOVEREIGN}
+         new ArcanaRarity[]{EMPOWERED,EMPOWERED,EXOTIC}
    ));
    public static final ArcanaAugment ANVIL_EXPERTISE = ArcanaAugments.register(
          new ArcanaAugment("Anvil Expertise", "anvil_expertise", new ItemStack(Items.EXPERIENCE_BOTTLE), ArcanaRegistry.TWILIGHT_ANVIL,
@@ -823,7 +816,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment SUPERMASSIVE = ArcanaAugments.register(
          new ArcanaAugment("Supermassive", "supermassive", new ItemStack(Items.ENDER_CHEST), ArcanaRegistry.ARCANE_SINGULARITY,
          new String[]{"Increases Enchantment storage by 1x per level"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN,SOVEREIGN}
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EMPOWERED,EXOTIC,EXOTIC}
    ));
    public static final ArcanaAugment ACCRETION = ArcanaAugments.register(
          new ArcanaAugment("Accretion", "accretion", new ItemStack(Items.CRYING_OBSIDIAN), ArcanaRegistry.ARCANE_SINGULARITY,
@@ -866,7 +859,7 @@ public class ArcanaAugments {
    public static final ArcanaAugment FLOODGATE = ArcanaAugments.register(
          new ArcanaAugment("Floodgate", "floodgate", new ItemStack(Items.WARPED_FENCE_GATE), ArcanaRegistry.AQUATIC_EVERSOURCE,
          new String[]{"Unlocks a mode that places water in a flat 3x3 area","Sneak Right Click to toggle modes"},
-         new ArcanaRarity[]{EXOTIC}
+         new ArcanaRarity[]{EMPOWERED}
    ));
    
    // Magmatic Eversource
@@ -884,7 +877,7 @@ public class ArcanaAugments {
    // Transmutation Altar
    public static final ArcanaAugment TRADE_AGREEMENT = ArcanaAugments.register(
          new ArcanaAugment("Trade Agreement", "trade_agreement", new ItemStack(Items.DIAMOND), ArcanaRegistry.TRANSMUTATION_ALTAR,
-         new String[]{"The Altar will reactivate automatically"," after a successful transmutation"},
+         new String[]{"The Altar will reactivate automatically after a"," successful transmutation if the materials for", " another transmutation are available on the Altar"},
          new ArcanaRarity[]{DIVINE}
    ));
    public static final ArcanaAugment HASTY_BARGAIN = ArcanaAugments.register(
@@ -901,7 +894,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment TIMELESS_WISDOM = ArcanaAugments.register(
          new ArcanaAugment("Timeless Wisdom", "timeless_wisdom", ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA,
-         new String[]{"Makes the Aequalis Scientia have infinite uses"},
+         new String[]{"Gives the Aequalis Scientia have infinite reallocation uses"},
          new ArcanaRarity[]{DIVINE}
    ));
    
@@ -929,8 +922,124 @@ public class ArcanaAugments {
          new ArcanaRarity[]{EMPOWERED,EXOTIC,SOVEREIGN}
    ));
    
+   // Binary Blades
+   public static final ArcanaAugment PULSAR_BLADES = ArcanaAugments.register(
+         new ArcanaAugment("Pulsar Blades", "pulsar_blades", new ItemStack(Items.PEARLESCENT_FROGLIGHT), ArcanaRegistry.BINARY_BLADES,
+         new String[]{"Energy can be spent to have the blades emit a bright"," pulse of energy, damaging all creatures in its path","Level 2 decreases the energy cost and increases the damage", "Mutually exclusive with all augments"},
+         new ArcanaRarity[]{DIVINE,SOVEREIGN}
+   ));
+   public static final ArcanaAugment RED_GIANT_BLADES = ArcanaAugments.register(
+         new ArcanaAugment("Red Giant Blades", "red_giant_blades", new ItemStack(Items.SHROOMLIGHT), ArcanaRegistry.BINARY_BLADES,
+         new String[]{"High energy grants increased damage","Level 2 ignites nearby creatures at high energy", "Mutually exclusive with all augments"},
+         new ArcanaRarity[]{DIVINE,SOVEREIGN}
+   ));
+   public static final ArcanaAugment WHITE_DWARF_BLADES = ArcanaAugments.register(
+         new ArcanaAugment("White Dwarf Blades", "white_dwarf_blades", new ItemStack(Items.SEA_LANTERN), ArcanaRegistry.BINARY_BLADES,
+         new String[]{"Allows the blades to parry attacks using energy","Hold Right Click to prepare a parry","Damage parried per level: 50%/75%/100%", "Mutually exclusive with all augments"},
+         new ArcanaRarity[]{DIVINE,SOVEREIGN,SOVEREIGN}
+   ));
    
-   // Linked augments:
+   // Graviton Maul
+   public static final ArcanaAugment SINGULARITY_MAELSTROM = ArcanaAugments.register(
+         new ArcanaAugment("Singularity Maelstrom", "singularity_maelstrom", new ItemStack(Items.OBSIDIAN), ArcanaRegistry.GRAVITON_MAUL,
+         new String[]{"Sneak Right Clicking while grounded forms a maelstrom","The maelstrom gives the wielder resistance and slowness", "Creatures caught in the maelstrom are pulled inward"," and receive increased damage from all sources"," in addition to taking cramming damage"},
+         new ArcanaRarity[]{DIVINE}
+   ));
+   public static final ArcanaAugment GRAVITIC_DOMAIN = ArcanaAugments.register(
+         new ArcanaAugment("Gravitic Domain", "gravitic_domain", new ItemStack(Items.SLIME_BLOCK), ArcanaRegistry.GRAVITON_MAUL,
+         new String[]{"The Maul's Right Click ability acts on all nearby creatures","Creatures affected by rapid fall take normal", " fall damage when they hit the ground"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   
+   // Charm of Cetacea
+   public static final ArcanaAugment DELPHINIDAE = ArcanaAugments.register(
+         new ArcanaAugment("Charm of Delphinidae", "delphinidae", new ItemStack(Items.TROPICAL_FISH), ArcanaRegistry.CETACEA_CHARM,
+         new String[]{"The Charm grants Dolphin's Grace II"},
+         new ArcanaRarity[]{EMPOWERED}
+   ));
+   public static final ArcanaAugment GILLS = ArcanaAugments.register(
+         new ArcanaAugment("Gills", "gills", new ItemStack(Items.TURTLE_SCUTE), ArcanaRegistry.CETACEA_CHARM,
+         new String[]{"The Charm additionally grants water breathing"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   public static final ArcanaAugment MARINERS_GRACE = ArcanaAugments.register(
+         new ArcanaAugment("Mariner's Grace", "mariners_grace", new ItemStack(Items.DIAMOND_PICKAXE), ArcanaRegistry.CETACEA_CHARM,
+         new String[]{"The Charm decreases the underwater mining penalty","Each level decreases the penalty further"},
+         new ArcanaRarity[]{EMPOWERED,EXOTIC,SOVEREIGN}
+   ));
+   
+   // Charm of Cleansing
+   public static final ArcanaAugment REJUVENATION = ArcanaAugments.register(
+         new ArcanaAugment("Charm of Rejuvenation", "rejuvenation", new ItemStack(Items.GOLDEN_APPLE), ArcanaRegistry.CLEANSING_CHARM,
+         new String[]{"Cleansing an effect gives the wielder regeneration"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   public static final ArcanaAugment INFUSED_CHARCOAL = ArcanaAugments.register(
+         new ArcanaAugment("Infused Charcoal", "infused_charcoal", new ItemStack(Items.CHARCOAL), ArcanaRegistry.CLEANSING_CHARM,
+         new String[]{"Decreases the Charm's cleansing cooldown","Each level reduces the cooldown by 5 seconds"},
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN}
+   ));
+   public static final ArcanaAugment ANTIDOTE = ArcanaAugments.register(
+         new ArcanaAugment("Antidote", "antidote", new ItemStack(Items.MILK_BUCKET), ArcanaRegistry.CLEANSING_CHARM,
+         new String[]{"The Charm cleanses up to two effects"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   
+   // Greaves of Gaialtus
+   public static final ArcanaAugment PLANETARY_POCKETS = ArcanaAugments.register(
+         new ArcanaAugment("Planetary Pockets", "planetary_pockets", new ItemStack(Items.CHEST), ArcanaRegistry.GREAVES_OF_GAIALTUS,
+         new String[]{"Increases the size of the Greaves' pockets","Each level grants 9 additional slots"},
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN}
+   ));
+   public static final ArcanaAugment CREATORS_TOUCH = ArcanaAugments.register(
+         new ArcanaAugment("Creator's Touch", "creators_touch", new ItemStack(Items.CRAFTING_TABLE), ArcanaRegistry.GREAVES_OF_GAIALTUS,
+         new String[]{"The Greaves grant additional block placement range"},
+         new ArcanaRarity[]{DIVINE}
+   ));
+   public static final ArcanaAugment NATURES_EMBRACE = ArcanaAugments.register(
+         new ArcanaAugment("Nature's Embrace", "natures_embrace", new ItemStack(Items.DIAMOND_CHESTPLATE), ArcanaRegistry.GREAVES_OF_GAIALTUS,
+         new String[]{"The Greaves become fully infused with Stardust"},
+         new ArcanaRarity[]{SOVEREIGN}
+   ));
+   public static final ArcanaAugment WINDS_GRACE = ArcanaAugments.register(
+         new ArcanaAugment("Wind's Grace", "winds_grace", new ItemStack(Items.LIGHT_GRAY_WOOL), ArcanaRegistry.GREAVES_OF_GAIALTUS,
+         new String[]{"The Greaves give you a graceful stride","You no longer take damage from magma blocks,"," generate sculk vibrations, or smash turtle eggs"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   public static final ArcanaAugment EARTHEN_ASCENT = ArcanaAugments.register(
+         new ArcanaAugment("Earthen Ascent", "earthen_ascent", new ItemStack(Items.LADDER), ArcanaRegistry.GREAVES_OF_GAIALTUS,
+         new String[]{"The Greaves allow you to effortlessly scale"," walls in a similar manner to climbing a ladder"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   
+   // Spear of Tenbrous
+   public static final ArcanaAugment VOID_STORM = ArcanaAugments.register(
+         new ArcanaAugment("Void Storm", "void_storm", new ItemStack(Items.LIGHTNING_ROD), ArcanaRegistry.SPEAR_OF_TENBROUS,
+         new String[]{"The Spear generates a surge of arcane lightning"," on impact from being thrown"},
+         new ArcanaRarity[]{DIVINE}
+   ));
+   public static final ArcanaAugment UNENDING_HATRED = ArcanaAugments.register(
+         new ArcanaAugment("Unending Hatred", "unending_hatred", new ItemStack(Items.TRIDENT), ArcanaRegistry.SPEAR_OF_TENBROUS,
+         new String[]{"Reduces the throwing cooldown of the Spear","Each level reduces the cooldown by 2 seconds"},
+         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN}
+   ));
+   public static final ArcanaAugment ETERNAL_CRUELTY = ArcanaAugments.register(
+         new ArcanaAugment("Eternal Cruelty", "eternal_cruelty", new ItemStack(Items.FIRE_CHARGE), ArcanaRegistry.SPEAR_OF_TENBROUS,
+         new String[]{"Mobs slain by the Spear give twice the souls to a Soulstone"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   public static final ArcanaAugment BLINDING_RAGE = ArcanaAugments.register(
+         new ArcanaAugment("Blinding Rage", "blinding_rage", new ItemStack(Items.BLACK_CONCRETE), ArcanaRegistry.SPEAR_OF_TENBROUS,
+         new String[]{"Creatures impaled by the Spear being thrown are given", " true blindness for a brief duration", "This effect applies to creatures hit by Void Storm"},
+         new ArcanaRarity[]{EXOTIC}
+   ));
+   public static final ArcanaAugment STARLESS_DOMAIN = ArcanaAugments.register(
+         new ArcanaAugment("Starless Domain", "starless_domain", MiscUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultStack()), ArcanaRegistry.SPEAR_OF_TENBROUS,
+         new String[]{"The Spear become fully infused with Stardust"},
+         new ArcanaRarity[]{SOVEREIGN}
+   ));
+   
+   // Linked and exclusive augments
    static{
       linkedAugments.put(ArcanaAugments.HARNESS_RECYCLER,"harness_shulker_recycler");
       linkedAugments.put(ArcanaAugments.SHULKER_RECYCLER,"harness_shulker_recycler");
@@ -940,6 +1049,32 @@ public class ArcanaAugments {
       
       linkedAugments.put(ArcanaAugments.ABUNDANT_AMMO,"quiver_restock");
       linkedAugments.put(ArcanaAugments.QUIVER_DUPLICATION,"quiver_restock");
+      
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.WEB_OF_FIRE,
+            ArcanaAugments.PYROBLAST)));
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.ANTI_PERSONNEL,
+            ArcanaAugments.BLAST_MINE)));
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.AFTERSHOCK,
+            ArcanaAugments.CHAIN_LIGHTNING)));
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.RUNIC_ARBALEST,
+            ArcanaAugments.SCATTERSHOT)));
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.RUNIC_ARBALEST,
+            ArcanaAugments.PROLIFIC_POTIONS)));
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.RUNIC_ARBALEST,
+            ArcanaAugments.SPECTRAL_AMPLIFICATION)));
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.REPULSION,
+            ArcanaAugments.EVICTION_BURST)));
+      exclusiveAugments.add(new ArrayList<>(Arrays.asList(
+            ArcanaAugments.PULSAR_BLADES,
+            ArcanaAugments.RED_GIANT_BLADES,
+            ArcanaAugments.WHITE_DWARF_BLADES)));
    }
    
    private static ArcanaAugment register(ArcanaAugment augment){
@@ -1002,7 +1137,7 @@ public class ArcanaAugments {
       arcanaItem.buildItemLore(stack,ArcanaNovum.SERVER);
    }
    
-   public static boolean isIncompatible(ItemStack item, String id){ // TODO: Better incompat check for mutually exclusive augments
+   public static boolean isIncompatible(ItemStack item, String id){
       TreeMap<ArcanaAugment,Integer> curAugments = getAugmentsOnItem(item);
       if(curAugments == null) return true;
       if(!registry.containsKey(id)) return true;
@@ -1012,28 +1147,17 @@ public class ArcanaAugments {
       
       for(Map.Entry<ArcanaAugment, Integer> entry : curAugments.entrySet()){
          ArcanaAugment other = entry.getKey();
-         if(id.equals(ArcanaAugments.WEB_OF_FIRE.id) && other.id.equals(ArcanaAugments.PYROBLAST.id)) return true;
-         if(id.equals(ArcanaAugments.PYROBLAST.id) && other.id.equals(ArcanaAugments.WEB_OF_FIRE.id)) return true;
+         if(other == augment) return false;
          
-         if(id.equals(ArcanaAugments.ANTI_PERSONNEL.id) && other.id.equals(ArcanaAugments.BLAST_MINE.id)) return true;
-         if(id.equals(ArcanaAugments.BLAST_MINE.id) && other.id.equals(ArcanaAugments.ANTI_PERSONNEL.id)) return true;
-   
-         if(id.equals(ArcanaAugments.AFTERSHOCK.id) && other.id.equals(ArcanaAugments.CHAIN_LIGHTNING.id)) return true;
-         if(id.equals(ArcanaAugments.CHAIN_LIGHTNING.id) && other.id.equals(ArcanaAugments.AFTERSHOCK.id)) return true;
-         
-         if(id.equals(ArcanaAugments.RUNIC_ARBALEST.id) && other.id.equals(ArcanaAugments.SCATTERSHOT.id)) return true;
-         if(id.equals(ArcanaAugments.SCATTERSHOT.id) && other.id.equals(ArcanaAugments.RUNIC_ARBALEST.id)) return true;
-         
-         if(id.equals(ArcanaAugments.RUNIC_ARBALEST.id) && other.id.equals(ArcanaAugments.PROLIFIC_POTIONS.id)) return true;
-         if(id.equals(ArcanaAugments.PROLIFIC_POTIONS.id) && other.id.equals(ArcanaAugments.RUNIC_ARBALEST.id)) return true;
-         
-         if(id.equals(ArcanaAugments.RUNIC_ARBALEST.id) && other.id.equals(ArcanaAugments.SPECTRAL_AMPLIFICATION.id)) return true;
-         if(id.equals(ArcanaAugments.SPECTRAL_AMPLIFICATION.id) && other.id.equals(ArcanaAugments.RUNIC_ARBALEST.id)) return true;
-         
-         if(id.equals(ArcanaAugments.REPULSION.id) && other.id.equals(ArcanaAugments.EVICTION_BURST.id)) return true;
-         if(id.equals(ArcanaAugments.EVICTION_BURST.id) && other.id.equals(ArcanaAugments.REPULSION.id)) return true;
+         for(List<ArcanaAugment> exclusiveList : exclusiveAugments){
+            if(exclusiveList.contains(augment) && exclusiveList.contains(other)) return true;
+         }
       }
       return false;
+   }
+   
+   public static int getAugmentOnItem(ItemStack stack, ArcanaAugment augment){
+      return getAugmentOnItem(stack,augment.id);
    }
    
    public static int getAugmentOnItem(ItemStack stack, String id){
@@ -1092,37 +1216,8 @@ public class ArcanaAugments {
          }
          ArcanaItem.putProperty(stack, ArcanaItem.CATALYSTS_TAG,catalystsList);
       }
-   
-      if(arcanaItem instanceof ExoticMatter matter && id.equals(TIME_IN_A_BOTTLE.id)){
-         matter.setFuel(stack,matter.getMaxEnergy(stack));
-      }
-      if(arcanaItem instanceof AlchemicalArbalest && id.equals(RUNIC_ARBALEST.id)){
-         if(stack.hasEnchantments()){ // Remove Multi-Shot type enchants
-            ItemEnchantmentsComponent.Builder enchantBuilder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
-            ItemEnchantmentsComponent comp = stack.getEnchantments();
-            Object2IntOpenHashMap<RegistryEntry<Enchantment>> enchants = new Object2IntOpenHashMap<>();
-            comp.getEnchantmentEntries().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
-            
-            enchants.forEach((e,num) -> {
-               if(!e.value().effects().contains(EnchantmentEffectComponentTypes.PROJECTILE_COUNT)){
-                  enchantBuilder.add(e,num);
-               }
-            });
-            EnchantmentHelper.set(stack,enchantBuilder.build());
-         }
-      }
-      if(arcanaItem instanceof WingsOfEnderia && id.equals(SCALES_OF_THE_CHAMPION.id) && level >= 1){
-         EnhancedStatUtils.enhanceItem(stack,1);
-      }
       
-      if(arcanaItem instanceof NulMemento && id.equals(DEATHS_CHAMPION.id) && level >= 1){
-         EnhancedStatUtils.enhanceItem(stack,1);
-      }
-      
-      if(arcanaItem instanceof SojournerBoots boots && id.equals(HIKING_BOOTS.id) && level >= 1){
-         boots.rebuildAttributes(stack);
-      }
-      
+      arcanaItem.onAugment(stack, augment, level);
       arcanaItem.buildItemLore(stack, ArcanaNovum.SERVER);
       return true;
    }

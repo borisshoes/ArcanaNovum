@@ -17,7 +17,11 @@ public class QuiverSlot extends Slot {
    
    @Override
    public boolean canInsert(ItemStack stack){
-      if(runic){
+      return isValidItem(stack,runic);
+   }
+   
+   public static boolean isValidItem(ItemStack stack, boolean isRunic){
+      if(isRunic){
          return (stack.isOf(Items.TIPPED_ARROW) || stack.isOf(Items.SPECTRAL_ARROW) || stack.isOf(Items.ARROW) || ArcanaItemUtils.isRunicArrow(stack));
       }else{
          return (stack.isOf(Items.TIPPED_ARROW) || stack.isOf(Items.SPECTRAL_ARROW) || stack.isOf(Items.ARROW)) && !(ArcanaItemUtils.isRunicArrow(stack));

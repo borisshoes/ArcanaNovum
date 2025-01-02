@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "minecraft:block/raw_copper_block"
+    },
+    "hand_animation_on_swap": false
+}

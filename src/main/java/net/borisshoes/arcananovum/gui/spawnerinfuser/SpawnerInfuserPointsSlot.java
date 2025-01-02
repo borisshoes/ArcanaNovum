@@ -13,6 +13,6 @@ public class SpawnerInfuserPointsSlot extends Slot {
    
    @Override
    public boolean canInsert(ItemStack stack){
-      return stack.isOf(SpawnerInfuser.pointsItem) && !ArcanaItemUtils.isArcane(stack);
+      return stack.isOf(SpawnerInfuser.POINTS_ITEM) && !ArcanaItemUtils.isArcane(stack);
    }
 }

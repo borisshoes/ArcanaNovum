@@ -11,14 +11,13 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -43,6 +42,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,15 +61,12 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Starpath Altar";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.SCULK_CATALYST;
       block = new StarpathAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).strength(3.0f,1200.0f).luminance(state -> 6).sounds(BlockSoundGroup.SCULK_CATALYST));
-      item = new StarpathAltarItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.WHITE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new StarpathAltarItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.WHITE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.USE_ENDER_EYE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
@@ -165,9 +162,9 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Starpath Altar\n\nRarity: Sovereign\n\nThe leylines flow like rivers through the world, yet they are indistinct and would be impossible to navigate.\nHowever, the stars above pull on them like the moon on the tide. By charting the stars, I should be able to").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Starpath Altar\n\nsend teleportation energy through the leylines along a charted course to exactly where I want to go in the world.\n\nIt should even be capable of taking a group of creatures all at once to the same destination!").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Starpath Altar\n\nHowever, an Eye of Ender only contains so much teleportation energy, so the farther I wish to travel, the more Eyes I need to provide up front to create a continuous pathway along the leylines.").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("   Starpath Altar").formatted(Formatting.BOLD), ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe leylines flow like rivers through the world, yet they are indistinct and would be impossible to navigate. However, the stars above pull on them like the moon on the tide. By charting the stars,").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("   Starpath Altar").formatted(Formatting.BOLD), ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nI should be able to send teleportation energy through the leylines along a charted course to exactly where I want to go in the world.\nIt should even be capable of taking a group of creatures all at once to the same destination!\n").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("   Starpath Altar").formatted(Formatting.BOLD), ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nUnfortunately, an Eye of Ender only contains so much teleportation energy, so the farther I wish to travel, the more Eyes I need to provide to have enough energy to create a continuous pathway along the leylines.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -185,42 +182,42 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    public class StarpathAltarBlock extends ArcanaPolymerBlockEntity {
       public static final BooleanProperty BLOOM = Properties.BLOOM;
       public StarpathAltarBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state) {
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.SCULK_CATALYST.getDefaultState().with(BLOOM,state.get(BLOOM));
       }
       
       @Nullable
-      public static StarpathAltarBlockEntity getEntity(World world, BlockPos pos) {
+      public static StarpathAltarBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof StarpathAltarBlock)) {
+         if(!(state.getBlock() instanceof StarpathAltarBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof StarpathAltarBlockEntity altar ? altar : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new StarpathAltarBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx) {
+      public BlockState getPlacementState(ItemPlacementContext ctx){
          return this.getDefaultState().with(BLOOM,false);
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
          stateManager.add(BLOOM);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.STARPATH_ALTAR_BLOCK_ENTITY, StarpathAltarBlockEntity::ticker);
       }
       
@@ -231,7 +228,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
             if(playerEntity instanceof ServerPlayerEntity player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
+                  player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
@@ -242,9 +239,9 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof StarpathAltarBlockEntity altar) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof StarpathAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
             altar.readTargets(getListProperty(stack,TARGETS_TAG,NbtElement.COMPOUND_TYPE));
          }

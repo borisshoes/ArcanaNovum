@@ -8,15 +8,13 @@ import net.minecraft.component.type.SuspiciousStewEffectsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.item.GoatHornItem;
-import net.minecraft.item.Instrument;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.InstrumentTags;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.math.random.Random;
@@ -30,7 +28,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class TransmutationRecipes {
    public static final ArrayList<TransmutationRecipe> TRANSMUTATION_RECIPES = new ArrayList<>();
    
-   static {
+   public static void initializeTransmutationRecipes(MinecraftServer server) {
       // Commutative Recipes
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Stones",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.COBBLESTONE),new ItemStack(Items.STONE), new ItemStack(Items.GRANITE), new ItemStack(Items.POLISHED_GRANITE), new ItemStack(Items.DIORITE), new ItemStack(Items.POLISHED_DIORITE),
@@ -180,18 +178,18 @@ public class TransmutationRecipes {
       )),new ItemStack(Items.COPPER_INGOT,32),new ItemStack(Items.LAPIS_LAZULI,32)));
       
       ArrayList<ItemStack> goatHorns = new ArrayList<>();
-      for(RegistryEntry<Instrument> instrument : Registries.INSTRUMENT.getOrCreateEntryList(InstrumentTags.REGULAR_GOAT_HORNS)){
-         goatHorns.add(GoatHornItem.getStackForInstrument(Items.GOAT_HORN, instrument));
+      for(RegistryEntry<Instrument> entry : server.getRegistryManager().getOrThrow(RegistryKeys.INSTRUMENT).iterateEntries(InstrumentTags.GOAT_HORNS)){
+         goatHorns.add(GoatHornItem.getStackForInstrument(Items.GOAT_HORN, entry));
       }
-      for(RegistryEntry<Instrument> instrument : Registries.INSTRUMENT.getOrCreateEntryList(InstrumentTags.SCREAMING_GOAT_HORNS)){
-         goatHorns.add(GoatHornItem.getStackForInstrument(Items.GOAT_HORN, instrument));
-      }
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Goat Horns",goatHorns,new ItemStack(Items.DIAMOND,4),new ItemStack(Items.AMETHYST_SHARD,12)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Goat Horns", goatHorns, new ItemStack(Items.DIAMOND,4), new ItemStack(Items.AMETHYST_SHARD,12)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Banner Patterns",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.CREEPER_BANNER_PATTERN), new ItemStack(Items.FLOWER_BANNER_PATTERN), new ItemStack(Items.MOJANG_BANNER_PATTERN), new ItemStack(Items.PIGLIN_BANNER_PATTERN), new ItemStack(Items.GLOBE_BANNER_PATTERN),
-            new ItemStack(Items.SKULL_BANNER_PATTERN)
-      )),new ItemStack(Items.REDSTONE,48),new ItemStack(Items.QUARTZ,24)));
+      ArrayList<ItemStack> bannerPatterns = new ArrayList<>();
+      for(RegistryEntry<Item> itemEntry : Registries.ITEM.getIndexedEntries()){
+         if(itemEntry.value() instanceof BannerPatternItem){
+            bannerPatterns.add(new ItemStack(itemEntry.value()));
+         }
+      }
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Banner Patterns", bannerPatterns, new ItemStack(Items.REDSTONE,48), new ItemStack(Items.QUARTZ,24)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Heads",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.SKELETON_SKULL), new ItemStack(Items.WITHER_SKELETON_SKULL), new ItemStack(Items.ZOMBIE_HEAD), new ItemStack(Items.CREEPER_HEAD), new ItemStack(Items.DRAGON_HEAD),
@@ -329,6 +327,10 @@ public class TransmutationRecipes {
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Blaze Rod Decomposition",new ItemStack(Items.BLAZE_ROD,1),new ItemStack(Items.BLAZE_POWDER,6),new ItemStack(Items.GUNPOWDER,24),new ItemStack(ArcanaRegistry.STARDUST,8)));
       
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Blackstone Infusion",new ItemStack(Items.BLACKSTONE,1),new ItemStack(Items.GILDED_BLACKSTONE,1),new ItemStack(Items.GLOWSTONE_DUST,24),new ItemStack(Items.GOLD_INGOT,12)));
+      
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Nether Brick Infusion",new ItemStack(Items.NETHER_BRICKS,1),new ItemStack(Items.RED_NETHER_BRICKS,1),new ItemStack(Items.NETHER_WART,32),new ItemStack(Items.GLOWSTONE_DUST,12)));
+      
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Obsidian Infusion",new ItemStack(Items.MAGMA_BLOCK,4),new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.ICE,12),new ItemStack(Items.REDSTONE,16)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Crying Obsidian Infusion",new ItemStack(Items.OBSIDIAN,1),new ItemStack(Items.CRYING_OBSIDIAN,1),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.GLOWSTONE_DUST,16)));
@@ -374,12 +376,12 @@ public class TransmutationRecipes {
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Aequalis Scientia Synthesis",ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore(),new ItemStack(Items.AMETHYST_BLOCK,64),new ItemStack(Items.DIAMOND_BLOCK,1)));
       
       // Permutation Recipes
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Faeries' Stew", new ItemStack(Items.MUSHROOM_STEW,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 1)), new ItemStack(Items.NETHER_WART),  (stack, server) -> {
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Faeries' Stew", new ItemStack(Items.MUSHROOM_STEW,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 1)), new ItemStack(Items.NETHER_WART),  (stack, minecraftServer) -> {
          ItemStack stewStack = new ItemStack(Items.SUSPICIOUS_STEW);
          stewStack.set(DataComponentTypes.RARITY, Rarity.RARE);
          stewStack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+".faeries_stew"));
          List<SuspiciousStewEffectsComponent.StewEffect> effects = new ArrayList<>();
-         Registry<StatusEffect> effectRegistry = server.getRegistryManager().get(RegistryKeys.STATUS_EFFECT);
+         Registry<StatusEffect> effectRegistry = minecraftServer.getRegistryManager().getOrThrow(RegistryKeys.STATUS_EFFECT);
          List<RegistryEntry.Reference<StatusEffect>> effectEntries = effectRegistry.streamEntries().toList();
          int i = 0;
          while(i < 10 && (Math.random() < 0.25 || i == 0)){
@@ -391,10 +393,10 @@ public class TransmutationRecipes {
          return stewStack;
       }, Text.literal("A 'Delicious' Stew")));
       
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Book Exchange", new ItemStack(Items.ENCHANTED_BOOK,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 15)), new ItemStack(Items.LAPIS_LAZULI,5),  (stack, server) -> {
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Book Exchange", new ItemStack(Items.ENCHANTED_BOOK,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 15)), new ItemStack(Items.LAPIS_LAZULI,5),  (stack, minecraftServer) -> {
          ItemStack newBook = new ItemStack(Items.BOOK);
          ArrayList<RegistryEntry<Enchantment>> enchants = new ArrayList<>();
-         server.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getIndexedEntries().forEach(enchants::add);
+         minecraftServer.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries().forEach(enchants::add);
          return EnchantmentHelper.enchant(Random.create(), newBook, (int)(Math.random()*30+1),enchants.stream());
       }, Text.literal("A Random ").append(Text.translatable(Items.ENCHANTED_BOOK.getTranslationKey()))));
       

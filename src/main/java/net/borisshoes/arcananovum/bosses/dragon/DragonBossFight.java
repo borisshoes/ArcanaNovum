@@ -64,6 +64,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.EndSpikeFeature;
 import net.minecraft.world.gen.feature.EndSpikeFeatureConfig;
@@ -147,7 +148,7 @@ public class DragonBossFight {
                gameMaster = gm;
                hasDied = new ArrayList<>();
                dragon = endWorld.getAliveEnderDragons().get(0);
-               dragon.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(1024);
+               dragon.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(1024);
                dragon.setHealth(1024);
                reclaimStates = new ArrayList<>();
    
@@ -196,7 +197,7 @@ public class DragonBossFight {
                gmNotifs.add(notif);
                prepNotif = true;
             }
-         }else if(state == States.WAITING_ONE){//Teleport players, spawn phantoms, spawn wizards
+         }else if(state == States.WAITING_ONE){ //Teleport players, spawn phantoms, spawn wizards
             if(!phase1Notif){
                numPlayers = calcPlayers(server,false);
                fightData.putInt("numPlayers",numPlayers);
@@ -205,7 +206,7 @@ public class DragonBossFight {
                      List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
                      for(ServerPlayerEntity player : players){
                         if(!player.isCreative() && !player.isSpectator()){
-                           player.teleport(endWorld, 100.5+(Math.random()*3-1.5),51,0.5+(Math.random()*3-1.5),90,0);
+                           player.teleportTo(new TeleportTarget(endWorld, new Vec3d(00.5+(Math.random()*3-1.5),51,0.5+(Math.random()*3-1.5)), Vec3d.ZERO, 90, 0, TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
                         }
                      }
    
@@ -458,7 +459,7 @@ public class DragonBossFight {
             if(age % 3000 == 0){
                List<ShulkerBulletEntity> bullets = endWorld.getEntitiesByType(EntityType.SHULKER_BULLET, new Box(new BlockPos(-400,0,-400).toCenterPos(), new BlockPos(400,256,400).toCenterPos()), e -> true);
                for(ShulkerBulletEntity bullet : bullets){
-                  bullet.kill();
+                  bullet.kill(endWorld);
                }
             }
             
@@ -487,10 +488,10 @@ public class DragonBossFight {
          float endermiteHP = MathHelper.clamp(10 + 3*numPlayers,10,40);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermiteEntity(EntityType.ENDERMITE, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(endermiteHP);
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(endermiteHP);
             goons[i].setHealth(endermiteHP);
             goons[i].setPersistent();
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
+            goons[i].getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY()+1,pos.getZ());
       
@@ -510,7 +511,7 @@ public class DragonBossFight {
          float shulkerHP = MathHelper.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
             goons[i] = new ShulkerEntity(EntityType.SHULKER, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(shulkerHP);
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(shulkerHP);
             goons[i].setHealth(shulkerHP);
             goons[i].setPersistent();
             BlockPos pos = poses.get(i);
@@ -532,9 +533,9 @@ public class DragonBossFight {
          float endermanHP = MathHelper.clamp(20 + 4*numPlayers,20,80);
          for(int i=0;i<goons.length;i++){
             goons[i] = new EndermanEntity(EntityType.ENDERMAN, endWorld);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(endermanHP);
+            goons[i].getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(endermanHP);
             goons[i].setHealth(endermanHP);
-            goons[i].getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(8f);
+            goons[i].getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(8f);
             BlockPos pos = poses.get(i);
             goons[i].setPos(pos.getX(),pos.getY(),pos.getZ());
       
@@ -559,16 +560,16 @@ public class DragonBossFight {
          
             ItemEntity itemEntity;
             boolean bl = player.getInventory().insertStack(wings);
-            if (!bl || !wings.isEmpty()) {
+            if(!bl || !wings.isEmpty()){
                itemEntity = player.dropItem(wings, false);
-               if (itemEntity == null) continue;
+               if(itemEntity == null) continue;
                itemEntity.resetPickupDelay();
                itemEntity.setOwner(player.getUuid());
                continue;
             }
             wings.setCount(1);
             itemEntity = player.dropItem(wings, false);
-            if (itemEntity != null) {
+            if(itemEntity != null){
                itemEntity.setDespawnImmediately();
             }
          
@@ -768,12 +769,12 @@ public class DragonBossFight {
       for(EndSpikeFeature.Spike spike : list){
          List<EndCrystalEntity> nearCrystals = endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(BlockPos.ofFloored(spike.getCenterX()-10,0,spike.getCenterZ()-10).toCenterPos(), BlockPos.ofFloored(spike.getCenterX()+10,255,spike.getCenterZ()+10).toCenterPos()), EndCrystalEntity::shouldShowBottom);
          for(EndCrystalEntity nearCrystal : nearCrystals){
-            nearCrystal.kill();
+            nearCrystal.kill(endWorld);
          }
          
          Iterator<BlockPos> var16 = BlockPos.iterate(BlockPos.ofFloored(spike.getCenterX() - 10, spike.getHeight() - 10, spike.getCenterZ() - 10), BlockPos.ofFloored(spike.getCenterX() + 10, spike.getHeight() + 10, spike.getCenterZ() + 10)).iterator();
    
-         while(var16.hasNext()) {
+         while(var16.hasNext()){
             BlockPos blockPos = var16.next();
             endWorld.removeBlock(blockPos, false);
          }
@@ -799,7 +800,7 @@ public class DragonBossFight {
          BlockPos portalPos = new BlockPos(exitList[0],exitList[1],exitList[2]);
          BlockPos blockPos2 = portalPos.up(1);
          Iterator<Direction> var4 = net.minecraft.util.math.Direction.Type.HORIZONTAL.iterator();
-         while(var4.hasNext()) {
+         while(var4.hasNext()){
             Direction direction = var4.next();
             EndCrystalEntity crystal = new EndCrystalEntity(EntityType.END_CRYSTAL,endWorld);
             crystal.setPosition(Vec3d.ofBottomCenter(blockPos2.offset(direction, 3)));
@@ -836,7 +837,7 @@ public class DragonBossFight {
       }
    
       for(EnderDragonEntity dragon : endWorld.getAliveEnderDragons()){
-         dragon.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(200);
+         dragon.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(200);
          dragon.setHealth(200);
          dragon.setCustomName(Text.literal("Ender Dragon"));
       }
@@ -850,7 +851,7 @@ public class DragonBossFight {
       if(guardianPhantoms != null && phase == 1){
          for(PhantomEntity phantom : guardianPhantoms){
             if(phantom != null && phantom.isAlive())
-               phantom.kill();
+               phantom.kill(endWorld);
          }
          for(CommandBossBar bossBar : phantomBossBars){
             if(bossBar != null){
@@ -863,7 +864,7 @@ public class DragonBossFight {
       if(wizards != null && (phase == 1 || phase == 2)){
          for(DragonWizardEntity wizard : wizards){
             if(wizard != null && wizard.isAlive())
-               wizard.kill();
+               wizard.kill(endWorld);
          }
       }
    
@@ -878,11 +879,11 @@ public class DragonBossFight {
       List<SkeletonEntity> skeletons = endWorld.getEntitiesByType(EntityType.SKELETON, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
       List<PhantomEntity> phantoms = endWorld.getEntitiesByType(EntityType.PHANTOM, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
       List<IllusionerEntity> illusioners = endWorld.getEntitiesByType(EntityType.ILLUSIONER, new Box(new BlockPos(-300,25,-300).toCenterPos(), new BlockPos(300,255,300).toCenterPos()), e -> true);
-      mites.forEach(LivingEntity::kill);
-      shulkers.forEach(LivingEntity::kill);
-      skeletons.forEach(LivingEntity::kill);
-      phantoms.forEach(LivingEntity::kill);
-      illusioners.forEach(LivingEntity::kill);
+      mites.forEach(e -> e.kill(endWorld));
+      shulkers.forEach(e -> e.kill(endWorld));
+      skeletons.forEach(e -> e.kill(endWorld));
+      phantoms.forEach(e -> e.kill(endWorld));
+      illusioners.forEach(e -> e.kill(endWorld));
    
       GameRules rules = server.getGameRules();
       GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);
@@ -1027,7 +1028,7 @@ public class DragonBossFight {
    public static void teleportPlayer(ServerPlayerEntity player, boolean override){
       ServerWorld endWorld = player.getServer().getWorld(World.END);
       if(hasDied.contains(player) || override){
-         player.teleport(endWorld, 100.5,51,0.5,90,0);
+         player.teleportTo(new TeleportTarget(endWorld, new Vec3d(100.5,51,0.5), Vec3d.ZERO, 90, 0, TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
          StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 20*30, 4, false, false, true);
          player.addStatusEffect(res);
          MutableText msg = Text.literal("")
@@ -1092,7 +1093,7 @@ public class DragonBossFight {
          TextDisplayElement line1 = new TextDisplayElement(Text.literal("Click to Attempt").formatted(Formatting.YELLOW));
          TextDisplayElement line2 = new TextDisplayElement(Text.literal("Tower Reclamation").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE,Formatting.UNDERLINE));
          ItemDisplayElement icon = new ItemDisplayElement(Items.END_CRYSTAL);
-         InteractionElement click = new InteractionElement(new VirtualElement.InteractionHandler() {
+         InteractionElement click = new InteractionElement(new VirtualElement.InteractionHandler(){
             public void click(ServerPlayerEntity player){
                if(reclaimState.getSolveCooldown() == 0 && reclaimState.hologramVisible){
                   PuzzleGui gui = new PuzzleGui(ScreenHandlerType.GENERIC_9X6,player,reclaimState);
@@ -1326,14 +1327,14 @@ public class DragonBossFight {
             if(entity instanceof LivingEntity living){
                if(scoreboardPlayerScore != null)
                   scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + 50);
-               living.damage(endWorld.getDamageSources().playerAttack(player),5f);
+               living.damage(endWorld, endWorld.getDamageSources().playerAttack(player),5f);
             }
          }
          if(MiscUtils.distToLine(dragon.getPos(),player.getPos(),hit) < 10){
             float damage = Math.min(100,20f+numPlayers*4);
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));
-            dragon.damage(endWorld.getDamageSources().playerAttack(player),damage);
+            dragon.damage(endWorld, endWorld.getDamageSources().playerAttack(player),damage);
          }
       }
    

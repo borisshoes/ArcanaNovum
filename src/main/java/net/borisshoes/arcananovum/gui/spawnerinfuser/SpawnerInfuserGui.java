@@ -73,7 +73,7 @@ public class SpawnerInfuserGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       int[] clickable = {10,11,12,14,15,16,28,29,30,32,33,34};
       if(!Arrays.stream(clickable).boxed().toList().contains(index)) return true;
       if(getSlot(index).getItemStack().isOf(Items.STRUCTURE_VOID)){

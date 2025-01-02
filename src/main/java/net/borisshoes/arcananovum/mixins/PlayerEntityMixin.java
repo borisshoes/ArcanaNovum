@@ -1,36 +1,111 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
+import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.items.EverlastingRocket;
-import net.borisshoes.arcananovum.items.QuiverItem;
-import net.borisshoes.arcananovum.items.RunicBow;
-import net.borisshoes.arcananovum.items.WingsOfEnderia;
+import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
+
+import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
    
+   @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getKnockbackAgainst(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;)F"))
+   private void arcananovum_postDamageEntity(Entity target, CallbackInfo ci, @Local(ordinal = 2) float atkPercentage){
+      PlayerEntity player = (PlayerEntity)(Object) this;
+      ItemStack handStack = player.getMainHandStack();
+      if(ArcanaItemUtils.identifyItem(handStack) instanceof BinaryBlades blades && atkPercentage > 0.85){
+         ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,12);
+         blades.addEnergy(handStack,10);
+         if(player instanceof ServerPlayerEntity serverPlayer) ArcanaNovum.addTickTimerCallback(serverPlayer.getServerWorld(), new GenericTimer(4, () -> {
+            serverPlayer.getServerWorld().getChunkManager().sendToNearbyPlayers(serverPlayer, new EntityAnimationS2CPacket(serverPlayer, EntityAnimationS2CPacket.SWING_OFF_HAND));
+         }));
+      }
+   }
+   
+   @Inject(method = "isClimbing", at = @At("RETURN"), cancellable = true)
+   private void arcananovum_greavesClimbing(CallbackInfoReturnable<Boolean> cir){
+      PlayerEntity player = (PlayerEntity)(Object) this;
+      if(cir.getReturnValue()) return;
+      ItemStack pants = player.getEquippedStack(EquipmentSlot.LEGS);
+      if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) < 1) return;
+      if(player.horizontalCollision){
+         cir.setReturnValue(true);
+      }
+   }
+   
+   @ModifyConstant(method = "getBlockBreakingSpeed", constant = @Constant(floatValue = 5.0F))
+   private float arcananovum_offGroundBlockBreakingSpeed(float constant){
+      PlayerEntity player = (PlayerEntity) (Object) this; // This part of the augment currently works even if the player is not in water, not sure if I will leave it like this
+      List<ItemStack> stacks = MiscUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
+      int level = 0;
+      for(ItemStack stack : stacks){
+         boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);
+         if(!isActive) continue;
+         int lvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MARINERS_GRACE);
+         if(lvl > level) level = lvl;
+      }
+      return level == 0 ? constant : Math.min(constant, Math.max(1, constant - level*1.34f)); // Don't buff below 1, unless it is already below 1
+   }
+   
+   @ModifyExpressionValue(method = "getBlockBreakingSpeed", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/attribute/EntityAttributeInstance;getValue()D"))
+   private double arcananovum_underwaterBlockBreakingSpeed(double original){
+      PlayerEntity player = (PlayerEntity) (Object) this;
+      List<ItemStack> stacks = MiscUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
+      int level = 0;
+      for(ItemStack stack : stacks){
+         boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);
+         if(!isActive) continue;
+         int lvl = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.MARINERS_GRACE);
+         if(lvl > level) level = lvl;
+      }
+      return level == 0 ? original : Math.max(original, Math.min(1,original + level*0.35)); // Don't buff beyond 1, unless it is already above 1
+   }
+   
+   // Remove all absorption callbacks when shield gets disabled
+   @Inject(method = "disableShield", at = @At("HEAD"))
+   private void arcananovum_disableFortitudeShield(ItemStack shield, CallbackInfo ci){
+      PlayerEntity player = (PlayerEntity) (Object) this;
+      ArrayList<ShieldTimerCallback> toRemove = new ArrayList<>();
+      for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
+         TickTimerCallback t = SERVER_TIMER_CALLBACKS.get(i);
+         if(t instanceof ShieldTimerCallback st && st.getPlayer().getUuidAsString().equals(player.getUuidAsString())){
+            toRemove.add(st);
+         }
+      }
+      toRemove.forEach(ShieldTimerCallback::onTimer);
+      SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
+   }
    
    @Inject(method = "getProjectileType", at = @At(value="INVOKE",target="Lnet/minecraft/item/RangedWeaponItem;getProjectiles()Ljava/util/function/Predicate;", shift = At.Shift.BEFORE), cancellable = true)
    private void arcananovum_quiverCheck(ItemStack bow, CallbackInfoReturnable<ItemStack> cir){
@@ -50,16 +125,16 @@ public class PlayerEntityMixin {
             cir.setReturnValue(returnStack);
          }else if(runicArbalest){
             Predicate<ItemStack> predicate = ((RangedWeaponItem)bow.getItem()).getProjectiles();
-            for (int i = 0; i < player.getInventory().size(); ++i) {
+            for (int i = 0; i < player.getInventory().size(); ++i){
                ItemStack itemStack2 = player.getInventory().getStack(i);
-               if (predicate.test(itemStack2) || ArcanaItemUtils.isRunicArrow(itemStack2)) cir.setReturnValue(itemStack2);
+               if(predicate.test(itemStack2) || ArcanaItemUtils.isRunicArrow(itemStack2)) cir.setReturnValue(itemStack2);
             }
          }
       }
    }
    
-   @Inject(method = "getProjectileType", at = @At(value="INVOKE",target="Lnet/minecraft/item/RangedWeaponItem;getHeldProjectile(Lnet/minecraft/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/item/ItemStack;", shift = At.Shift.BEFORE), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-   private void arcananovum_everlastingRocketCheck(ItemStack stack, CallbackInfoReturnable<ItemStack> cir, Predicate<ItemStack> predicate){
+   @Inject(method = "getProjectileType", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/RangedWeaponItem;getHeldProjectile(Lnet/minecraft/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/item/ItemStack;", shift = At.Shift.BEFORE), cancellable = true)
+   private void arcananovum_everlastingRocketCheck(ItemStack stack, CallbackInfoReturnable<ItemStack> cir, @Local Predicate<ItemStack> predicate){
       PlayerEntity player = (PlayerEntity) (Object) this;
       ItemStack main = player.getStackInHand(Hand.MAIN_HAND);
       ItemStack off = player.getStackInHand(Hand.OFF_HAND);
@@ -81,17 +156,6 @@ public class PlayerEntityMixin {
       if(ArcanaItemUtils.isRunicArrow(curReturn) && !runicArbalest){
          cir.setReturnValue(player.isCreative() ? new ItemStack(Items.ARROW) : ItemStack.EMPTY);
       }
-   }
-   
-   @Redirect(method="checkFallFlying", at=@At(value="INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z"))
-   private boolean arcananovum_elytraTick(ItemStack stack, Item item){
-      return stack.isOf(item) || ArcanaItemUtils.identifyItem(stack) instanceof WingsOfEnderia;
-   }
-   
-   @Inject(method = "disableShield", at = @At(value="INVOKE",target="Lnet/minecraft/entity/player/PlayerEntity;getItemCooldownManager()Lnet/minecraft/entity/player/ItemCooldownManager;"))
-   private void arcananovum_mobDisableShield(CallbackInfo ci){
-      PlayerEntity player = (PlayerEntity) (Object) this;
-      player.getItemCooldownManager().set(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem(), 100);
    }
    
    @Inject(method = "addExperience", at = @At(value= "RETURN"))

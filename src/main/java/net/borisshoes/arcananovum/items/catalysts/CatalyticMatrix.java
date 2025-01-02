@@ -9,19 +9,16 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,22 +30,15 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class CatalyticMatrix extends ArcanaItem {
 	public static final String ID = "catalytic_matrix";
    
-   private static final String TXT = "item/catalytic_matrix";
-   
    public CatalyticMatrix(){
       id = ID;
       name = "Catalytic Matrix";
       rarity = ArcanaRarity.MUNDANE;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.CATALYSTS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       itemVersion = 0;
       vanillaItem = Items.NETHER_STAR;
-      item = new CatalyticMatrixItem(new Item.Settings().maxCount(4).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new CatalyticMatrixItem(addArcanaItemComponents(new Item.Settings().maxCount(4)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
       ItemStack stack = new ItemStack(item);
@@ -110,18 +100,13 @@ public class CatalyticMatrix extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Catalytic Matrix\n\nRarity: Mundane\n\nThe full power of a Runic Matrix shouldn't be necessary to further unlock abilities within the items I've made.\nBreaking one into self-contained fragments should be more efficient.").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("  Catalytic Matrix").formatted(Formatting.BOLD), ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe full power of a Runic Matrix shouldn’t be necessary to further unlock abilities within the items I’ve made. Breaking one into self-contained fragments should be more efficient.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class CatalyticMatrixItem extends ArcanaPolymerItem {
       public CatalyticMatrixItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.recipes.arcana;
 
 import net.borisshoes.arcananovum.ArcanaConfig;
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;

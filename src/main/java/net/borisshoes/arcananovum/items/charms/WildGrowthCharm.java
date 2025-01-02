@@ -19,13 +19,14 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TadpoleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -33,12 +34,15 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,25 +57,17 @@ public class WildGrowthCharm extends ArcanaItem {
    public static final String HARVEST_TAG = "harvest";
    
    private static final int[] RATES = new int[]{10, 7, 5, 3, 2};
-   private static final String ON_TXT = "item/wild_growth_charm_on";
-   private static final String OFF_TXT = "item/wild_growth_charm_off";
    
    public WildGrowthCharm(){
       id = ID;
-      name = "Wild Growth Charm";
+      name = "Charm of Wild Growth";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.CHARMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.CHARMS};
       itemVersion = 0;
       vanillaItem = Items.DARK_OAK_SAPLING;
-      item = new WildGrowthCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GREEN))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,OFF_TXT));
-      models.add(new Pair<>(vanillaItem,ON_TXT));
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL,ResearchTasks.ADVANCEMENT_BRED_ALL_ANIMALS,ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED,ResearchTasks.ADVANCEMENT_PLANT_SEED,ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
+      item = new WildGrowthCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GREEN);
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_BREED_AN_ANIMAL,ResearchTasks.ADVANCEMENT_PLANT_ANY_SNIFFER_SEED,ResearchTasks.ADVANCEMENT_PLANT_SEED,ResearchTasks.ADVANCEMENT_OBTAIN_NETHERITE_HOE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -149,8 +145,8 @@ public class WildGrowthCharm extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Charm of Wild Growth\n\nRarity: Empowered\n\nLiving things constantly grow and change with time. \nIt should be possible to accelerate this process in all organisms as long as adequate nutrients are supplied with a few temporal tricks.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Charm of Wild Growth\n\nThe Charm causes nearby animals and plants to grow faster when activated.\n \nThe Charm also causes animals to breed periodically.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n     Wild Growth").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nLiving things constantly grow and change with time. It should be possible to accelerate this process in all organisms as long as adequate nutrients are supplied with a \n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n     Wild Growth").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nfew temporal tricks.\n\nThe Charm causes nearby animals and plants to grow faster.\nThe Charm also causes animals to breed periodically.\n\nSneak Using toggles the Charm’s effect.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -160,10 +156,19 @@ public class WildGrowthCharm extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(OFF_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
          boolean active = getBooleanProperty(itemStack,ACTIVE_TAG);
-         return active ? ArcanaRegistry.getModelData(ON_TXT).value() : ArcanaRegistry.getModelData(OFF_TXT).value();
+         
+         List<String> stringList = new ArrayList<>();
+         if(active){
+            stringList.add("on");
+         }else{
+            stringList.add("off");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -174,103 +179,109 @@ public class WildGrowthCharm extends ArcanaItem {
       @Override
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
          if(!ArcanaItemUtils.isArcane(stack)) return;
-         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
-         boolean active = getBooleanProperty(stack,ACTIVE_TAG);
-         boolean harvest = getBooleanProperty(stack,HARVEST_TAG);
-         int fertLvl = Math.max(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION.id),0);
-         int tickTime = RATES[fertLvl];
+         if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         if(active && !world.isClient && player.getServer().getTicks() % tickTime == 0){
-            boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING.id) >= 1;
-            int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
+         try{
+            boolean active = getBooleanProperty(stack,ACTIVE_TAG);
+            boolean harvest = getBooleanProperty(stack,HARVEST_TAG);
+            int fertLvl = Math.max(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION.id),0);
+            int tickTime = RATES[fertLvl];
             
-            int count = 0;
-            for(BlockPos blockPos : BlockPos.iterateRandomly(player.getRandom(), 100, player.getBlockPos(), 4)){
-               BlockState state = world.getBlockState(blockPos);
-               Block block = state.getBlock();
-               if(count >= 2) break;
-               count++;
+            if(active && !world.isClient && player.getServer().getTicks() % tickTime == 0){
+               boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING.id) >= 1;
+               int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
                
-               if(block instanceof ShortPlantBlock){
-                  count--;
-               }else if(block instanceof SugarCaneBlock ||
-                     block instanceof NetherWartBlock ||
-                     block instanceof CactusBlock ||
-                     block instanceof ChorusFlowerBlock ||
-                     block instanceof OxidizableBlock ||
-                     block instanceof BuddingAmethystBlock){
-                  state.randomTick(player.getServerWorld(),blockPos,world.getRandom());
-                  world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-               }else if((block instanceof AbstractPlantStemBlock ||
-                     block instanceof CropBlock ||
-                     block instanceof CocoaBlock ||
-                     block instanceof StemBlock ||
-                     block instanceof SweetBerryBushBlock) && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
-                  world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+               int count = 0;
+               for(BlockPos blockPos : BlockPos.iterateRandomly(player.getRandom(), 100, player.getBlockPos(), 4)){
+                  BlockState state = world.getBlockState(blockPos);
+                  Block block = state.getBlock();
+                  if(count >= 2) break;
+                  count++;
                   
-                  if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
-                     ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
-                     ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
+                  if(block instanceof ShortPlantBlock){
+                     count--;
+                  }else if(block instanceof SugarCaneBlock ||
+                        block instanceof NetherWartBlock ||
+                        block instanceof CactusBlock ||
+                        block instanceof ChorusFlowerBlock ||
+                        block instanceof OxidizableBlock ||
+                        block instanceof BuddingAmethystBlock){
+                     state.randomTick(player.getServerWorld(),blockPos,world.getRandom());
+                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+                  }else if((block instanceof AbstractPlantStemBlock ||
+                        block instanceof CropBlock ||
+                        block instanceof CocoaBlock ||
+                        block instanceof StemBlock ||
+                        block instanceof SweetBerryBushBlock) && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+                     
+                     if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
+                        ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
+                        ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
+                     }
+                  }else if(bloom && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+                  }else if(bloom && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos, Direction.random(player.getRandom()))){
+                     world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+                  }else{
+                     count--;
                   }
-               }else if (bloom && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)) {
-                  world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-               }else if(bloom && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos, Direction.random(player.getRandom()))){
-                  world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-               }else{
-                  count--;
+                  
+                  if(reaping >= 1 && harvest){
+                     if(block instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
+                        world.breakBlock(blockPos,true,player);
+                        if(reaping >= 2 && crop.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
+                           world.setBlockState(blockPos,block.getDefaultState());
+                        }
+                     }else if(block instanceof NetherWartBlock wart && world.getBlockState(blockPos).get(NetherWartBlock.AGE) == 3){
+                        world.breakBlock(blockPos,true,player);
+                        if(reaping >= 2 && wart.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
+                           world.setBlockState(blockPos,block.getDefaultState());
+                        }
+                     }
+                  }
                }
                
-               if(reaping >= 1 && harvest){
-                  if(block instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
-                     world.breakBlock(blockPos,true,player);
-                     if(reaping >= 2 && crop.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
-                        world.setBlockState(blockPos,block.getDefaultState());
+               List<Entity> animals = world.getOtherEntities(player,player.getBoundingBox().expand(5), e -> e instanceof AnimalEntity || e instanceof TadpoleEntity);
+               Collections.shuffle(animals);
+               for(Entity a : animals){
+                  
+                  if(a instanceof AnimalEntity animal){
+                     int i = animal.getBreedingAge();
+                     if(!animal.getWorld().isClient && i == 0 && animal.canEat()){
+                        animal.lovePlayer(player);
+                        break;
                      }
-                  }else if(block instanceof NetherWartBlock wart && world.getBlockState(blockPos).get(NetherWartBlock.AGE) == 3){
-                     world.breakBlock(blockPos,true,player);
-                     if(reaping >= 2 && wart.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
-                        world.setBlockState(blockPos,block.getDefaultState());
+                     if(animal.isBaby()){
+                        animal.growUp(AnimalEntity.toGrowUpAge(-i), true);
+                        serverWorld.spawnParticles(ParticleTypes.COMPOSTER,animal.getX(),animal.getY()+animal.getHeight()*0.5,animal.getZ(),3,0.2,0.2,0.2,1);
+                        break;
                      }
+                  }else if(a instanceof TadpoleEntity tadpole){
+                     tadpole.increaseAge(PassiveEntity.toGrowUpAge(tadpole.getTicksUntilGrowth()));
+                     serverWorld.spawnParticles(ParticleTypes.COMPOSTER,tadpole.getX(),tadpole.getY()+tadpole.getHeight()*0.5,tadpole.getZ(),3,0.2,0.2,0.2,1);
+                     break;
                   }
                }
-            }
-            
-            List<Entity> animals = world.getOtherEntities(player,player.getBoundingBox().expand(5), e -> e instanceof AnimalEntity || e instanceof TadpoleEntity);
-            Collections.shuffle(animals);
-            for(Entity a : animals){
                
-               if(a instanceof AnimalEntity animal){
-                  int i = animal.getBreedingAge();
-                  if(!animal.getWorld().isClient && i == 0 && animal.canEat()){
-                     animal.lovePlayer(player);
-                     break;
-                  }
-                  if(animal.isBaby()){
-                     animal.growUp(AnimalEntity.toGrowUpAge(-i), true);
-                     ((ServerWorld) world).spawnParticles(ParticleTypes.COMPOSTER,animal.getX(),animal.getY()+animal.getHeight()*0.5,animal.getZ(),3,0.2,0.2,0.2,1);
-                     break;
-                  }
-               }else if(a instanceof TadpoleEntity tadpole){
-                  tadpole.increaseAge(PassiveEntity.toGrowUpAge(tadpole.getTicksUntilGrowth()));
-                  ((ServerWorld) world).spawnParticles(ParticleTypes.COMPOSTER,tadpole.getX(),tadpole.getY()+tadpole.getHeight()*0.5,tadpole.getZ(),3,0.2,0.2,0.2,1);
-                  break;
+               if(animals.stream().filter(e -> (e instanceof AnimalEntity animal && animal.isBaby())).count() >= 5){
+                  ArcanaAchievements.grant(player,ArcanaAchievements.THEY_GROW_UP_SO_FAST.id);
+               }
+               
+               if(count >= 2){
+                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PASSIVE)); // Add xp
                }
             }
-            
-            if(animals.stream().filter(e -> (e instanceof AnimalEntity animal && animal.isBaby())).count() >= 5){
-               ArcanaAchievements.grant(player,ArcanaAchievements.THEY_GROW_UP_SO_FAST.id);
-            }
-            
-            if(count >= 2){
-               ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PASSIVE)); // Add xp
-            }
+         }catch(Exception ignored){
+            // Torchflowers are crops but without an age, so they kinda just crash you if you call isMature on them...
+            // TODO there is probably a better way to deal with this...
          }
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);
          boolean harvest = getBooleanProperty(stack,HARVEST_TAG);
          int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
@@ -297,13 +308,13 @@ public class WildGrowthCharm extends ArcanaItem {
                   SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
                }
             }
-            return TypedActionResult.success(stack);
+            return ActionResult.SUCCESS;
          }
-         return TypedActionResult.pass(stack);
+         return ActionResult.PASS;
       }
       
       @Override
-      public ActionResult useOnBlock(ItemUsageContext context) {
+      public ActionResult useOnBlock(ItemUsageContext context){
          PlayerEntity playerEntity = context.getPlayer();
          World world = context.getWorld();
          BlockPos blockPos = context.getBlockPos();
@@ -322,26 +333,26 @@ public class WildGrowthCharm extends ArcanaItem {
                playerEntity.sendMessage(Text.literal("The Charm Recedes").formatted(Formatting.GREEN,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
             }
-            return ActionResult.success(world.isClient);
+            return ActionResult.SUCCESS;
          }
          
          if(ArcanaAugments.getAugmentOnItem(context.getStack(),ArcanaAugments.CHARM_OF_BLOOMING.id) < 1){
             return ActionResult.PASS;
          }
          
-         if (BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)) {
-            if (!world.isClient) {
+         if(BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
+            if(!world.isClient){
                world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
             }
-            return ActionResult.success(world.isClient);
+            return ActionResult.SUCCESS;
          }
          BlockState blockState = world.getBlockState(blockPos);
          boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
-         if (bl && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos2, context.getSide())) {
-            if (!world.isClient) {
+         if(bl && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos2, context.getSide())){
+            if(!world.isClient){
                world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos2, 15);
             }
-            return ActionResult.success(world.isClient);
+            return ActionResult.SUCCESS;
          }
          return ActionResult.PASS;
       }

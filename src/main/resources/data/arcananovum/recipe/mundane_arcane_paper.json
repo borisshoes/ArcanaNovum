@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": {
-      "item": "minecraft:paper"
-    },
-    "X": {
-      "item": "minecraft:enchanted_book"
-    }
+    "#": "minecraft:paper",
+    "X": "minecraft:enchanted_book"
   },
   "pattern": [
     " # ",

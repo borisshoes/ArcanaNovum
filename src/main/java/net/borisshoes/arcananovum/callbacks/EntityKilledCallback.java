@@ -1,8 +1,11 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.achievements.ConditionalsAchievement;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.entities.SpearOfTenbrousEntity;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
@@ -30,7 +33,16 @@ import java.util.List;
 public class EntityKilledCallback {
    public static void killedEntity(ServerWorld serverWorld, Entity entity, LivingEntity livingEntity){
       try{
-         if(entity instanceof ServerPlayerEntity player){
+         ServerPlayerEntity player = null;
+         SpearOfTenbrousEntity spear = null;
+         if(entity instanceof ServerPlayerEntity){
+            player = (ServerPlayerEntity) entity;
+         }else if(entity instanceof SpearOfTenbrousEntity spearEntity && spearEntity.getOwner() instanceof ServerPlayerEntity){
+            player = (ServerPlayerEntity) spearEntity.getOwner();
+            spear = spearEntity;
+         }
+         
+         if(player != null){
             String entityTypeId = EntityType.getId(livingEntity.getType()).toString();
             
             // Check for soulstone then activate
@@ -55,7 +67,7 @@ public class EntityKilledCallback {
                   
                   if(arcanaItem instanceof Soulstone stone && !procdStone){
                      if(Soulstone.getType(item).equals(entityTypeId)){
-                        stone.killedEntity(serverWorld,player,livingEntity, item);
+                        stone.killedEntity(serverWorld,player,livingEntity,item,spear != null ? spear.getWeaponStack() : player.getWeaponStack());
                         procdStone = true; // Only activate one soulstone per kill
                      }
                   }
@@ -67,7 +79,7 @@ public class EntityKilledCallback {
                   belt.buildItemLore(carrier, ArcanaNovum.SERVER);
                }
             }
-   
+            
             ItemStack heldItem = player.getStackInHand(Hand.MAIN_HAND);
             if(ArcanaItemUtils.identifyItem(heldItem) instanceof ShadowStalkersGlaive glaive){ // Return 4 charges
                int oldEnergy = glaive.getEnergy(heldItem);
@@ -80,7 +92,7 @@ public class EntityKilledCallback {
                   }
                   player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
                }
-   
+               
                if((livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
                   ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,1);
                }
@@ -88,10 +100,16 @@ public class EntityKilledCallback {
                   ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
                }
             }
-   
+            
             ItemStack chestItem = player.getEquippedStack(EquipmentSlot.CHEST);
-            if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isFallFlying() && livingEntity instanceof MobEntity){
+            if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isGliding() && livingEntity instanceof MobEntity){
                ArcanaAchievements.grant(player,ArcanaAchievements.ANGEL_OF_DEATH.id);
+            }
+            
+            if(player.getWeaponStack().isOf(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()) || spear != null){
+               if(((ConditionalsAchievement)ArcanaAchievements.KILL_THEM_ALL).getConditions().containsKey(livingEntity.getType().getName().getString())){
+                  ArcanaAchievements.setCondition(player,ArcanaAchievements.KILL_THEM_ALL.id,livingEntity.getType().getName().getString(),true);
+               }
             }
          }
       }catch(Exception e){

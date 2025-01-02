@@ -89,11 +89,11 @@ APP_HOME=$( cd "${APP_HOME:-./}" > /dev/null && pwd -P ) || exit
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD=maximum
 
-warn () {
+warn (){
     echo "$*"
 } >&2
 
-die () {
+die (){
     echo
     echo "$*"
     echo

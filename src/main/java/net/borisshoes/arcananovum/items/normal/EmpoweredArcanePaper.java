@@ -8,37 +8,20 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class EmpoweredArcanePaper extends NormalPolymerItem {
    
-   private static final String TXT = "item/empowered_arcane_paper";
-   
-   public EmpoweredArcanePaper(Settings settings){
-      super(settings);
+   public EmpoweredArcanePaper(String id, Settings settings){
+      super(id, settings);
    }
    
    @Override
-   public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-      return ArcanaRegistry.getModelData(TXT).value();
-   }
-   
-   @Override
-   public ArrayList<Pair<Item, String>> getModels(){
-      ArrayList<Pair<Item, String>> models = new ArrayList<>();
-      models.add(new Pair<>(Items.PAPER,TXT));
-      return models;
-   }
-   
-   @Override
-   public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+   public Item getPolymerItem(ItemStack itemStack, PacketContext context){
       return Items.PAPER;
    }
    

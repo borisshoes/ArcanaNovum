@@ -19,7 +19,7 @@ public abstract class CreeperMixin extends HostileEntity {
    }
    
    @Inject(method = "initGoals", at = @At("HEAD"))
-   protected void initGoals(CallbackInfo ci) {
+   protected void initGoals(CallbackInfo ci){
       CreeperEntity creeper = (CreeperEntity) (Object) this;
       this.goalSelector.add(1, new FleeFelidaeCharmGoal<>(creeper, PlayerEntity.class, 8.0F, 1.0, 1.2));
    }

@@ -20,6 +20,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.EquippableComponent;
+import net.minecraft.component.type.RepairableComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
@@ -81,7 +84,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       int ticks = serverWorld.getServer().getTicks();
@@ -117,8 +120,10 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
       Item item = stack.getItem();
       if(ArcanaItemUtils.isArcane(stack)) return salvage;
       
-      if(item instanceof ArmorItem armor){
-         EquipmentSlot slot = armor.getSlotType();
+      if(stack.contains(DataComponentTypes.EQUIPPABLE) && stack.contains(DataComponentTypes.REPAIRABLE)){
+         EquippableComponent armorComp = stack.get(DataComponentTypes.EQUIPPABLE);
+         RepairableComponent repairComp = stack.get(DataComponentTypes.REPAIRABLE);
+         EquipmentSlot slot = armorComp.slot();
          int baseAmt = switch(slot){
             case MAINHAND, OFFHAND -> 1;
             case FEET -> 4;
@@ -127,34 +132,37 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
             case HEAD -> 5;
             case BODY -> 6;
          };
-         ItemStack[] repairItems = armor.getMaterial().value().repairIngredient().get().getMatchingStacks();
-         if(repairItems[0].isOf(Items.NETHERITE_INGOT)){
-            salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
-         }else{
-            salvage.add(repairItems[0].copyWithCount((int) Math.round(baseAmt*salvageLvl)));
+         List<ItemStack> repairItems = repairComp.items().stream().map(entry -> entry.value().getDefaultStack()).toList();
+         if(!repairItems.isEmpty()){
+            if(repairItems.getFirst().isOf(Items.NETHERITE_INGOT)){
+               salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
+            }else{
+               salvage.add(repairItems.getFirst().copyWithCount((int) Math.round(baseAmt*salvageLvl)));
+            }
          }
-      }else if(item instanceof ToolItem tool){
+      }else if((item instanceof MiningToolItem || item instanceof SwordItem) && stack.contains(DataComponentTypes.REPAIRABLE)){
          int baseAmt;
          if(item instanceof PickaxeItem){
+            baseAmt = 3;
+         }else if(item instanceof AxeItem){
             baseAmt = 3;
          }else if(item instanceof HoeItem){
             baseAmt = 2;
          }else if(item instanceof SwordItem){
             baseAmt = 2;
-         }else if(item instanceof AxeItem){
-            baseAmt = 3;
          }else if(item instanceof ShovelItem){
             baseAmt = 1;
          }else{
             baseAmt = 1;
          }
          
-         ItemStack[] repairItems = tool.getMaterial().getRepairIngredient().getMatchingStacks();
-         if(repairItems.length > 0){
-            if(repairItems[0].isOf(Items.NETHERITE_INGOT)){
-               salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.max(1,Math.round(4*salvageLvl))));
+         RepairableComponent repairComp = stack.get(DataComponentTypes.REPAIRABLE);
+         List<ItemStack> repairItems = repairComp.items().stream().map(entry -> entry.value().getDefaultStack()).toList();
+         if(!repairItems.isEmpty()){
+            if(repairItems.getFirst().isOf(Items.NETHERITE_INGOT)){
+               salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
             }else{
-               salvage.add(repairItems[0].copyWithCount((int) Math.max(1,Math.round(baseAmt*salvageLvl))));
+               salvage.add(repairItems.getFirst().copyWithCount((int) Math.round(baseAmt*salvageLvl)));
             }
          }
       }
@@ -194,7 +202,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STELLAR_CORE).getCheckOffset()),serverWorld.getBlockState(pos).get(HORIZONTAL_FACING));
@@ -225,23 +233,23 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if (!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)) {
+      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
       augments = new TreeMap<>();
@@ -255,7 +263,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
@@ -274,7 +282,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
          nbt.putString("customName",this.customName);
       }
       nbt.putBoolean("synthetic",this.synthetic);
-      if (!this.writeLootTable(nbt)) {
+      if(!this.writeLootTable(nbt)){
          Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
       }
    }
@@ -294,7 +302,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
    }
    
    @Override
-   protected void setHeldStacks(DefaultedList<ItemStack> list) {
+   protected void setHeldStacks(DefaultedList<ItemStack> list){
       for(int i = 0; i < list.size(); i++){
          this.inventory.setStack(i,list.get(i));
       }

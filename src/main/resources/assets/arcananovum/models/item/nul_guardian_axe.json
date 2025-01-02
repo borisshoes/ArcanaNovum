@@ -1,0 +1,6 @@
+{
+    "parent": "item/handheld",
+    "textures": {
+        "layer0": "arcananovum:item/nul_guardian_axe"
+    }
+}

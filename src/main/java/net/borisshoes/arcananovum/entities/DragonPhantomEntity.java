@@ -12,12 +12,11 @@ import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
@@ -28,11 +27,11 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    public DragonPhantomEntity(EntityType<? extends DragonPhantomEntity> entityType, World world){
       super(entityType, world);
       this.numPlayers = 5;
-      getAttributes().getCustomInstance(EntityAttributes.GENERIC_SCALE).addPersistentModifier(new EntityAttributeModifier(Identifier.of(MOD_ID,"phantom_scale"), 4.0, EntityAttributeModifier.Operation.ADD_VALUE));
+      getAttributes().getCustomInstance(EntityAttributes.SCALE).addPersistentModifier(new EntityAttributeModifier(Identifier.of(MOD_ID,"phantom_scale"), 4.0, EntityAttributeModifier.Operation.ADD_VALUE));
    }
    
    @Override
-   public EntityType<?> getPolymerEntityType(ServerPlayerEntity player){
+   public EntityType<?> getPolymerEntityType(PacketContext context){
       return EntityType.PHANTOM;
    }
    
@@ -40,14 +39,14 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
       this.numPlayers = numPlayers;
    }
    
-   public static DefaultAttributeContainer.Builder createPhantomAttributes() {
+   public static DefaultAttributeContainer.Builder createPhantomAttributes(){
       return HostileEntity.createHostileAttributes()
-            .add(EntityAttributes.GENERIC_SCALE, 1.0)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 64.0)
-            .add(EntityAttributes.GENERIC_MAX_HEALTH, 512.0)
-            .add(EntityAttributes.GENERIC_ARMOR, 10)
-            .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 10)
-            .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0);
+            .add(EntityAttributes.SCALE, 1.0)
+            .add(EntityAttributes.FOLLOW_RANGE, 64.0)
+            .add(EntityAttributes.MAX_HEALTH, 512.0)
+            .add(EntityAttributes.ARMOR, 10)
+            .add(EntityAttributes.ARMOR_TOUGHNESS, 10)
+            .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0);
    }
    
    @Override
@@ -57,7 +56,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
          setPersistent();
          
          if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getServer().getTicks() % 2 == 0){
-            serverWorld.spawnParticles(new DustParticleEffect(Vec3d.unpackRgb(16711892).toVector3f(),3f),getX(),getY(),getZ(),1,1.5,1,1.5,0);
+            serverWorld.spawnParticles(new DustParticleEffect(0xFF00D4,3f),getX(),getY(),getZ(),1,1.5,1,1.5,0);
             
             
             if(serverWorld.getRegistryKey().equals(World.END) && this.circlingCenter.getY() > 120){
@@ -70,7 +69,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    }
    
    @Override
-   protected float modifyAppliedDamage(DamageSource source, float amount) {
+   protected float modifyAppliedDamage(DamageSource source, float amount){
       float scale = numPlayers > 0 ? 2f/numPlayers : 1;
       scale = Math.max(scale,0.1f);
       if(source.getAttacker() instanceof EnderDragonEntity) amount = 0;
@@ -80,7 +79,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt) {
+   public void writeCustomDataToNbt(NbtCompound nbt){
       super.writeCustomDataToNbt(nbt);
       nbt.putInt("numPlayers",numPlayers);
    }

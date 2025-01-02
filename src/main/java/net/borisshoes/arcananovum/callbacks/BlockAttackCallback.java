@@ -14,7 +14,6 @@ public class BlockAttackCallback {
    
    public static ActionResult attackBlock(PlayerEntity playerEntity, World world, Hand hand, BlockPos blockPos, Direction direction){
       ItemStack item = playerEntity.getStackInHand(hand);
-      //System.out.println(hand+" "+item);
       ActionResult result = ActionResult.PASS;
       try{
          LeftClickItem arcanaItem = null;

@@ -1,0 +1,6 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/gui/filter"
+    }
+}

@@ -16,7 +16,6 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
@@ -39,7 +38,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -59,22 +57,17 @@ public class StormArrows extends RunicArrow {
 	public static final String ID = "storm_arrows";
    
    private static final double[] stormChance = {.1,.2,.4,.6,.8,1};
-   private static final String TXT = "item/runic_arrow";
    
    public StormArrows(){
       id = ID;
       name = "Storm Arrows";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ARROWS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new StormArrowsItem(new Item.Settings().maxCount(64).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GRAY))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(12040354),new ArrayList<>()))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new StormArrowsItem(addArcanaItemComponents(new Item.Settings().maxCount(64)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(12040354),new ArrayList<>(),Optional.empty()))
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_LIGHTNING_ROD};
       
       ItemStack stack = new ItemStack(item);
@@ -143,7 +136,7 @@ public class StormArrows extends RunicArrow {
    }
    
    private void chainLightning(PersistentProjectileEntity arrow, Entity hitEntity, int lvl){
-      World world = arrow.getEntityWorld();
+      if(!(arrow.getEntityWorld() instanceof ServerWorld world)) return;
       Vec3d pos = hitEntity.getPos();
       double range = 5;
       
@@ -165,7 +158,7 @@ public class StormArrows extends RunicArrow {
                
                DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow.getOwner(),arrow.getOwner());
                e.timeUntilRegen = 1;
-               e.damage(source,6);
+               e.damage(world,source,6);
                hits.add(e);
             }
          }
@@ -193,18 +186,13 @@ public class StormArrows extends RunicArrow {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("     Storm Arrows\n\nRarity: Exotic\n\nThe channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to force a storm, abeit briefly. The Matrix doesn't always seem to succeed in activating though.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Storm Arrows").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe Channeling enchantment requires a storm to use. Throwing a bit of Arcana into it seems to charge the air enough to mimic a storm, although it isn’t always successful in doing so.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class StormArrowsItem extends ArcanaPolymerArrowItem {
       public StormArrowsItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

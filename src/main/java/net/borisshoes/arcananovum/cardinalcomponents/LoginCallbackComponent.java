@@ -20,7 +20,7 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    
    @Override
    public boolean addCallback(LoginCallback callback){
-      if (callbacks.contains(callback)) return false;
+      if(callbacks.contains(callback)) return false;
       for(LoginCallback loginCallback : callbacks){
          if(callback.getId().equals(loginCallback.getId()) && callback.getPlayer().equals(loginCallback.getPlayer())){
             loginCallback.combineCallbacks(callback);
@@ -32,7 +32,7 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    
    @Override
    public boolean removeCallback(LoginCallback callback){
-      if (!callbacks.contains(callback)) return false;
+      if(!callbacks.contains(callback)) return false;
       return callbacks.remove(callback);
    }
    
@@ -41,7 +41,7 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
       try{
          callbacks.clear();
          NbtList callbacksTag = tag.getList("Callbacks", NbtElement.COMPOUND_TYPE);
-         for (NbtElement e : callbacksTag) {
+         for (NbtElement e : callbacksTag){
             NbtCompound callbackTag = (NbtCompound) e;
             String playerUUID = callbackTag.getString("uuid");
             String callbackId = callbackTag.getString("id");

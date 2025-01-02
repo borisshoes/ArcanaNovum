@@ -1,0 +1,84 @@
+"item.arcananovum.$SCName": "$FName"
+
+public static final ArcanaItem $CName = ArcanaRegistry.register(new $CCName());
+
+
+import net.minecraft.util.Pair;
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
+public class $CCName extends ArcanaItem {
+   public static final String ID = "$SCName";
+
+   private static final String TXT = "item/$SCName";
+
+   public $CCName(){
+      id = ID;
+      name = "$FName";
+      rarity = ArcanaRarity.;
+      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.};
+      itemVersion = 0;
+      vanillaItem = Items.;
+      item = new $CCNameItem(addArcanaItemComponents(new Item.Settings().maxCount(1)
+            .component(DataComponentTypes.ITEM_NAME, Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted($NameFormat))
+      ));
+      researchTasks = new RegistryKey[]{};  // TODO
+
+      ItemStack stack = new ItemStack(item);
+      initializeArcanaTag(stack);
+      stack.setCount(item.getMaxCount());
+      //putProperty(stack,TAG,);
+      setPrefStack(stack);
+   }
+
+   @Override
+   public List<Text> getItemLore(@Nullable ItemStack itemStack){
+      List<MutableText> lore = new ArrayList<>();
+      $LoreText
+      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
+   }
+
+   @Override
+	protected ArcanaRecipe makeRecipe(){
+      // TODO: Generate Recipe
+      return null;
+   }
+
+   @Override
+   public List<List<Text>> getBookLore(){
+      List<List<Text>> list = new ArrayList<>();
+      list.add(List.of(Text.literal("TODO").formatted(Formatting.BLACK))); // TODO
+      return list;
+   }
+
+   public class $CCNameItem extends ArcanaPolymerItem {
+      public $CCNameItem(Item.Settings settings){
+         super(getThis(),settings);
+      }
+
+      @Override
+      public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context){
+         return ArcanaRegistry.getModelData(TXT);
+      }
+
+      @Override
+      public ItemStack getDefaultStack(){
+         return prefItem;
+      }
+
+      @Override
+      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+         if(!ArcanaItemUtils.isArcane(stack)) return;
+         if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+
+
+      }
+
+      @Override
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
+         ItemStack stack = playerEntity.getStackInHand(hand);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
+
+         return ActionResult.PASS;
+      }
+   }
+}

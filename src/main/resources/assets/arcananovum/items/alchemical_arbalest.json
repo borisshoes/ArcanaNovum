@@ -1,0 +1,116 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:custom_model_data",
+    "cases": [
+      {
+        "when": "runic",
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:crossbow/pull",
+            "entries": [
+              {
+                "threshold": 0.58,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/alchemical_arbalest_pulling_1_runic"
+                }
+              },
+              {
+                "threshold": 1,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/alchemical_arbalest_pulling_2_runic"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/alchemical_arbalest_pulling_0_runic"
+            }
+          },
+          "on_false": {
+            "type": "minecraft:select",
+            "property": "minecraft:charge_type",
+            "cases": [
+              {
+                "when": "arrow",
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/alchemical_arbalest_arrow_runic"
+                }
+              },
+              {
+                "when": "rocket",
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "arcananovum:item/alchemical_arbalest_arrow_runic"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/alchemical_arbalest_runic"
+            }
+          }
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:crossbow/pull",
+        "entries": [
+          {
+            "threshold": 0.58,
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/alchemical_arbalest_pulling_1"
+            }
+          },
+          {
+            "threshold": 1,
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/alchemical_arbalest_pulling_2"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "arcananovum:item/alchemical_arbalest_pulling_0"
+        }
+      },
+      "on_false": {
+        "type": "minecraft:select",
+        "property": "minecraft:charge_type",
+        "cases": [
+          {
+            "when": "arrow",
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/alchemical_arbalest_arrow"
+            }
+          },
+          {
+            "when": "rocket",
+            "model": {
+              "type": "minecraft:model",
+              "model": "arcananovum:item/alchemical_arbalest_arrow"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "arcananovum:item/alchemical_arbalest"
+        }
+      }
+    }
+  },
+  "hand_animation_on_swap": false
+}

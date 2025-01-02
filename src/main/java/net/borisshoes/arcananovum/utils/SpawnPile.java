@@ -2,6 +2,8 @@ package net.borisshoes.arcananovum.utils;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.registry.tag.BlockTags;
@@ -11,6 +13,8 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 
 import java.util.ArrayList;
 
@@ -19,45 +23,45 @@ public class SpawnPile {
    double x;
    double z;
    
-   public SpawnPile(double x, double z) {
+   public SpawnPile(double x, double z){
       this.x=x;
       this.z=z;
    }
    
-   double getDistance(SpawnPile other) {
+   double getDistance(SpawnPile other){
       double d = this.x - other.x;
       double e = this.z - other.z;
       return Math.sqrt(d * d + e * e);
    }
    
-   void normalize() {
+   void normalize(){
       double d = this.absolute();
       this.x /= d;
       this.z /= d;
    }
    
-   double absolute() {
+   double absolute(){
       return Math.sqrt(this.x * this.x + this.z * this.z);
    }
    
-   public void subtract(SpawnPile other) {
+   public void subtract(SpawnPile other){
       this.x -= other.x;
       this.z -= other.z;
    }
    
-   public boolean clamp(double minX, double minZ, double maxX, double maxZ) {
+   public boolean clamp(double minX, double minZ, double maxX, double maxZ){
       boolean bl = false;
-      if (this.x < minX) {
+      if(this.x < minX){
          this.x = minX;
          bl = true;
-      } else if (this.x > maxX) {
+      } else if(this.x > maxX){
          this.x = maxX;
          bl = true;
       }
-      if (this.z < minZ) {
+      if(this.z < minZ){
          this.z = minZ;
          bl = true;
-      } else if (this.z > maxZ) {
+      } else if(this.z > maxZ){
          this.z = maxZ;
          bl = true;
       }
@@ -69,10 +73,10 @@ public class SpawnPile {
       boolean bl = blockView.getBlockState(mutable).isAir();
       mutable.move(Direction.DOWN);
       boolean bl2 = blockView.getBlockState(mutable).isAir();
-      while (mutable.getY() > blockView.getBottomY()) {
+      while(mutable.getY() > blockView.getBottomY()){
          mutable.move(Direction.DOWN);
          boolean bl3 = blockView.getBlockState(mutable).isAir();
-         if (!bl3 && bl2 && bl) {
+         if(!bl3 && bl2 && bl){
             return mutable.getY() + 1;
          }
          bl = bl2;
@@ -81,15 +85,54 @@ public class SpawnPile {
       return maxY + 1;
    }
    
-   public int getY(BlockView blockView, int maxY) {
+   private static BlockPos getEntitySpawnPos(World world, EntityType<?> entityType, int x, int z, boolean ignoreRestrictions){
+      //int i = world.getTopY(SpawnRestriction.getHeightmapType(entityType), x, z);
+      int i = world.getTopYInclusive();
+      BlockPos.Mutable mutable = new BlockPos.Mutable(x, i, z);
+      if(world.getDimension().hasCeiling()){
+         do{
+            mutable.move(Direction.DOWN);
+         }while(!world.getBlockState(mutable).isAir());
+      }
+      do{
+         mutable.move(Direction.DOWN);
+      }while(world.getBlockState(mutable).isAir() && mutable.getY() > world.getBottomY());
+      mutable.move(Direction.UP);
+      
+      if(ignoreRestrictions){
+         return mutable.toImmutable();
+      }else{
+         return SpawnRestriction.getLocation(entityType).adjustPosition(world, mutable.toImmutable());
+      }
+      
+      
+   }
+   
+   public static ArrayList<BlockPos> makeSpawnLocations(int num, int range, ServerWorld world, EntityType<?> entityType, BlockPos center){
+      ArrayList<BlockPos> positions = new ArrayList<>();
+      for(int i = 0; i < num; i++){
+         BlockPos entitySpawnPos;
+         int tries = 0;
+         do{
+            int x = center.getX() + (int) (Math.random() * range * 2 - range);
+            int z = center.getZ() + (int) (Math.random() * range * 2 - range);
+            entitySpawnPos = getEntitySpawnPos(world, entityType, x, z, true);
+            tries++;
+         }while(Math.abs(entitySpawnPos.getY()-center.getY()) > range && tries < 10000);
+         positions.add(entitySpawnPos);
+      }
+      return positions;
+   }
+   
+   public int getY(BlockView blockView, int maxY){
       BlockPos.Mutable mutable = new BlockPos.Mutable(this.x, (double)(maxY + 1), this.z);
       boolean bl = blockView.getBlockState(mutable).isAir();
       mutable.move(Direction.DOWN);
       boolean bl2 = blockView.getBlockState(mutable).isAir();
-      while (mutable.getY() > blockView.getBottomY()) {
+      while (mutable.getY() > blockView.getBottomY()){
          mutable.move(Direction.DOWN);
          boolean bl3 = blockView.getBlockState(mutable).isAir();
-         if (!bl3 && bl2 && bl) {
+         if(!bl3 && bl2 && bl){
             return mutable.getY() + 1;
          }
          bl = bl2;
@@ -98,7 +141,7 @@ public class SpawnPile {
       return maxY + 1;
    }
    
-   public boolean isSafe(BlockView world, int maxY) {
+   public boolean isSafe(BlockView world, int maxY){
       BlockPos blockPos = BlockPos.ofFloored(this.x, (double)(this.getY(world, maxY) - 1), this.z);
       BlockState blockState = world.getBlockState(blockPos);
       FluidState fluidState = world.getFluidState(blockPos);
@@ -106,7 +149,7 @@ public class SpawnPile {
       return blockPos.getY() < maxY && fluidState.isEmpty() && !invalid;
    }
    
-   public void setPileLocation(Random random, double minX, double minZ, double maxX, double maxZ) {
+   public void setPileLocation(Random random, double minX, double minZ, double maxX, double maxZ){
       this.x = MathHelper.nextDouble(random, minX, maxX);
       this.z = MathHelper.nextDouble(random, minZ, maxZ);
    }

@@ -21,8 +21,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -34,16 +32,18 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,15 +70,12 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Stellar Core";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.BLAST_FURNACE;
-      this.block = new StellarCoreBlock(AbstractBlock.Settings.create().requiresTool().strength(3.5f,1200.0f).luminance(StellarCoreBlock::getLightLevel).sounds(BlockSoundGroup.METAL));
-      item = new StellarCoreItem(block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GOLD))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      block = new StellarCoreBlock(AbstractBlock.Settings.create().requiresTool().strength(3.5f,1200.0f).luminance(StellarCoreBlock::getLightLevel).sounds(BlockSoundGroup.METAL));
+      item = new StellarCoreItem(block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.OBTAIN_BLAST_FURNACE,ResearchTasks.OBTAIN_NETHERITE_INGOT};
       
       ItemStack stack = new ItemStack(item);
@@ -159,9 +156,10 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Stellar Core\n\nRarity: Exotic\n\nSo often I find my storage plagued with decrepid armor. A furnace is far too crude to extract any worthwhile material, and it can't even get close to hot enough to melt diamond or netherite.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Stellar Core\n\nWhat I need is the power of the sun!\nA cleverly enchanted alloy of Obsidian, Blackstone and Netherite should be able to withstand the temperatures to melt even netherite coated diamond; allowing me to extract a large portion of material.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Stellar Core\n\nInterestingly enough, the Arcane Sun I have created interacts with the enchantments bound to equipment and produces a glittery dust that is nearly indestructible and emits trace amounts of Arcana.\nPerhaps this can be used for something...").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Stellar Core").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nSo often I find my storage plagued with decrepit armor. A furnace is far too crude to extract any worthwhile material, and it can’t even get close to hot enough to melt Diamond or Netherite.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Stellar Core").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nWhat I need is the power of the sun! A cleverly enchanted alloy of Obsidian, Blackstone and Netherite should be able to withstand the temperatures to melt even Netherite coated Diamond, allowing me to extract a large \n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Stellar Core").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nportion of the material.\n\nInterestingly enough, the Arcane Sun I have created interacts with the enchantments bound to equipment and produces a glittery dust that is nearly indestructible \n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Stellar Core").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nand contains trace amounts of Arcana. This might be the key to making better equipment.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -178,56 +176,56 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
    
    public class StellarCoreBlock extends ArcanaPolymerBlockEntity {
       public static final BooleanProperty LIT = Properties.LIT;
-      public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
       
       public StellarCoreBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state){
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.BLAST_FURNACE.getDefaultState().with(LIT,state.get(LIT)).with(HORIZONTAL_FACING,state.get(HORIZONTAL_FACING));
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx) {
+      public BlockState getPlacementState(ItemPlacementContext ctx){
          return this.getDefaultState().with(LIT,false).with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite());
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
          stateManager.add(LIT,HORIZONTAL_FACING);
       }
       
       @Override
-      public BlockState rotate(BlockState state, BlockRotation rotation) {
+      public BlockState rotate(BlockState state, BlockRotation rotation){
          return state.with(HORIZONTAL_FACING, rotation.rotate(state.get(HORIZONTAL_FACING)));
       }
       
       @Override
-      public BlockState mirror(BlockState state, BlockMirror mirror) {
+      public BlockState mirror(BlockState state, BlockMirror mirror){
          return state.rotate(mirror.getRotation(state.get(HORIZONTAL_FACING)));
       }
       
       
       @Nullable
-      public static StellarCoreBlockEntity getEntity(World world, BlockPos pos) {
+      public static StellarCoreBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof StellarCoreBlock)) {
+         if(!(state.getBlock() instanceof StellarCoreBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof StellarCoreBlockEntity core ? core : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new StellarCoreBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.STELLAR_CORE_BLOCK_ENTITY, StellarCoreBlockEntity::ticker);
       }
       
@@ -252,8 +250,8 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-         if (state.isOf(newState.getBlock())) {
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved){
+         if(state.isOf(newState.getBlock())){
             return;
          }
          BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -263,14 +261,14 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof StellarCoreBlockEntity core) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof StellarCoreBlockEntity core){
             initializeArcanaBlock(stack,core);
          }
       }
       
-      public static int getLightLevel(BlockState state) {
+      public static int getLightLevel(BlockState state){
          return state.get(Properties.LIT) ? 13 : 0;
       }
    }

@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
@@ -18,7 +19,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
@@ -29,10 +30,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.item.ArmorMaterials;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.equipment.ArmorMaterials;
+import net.minecraft.item.equipment.EquipmentType;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -43,9 +46,9 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,25 +61,18 @@ public class NulMemento extends EnergyItem {
 	public static final String ID = "nul_memento";
    
    public static final String HEAD_TAG = "onHead";
-   
-   private static final String TXT = "item/nul_memento";
-   private static final Item textureItem = Items.BLACK_STAINED_GLASS;
+   private static final Item textureItem = Items.TINTED_GLASS;
    
    public NulMemento(){
       id = ID;
       name = "Nul Memento";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.EQUIPMENT};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
-      item = new NulMementoItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      item = new NulMementoItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
-      models.add(new Pair<>(textureItem,TXT));
+      ));
+      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.KILL_CONSTRUCT};
       
       ItemStack stack = new ItemStack(item);
@@ -183,12 +179,20 @@ public class NulMemento extends EnergyItem {
    }
    
    @Override
+   public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){
+      if(ArcanaItemUtils.identifyItem(stack) instanceof NulMemento && augment == ArcanaAugments.DEATHS_CHAMPION && level >= 1){
+         EnhancedStatUtils.enhanceItem(stack,1);
+      }
+      return stack;
+   }
+   
+   @Override
    public int getMaxEnergy(ItemStack item){
       return 36000 - 12000*Math.max(ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.TEMPO_MORTUUS.id),0); // 30 minutes - 10 per level
    }
    
-   public boolean protectFromDeath(ItemStack stack, LivingEntity living, DamageSource source){
-      if (source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.isOf(ArcanaDamageTypes.VENGEANCE_TOTEM) && !source.isOf(ArcanaDamageTypes.CONCENTRATION)) {
+   public boolean protectFromDeath(ItemStack stack, LivingEntity living, DamageSource source, boolean constructInterference){
+      if(source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.isOf(ArcanaDamageTypes.VENGEANCE_TOTEM) && !source.isOf(ArcanaDamageTypes.CONCENTRATION)){
          return false;
       }
       if(getEnergy(stack) > 0 && !isActive(stack)){
@@ -218,15 +222,16 @@ public class NulMemento extends EnergyItem {
             return true;
          }
          
-         
-         dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
-               Text.literal("\n")
-                     .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                     .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
-                     .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
-               Text.literal("")
-                     .append(Text.literal("Let my gift offer you a second chance.").formatted(Formatting.DARK_GRAY))
-         )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
+         if(!constructInterference){
+            dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
+                  Text.literal("\n")
+                        .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                        .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                        .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
+                  Text.literal("")
+                        .append(Text.literal("Let my gift offer you a second chance.").formatted(Formatting.DARK_GRAY))
+            )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),true);
+         }
          ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.NUL_MEMENTO_PROTECT));
       }
       
@@ -234,7 +239,7 @@ public class NulMemento extends EnergyItem {
       
       living.setHealth(1.0f);
       living.clearStatusEffects();
-      living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, 300, 0));
+      living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, constructInterference ? 300/2 : 300, 0));
       living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, 100, 0));
       living.getWorld().sendEntityStatus(living, EntityStatuses.USE_TOTEM_OF_UNDYING);
       return true;
@@ -270,7 +275,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal("As the crushing weight of ").formatted(Formatting.DARK_GRAY))
                   .append(Text.literal("concentration").formatted(Formatting.RED))
                   .append(Text.literal(" takes your mind you hear the ").formatted(Formatting.DARK_GRAY))
-                  .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(TextUtils.withColor(Text.literal("Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR))
                   .append(Text.literal(" whisper...")).formatted(Formatting.DARK_GRAY)
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
       
@@ -367,7 +372,9 @@ public class NulMemento extends EnergyItem {
                )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
                
                StatusEffectInstance nausea = new StatusEffectInstance(StatusEffects.NAUSEA,200, 4, false, false, true);
+               StatusEffectInstance ward = new StatusEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT,increments*2, 0, false, false, true);
                player.addStatusEffect(nausea);
+               player.addStatusEffect(ward);
                headStack.decrement(headStack.getCount());
                SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 1f, 1f);
             }
@@ -639,32 +646,36 @@ public class NulMemento extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Nul Memento\n\nRarity: Divine\n\nThis entity of death that I have acquired a passing familiarity with is most intriguing.\n\nHe wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded.")));
-      list.add(List.of(Text.literal("      Nul Memento\n\nAs I was gifted this strange skull, the entity informed me that I have become one of his 'chosen'.\nI'm not sure what to think of this. What machinations could a deity of death be planning such that he needs help from me?")));
-      list.add(List.of(Text.literal("      Nul Memento\n\nThe Memento whispers to me every so often. I have come to learn the entity calls himself Nul, the God of Death.\n\nHe speaks of Arcana, and secrets that I have yet to learn.\n\nHe warns that one mind can only hold so")));
-      list.add(List.of(Text.literal("      Nul Memento\n\nmuch knowledge at one time. However, he offers his aid in circumventing this limitation.\n\nThis Memento reacts to an overburdened mind when worn, and will make me forget some of the skills I have learned.")));
-      list.add(List.of(Text.literal("      Nul Memento\n\nAs long as I use those skills before forgetting them. I should be able to take advantage of new knowledge with a new limit to what I can learn.\n\nThe Memento also offers incredible protection, as if it was")));
-      list.add(List.of(Text.literal("      Nul Memento\n\nmade of enchanted Netherite!\n\nI believe wearing it may also encourage Nul to save me from any unfortunate circumstances that find me near death.")));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis entity of Death that I have acquired a passing familiarity with is most intriguing. He wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded. I was gifted this strange ").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nskull, and was informed that I have become one of his ‘chosen’.\nI’m not sure what to think of this. What machinations could a Deity of Death be planning such that he needs help from me? The Memento whispers to me every so often.").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nI have come to learn the entity calls himself Nul, the God of Death and Knowledge. He speaks of Arcana, and secrets that I have yet to learn. He warns that one mind can only hold so much knowledge at one time. ").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nHowever, he offers his aid in circumventing this limitation. \nThis Memento reacts to an overburdened mind when worn and will make me forget all of the skills I have learned. ").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nAs long as I use those skills before forgetting them, I should be able to take advantage of new knowledge with a new limit to what I can learn.\nThe Memento also offers incredible protection, as if it ").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nwere made of enchanted Netherite!\n\nNul himself stated that by wearing his Memento, he may be willing to spare me from death every now and again.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class NulMementoItem extends ArcanaPolymerArmorItem {
       public NulMementoItem(Item.Settings settings){
-         super(getThis(),ArmorMaterials.NETHERITE,Type.HELMET,settings);
+         super(getThis(), ArmorMaterials.NETHERITE, EquipmentType.HELMET, settings);
       }
       
       @Override
-      public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+      public Item getPolymerItem(ItemStack itemStack, PacketContext context){
          if(ArcanaItemUtils.isArcane(itemStack)){
             boolean onHead = getBooleanProperty(itemStack,HEAD_TAG);
-            if(onHead && PolymerResourcePackUtils.hasMainPack(player)) return textureItem;
+            if(onHead && PolymerResourcePackUtils.hasMainPack(context)) return textureItem;
          }
-         return super.getPolymerItem(itemStack, player);
+         return super.getPolymerItem(itemStack, context);
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT+"-"+getPolymerItem(itemStack,player).getTranslationKey()).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         EquippableComponent equippableComponent = baseStack.get(DataComponentTypes.EQUIPPABLE);
+         EquippableComponent newComp = EquippableComponent.builder(equippableComponent.slot()).equipSound(equippableComponent.equipSound()).build();
+         baseStack.set(DataComponentTypes.EQUIPPABLE,newComp);
+         return baseStack;
       }
       
       @Override

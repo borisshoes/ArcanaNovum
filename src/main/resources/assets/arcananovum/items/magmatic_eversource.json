@@ -1,0 +1,41 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "remove",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magmatic_eversource_remove"
+                }
+            },
+            {
+                "when": "place",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magmatic_eversource_place"
+                }
+            },
+            {
+                "when": "remove_cooldown",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magmatic_eversource_remove_cooldown"
+                }
+            },
+            {
+                "when": "place_cooldown",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/magmatic_eversource_place_cooldown"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/magmatic_eversource_place"
+        }
+    },
+    "hand_animation_on_swap": false
+}

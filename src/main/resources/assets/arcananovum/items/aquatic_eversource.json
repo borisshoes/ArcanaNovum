@@ -1,0 +1,27 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "remove",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/aquatic_eversource_remove"
+                }
+            },
+            {
+                "when": "place",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/aquatic_eversource_place"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/aquatic_eversource_place"
+        }
+    },
+    "hand_animation_on_swap": false
+}

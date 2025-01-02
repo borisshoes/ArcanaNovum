@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/nul_guardian_glaive"
+    },
+    "hand_animation_on_swap": false
+}

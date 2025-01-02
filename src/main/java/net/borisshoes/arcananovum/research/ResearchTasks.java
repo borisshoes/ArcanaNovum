@@ -62,10 +62,14 @@ public class ResearchTasks {
    public static final RegistryKey<ResearchTask> OBTAIN_BLAST_FURNACE = of("obtain_blast_furnace");
    public static final RegistryKey<ResearchTask> OBTAIN_BLUE_ICE = of("obtain_blue_ice");
    public static final RegistryKey<ResearchTask> OBTAIN_ANVIL = of("obtain_anvil");
+   public static final RegistryKey<ResearchTask> OBTAIN_MACE = of("obtain_mace");
+   public static final RegistryKey<ResearchTask> OBTAIN_CONDUIT = of("obtain_conduit");
    public static final RegistryKey<ResearchTask> OBTAIN_ENCHANTED_GOLDEN_APPLE = of("obtain_enchanted_golden_apple");
    public static final RegistryKey<ResearchTask> OBTAIN_LEADERSHIP_CHARM = of("obtain_leadership_charm");
    public static final RegistryKey<ResearchTask> OBTAIN_WINGS_OF_ENDERIA = of("obtain_wings_of_enderia");
    public static final RegistryKey<ResearchTask> OBTAIN_PICKAXE_OF_CEPTYUS = of("obtain_pickaxe_of_ceptyus");
+   public static final RegistryKey<ResearchTask> OBTAIN_SPEAR_OF_TENBROUS = of("obtain_spear_of_tenbrous");
+   public static final RegistryKey<ResearchTask> OBTAIN_GREAVES_OF_GAIALTUS = of("obtain_pickaxe_of_gaialtus");
    public static final RegistryKey<ResearchTask> BREAK_SCULK = of("break_sculk");
    public static final RegistryKey<ResearchTask> BREAK_SPAWNER = of("break_spawner");
    public static final RegistryKey<ResearchTask> BREAK_OBSIDIAN = of("break_obsidian");
@@ -82,6 +86,8 @@ public class ResearchTasks {
    public static final RegistryKey<ResearchTask> KILL_BLAZE = of("kill_blaze");
    public static final RegistryKey<ResearchTask> KILL_MAGMA_CUBE = of("kill_magma_cube");
    public static final RegistryKey<ResearchTask> KILL_EVOKER = of("kill_evoker");
+   public static final RegistryKey<ResearchTask> CATCH_FISH = of("catch_fish");
+   public static final RegistryKey<ResearchTask> UNLOCK_AQUATIC_EVERSOURCE = of("unlock_aquatic_eversource");
    public static final RegistryKey<ResearchTask> UNLOCK_RUNIC_MATRIX = of("unlock_runic_matrix");
    public static final RegistryKey<ResearchTask> UNLOCK_STARLIGHT_FORGE = of("unlock_starlight_forge");
    public static final RegistryKey<ResearchTask> UNLOCK_TWILIGHT_ANVIL = of("unlock_twilight_anvil");
@@ -144,6 +150,10 @@ public class ResearchTasks {
    public static final RegistryKey<ResearchTask> ADVANCEMENT_OBTAIN_NETHERITE_HOE = of("advancement_obtain_netherite_hoe");
    public static final RegistryKey<ResearchTask> ADVANCEMENT_BRED_ALL_ANIMALS = of("advancement_bred_all_animals");
    public static final RegistryKey<ResearchTask> ADVANCEMENT_FALL_FROM_WORLD_HEIGHT = of("advancement_fall_from_world_height");
+   public static final RegistryKey<ResearchTask> ADVANCEMENT_EYE_SPY = of("advancement_eye_spy");
+   public static final RegistryKey<ResearchTask> ADVANCEMENT_ENTER_END = of("advancement_enter_end");
+   public static final RegistryKey<ResearchTask> ADVANCEMENT_FURIOUS_COCKTAIL = of("advancement_furious_cocktail");
+   public static final RegistryKey<ResearchTask> ADVANCEMENT_OVER_OVERKILL = of("advancement_over_overkill");
    public static final RegistryKey<ResearchTask> DIMENSION_TRAVEL = of("dimension_travel");
    public static final RegistryKey<ResearchTask> CAT_SCARE = of("cat_scare");
    public static final RegistryKey<ResearchTask> RESONATE_BELL = of("resonate_bell");
@@ -152,12 +162,16 @@ public class ResearchTasks {
    public static final RegistryKey<ResearchTask> FISH_MOB = of("fish_mob");
    public static final RegistryKey<ResearchTask> LEVEL_100 = of("level_100");
    public static final RegistryKey<ResearchTask> HUNGER_DAMAGE = of("hunger_damage");
+   public static final RegistryKey<ResearchTask> DROWNING_DAMAGE = of("drowning_damage");
    public static final RegistryKey<ResearchTask> CONCENTRATION_DAMAGE = of("concentration_damage");
    public static final RegistryKey<ResearchTask> FEATHER_FALL = of("feather_fall");
    public static final RegistryKey<ResearchTask> FIND_SPAWNER = of("find_spawner");
    public static final RegistryKey<ResearchTask> USE_SOUL_SPEED = of("use_soul_speed");
    public static final RegistryKey<ResearchTask> ACTIVATE_MENDING = of("activate_mending");
    public static final RegistryKey<ResearchTask> OBTAIN_SILK_TOUCH = of("obtain_silk_touch");
+   public static final RegistryKey<ResearchTask> INFUSE_ITEM = of("infuse_item");
+   public static final RegistryKey<ResearchTask> HONEY_CLEANSE = of("honey_cleanse");
+   public static final RegistryKey<ResearchTask> MILK_CLEANSE = of("milk_cleanse");
    public static final RegistryKey<ResearchTask> EFFECT_ABSORPTION = of("effect_absorption");
    public static final RegistryKey<ResearchTask> EFFECT_SWIFTNESS = of("effect_swiftness");
    public static final RegistryKey<ResearchTask> EFFECT_JUMP_BOOST = of("effect_jump_boost");
@@ -168,6 +182,9 @@ public class ResearchTasks {
    public static final RegistryKey<ResearchTask> EFFECT_FIRE_RESISTANCE = of("effect_fire_resistance");
    public static final RegistryKey<ResearchTask> EFFECT_STRENGTH = of("effect_strength");
    public static final RegistryKey<ResearchTask> EFFECT_WEAKNESS = of("effect_weakness");
+   public static final RegistryKey<ResearchTask> EFFECT_NAUSEA = of("effect_nausea");
+   public static final RegistryKey<ResearchTask> EFFECT_POISON = of("effect_poison");
+   public static final RegistryKey<ResearchTask> EFFECT_DOLPHINS_GRACE = of("effect_dolphins_grace");
    
    @SuppressWarnings("unchecked")
    public static void registerResearchTasks(){
@@ -597,6 +614,33 @@ public class ResearchTasks {
             new ItemStack(Items.ANVIL)
       ));
       
+      ResearchTasks.register(OBTAIN_MACE, new ObtainResearchTask(
+            OBTAIN_MACE.getValue().getPath(), Items.MACE,
+            Text.literal("Obtain a Mace"),
+            new Text[]{
+                  Text.literal("This heavy core is stranger than expected."),
+                  Text.literal("It certainly lives up to the name, however"),
+                  Text.literal(" its weight has some variation to it?"),
+                  Text.literal("The dark core within seems to have some"),
+                  Text.literal(" control over its local gravity field."),
+                  Text.literal("I believe I can forge this into a powerful weapon.")
+            },
+            new ItemStack(Items.MACE), OBTAIN_HEAVY_CORE
+      ));
+      
+      ResearchTasks.register(OBTAIN_CONDUIT, new ObtainResearchTask(
+            OBTAIN_CONDUIT.getValue().getPath(), Items.CONDUIT,
+            Text.literal("Obtain a Conduit"),
+            new Text[]{
+                  Text.literal("I believe I found the artifact I am looking for."),
+                  Text.literal("Unfortunately, it seems mostly inert on its own."),
+                  Text.literal("Given the architecture of the ocean monuments,"),
+                  Text.literal(" it might be reasonable to assume that this oceanic"),
+                  Text.literal(" heart needs some type of construct to activate.")
+            },
+            new ItemStack(Items.CONDUIT), OBTAIN_HEART_OF_THE_SEA
+      ));
+      
       ResearchTasks.register(OBTAIN_ENCHANTED_GOLDEN_APPLE, new ObtainResearchTask(
             OBTAIN_ENCHANTED_GOLDEN_APPLE.getValue().getPath(), Items.ENCHANTED_GOLDEN_APPLE,
             Text.literal("Obtain an Enchanted Golden Apple"),
@@ -651,6 +695,38 @@ public class ResearchTasks {
                   Text.literal(" underground exploration and mining a ton of ore."),
             },
             ArcanaRegistry.PICKAXE_OF_CEPTYUS.getPrefItemNoLore()
+      ));
+      
+      ResearchTasks.register(OBTAIN_SPEAR_OF_TENBROUS, new ObtainResearchTask(
+            OBTAIN_SPEAR_OF_TENBROUS.getValue().getPath(), ArcanaRegistry.SPEAR_OF_TENBROUS.getItem(),
+            Text.literal("The Spear of Tenbrous"),
+            new Text[]{
+                  Text.literal("Notes in the old Stronghold libraries speak of a void"),
+                  Text.literal(" storm known as 'Tenbrous' that ravaged the End"),
+                  Text.literal(" with bolts of piercing green lightning."),
+                  Text.literal("Somehow, just hearing its name makes me sick to my stomach."),
+                  Text.literal("However, none of my more recent sources mention"),
+                  Text.literal(" anything of Tenbrous, or a storm within the End."),
+                  Text.literal("Something interesting of note is the connection between"),
+                  Text.literal(" Tenbrous and the green color associated with the End Portal"),
+                  Text.literal(" and the color of Endermen's eyes after their demise."),
+                  Text.literal("I wonder what happened to this ancient force of devastation.")
+            },
+            ArcanaRegistry.SPEAR_OF_TENBROUS.getPrefItemNoLore(), ADVANCEMENT_EYE_SPY, ADVANCEMENT_ENTER_END
+      ));
+      
+      ResearchTasks.register(OBTAIN_GREAVES_OF_GAIALTUS, new ObtainResearchTask(
+            OBTAIN_GREAVES_OF_GAIALTUS.getValue().getPath(), ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem(),
+            Text.literal("The Greaves of Gaialtus"),
+            new Text[]{
+                  Text.literal("'Gaialtus' is a name that often comes up in the"),
+                  Text.literal(" old tales of the worlds' original creation."),
+                  Text.literal("That which carved the rivers from stone..."),
+                  Text.literal("That which planted every seed and sapling..."),
+                  Text.literal("Some say that Gaialtus whispers in the wind"),
+                  Text.literal(" to encourage travellers on their long journey.")
+            },
+            ArcanaRegistry.GREAVES_OF_GAIALTUS.getPrefItemNoLore()
       ));
       
       ResearchTasks.register(BREAK_SCULK, new StatisticResearchTask<>(
@@ -849,7 +925,27 @@ public class ResearchTasks {
             new ItemStack(Items.TOTEM_OF_UNDYING), ADVANCEMENT_KILL_A_MOB
       ));
       
+      ResearchTasks.register(CATCH_FISH, new StatisticResearchTask<>(
+            CATCH_FISH.getValue().getPath(), Either.left(Stats.FISH_CAUGHT), 100,
+            Text.literal("Catch 100 Fish"),
+            new Text[]{
+                  Text.literal("Fishing is such a relaxing activity."),
+                  Text.literal("I should take the time to learn about the various"),
+                  Text.literal(" aquatic critters as I catch my new few meals.")
+            },
+            new ItemStack(Items.FISHING_ROD)
+      ));
       
+      
+      ResearchTasks.register(UNLOCK_AQUATIC_EVERSOURCE, new ArcanaItemResearchTask(
+            UNLOCK_AQUATIC_EVERSOURCE.getValue().getPath(), ArcanaRegistry.AQUATIC_EVERSOURCE,
+            Text.literal("Research the Aquatic Eversource"),
+            new Text[]{
+                  Text.literal("This design needs to build on a simpler"),
+                  Text.literal(" eversource that I have yet to make...")
+            },
+            ArcanaRegistry.AQUATIC_EVERSOURCE.getPrefItemNoLore()
+      ));
       
       ResearchTasks.register(UNLOCK_RUNIC_MATRIX, new ArcanaItemResearchTask(
             UNLOCK_RUNIC_MATRIX.getValue().getPath(), ArcanaRegistry.RUNIC_MATRIX,
@@ -1517,6 +1613,59 @@ public class ResearchTasks {
             new ItemStack(Items.FEATHER)
       ));
       
+      ResearchTasks.register(ADVANCEMENT_EYE_SPY, new AdvancementResearchTask(
+            ADVANCEMENT_EYE_SPY.getValue().getPath(), "story/follow_ender_eye",
+            Text.literal("Follow an Eye of Ender"),
+            new Text[]{
+                  Text.literal("I used to think that these eyes always pointed"),
+                  Text.literal(" in the same direction, but upon the use of"),
+                  Text.literal(" some precise measuring tools, it looks like they"),
+                  Text.literal(" point to a particular location far away."),
+                  Text.literal("I guess it's time to pack my adventuring bags.")
+            },
+            new ItemStack(Items.MOSSY_STONE_BRICKS), USE_ENDER_EYE
+      ));
+      
+      ResearchTasks.register(ADVANCEMENT_ENTER_END, new AdvancementResearchTask(
+            ADVANCEMENT_ENTER_END.getValue().getPath(), "end/root",
+            Text.literal("Cross the Ancient Portal"),
+            new Text[]{
+                  Text.literal("This Stronghold is an incredible structure!"),
+                  Text.literal("I wonder who, or what made this stone fortress?"),
+                  Text.literal("Did they also make the portals? Or is this stronghold"),
+                  Text.literal(" here to guard or protect the portals?"),
+                  Text.literal("The libraries here have so much useful knowledge from"),
+                  Text.literal(" times before the creation of my current history tomes."),
+                  Text.literal("I believe the eyes that led me here can open the portal...")
+            },
+            new ItemStack(Items.END_STONE), ADVANCEMENT_EYE_SPY
+      ));
+      
+      ResearchTasks.register(ADVANCEMENT_FURIOUS_COCKTAIL, new AdvancementResearchTask(
+            ADVANCEMENT_FURIOUS_COCKTAIL.getValue().getPath(), "nether/all_potions",
+            Text.literal("Drink All the Potions... At Once"),
+            new Text[]{
+                  Text.literal("This is probably a really dumb idea..."),
+                  Text.literal("But, I really want to drink every potion that"),
+                  Text.literal(" I can possibly make and see what happens.")
+            },
+            new ItemStack(Items.POTION), ADVANCEMENT_BREW_POTION
+      ));
+      
+      ResearchTasks.register(ADVANCEMENT_OVER_OVERKILL, new AdvancementResearchTask(
+            ADVANCEMENT_OVER_OVERKILL.getValue().getPath(), "adventure/overoverkill",
+            Text.literal("Smash a Mob into Oblivion"),
+            new Text[]{
+                  Text.literal("This Mace is more powerful than I could've imagined!"),
+                  Text.literal("It appears to be able to amplify its gravity to a"),
+                  Text.literal(" near infinite amount by storing my gravitational"),
+                  Text.literal(" potential energy as it gets converted into speed."),
+                  Text.literal("I should see if I can smash something like a "),
+                  Text.literal(" zombie with the force of 10 sword hits!")
+            },
+            new ItemStack(Items.MACE), OBTAIN_MACE
+      ));
+      
       
       ResearchTasks.register(DIMENSION_TRAVEL, new CustomResearchTask(
             DIMENSION_TRAVEL.getValue().getPath(),
@@ -1605,6 +1754,16 @@ public class ResearchTasks {
             new ItemStack(Items.ROTTEN_FLESH)
       ));
       
+      ResearchTasks.register(DROWNING_DAMAGE, new CustomResearchTask(
+            DROWNING_DAMAGE.getValue().getPath(),
+            Text.literal("Experience a Lack of Oxygen"),
+            new Text[]{
+                  Text.literal("I should test the limits of how long I can"),
+                  Text.literal(" hold my breath while working underwater.")
+            },
+            new ItemStack(Items.TURTLE_HELMET)
+      ));
+      
       ResearchTasks.register(CONCENTRATION_DAMAGE, new CustomResearchTask(
             CONCENTRATION_DAMAGE.getValue().getPath(),
             Text.literal("Experience Your Mind Collapsing"),
@@ -1676,6 +1835,42 @@ public class ResearchTasks {
                   Text.literal(" using my tools to break down delicate blocks.")
             },
             new ItemStack(Items.GOLDEN_PICKAXE)
+      ));
+      
+      ResearchTasks.register(INFUSE_ITEM, new CustomResearchTask(
+            INFUSE_ITEM.getValue().getPath(),
+            Text.literal("Infuse an Item with Stardust"),
+            new Text[]{
+                  Text.literal("My Starlight Forge has the potential to do much"),
+                  Text.literal(" more than simply forge Arcane items."),
+                  Text.literal("The power of the starlight that it harnesses "),
+                  Text.literal(" should be able to imbue ordinary equipment with"),
+                  Text.literal(" much better qualities with the help of Stardust.")
+            },
+            new ItemStack(Items.GOLDEN_SWORD), OBTAIN_STARDUST, UNLOCK_STELLAR_CORE
+      ));
+      
+      ResearchTasks.register(HONEY_CLEANSE, new CustomResearchTask(
+            HONEY_CLEANSE.getValue().getPath(),
+            Text.literal("Use Honey as a Cure"),
+            new Text[]{
+                  Text.literal("Honey is pretty tasty, but some folk-tales"),
+                  Text.literal(" say it can also be used as medicine to cure"),
+                  Text.literal(" some degenerative and harmful effects."),
+                  Text.literal("I should investigate these claims.")
+            },
+            new ItemStack(Items.HONEY_BOTTLE)
+      ));
+      
+      ResearchTasks.register(MILK_CLEANSE, new CustomResearchTask(
+            MILK_CLEANSE.getValue().getPath(),
+            Text.literal("Use Milk as a Cure"),
+            new Text[]{
+                  Text.literal("Supposedly, milk is a time-tested cure-all"),
+                  Text.literal(" for any and all effects, both good and bad."),
+                  Text.literal("I can't say that I've tried it yet. It could be useful.")
+            },
+            new ItemStack(Items.MILK_BUCKET)
       ));
       
       
@@ -1769,6 +1964,33 @@ public class ResearchTasks {
             new ItemStack(Items.WOODEN_SWORD)
       ));
       
+      ResearchTasks.register(EFFECT_NAUSEA, new EffectResearchTask(
+            EFFECT_NAUSEA.getValue().getPath(), StatusEffects.NAUSEA,
+            Text.literal("Experience Nausea"),
+            new Text[]{
+                  Text.literal("I wonder if there's a consequence to eating bad food?")
+            },
+            new ItemStack(Items.PUFFERFISH)
+      ));
+      
+      ResearchTasks.register(EFFECT_POISON, new EffectResearchTask(
+            EFFECT_POISON.getValue().getPath(), StatusEffects.POISON,
+            Text.literal("Experience a Slow Pain"),
+            new Text[]{
+                  Text.literal("I wonder if there's an effect that slowly damages enemies?")
+            },
+            new ItemStack(Items.SPIDER_EYE)
+      ));
+      
+      ResearchTasks.register(EFFECT_DOLPHINS_GRACE, new EffectResearchTask(
+            EFFECT_DOLPHINS_GRACE.getValue().getPath(), StatusEffects.DOLPHINS_GRACE,
+            Text.literal("Experience the Dolphin's Grace"),
+            new Text[]{
+                  Text.literal("I wonder how dolphins slip through the water so quickly?")
+            },
+            new ItemStack(Items.TROPICAL_FISH)
+      ));
+      
       
       
       
@@ -1789,7 +2011,7 @@ public class ResearchTasks {
       
       for(RegistryKey<ResearchTask> key : tasks){
          ResearchTask task = RESEARCH_TASKS.get(key);
-         if (task == null || addedTasks.contains(task)) continue;
+         if(task == null || addedTasks.contains(task)) continue;
          taskTrees.add(generateTaskNode(task,null, addedTasks));
       }
       return taskTrees;
@@ -1800,7 +2022,7 @@ public class ResearchTasks {
       
       for(RegistryKey<ResearchTask> key : tasks){
          ResearchTask task = RESEARCH_TASKS.get(key);
-         if (task == null || addedTasks.contains(task)) continue;
+         if(task == null || addedTasks.contains(task)) continue;
          generateTaskNode(task,null, addedTasks);
       }
       return addedTasks;

@@ -30,7 +30,7 @@ public class ArcanaConfig{
    }
    
    public record NormalConfigSetting<T>(ConfigUtils.IConfigValue<T> setting) implements ConfigSetting<T>{
-      public NormalConfigSetting(ConfigUtils.IConfigValue<T> setting) {
+      public NormalConfigSetting(ConfigUtils.IConfigValue<T> setting){
          this.setting = Objects.requireNonNull(setting);
       }
       
@@ -48,11 +48,11 @@ public class ArcanaConfig{
    }
    
    public record XPConfigSetting(Integer defaultValue, String name, String description, boolean capConfig) implements ConfigSetting<Integer>{
-      public XPConfigSetting(int defaultValue, String name, String description) {
+      public XPConfigSetting(int defaultValue, String name, String description){
          this(defaultValue,name,description,false);
       }
       
-      public XPConfigSetting(Integer defaultValue, String name, String description, boolean capConfig) {
+      public XPConfigSetting(Integer defaultValue, String name, String description, boolean capConfig){
          this.defaultValue = Objects.requireNonNullElse(defaultValue, 1);
          this.name = Objects.requireNonNullElse(name, "");
          this.description = Objects.requireNonNullElse(description, "");

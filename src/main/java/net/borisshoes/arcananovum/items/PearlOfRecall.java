@@ -15,12 +15,13 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -30,13 +31,14 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,24 +53,16 @@ public class PearlOfRecall extends EnergyItem {
    public static final String LOCATION_TAG = "location";
    
    public static final int[] cdReduction = {0,60,120,240,360,480};
-   private static final String CHARGED_TXT = "item/pearl_of_recall_charged";
-   private static final String COOLDOWN_TXT = "item/pearl_of_recall_cooldown";
    
    public PearlOfRecall(){
       id = ID;
       name = "Pearl of Recall";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       initEnergy = 600;
       vanillaItem = Items.ENDER_EYE;
-      item = new PearlOfRecallItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,CHARGED_TXT));
-      models.add(new Pair<>(vanillaItem,COOLDOWN_TXT));
+      item = new PearlOfRecallItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL};
       
       ItemStack stack = new ItemStack(item);
@@ -202,7 +196,7 @@ public class PearlOfRecall extends EnergyItem {
          }
       }
       
-      player.teleport(to,x,y,z,yaw,pitch);
+      player.teleportTo(new TeleportTarget(to, new Vec3d(x,y,z), Vec3d.ZERO, yaw, pitch, TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
       setEnergy(item,0);
       if(to.getRegistryKey().getValue().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL.id);
       if(to.getRegistryKey().getValue().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN.id);
@@ -233,8 +227,9 @@ public class PearlOfRecall extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Pearl of Recall\n\nRarity: Exotic\n\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it. I can even use it multiple times after a recharge.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Pearl of Recall\n\nRight Clicking sets the Pearl's Recall Point.\n\nRight Clicking again starts to unfreeze the pearl in time. Taking damage resets the process.\n\nAfter use, the Pearl takes a while to resync to the timeline.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it. I can even use it multiple times after a recharge.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nUsing the Pearl sets its Recall point.\n\nUsing the Pearl again starts to unfreeze the Pearl in time.\n \nTaking damage resets the process and requires more recharging.\n\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nAfter using the Pearl, it takes a while to resync to the timeline before use again.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -244,9 +239,16 @@ public class PearlOfRecall extends EnergyItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(CHARGED_TXT).value();
-         return getEnergy(itemStack) >= getMaxEnergy(itemStack) ? ArcanaRegistry.getModelData(CHARGED_TXT).value() : ArcanaRegistry.getModelData(COOLDOWN_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         List<String> stringList = new ArrayList<>();
+         if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
+            stringList.add("cooldown");
+         }else{
+            stringList.add("charged");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -297,10 +299,10 @@ public class PearlOfRecall extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack item = playerEntity.getStackInHand(hand);
          boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR.id) >= 1;
-         if (playerEntity instanceof ServerPlayerEntity player){
+         if(playerEntity instanceof ServerPlayerEntity player){
             NbtCompound locNbt = getCompoundProperty(item,LOCATION_TAG);
             String dim = locNbt.getString("dim");
             
@@ -336,7 +338,7 @@ public class PearlOfRecall extends EnergyItem {
                }
             }
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
    }
 }

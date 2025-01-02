@@ -33,23 +33,23 @@ public class SpawnDensityCapperMixin {
    
    
    @Inject(method = "<init>(Lnet/minecraft/server/world/ServerChunkLoadingManager;)V", at = @At(value = "TAIL"))
-   private void SpawnDensityCapper(ServerChunkLoadingManager threadedAnvilChunkStorage, CallbackInfo cir) {
+   private void SpawnDensityCapper(ServerChunkLoadingManager threadedAnvilChunkStorage, CallbackInfo cir){
       chunkPosDensityCapMap = new HashMap<>();
    }
    
    @Inject(method = "increaseDensity", at = @At(value = "HEAD"), cancellable = true)
-   private void increaseDensity(ChunkPos chunkPos, SpawnGroup spawnGroup, CallbackInfo cir) {
-      if (ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkLoadingManager)).getHookedWorld(), chunkPos)) {
+   private void increaseDensity(ChunkPos chunkPos, SpawnGroup spawnGroup, CallbackInfo cir){
+      if(ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkLoadingManager)).getHookedWorld(), chunkPos)){
          this.chunkPosDensityCapMap.computeIfAbsent(chunkPos, pos -> new DensityCap()).increaseDensity(spawnGroup);
          cir.cancel();
       }
    }
    
    @Inject(method = "canSpawn", at = @At(value = "HEAD"), cancellable = true)
-   private void canSpawn(SpawnGroup spawnGroup, ChunkPos chunkPos, CallbackInfoReturnable<Boolean> cir) {
-      if (ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkLoadingManager)).getHookedWorld(), chunkPos)) {
+   private void canSpawn(SpawnGroup spawnGroup, ChunkPos chunkPos, CallbackInfoReturnable<Boolean> cir){
+      if(ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkLoadingManager)).getHookedWorld(), chunkPos)){
          DensityCap densityCap = this.chunkPosDensityCapMap.get(chunkPos);
-         if (densityCap != null && densityCap.canSpawn(spawnGroup))
+         if(densityCap != null && densityCap.canSpawn(spawnGroup))
             cir.setReturnValue(true);
          else
             cir.setReturnValue(false);

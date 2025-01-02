@@ -14,7 +14,6 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -35,7 +34,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -54,22 +52,16 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class GravitonArrows extends RunicArrow {
 	public static final String ID = "graviton_arrows";
    
-   private static final String TXT = "item/runic_arrow";
-   
    public GravitonArrows(){
       id = ID;
       name = "Graviton Arrows";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ARROWS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new GravitonArrowsItem(new Item.Settings().maxCount(64).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_BLUE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(869887),new ArrayList<>()))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new GravitonArrowsItem(addArcanaItemComponents(new Item.Settings().maxCount(64)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(869887),new ArrayList<>(),Optional.empty()))
+      ));
+      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_SLOWNESS};
       
       ItemStack stack = new ItemStack(item);
@@ -82,7 +74,7 @@ public class GravitonArrows extends RunicArrow {
    public List<Text> getItemLore(@Nullable ItemStack itemStack){
       List<MutableText> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(Text.literal("Graviton Arrows:").formatted(Formatting.BOLD,Formatting.DARK_BLUE));
+      lore.add(TextUtils.withColor(Text.literal("Graviton Arrows:").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE));
       lore.add(Text.literal("")
             .append(Text.literal("These ").formatted(Formatting.BLUE))
             .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
@@ -174,18 +166,13 @@ public class GravitonArrows extends RunicArrow {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Graviton Arrows\n\nRarity: Exotic\n\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal(" Graviton Arrows").formatted(Formatting.BOLD),ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class GravitonArrowsItem extends ArcanaPolymerArrowItem {
       public GravitonArrowsItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

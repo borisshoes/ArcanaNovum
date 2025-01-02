@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/mundane_catalyst"
+    },
+    "hand_animation_on_swap": false
+}

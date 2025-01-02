@@ -1,12 +1,17 @@
 package net.borisshoes.arcananovum.utils;
 
+import com.google.common.collect.HashMultimap;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.augments.ArcanaAugment;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
+import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.mixins.LivingEntityAccessor;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -16,12 +21,10 @@ import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.AttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.attribute.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
@@ -31,14 +34,230 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
+import net.minecraft.world.World;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 
 public class MiscUtils {
+   
+   public static String convertToBase64(String binaryString) {
+      int byteLength = (binaryString.length() + 7) / 8;
+      byte[] byteArray = new byte[byteLength];
+      
+      for (int i = 0; i < binaryString.length(); i++) {
+         if (binaryString.charAt(i) == '1') {
+            byteArray[i / 8] |= (byte) (1 << (7 - (i % 8)));
+         }
+      }
+      
+      return Base64.getEncoder().encodeToString(byteArray);
+   }
+   
+   public static Vec3d rotatePoint(Vec3d point, Vec3d direction, float roll){
+      float pitch = (float) -Math.toDegrees(Math.asin(direction.y));
+      float yaw = (float) -Math.toDegrees(Math.atan2(direction.x, direction.z));
+      Quaternionf rotQuat1 = new Quaternionf().fromAxisAngleDeg(new Vector3f(0,1,0),-yaw-90);
+      float sideAxisAngle = -(yaw+90) * ((float) Math.PI / 180);
+      Vector3f sideAxis = new Vector3f((float) Math.sin(sideAxisAngle), 0, (float) Math.cos(sideAxisAngle));
+      Quaternionf rotQuat2 = new Quaternionf().fromAxisAngleDeg(sideAxis,-pitch);
+      Quaternionf rotQuat3 = new Quaternionf().fromAxisAngleDeg(direction.toVector3f(),roll);
+      Quaternionf rotQuat = rotQuat3.mul(rotQuat2.mul(rotQuat1));
+      return new Vec3d(rotQuat.transform(point.toVector3f()));
+   }
+   
+   public static Vec3d rotatePoint(Vec3d point, float yaw, float pitch, float roll){
+      Quaternionf rotQuat1 = new Quaternionf().fromAxisAngleDeg(new Vector3f(0,1,0),-yaw-90);
+      float sideAxisAngle = -(yaw+90) * ((float) Math.PI / 180);
+      Vector3f sideAxis = new Vector3f((float) Math.sin(sideAxisAngle), 0, (float) Math.cos(sideAxisAngle));
+      Quaternionf rotQuat2 = new Quaternionf().fromAxisAngleDeg(sideAxis,-pitch);
+      Quaternionf rotQuat3 = new Quaternionf().fromAxisAngleDeg(Vec3d.fromPolar(pitch,yaw).toVector3f(),roll);
+      Quaternionf rotQuat = rotQuat3.mul(rotQuat2.mul(rotQuat1));
+      return new Vec3d(rotQuat.transform(point.toVector3f()));
+   }
+   
+   public static List<ItemStack> getArcanaItemsWithAug(PlayerEntity player, ArcanaItem arcanaItem, ArcanaAugment augment, int level){
+      List<ItemStack> stacks = new ArrayList<>();
+      PlayerInventory inv = player.getInventory();
+      for(int i=0; i<inv.size();i++){
+         ItemStack item = inv.getStack(i);
+         if(item.isEmpty()){
+            continue;
+         }
+         
+         ArcanaItem arcItem = ArcanaItemUtils.identifyItem(item);
+         if(arcItem != null && arcItem.getId().equals(arcanaItem.getId())){
+            if(augment == null || ArcanaAugments.getAugmentOnItem(item,augment) >= level){
+               stacks.add(item);
+            }
+         }
+         if(arcItem instanceof ArcanistsBelt){
+            ContainerComponent containerItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+            for(ItemStack stack : containerItems.iterateNonEmpty()){
+               ArcanaItem aItem = ArcanaItemUtils.identifyItem(stack);
+               if(aItem != null && aItem.getId().equals(arcanaItem.getId())){
+                  if(augment == null || ArcanaAugments.getAugmentOnItem(stack,augment) >= level){
+                     stacks.add(stack);
+                  }
+               }
+            }
+         }
+      }
+      return stacks;
+   }
+   
+   public static List<ItemStack> getMatchingItemsFromContainerComp(ItemStack container, Item item){
+      ContainerComponent containerItems = container.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+      ArrayList<ItemStack> items = new ArrayList<>();
+      for(ItemStack stack : containerItems.iterateNonEmpty()){
+         if(stack.isOf(item)){
+            items.add(stack);
+         }
+      }
+      return items;
+   }
+   
+   // THIS METHOD IS UNTESTED
+   public static void inventoryAttributeEffect(LivingEntity livingEntity, RegistryEntry<EntityAttribute> attribute, double value, EntityAttributeModifier.Operation operation, Identifier identifier, boolean remove){
+      boolean hasMod = livingEntity.getAttributes().hasModifierForAttribute(attribute,identifier);
+      if(hasMod && remove){ // Remove the modifier
+         HashMultimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> map = HashMultimap.create();
+         map.put(attribute, new EntityAttributeModifier(identifier, value, operation));
+         livingEntity.getAttributes().removeModifiers(map);
+      }else if(!hasMod && !remove){ // Add the modifier
+         HashMultimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> map = HashMultimap.create();
+         map.put(attribute, new EntityAttributeModifier(identifier, value, operation));
+         livingEntity.getAttributes().addTemporaryModifiers(map);
+      }
+   }
+   
+   public static Pair<ContainerComponent,ItemStack> tryAddStackToContainerComp(ContainerComponent container, int size, ItemStack stack){
+      List<ItemStack> beltList = new ArrayList<>(container.stream().toList());
+      
+      int curCount;
+      do { // Fill up existing slots first
+         curCount = stack.getCount();
+         for(ItemStack existingStack : beltList){
+            boolean canCombine = !existingStack.isEmpty()
+                  && ItemStack.areItemsAndComponentsEqual(existingStack, stack)
+                  && existingStack.isStackable()
+                  && existingStack.getCount() < existingStack.getMaxCount();
+            if(!canCombine) continue;
+            int toAdd = Math.min(existingStack.getMaxCount() - existingStack.getCount(),curCount);
+            existingStack.increment(toAdd);
+            stack.setCount(curCount - toAdd);
+         }
+      } while (!stack.isEmpty() && stack.getCount() < curCount);
+      
+      int nonEmpty = (int) beltList.stream().filter(s -> !s.isEmpty()).count();
+      
+      if(!stack.isEmpty() && nonEmpty < size){
+         if(nonEmpty == beltList.size()){ // No middle empty slots, append new slot to end
+            beltList.add(stack.copyAndEmpty());
+         }else{
+            for(int i = 0; i < nonEmpty; i++){ // Find middle empty slot to fill
+               if(beltList.get(i).isEmpty()){
+                  beltList.set(i, stack.copyAndEmpty());
+                  break;
+               }
+            }
+         }
+      }
+      return new Pair<>(ContainerComponent.fromStacks(beltList),stack);
+   }
+   
+   public static void blockWithShield(LivingEntity entity, float damage){
+      if(entity.isBlocking()){
+         ((LivingEntityAccessor) entity).invokeDamageShield(damage);
+         SoundUtils.playSound(entity.getWorld(),entity.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS,1f,1f);
+         
+         // Activate Shield of Fortitude
+         ItemStack activeItem = entity.getActiveItem();
+         if(ArcanaItemUtils.identifyItem(activeItem) instanceof ShieldOfFortitude shield){
+            shield.shieldBlock(entity, activeItem, damage);
+         }
+      }
+   }
+   
+   public static LasercastResult lasercast(World world, Vec3d startPos, Vec3d direction, double distance, boolean blockedByShields, Entity entity){
+      Vec3d rayEnd = startPos.add(direction.multiply(distance));
+      BlockHitResult raycast = world.raycast(new RaycastContext(startPos,rayEnd, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+      EntityHitResult entityHit;
+      List<Entity> hits = new ArrayList<>();
+      Box box = new Box(startPos,raycast.getPos());
+      box = box.expand(2);
+      // Primary hitscan check
+      do{
+         entityHit = ProjectileUtil.raycast(entity,startPos,raycast.getPos(),box, e -> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e),100000);
+         if(entityHit != null && entityHit.getType() == HitResult.Type.ENTITY){
+            hits.add(entityHit.getEntity());
+         }
+      }while(entityHit != null && entityHit.getType() == HitResult.Type.ENTITY);
+      
+      // Secondary hitscan check to add lenience
+      List<Entity> hits2 = world.getOtherEntities(entity, box, (e)-> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e) && inRange(e,startPos,raycast.getPos()));
+      hits.addAll(hits2);
+      hits.sort(Comparator.comparingDouble(e->e.distanceTo(entity)));
+      
+      if(!blockedByShields){
+         return new LasercastResult(startPos, raycast.getPos(), direction, hits);
+      }
+      
+      List<Entity> hits3 = new ArrayList<>();
+      Vec3d endPoint = raycast.getPos();
+      for(Entity hit : hits){
+         boolean blocked = false;
+         if(hit instanceof ServerPlayerEntity hitPlayer && hitPlayer.isBlocking()){
+            double dp = hitPlayer.getRotationVecClient().normalize().dotProduct(direction.normalize());
+            blocked = dp < -0.6;
+            if(blocked){
+               SoundUtils.playSound(world,hitPlayer.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS,1f,1f);
+               endPoint = startPos.add(direction.normalize().multiply(direction.normalize().dotProduct(hitPlayer.getPos().subtract(startPos)))).subtract(direction.normalize());
+            }
+         }
+         hits3.add(hit);
+         if(blocked){
+            break;
+         }
+      }
+      
+      return new LasercastResult(startPos,endPoint,direction,hits3);
+   }
+   
+   public record LasercastResult(Vec3d startPos, Vec3d endPos, Vec3d direction, List<Entity> sortedHits){}
+   
+   public static boolean inRange(Entity e, Vec3d start, Vec3d end){
+      double range = .25;
+      Box entityBox = e.getBoundingBox().expand(e.getTargetingMargin());
+      double len = end.subtract(start).length();
+      Vec3d trace = end.subtract(start).normalize().multiply(range);
+      int i = 0;
+      Vec3d t2 = trace.multiply(i);
+      while(t2.length() < len){
+         Vec3d t3 = start.add(t2);
+         Box hitBox = new Box(t3.x-range,t3.y-range,t3.z-range,t3.x+range,t3.y+range,t3.z+range);
+         if(entityBox.intersects(hitBox)){
+            return true;
+         }
+         t2 = trace.multiply(i);
+         i++;
+      }
+      return false;
+   }
+   
    
    public static List<Pair<List<ItemStack>,ItemStack>> getAllItems(PlayerEntity player){
       List<Pair<List<ItemStack>,ItemStack>> allItems = new ArrayList<>();
@@ -179,7 +398,7 @@ public class MiscUtils {
       double mag = Math.sqrt(x*x + y*y + z*z);
       x /= mag; y /= mag; z /= mag;
       
-      double r = range*Math.cbrt(random.nextDouble());
+      double r = range* Math.cbrt(random.nextDouble());
       
       return new Vec3d(x*r,y*r,z*r).add(center);
    }
@@ -209,12 +428,12 @@ public class MiscUtils {
          ArcanaNovum.log(2,"Attempted to access Enchantment "+key.toString()+" before DRM is available");
          return null;
       }
-      Optional<RegistryEntry.Reference<Enchantment>> opt = ArcanaNovum.SERVER.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(key);
+      Optional<RegistryEntry.Reference<Enchantment>> opt = ArcanaNovum.SERVER.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(key);
       return opt.orElse(null);
    }
    
    public static RegistryEntry<Enchantment> getEnchantment(DynamicRegistryManager drm, RegistryKey<Enchantment> key){
-      Optional<RegistryEntry.Reference<Enchantment>> opt = drm.get(RegistryKeys.ENCHANTMENT).getEntry(key);
+      Optional<RegistryEntry.Reference<Enchantment>> opt = drm.getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(key);
       return opt.orElse(null);
    }
    
@@ -241,16 +460,16 @@ public class MiscUtils {
             
             ItemEntity itemEntity;
             boolean bl = player.getInventory().insertStack(stack);
-            if (!bl || !stack.isEmpty()) {
+            if(!bl || !stack.isEmpty()){
                itemEntity = player.dropItem(stack, false);
-               if (itemEntity == null) continue;
+               if(itemEntity == null) continue;
                itemEntity.resetPickupDelay();
                itemEntity.setOwner(player.getUuid());
                continue;
             }
             stack.setCount(1);
             itemEntity = player.dropItem(stack, false);
-            if (itemEntity != null) {
+            if(itemEntity != null){
                itemEntity.setDespawnImmediately();
             }
             player.currentScreenHandler.sendContentUpdates();
@@ -360,10 +579,10 @@ public class MiscUtils {
    }
    
    
-   public static void removeMaxAbsorption(LivingEntity entity, Identifier id, float amount) {
+   public static void removeMaxAbsorption(LivingEntity entity, Identifier id, float amount){
       AttributeContainer attributeContainer = entity.getAttributes();
-      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
-      if (entityAttributeInstance == null) return;
+      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.MAX_ABSORPTION);
+      if(entityAttributeInstance == null) return;
       EntityAttributeModifier existing = entityAttributeInstance.getModifier(id);
       if(existing != null){
          double current = existing.value();
@@ -376,11 +595,11 @@ public class MiscUtils {
       }
    }
    
-   public static void addMaxAbsorption(LivingEntity entity, Identifier id, double amount) {
+   public static void addMaxAbsorption(LivingEntity entity, Identifier id, double amount){
       AttributeContainer attributeContainer = entity.getAttributes();
       EntityAttributeModifier modifier = new EntityAttributeModifier(id, amount, EntityAttributeModifier.Operation.ADD_VALUE);
-      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.GENERIC_MAX_ABSORPTION);
-      if (entityAttributeInstance == null) return;
+      EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(EntityAttributes.MAX_ABSORPTION);
+      if(entityAttributeInstance == null) return;
       EntityAttributeModifier existing = entityAttributeInstance.getModifier(id);
       if(existing != null){
          double current = existing.value();

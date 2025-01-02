@@ -12,7 +12,7 @@ import net.fabricmc.fabric.api.event.EventFactory;
  * <p>Example usage:
  * <pre>{@code
  * StructurePoolAddCallback.EVENT.register(structurePool -> {
- * 	if (structurePool.id().toString().equals("minecraft:village/common/butcher_animals")) {
+ * 	if(structurePool.id().toString().equals("minecraft:village/common/butcher_animals")){
  * 		structurePool.addStructurePoolElement(StructurePoolElement.ofLegacySingle("village/common/animals/pigs_1").apply(StructurePool.Projection.RIGID), 2);
  *    }
  * });}
@@ -24,7 +24,7 @@ public interface StructurePoolAddCallback {
     */
    Event<StructurePoolAddCallback> EVENT = EventFactory.createArrayBacked(StructurePoolAddCallback.class,
          listeners -> initialPool -> {
-            for (StructurePoolAddCallback listener : listeners) {
+            for (StructurePoolAddCallback listener : listeners){
                listener.onAdd(initialPool);
             }
          }

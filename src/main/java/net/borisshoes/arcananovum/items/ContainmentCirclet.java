@@ -7,8 +7,6 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
-import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
-import net.borisshoes.arcananovum.entities.DragonWizardEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -19,21 +17,20 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -45,10 +42,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,28 +61,15 @@ public class ContainmentCirclet extends ArcanaItem {
    private static final String HP_TAG = "hp";
    private static final String MAX_HP_TAG = "maxHP";
    
-   private static final String TXT_EMPTY = "item/containment_circlet_empty";
-   private static final String TXT_FILLED = "item/containment_circlet_filled";
-   private static final String TXT_CONFINEMENT_EMPTY = "item/containment_circlet_confinement_empty";
-   private static final String TXT_CONFINEMENT_FILLED = "item/containment_circlet_confinement_filled";
-   
    public ContainmentCirclet(){
       id = ID;
       name = "Containment Circlet";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.HEART_OF_THE_SEA;
-      item = new ContainmentCircletItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT_EMPTY));
-      models.add(new Pair<>(vanillaItem,TXT_FILLED));
-      models.add(new Pair<>(vanillaItem,TXT_CONFINEMENT_EMPTY));
-      models.add(new Pair<>(vanillaItem,TXT_CONFINEMENT_FILLED));
+      item = new ContainmentCircletItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_TAME_AN_ANIMAL,ResearchTasks.USE_ENDER_CHEST};
       
       ItemStack stack = new ItemStack(item);
@@ -182,7 +166,7 @@ public class ContainmentCirclet extends ArcanaItem {
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;
       }
-      if(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof WardenEntity || entity instanceof DragonWizardEntity || entity instanceof DragonPhantomEntity || entity.isDead()){
+      if(entity.getType().isIn(ArcanaRegistry.CONTAINMENT_CIRCLET_DISALLOWED) || entity.isDead()){
          user.sendMessage(Text.literal("The Circlet cannot contain this creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
          return ActionResult.SUCCESS;
@@ -230,8 +214,8 @@ public class ContainmentCirclet extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Containment Circlet\n\nRarity: Empowered\n\nPets are amazing companions. They're also idiots who love dying and are a pain to move.\nIf only I had some sort of pocket ball, a pokeb... a Containment Circlet to keep them safe with me.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Containment Circlet\n\nUsing the Circlet of a passive or tamed mob captures it.\n\nUsing the Circlet again releases the creature.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Containment Circlet").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nPets are amazing companions. They’re also masochistic idiots with a love for getting into trouble. If only I had some sort of pocket ball, a pokeb… a Containment Circlet to keep them safe.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Containment Circlet").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nUsing the Circlet on a passive or tamed mob captures it.\n\nUsing the Circlet again releases the creature.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -241,15 +225,29 @@ public class ContainmentCirclet extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(TXT_EMPTY).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
+         
          NbtCompound contents = getCompoundProperty(itemStack,CONTENTS_TAG);
          boolean confinement = ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.CONFINEMENT.id) >= 1;
+         
+         List<String> stringList = new ArrayList<>();
          if(confinement){
-            return contents.isEmpty() ? ArcanaRegistry.getModelData(TXT_CONFINEMENT_EMPTY).value() : ArcanaRegistry.getModelData(TXT_CONFINEMENT_FILLED).value();
+            if(contents.isEmpty()){
+               stringList.add("confinement_empty");
+            }else{
+               stringList.add("confinement_filled");
+            }
          }else{
-            return contents.isEmpty() ? ArcanaRegistry.getModelData(TXT_EMPTY).value() : ArcanaRegistry.getModelData(TXT_FILLED).value();
+            if(contents.isEmpty()){
+               stringList.add("empty");
+            }else{
+               stringList.add("filled");
+            }
          }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -261,7 +259,7 @@ public class ContainmentCirclet extends ArcanaItem {
          float hp = getFloatProperty(stack,HP_TAG);
          if(contents.isEmpty()) return ActionResult.PASS;
          
-         Optional<Entity> optional = EntityType.getEntityFromNbt(contents,context.getWorld());
+         Optional<Entity> optional = EntityType.getEntityFromNbt(contents,context.getWorld(), SpawnReason.MOB_SUMMONED);
          Vec3d summonPos = context.getHitPos().add(0,0.5,0);
          
          if(optional.isPresent() && context.getWorld() instanceof ServerWorld serverWorld){

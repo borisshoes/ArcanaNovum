@@ -195,6 +195,7 @@ public class ArcanaItemUtils {
             continue;
          }
          ArcanaItem arcanaItem = identifyItem(item);
+         if(!ArcanaItem.hasProperty(item,ArcanaItem.UUID_TAG) || ArcanaItem.getUUID(item).equals(ArcanaNovum.BLANK_UUID)) continue;
          if(arcanaItem instanceof ArcanaItemContainer.ArcanaItemContainerHaver containerHaver){
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
             ArcanaItemContainer arcanaContainer = containerHaver.getArcanaItemContainer(item);

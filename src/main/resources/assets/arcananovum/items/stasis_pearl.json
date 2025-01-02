@@ -1,0 +1,41 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "charged",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/stasis_pearl_charged"
+                }
+            },
+            {
+                "when": "cooldown",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/stasis_pearl_cooldown"
+                }
+            },
+            {
+                "when": "stasis",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/stasis_pearl_stasis"
+                }
+            },
+            {
+                "when": "flight",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/stasis_pearl_flight"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/stasis_pearl_charged"
+        }
+    },
+    "hand_animation_on_swap": false
+}

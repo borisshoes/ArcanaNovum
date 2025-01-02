@@ -80,7 +80,7 @@ public class PuzzleGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
       int ind = (7*(index/9 - 1) + (index % 9 - 1));
       

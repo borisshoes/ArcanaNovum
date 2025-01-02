@@ -95,15 +95,15 @@ public class ArcanaIngredient {
       });
       
       OptionalInt colorOpt = PotionContentsComponent.mixColors(List.of(effects));
-      PotionContentsComponent newComp = new PotionContentsComponent(Optional.empty(),colorOpt.isPresent() ? Optional.of(colorOpt.getAsInt()) : Optional.empty(),List.of(effects));
+      PotionContentsComponent newComp = new PotionContentsComponent(Optional.empty(),colorOpt.isPresent() ? Optional.of(colorOpt.getAsInt()) : Optional.empty(),List.of(effects),Optional.empty());
       this.exampleStack.set(DataComponentTypes.POTION_CONTENTS,newComp);
       
       if(this.exampleStack.isOf(Items.POTION)){
-         this.exampleStack.set(DataComponentTypes.ITEM_NAME, Text.literal("Potion").setStyle(Style.EMPTY.withItalic(false)));
+         this.exampleStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Potion").setStyle(Style.EMPTY.withItalic(false)));
       }else if(this.exampleStack.isOf(Items.SPLASH_POTION)){
-         this.exampleStack.set(DataComponentTypes.ITEM_NAME, Text.literal("Splash Potion").setStyle(Style.EMPTY.withItalic(false)));
+         this.exampleStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Splash Potion").setStyle(Style.EMPTY.withItalic(false)));
       }else if(this.exampleStack.isOf(Items.LINGERING_POTION)){
-         this.exampleStack.set(DataComponentTypes.ITEM_NAME, Text.literal("Lingering Potion").setStyle(Style.EMPTY.withItalic(false)));
+         this.exampleStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal("Lingering Potion").setStyle(Style.EMPTY.withItalic(false)));
       }
       
       return this;

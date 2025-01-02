@@ -1,32 +1,22 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.UUID;
 
 public class VengeanceTotemLoginCallback extends LoginCallback{
-   private UUID attacker;
    
    public VengeanceTotemLoginCallback(){
       this.id = "totem_of_vengeance";
    }
    
-   public VengeanceTotemLoginCallback(ServerPlayerEntity player, @Nullable UUID attacker){
+   public VengeanceTotemLoginCallback(ServerPlayerEntity player){
       this.id = "totem_of_vengeance";
       this.world = player.getServer().getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player.getUuidAsString();
-      this.attacker = attacker;
    }
    
    @Override
@@ -34,48 +24,18 @@ public class VengeanceTotemLoginCallback extends LoginCallback{
       // Double check that this is the correct player before running timer
       ServerPlayerEntity player = netHandler.player;
       if(player.getUuidAsString().equals(playerUUID)){
-         boolean survives = false;
-         Entity foundAttacker = null;
-         if(attacker != null){
-            boolean notFound = true;
-            for(ServerWorld world : player.getServer().getWorlds()){
-               foundAttacker = world.getEntity(attacker);
-               if(foundAttacker != null){
-                  if(!foundAttacker.isAlive()){
-                     survives = true;
-                     notFound = false;
-                  }else{
-                     notFound = false;
-                  }
-                  break;
-               }
-            }
-            if(notFound){
-               survives = true;
-            }
-         }
-         
-         if(!survives){
-            player.damage(ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,foundAttacker), player.getMaxHealth()*10);
-         }else{
-            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.TOTEM_OF_VENGEANCE_SURVIVE)); // Give XP
-         }
+         ArcanaNovum.TOTEM_KILL_LIST.add(player.getUuid());
       }
    }
    
    @Override
    public void setData(NbtCompound data){
-      //Data tag just has single float for hearts
       this.data = data;
-      String attackerString = data.getString("attacker");
-      this.attacker = attackerString.isEmpty() ? null : MiscUtils.getUUID(attackerString);
    }
    
    @Override
    public NbtCompound getData(){
-      NbtCompound data = new NbtCompound();
-      data.putString("attacker",this.attacker == null ? "" : this.attacker.toString());
-      this.data = data;
+      this.data = new NbtCompound();
       return this.data;
    }
    

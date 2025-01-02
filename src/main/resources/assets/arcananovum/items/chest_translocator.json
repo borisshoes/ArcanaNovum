@@ -1,0 +1,27 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "chest",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/chest_translocator_chest"
+                }
+            },
+            {
+                "when": "barrel",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/chest_translocator_barrel"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/chest_translocator_empty"
+        }
+    },
+    "hand_animation_on_swap": false
+}

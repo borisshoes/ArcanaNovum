@@ -20,8 +20,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -35,7 +33,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -45,9 +43,11 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,15 +67,12 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Arcane Singularity";
       rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.LECTERN;
       block = new ArcaneSingularityBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
-      item = new ArcaneSingularityItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new ArcaneSingularityItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NEBULOUS_ESSENCE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
@@ -182,9 +179,9 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Arcane Singularity\n\nRarity: Sovereign\n\nThe Midnight Enchanter has proven more useful than I imagined. I now have more enchanted books than I can possibly store in a library.\n\nI need a new method of book-keeping.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Arcane Singularity\n\nBy condensing raw Nebulous Essence down, over and over, it forms a self- sustaining singularity.\nAn Arcane black hole.\nContaining it was no easy feat, but now I have a massive storage space for my books...").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Arcane Singularity\n\nThe Singularity is a single purpose high density storage unit for Enchanted Books.\nBooks can be sorted and filtered while stored, and can be extracted at any time.\nBooks are bound to the Singularity, so they can be moved with the Singularity.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Arcane Singularity").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe Midnight Enchanter has proven more useful than I imagined. Now I have more Enchanted Books than I can possibly store in a library. I need a new method of book-keeping.\nBy condensing raw ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Arcane Singularity").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nNebulous Essence down over and over, it forms a self-sustaining singularity. An Arcane black hole. Containing it was no easy feat, but now I have a massive storage space for my books…\n\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Arcane Singularity").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nThe Singularity is a single purpose, high density storage unit for Enchanted Books. Books can be sorted and filtered, and can be extracted at any time. \nBooks are bound to the Singularity, so they are kept with the block when moved.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -201,41 +198,41 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    }
    
    public class ArcaneSingularityBlock extends ArcanaPolymerBlockEntity {
-      public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
       
       public ArcaneSingularityBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state){
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.LECTERN.getDefaultState().with(HORIZONTAL_FACING,state.get(HORIZONTAL_FACING));
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx) {
+      public BlockState getPlacementState(ItemPlacementContext ctx){
          return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite());
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
          stateManager.add(HORIZONTAL_FACING);
       }
       
       @Override
-      public BlockState rotate(BlockState state, BlockRotation rotation) {
+      public BlockState rotate(BlockState state, BlockRotation rotation){
          return state.with(HORIZONTAL_FACING, rotation.rotate(state.get(HORIZONTAL_FACING)));
       }
       
       @Override
-      public BlockState mirror(BlockState state, BlockMirror mirror) {
+      public BlockState mirror(BlockState state, BlockMirror mirror){
          return state.rotate(mirror.getRotation(state.get(HORIZONTAL_FACING)));
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY, ArcaneSingularityBlockEntity::ticker);
       }
       
@@ -260,23 +257,23 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       }
       
       @Nullable
-      public static ArcaneSingularityBlockEntity getEntity(World world, BlockPos pos) {
+      public static ArcaneSingularityBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof ArcaneSingularityBlock)) {
+         if(!(state.getBlock() instanceof ArcaneSingularityBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof ArcaneSingularityBlockEntity singularity ? singularity : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new ArcaneSingularityBlockEntity(pos, state);
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof ArcaneSingularityBlockEntity singularity) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof ArcaneSingularityBlockEntity singularity){
             initializeArcanaBlock(stack,singularity);
             singularity.initializeBooks(getListProperty(stack,BOOKS_TAG,NbtElement.COMPOUND_TYPE),world.getRegistryManager());
          }

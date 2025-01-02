@@ -72,7 +72,7 @@ public class ConditionalsAchievement extends ArcanaAchievement{
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       ConditionalsAchievement achievement = (ConditionalsAchievement) profile.getAchievement(getArcanaItem().getId(), id);
       
-      if(achievement != null && achievement.isAcquired()) {
+      if(achievement != null && achievement.isAcquired()){
          return new MutableText[]{Text.literal("Achieved!").formatted(Formatting.AQUA)};
       }
       

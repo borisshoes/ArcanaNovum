@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/totem_of_vengeance"
+    },
+    "hand_animation_on_swap": false
+}

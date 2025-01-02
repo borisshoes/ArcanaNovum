@@ -70,7 +70,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -107,46 +107,46 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
       }
    }
    
-   public AnvilOutputSet calculateOutput(ItemStack input1, ItemStack input2) {
+   public AnvilOutputSet calculateOutput(ItemStack input1, ItemStack input2){
       ItemStack output = input1.copy();
       int repairItemUsage = 0;
       int runningLevelCost = 0;
       int repairedDamage;
       long combinedRepairCost = 0L;
-      if (input1.isEmpty() || !EnchantmentHelper.canHaveEnchantments(input1)) {
+      if(input1.isEmpty() || !EnchantmentHelper.canHaveEnchantments(input1)){
          return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
       }
       ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(EnchantmentHelper.getEnchantments(output));
       combinedRepairCost += (long) input1.getOrDefault(DataComponentTypes.REPAIR_COST, 0) + (long) input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
-      if (!input2.isEmpty()) {
+      if(!input2.isEmpty()){
          boolean input2Enchanted = input2.contains(DataComponentTypes.STORED_ENCHANTMENTS);
-         if (output.isDamageable() && output.getItem().canRepair(input1, input2)) {
+         if(output.isDamageable() && input1.canRepairWith(input2)){
             int repairCount;
             repairedDamage = Math.min(output.getDamage(), output.getMaxDamage() / 4);
-            if (repairedDamage <= 0) {
+            if(repairedDamage <= 0){
                return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
             }
-            for (repairCount = 0; repairedDamage > 0 && repairCount < input2.getCount(); ++repairCount) {
+            for (repairCount = 0; repairedDamage > 0 && repairCount < input2.getCount(); ++repairCount){
                int newDamage = output.getDamage() - repairedDamage;
                output.setDamage(newDamage);
                ++runningLevelCost;
                repairedDamage = Math.min(output.getDamage(), output.getMaxDamage() / 4);
             }
             repairItemUsage = repairCount;
-         } else {
-            if (!(input2Enchanted || output.isOf(input2.getItem()) && output.isDamageable())) {
+         }else{
+            if(!(input2Enchanted || output.isOf(input2.getItem()) && output.isDamageable())){
                return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
             }
-            if (output.isDamageable() && !input2Enchanted) {
+            if(output.isDamageable() && !input2Enchanted){
                int input1Durability = input1.getMaxDamage() - input1.getDamage();
                int input2Durability = input2.getMaxDamage() - input2.getDamage();
                int bonusDurability = input2Durability + output.getMaxDamage() * 12 / 100;
                int otherRepairedDamage = input1Durability + bonusDurability;
                int newDamage = output.getMaxDamage() - otherRepairedDamage;
-               if (newDamage < 0) {
+               if(newDamage < 0){
                   newDamage = 0;
                }
-               if (newDamage < output.getDamage()) {
+               if(newDamage < output.getDamage()){
                   output.setDamage(newDamage);
                   runningLevelCost += 2;
                }
@@ -154,36 +154,36 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
             ItemEnchantmentsComponent itemEnchantmentsComponent = EnchantmentHelper.getEnchantments(input2);
             boolean hasCompatibleEnchant = false;
             boolean hasIncompatibleEnchant = false;
-            for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : itemEnchantmentsComponent.getEnchantmentEntries()) {
+            for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : itemEnchantmentsComponent.getEnchantmentEntries()){
                int newLevel;
                RegistryEntry<Enchantment> enchantmentEntry = entry.getKey();
                Enchantment enchantment = (Enchantment)enchantmentEntry.value();
                int level = builder.getLevel(enchantmentEntry);
                newLevel = level == (newLevel = entry.getIntValue()) ? newLevel + 1 : Math.max(newLevel, level);
                boolean canCombine = enchantment.isAcceptableItem(input1);
-               if (input1.isOf(Items.ENCHANTED_BOOK)) {
+               if(input1.isOf(Items.ENCHANTED_BOOK)){
                   canCombine = true;
                }
-               for (RegistryEntry<Enchantment> enchantmentEntry2 : builder.getEnchantments()) {
-                  if (enchantmentEntry2.equals(enchantmentEntry) || Enchantment.canBeCombined(enchantmentEntry,enchantmentEntry2)) continue;
+               for (RegistryEntry<Enchantment> enchantmentEntry2 : builder.getEnchantments()){
+                  if(enchantmentEntry2.equals(enchantmentEntry) || Enchantment.canBeCombined(enchantmentEntry,enchantmentEntry2)) continue;
                   canCombine = false;
                   ++runningLevelCost;
                }
-               if (!canCombine) {
+               if(!canCombine){
                   hasIncompatibleEnchant = true;
                   continue;
                }
                hasCompatibleEnchant = true;
-               if (newLevel > enchantment.getMaxLevel()) {
+               if(newLevel > enchantment.getMaxLevel()){
                   newLevel = enchantment.getMaxLevel();
                }
                builder.set(enchantmentEntry, newLevel);
                int enchantCost = enchantment.getAnvilCost();
-               if (input2Enchanted) {
+               if(input2Enchanted){
                   enchantCost = Math.max(1, enchantCost / 2);
                }
                runningLevelCost += enchantCost * newLevel;
-               if (input1.getCount() <= 1) continue;
+               if(input1.getCount() <= 1) continue;
                runningLevelCost = 40;
             }
             boolean enhancingStats = false;
@@ -205,18 +205,18 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
                }
             }
             
-            if (hasIncompatibleEnchant && !hasCompatibleEnchant && !enhancingStats) {
+            if(hasIncompatibleEnchant && !hasCompatibleEnchant && !enhancingStats){
                return new AnvilOutputSet(input1,input2,ItemStack.EMPTY,0,0);
             }
          }
       }
       int levelCost = (int) MathHelper.clamp(combinedRepairCost + (long)runningLevelCost, 0L, Integer.MAX_VALUE);
-      if (runningLevelCost <= 0) {
+      if(runningLevelCost <= 0){
          output = ItemStack.EMPTY;
       }
-      if (!output.isEmpty()) {
+      if(!output.isEmpty()){
          repairedDamage = output.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
-         if (repairedDamage < input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0)) {
+         if(repairedDamage < input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0)){
             repairedDamage = input2.getOrDefault(DataComponentTypes.REPAIR_COST, 0);
          }
          repairedDamage = AnvilScreenHandler.getNextCost(repairedDamage);
@@ -231,7 +231,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.TWILIGHT_ANVIL).getCheckOffset()),null);
@@ -262,18 +262,18 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
       augments = new TreeMap<>();
@@ -287,7 +287,7 @@ public class TwilightAnvilBlockEntity extends BlockEntity implements PolymerObje
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();

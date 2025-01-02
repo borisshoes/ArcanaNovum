@@ -39,7 +39,7 @@ public class TowerGui extends HotbarGui {
    }
    
    @Override
-   public boolean onClick(int index, ClickType type, SlotActionType action, GuiElementInterface element) {
+   public boolean onClick(int index, ClickType type, SlotActionType action, GuiElementInterface element){
       if(type == ClickType.MOUSE_LEFT || type == ClickType.MOUSE_RIGHT){
          if(index == 8){
             this.close();
@@ -58,7 +58,7 @@ public class TowerGui extends HotbarGui {
    }
    
    @Override
-   public void onTick() {
+   public void onTick(){
       if(shieldTicks > 0){
          shieldTicks--;
          this.setSlot(5, new GuiElementBuilder(Items.LIGHT_BLUE_STAINED_GLASS).setName(Text.literal("Protect Allies").formatted(Formatting.BOLD,Formatting.AQUA)).setCount(shieldTicks/20 + 1));

@@ -70,7 +70,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -108,18 +108,18 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                      hasWater = pos2;
                   }
                }else if(direction.getId() == 1){ // Check for chest
-                  if (block2 instanceof InventoryProvider) {
+                  if(block2 instanceof InventoryProvider){
                      output = ((InventoryProvider)block2).getInventory(state2, serverWorld, pos2);
-                  } else if (state2.hasBlockEntity()) {
+                  } else if(state2.hasBlockEntity()){
                      BlockEntity blockEntity = serverWorld.getBlockEntity(pos2);
-                     if (blockEntity instanceof Inventory) {
+                     if(blockEntity instanceof Inventory){
                         output = (Inventory)blockEntity;
-                        if (output instanceof ChestBlockEntity && block2 instanceof ChestBlock) {
+                        if(output instanceof ChestBlockEntity && block2 instanceof ChestBlock){
                            output = ChestBlock.getInventory((ChestBlock)block2, state2, serverWorld, pos2, true);
                         }
                      }
                   }
-                  if (output != null){
+                  if(output != null){
                      hasInventory = pos2;
                   }
                }else if(direction.getId() == 0){ //Check for netherite block
@@ -220,21 +220,21 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
-      if (nbt.contains("cooldown")){
+      if(nbt.contains("cooldown")){
          this.cooldown = nbt.getInt("cooldown");
       }
       augments = new TreeMap<>();
@@ -248,7 +248,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();

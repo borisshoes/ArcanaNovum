@@ -76,14 +76,14 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.STORMCALLER_ALTAR).getCheckOffset()),null);
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -154,27 +154,27 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
-      if (nbt.contains("cooldown")) {
+      if(nbt.contains("cooldown")){
          this.cooldown = nbt.getInt("cooldown");
       }
-      if (nbt.contains("mode")) {
+      if(nbt.contains("mode")){
          this.mode = nbt.getInt("mode");
       }
-      if (nbt.contains("duration")) {
+      if(nbt.contains("duration")){
          this.duration = nbt.getInt("duration");
       }
       augments = new TreeMap<>();
@@ -188,7 +188,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();

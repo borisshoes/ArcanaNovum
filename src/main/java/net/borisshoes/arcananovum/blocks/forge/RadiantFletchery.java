@@ -22,8 +22,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -42,6 +40,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,15 +57,12 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Radiant Fletchery";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.FLETCHING_TABLE;
       block = new RadiantFletcheryBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
-      item = new RadiantFletcheryItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new RadiantFletcheryItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.ADVANCEMENT_OL_BETSY,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.UNLOCK_STARLIGHT_FORGE};
       
       ItemStack stack = new ItemStack(item);
@@ -140,9 +136,9 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Radiant Fletchery\n\nRarity: Empowered\n\nI have yet to put my Runic Matrix to good use, fortunately this might be my chance.\nThe Matrix should be able to take on the effect of potions to boost the amount of Tipped Arrows I can make from a single ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Radiant Fletchery\n\nPotion. \nThe Arrows themselves could be an excellent candidate for use of the Matrix once I master more of its capabilities. Perhaps if I make an arrow out of a Matrix it could activate powerful effects upon hitting a target.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Radiant Fletchery\n\nThe Fletchery boosts the amount of Tipped Arrows made per potion, as well as allowing normal potions to be used.\n\nThe Fletchery also unlocks a host of Archery related recipes for the Forge").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Radiant Fletchery").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nI have yet to put my Runic Matrix to good use. Fortunately, this might be my chance. The Matrix should be able to take on the effect of potions to boost the amount of Tipped Arrows I can make from a single ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Radiant Fletchery").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\npotion. The Arrows themselves could make an excellent candidate for use of the Matrix once I master more of its capabilities. Perhaps if I make an arrow out of a Matrix it could activate powerful effects upon hitting a target.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Radiant Fletchery").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nThe Fletchery boosts the amount of Tipped Arrows made per potion, as well as allowing non-lingering potions to be used.\n\nThe Fletchery also unlocks a host of Archery related recipes for the Starlight Forge.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -159,31 +155,31 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
    
    public class RadiantFletcheryBlock extends ArcanaPolymerBlockEntity {
       public RadiantFletcheryBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state) {
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.FLETCHING_TABLE.getDefaultState();
       }
       
       @Nullable
-      public static RadiantFletcheryBlockEntity getEntity(World world, BlockPos pos) {
+      public static RadiantFletcheryBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof RadiantFletcheryBlock)) {
+         if(!(state.getBlock() instanceof RadiantFletcheryBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof RadiantFletcheryBlockEntity fletchery ? fletchery : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new RadiantFletcheryBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.RADIANT_FLETCHERY_BLOCK_ENTITY, RadiantFletcheryBlockEntity::ticker);
       }
       
@@ -197,7 +193,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
                      player.sendMessage(Text.literal("The Fletchery must be within the range of an active Starlight Forge"));
                   }else{
                      fletchery.openGui(player);
-                     player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
+                     player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
@@ -209,8 +205,8 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-         if (state.isOf(newState.getBlock())) {
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved){
+         if(state.isOf(newState.getBlock())){
             return;
          }
          BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -220,9 +216,9 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof RadiantFletcheryBlockEntity fletchery) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof RadiantFletcheryBlockEntity fletchery){
             initializeArcanaBlock(stack,fletchery);
          }
       }

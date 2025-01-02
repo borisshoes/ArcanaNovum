@@ -16,7 +16,6 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.RepeatTimer;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -29,7 +28,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
@@ -44,22 +42,16 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class EnsnarementArrows extends RunicArrow {
 	public static final String ID = "ensnarement_arrows";
    
-   private static final String TXT = "item/runic_arrow";
-   
    public EnsnarementArrows(){
       id = ID;
       name = "Ensnarement Arrows";
-      rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC,TomeGui.TomeFilter.ARROWS};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new EnsnarementArrowsItem(new Item.Settings().maxCount(64).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(5046527),new ArrayList<>()))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new EnsnarementArrowsItem(addArcanaItemComponents(new Item.Settings().maxCount(64)
+            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(5046527),new ArrayList<>(),Optional.empty()))
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.EFFECT_SLOWNESS};
       
       ItemStack stack = new ItemStack(item);
@@ -145,18 +137,14 @@ public class EnsnarementArrows extends RunicArrow {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Ensnarement Arrows\n\nRarity: Exotic\n\nThese arrows unleash Arcane chains around the target creature.\nThese chains fully stop the creature from moving, while still letting them shift due to environmental factors. Players are affected less.")));
+      list.add(List.of(Text.literal("   Ensnarement\n       Arrows").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThese arrows unleash Arcane chains around the target creature. These chains fully stop the creature from moving of their own will. They are still affected by the ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Ensnarement\n       Arrows").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nenvironment. Players are affected less.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class EnsnarementArrowsItem extends ArcanaPolymerArrowItem {
       public EnsnarementArrowsItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

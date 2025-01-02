@@ -26,39 +26,35 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    }
    
    @Override
-   public boolean applyUpdateEffect(LivingEntity entity, int amplifier){
-      if(entity.getWorld() instanceof ServerWorld serverWorld && amplifier == 0){
-         Vec3d pos = entity.getPos();
-         serverWorld.spawnParticles(ParticleTypes.SMOKE,pos.x,pos.y+entity.getHeight()/2,pos.z,1,.4,.4,.4,0);
-      }
-      return super.applyUpdateEffect(entity,amplifier);
+   public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier){
+      Vec3d pos = entity.getPos();
+      world.spawnParticles(ParticleTypes.SMOKE,pos.x,pos.y+entity.getHeight()/2,pos.z,1,.4,.4,.4,0);
+      return super.applyUpdateEffect(world, entity,amplifier);
    }
    
    @Override
-   public boolean canApplyUpdateEffect(int duration, int amplifier) {
+   public boolean canApplyUpdateEffect(int duration, int amplifier){
       return true;
    }
    
    @Override
-   public void onApplied(LivingEntity entity, int amplifier) {
+   public void onApplied(LivingEntity entity, int amplifier){
       if(entity.getServer() != null){
          addInvis(entity.getServer(),entity);
       }
       super.onApplied(entity, amplifier);
    }
    
-   // TODO allow melee through effect
    private static void addInvis(MinecraftServer server, LivingEntity invisEntity){
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
-         if (!playerEntity.equals(invisEntity)) {
+         if(!playerEntity.equals(invisEntity)){
             
             AbstractTeam abstractTeam = invisEntity.getScoreboardTeam();
-            if (abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()) {
+            if(abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()){
                return;
             }
             
             playerEntity.networkHandler.sendPacket(new EntitiesDestroyS2CPacket(invisEntity.getId()));
-            //updateEquipment(invisEntity, playerEntity);
          }
       });
    }
@@ -66,10 +62,10 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    public static void removeInvis(MinecraftServer server, LivingEntity invisEntity){
       EntitySpawnS2CPacket addPacket = new EntitySpawnS2CPacket(invisEntity.getId(), invisEntity.getUuid(), invisEntity.getX(), invisEntity.getY(), invisEntity.getZ(), invisEntity.getPitch(), invisEntity.getYaw(), invisEntity.getType(), 0, Vec3d.ZERO, invisEntity.headYaw);
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
-         if(!playerEntity.equals(invisEntity) && invisEntity.getEntityWorld().equals(playerEntity.getEntityWorld())) {
+         if(!playerEntity.equals(invisEntity) && invisEntity.getEntityWorld().equals(playerEntity.getEntityWorld())){
             
             AbstractTeam abstractTeam = invisEntity.getScoreboardTeam();
-            if(abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()) {
+            if(abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()){
                return;
             }
             

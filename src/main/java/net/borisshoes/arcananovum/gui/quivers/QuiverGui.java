@@ -88,6 +88,7 @@ public class QuiverGui extends SimpleGui {
          }
          if(tippedTypes.size() == 9) ArcanaAchievements.grant(player,ArcanaAchievements.DIVERSE_ARSENAL.id);
       }
+      quiver.buildItemLore(item,player.getServer());
    }
    
    

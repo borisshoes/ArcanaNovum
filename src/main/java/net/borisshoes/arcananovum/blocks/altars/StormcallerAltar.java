@@ -17,8 +17,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -36,6 +34,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,16 +50,13 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    public StormcallerAltar(){
       id = ID;
       name = "Altar of the Stormcaller";
-      rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.RAW_COPPER_BLOCK;
       block = new StormcallerAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.ORANGE).strength(5.0f,1200.0f).requiresTool().sounds(BlockSoundGroup.METAL));
-      item = new StormcallerAltarItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new StormcallerAltarItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_LIGHTNING_ROD_WITH_VILLAGER_NO_FIRE,ResearchTasks.OBTAIN_HEART_OF_THE_SEA,ResearchTasks.OBTAIN_LIGHTNING_ROD,ResearchTasks.ADVANCEMENT_WAX_ON,ResearchTasks.ADVANCEMENT_WAX_OFF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
@@ -139,8 +135,8 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Altar of the\n      Stormcaller\n\nRarity: Exotic\n\nIn order to influence the world, I need to tap into the leylines. I have devised a structure capable of such, with this at its heart. It should be able to cause changes in the ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Altar of the\n      Stormcaller\n\natmosphere so that I can dictate the weather. \nThunder, Rain or Shine, at my command!\nHowever, in order to provide enough energy to the leylines, I need to use a Diamond Block as a catalyst.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Altar of the\n    Stormcaller").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nIn order to influence the world, I need to tap into the leylines. I have devised a structure capable of such, with this at its heart. It should be able to cause changes in the  ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Altar of the\n    Stormcaller").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\natmosphere so that I can dictate the weather. Thunder, Rain, or Shine at my command! However, in order to provide enough energy to the leylines, I need to use a Diamond Block as a catalyst.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -157,31 +153,31 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    
    public class StormcallerAltarBlock extends ArcanaPolymerBlockEntity {
       public StormcallerAltarBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state) {
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.RAW_COPPER_BLOCK.getDefaultState();
       }
       
       @Nullable
-      public static StormcallerAltarBlockEntity getEntity(World world, BlockPos pos) {
+      public static StormcallerAltarBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof StormcallerAltarBlock)) {
+         if(!(state.getBlock() instanceof StormcallerAltarBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof StormcallerAltarBlockEntity altar ? altar : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new StormcallerAltarBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.STORMCALLER_ALTAR_BLOCK_ENTITY, StormcallerAltarBlockEntity::ticker);
       }
       
@@ -192,7 +188,7 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
             if(playerEntity instanceof ServerPlayerEntity player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
+                  player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
@@ -203,9 +199,9 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof StormcallerAltarBlockEntity altar) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof StormcallerAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
          }
       }

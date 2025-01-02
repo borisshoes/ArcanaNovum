@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerShieldItem;
@@ -14,12 +15,8 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
@@ -28,7 +25,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -36,12 +32,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -58,14 +51,12 @@ public class ShieldOfFortitude extends ArcanaItem {
       id = ID;
       name = "Shield of Fortitude";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.SHIELD;
-      item = new ShieldOfFortitudeItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      item = new ShieldOfFortitudeItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
             .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      );
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_ABSORPTION,ResearchTasks.ADVANCEMENT_DEFLECT_ARROW,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
@@ -111,7 +102,7 @@ public class ShieldOfFortitude extends ArcanaItem {
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv){
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
       ItemStack shieldStack = inv.getStack(12); // Should be the Sword
       ItemStack newArcanaItem = getNewItem();
       
@@ -147,8 +138,9 @@ public class ShieldOfFortitude extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Shield of Fortitude\n\nRarity: Sovereign\n\nTaking after the Wings of Enderia I have successfully recreated their incredible durability. \n\nWhile keeping with the protective nature of the Wings I have been able to infuse extra\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Shield of Fortitude\n\nArcana into the four basic protection enchantments, fusing them with the ability of golden apples that grants the consumer a protective barrier.\n\nAs a result half of all damage blocked becomes a barrier lasting 10 seconds.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Shield of Fortitude").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Shield is my attempt at pouring Arcana into a fully defensive item. The Netherite and obsidian reinforced Shield absorbs the energy of impacts and reconfigures it into a fortification barrier ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Shield of Fortitude").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\naround myself by invoking all four basic protection enchantments and mimicking the effect of golden apples.\n\nHalf of all damage blocked by the Shield becomes an absorption barrier lasting 10 seconds.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Shield of Fortitude").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nDisabling the Shield with an axe causes the absorption barrier to shatter prematurely.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -179,32 +171,11 @@ public class ShieldOfFortitude extends ArcanaItem {
          super(getThis(),settings);
       }
       
-      
-      
       @Override
       public ItemStack getDefaultStack(){
          return prefItem;
       }
       
-      @Override
-      public ActionResult useOnBlock(ItemUsageContext context){
-         ItemStack stack = context.getStack();
-         BlockPos blockPos = context.getBlockPos();
-         World world = context.getWorld();
-         try{
-            BlockState blockState = world.getBlockState(blockPos);
-            
-            if((stack.contains(DataComponentTypes.BANNER_PATTERNS) || stack.contains(DataComponentTypes.BASE_COLOR)) && blockState.getBlock() == Blocks.WATER_CAULDRON){
-               stack.remove(DataComponentTypes.BANNER_PATTERNS);
-               stack.remove(DataComponentTypes.BASE_COLOR);
-               LeveledCauldronBlock.decrementFluidLevel(blockState,world,blockPos);
-               return ActionResult.SUCCESS;
-            }
-         }catch (Exception e){
-            e.printStackTrace();
-         }
-         return ActionResult.PASS;
-      }
    }
 }
 

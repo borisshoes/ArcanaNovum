@@ -18,43 +18,43 @@ import java.util.function.BooleanSupplier;
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
    @Inject(method = "shouldTick(Lnet/minecraft/util/math/ChunkPos;)Z", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_shouldTick(ChunkPos chunkPos, CallbackInfoReturnable<Boolean> cir) {
+   private void arcananovum_shouldTick(ChunkPos chunkPos, CallbackInfoReturnable<Boolean> cir){
       ServerWorld serverWorld = (ServerWorld)(Object)this;
-      if(ContinuumAnchor.isChunkLoaded(serverWorld, chunkPos)) {
+      if(ContinuumAnchor.isChunkLoaded(serverWorld, chunkPos)){
          cir.setReturnValue(true);
          cir.cancel();
       }
    }
    
    @Inject(method = "shouldTickEntity(Lnet/minecraft/util/math/BlockPos;)Z", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_shouldTickEntity(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+   private void arcananovum_shouldTickEntity(BlockPos pos, CallbackInfoReturnable<Boolean> cir){
       ServerWorld serverWorld = (ServerWorld)(Object)this;
-      if(ContinuumAnchor.isChunkLoaded(serverWorld, serverWorld.getChunk(pos).getPos())) {
+      if(ContinuumAnchor.isChunkLoaded(serverWorld, serverWorld.getChunk(pos).getPos())){
          cir.setReturnValue(true);
          cir.cancel();
       }
    }
    
    @Inject(method = "shouldTick(Lnet/minecraft/util/math/BlockPos;)Z", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_shouldTick(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+   private void arcananovum_shouldTick(BlockPos pos, CallbackInfoReturnable<Boolean> cir){
       ServerWorld serverWorld = (ServerWorld)(Object)this;
-      if(ContinuumAnchor.isChunkLoaded(serverWorld, serverWorld.getChunk(pos).getPos())) {
+      if(ContinuumAnchor.isChunkLoaded(serverWorld, serverWorld.getChunk(pos).getPos())){
          cir.setReturnValue(true);
          cir.cancel();
       }
    }
    
    @Inject(method = "shouldTickBlocksInChunk", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_shouldTickBlocksInChunk(long chunkPos, CallbackInfoReturnable<Boolean> cir) {
+   private void arcananovum_shouldTickBlocksInChunk(long chunkPos, CallbackInfoReturnable<Boolean> cir){
       ServerWorld serverWorld = (ServerWorld)(Object)this;
-      if(ContinuumAnchor.isChunkLoaded(serverWorld,new ChunkPos(chunkPos))) {
+      if(ContinuumAnchor.isChunkLoaded(serverWorld,new ChunkPos(chunkPos))){
          cir.setReturnValue(true);
          cir.cancel();
       }
    }
    
    @Redirect(method = "shouldTickEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager;shouldTickEntities(J)Z"))
-   private boolean arcananovum_injectedChunkManagerCall(ChunkTicketManager chunkTicketManager, long chunkPos) {
+   private boolean arcananovum_injectedChunkManagerCall(ChunkTicketManager chunkTicketManager, long chunkPos){
       ServerWorld serverWorld = (ServerWorld)(Object)this;
       if(ContinuumAnchor.isChunkLoaded(serverWorld,new ChunkPos(chunkPos))) return true;
       return chunkTicketManager.shouldTickEntities(chunkPos);

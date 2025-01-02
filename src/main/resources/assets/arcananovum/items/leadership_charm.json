@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/leadership_charm"
+    },
+    "hand_animation_on_swap": false
+}

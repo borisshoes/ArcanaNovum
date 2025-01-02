@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface PhantomEntityAccessor {
    
    @Accessor
-   static TrackedData<Integer> getSIZE() {
+   static TrackedData<Integer> getSIZE(){
       throw new UnsupportedOperationException();
    }
 }

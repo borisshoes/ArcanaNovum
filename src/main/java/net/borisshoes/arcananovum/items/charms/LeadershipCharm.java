@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -11,8 +10,6 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -27,7 +24,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -42,21 +38,14 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class LeadershipCharm extends ArcanaItem {
 	public static final String ID = "leadership_charm";
    
-   private static final String TXT = "item/leadership_charm";
-   
    public LeadershipCharm(){
       id = ID;
       name = "Charm of Leadership";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.AMETHYST_SHARD;
-      item = new LeadershipCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new LeadershipCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_LEADERSHIP_CHARM};
       
       ItemStack stack = new ItemStack(item);
@@ -100,19 +89,15 @@ public class LeadershipCharm extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Charm of Leadership\n\nRarity: Divine\n\nOne of the few known Divine Artifacts gifted by the Gods. \n\nIt grants the wielder and all those nearby Regeneration 2, Strength 2, and Resistance 2. It also mends the gear of all").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Charm of Leadership\n\npeople in the radius.\n\nThe wielder's confidence empowers them to the point of radiating a visible aura.\n\nThey say anything is possible when following a glowing Leader...").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n     Leadership").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nA rare pendant, gifted only by Divine Entities. Whoever holds the amulet is imbued with a surge of confidence powerful enough to radiate a visible aura. They say anything is possible when ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n     Leadership").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nfollowing a glowing leader…\n\nThe Charm grants the wielder and all those nearby a bout of regeneration, strength and resistance. It also has the ability to mend ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Charm of\n     Leadership").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nthe gear of all players in its radius without need for the Mending enchantment. ").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class LeadershipCharmItem extends ArcanaPolymerItem {
       public LeadershipCharmItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -124,7 +109,6 @@ public class LeadershipCharm extends ArcanaItem {
       public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
-         //System.out.println("Ticking Charm of Leadership");
          // Give AoE resistance, regen, and strength, and repair gear.
          int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION.id));
          
@@ -136,7 +120,6 @@ public class LeadershipCharm extends ArcanaItem {
          player.addStatusEffect(glow);
          
          for(ServerPlayerEntity plyr: inRangePlayers){
-            //System.out.println(world.isPlayerInRange(playerPos.getX(),playe));
             StatusEffectInstance str = new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 5 + 5, 1+invigor, false, false, true);
             StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 5 + 5, 1+invigor/2, false, false, true);
             StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 20 * 5 + 5, 1+invigor, false, false, true);
@@ -173,7 +156,7 @@ public class LeadershipCharm extends ArcanaItem {
                if(plyr.equals(player))
                   continue;
                serverWorld.spawnParticles(ParticleTypes.HAPPY_VILLAGER, plyr.getX(), plyr.getY()+.75, plyr.getZ(), 4, .2, .2, .2, 10);
-               serverWorld.spawnParticles(plyr,ParticleTypes.HAPPY_VILLAGER, false, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
+               serverWorld.spawnParticles(plyr,ParticleTypes.HAPPY_VILLAGER, false,true, player.getX(), player.getY()+3, player.getZ(), 5, .1, .3, .1, 10);
             }
          }
       }

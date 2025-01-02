@@ -55,7 +55,7 @@ public class ArcaneSingularityGui extends SimpleGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       boolean indexInCenter = index > 9 && index < 45 && index % 9 != 0 && index % 9 != 8;
       boolean accretion = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ACCRETION.id) >= 1;
       
@@ -69,8 +69,8 @@ public class ArcaneSingularityGui extends SimpleGui {
          }
       }else if(index == 0){
          boolean backwards = type == ClickType.MOUSE_RIGHT;
-         boolean middle = type == ClickType.MOUSE_MIDDLE;
-         if(middle){
+         boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+         if(shiftLeft){
             sort = BookSort.FIRST_ALPHABETICAL;
          }else{
             sort = BookSort.cycleSort(sort,backwards);
@@ -78,8 +78,8 @@ public class ArcaneSingularityGui extends SimpleGui {
          buildGui();
       }else if(index == 8){
          boolean backwards = type == ClickType.MOUSE_RIGHT;
-         boolean middle = type == ClickType.MOUSE_MIDDLE;
-         if(middle){
+         boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+         if(shiftLeft){
             filter = BookFilter.NONE;
          }else{
             filter = BookFilter.cycleFilter(filter,backwards);
@@ -202,7 +202,7 @@ public class ArcaneSingularityGui extends SimpleGui {
       filterBuilt.setName(Text.literal("Filter Books").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
+      filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(BookFilter.getColoredLabel(filter))));
       setSlot(8,filterBuilt);
@@ -211,7 +211,7 @@ public class ArcaneSingularityGui extends SimpleGui {
       sortBuilt.setName(Text.literal("Sort Books").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
-      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Middle Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
+      sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Shift Left Click").formatted(Formatting.YELLOW)).append(Text.literal(" to reset sort.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("")));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(BookSort.getColoredLabel(sort))));
       setSlot(0,sortBuilt);

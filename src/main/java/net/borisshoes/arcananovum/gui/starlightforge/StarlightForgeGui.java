@@ -21,7 +21,6 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -104,7 +103,7 @@ public class StarlightForgeGui extends SimpleGui {
                if(canApplySkilled){
                   buildSkilledGui(arcanaItem.getId());
                }else{
-                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
+                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv, blockEntity),player.getUuidAsString(),false,player.getServer());
                   forgeItem(arcanaItem, newArcanaItem, recipe, null,type == ClickType.MOUSE_LEFT_SHIFT);
                }
             }
@@ -174,8 +173,8 @@ public class StarlightForgeGui extends SimpleGui {
             }
          }else if(index == 0){
             boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean middle = type == ClickType.MOUSE_MIDDLE;
-            if(middle){
+            boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+            if(shiftLeft){
                settings.setSortType(TomeGui.TomeSort.RECOMMENDED);
             }else{
                settings.setSortType(TomeGui.TomeSort.cycleSort(settings.getSortType(),backwards));
@@ -184,8 +183,8 @@ public class StarlightForgeGui extends SimpleGui {
             TomeGui.buildCompendiumGui(this,player,settings);
          }else if(index == 8){
             boolean backwards = type == ClickType.MOUSE_RIGHT;
-            boolean middle = type == ClickType.MOUSE_MIDDLE;
-            if(middle){
+            boolean shiftLeft = type == ClickType.MOUSE_LEFT_SHIFT;
+            if(shiftLeft){
                settings.setFilterType(TomeGui.TomeFilter.NONE);
             }else{
                settings.setFilterType(TomeGui.TomeFilter.cycleFilter(settings.getFilterType(),backwards));
@@ -233,13 +232,13 @@ public class StarlightForgeGui extends SimpleGui {
                }
                
                ArcanaRecipe recipe = arcanaItem.getRecipe();
-               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
+               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv, blockEntity),player.getUuidAsString(),false,player.getServer());
                forgeItem(arcanaItem, newArcanaItem, recipe, new Pair<>(augment,applicableLevel), type == ClickType.MOUSE_LEFT_SHIFT);
                close();
             }
          }else if(index == 40 && arcanaItem != null){
             ArcanaRecipe recipe = arcanaItem.getRecipe();
-            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv),player.getUuidAsString(),false,player.getServer());
+            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv, blockEntity),player.getUuidAsString(),false,player.getServer());
             forgeItem(arcanaItem, newArcanaItem, recipe, null, type == ClickType.MOUSE_LEFT_SHIFT);
          }
       }
@@ -248,6 +247,7 @@ public class StarlightForgeGui extends SimpleGui {
    }
    
    private void forgeItem(ArcanaItem arcanaItem, ItemStack newArcanaItem, ArcanaRecipe recipe, @Nullable Pair<ArcanaAugment, Integer> skillPair, boolean fastAnim){
+      if(!(blockEntity.getWorld()instanceof ServerWorld world)) return;
       if(skillPair != null && skillPair.getRight() > 0){
          ArcanaAugments.applyAugment(newArcanaItem, skillPair.getLeft().id, skillPair.getRight(),false);
       }
@@ -263,7 +263,6 @@ public class StarlightForgeGui extends SimpleGui {
          inv.setStack(i,remainders[i/5][i%5]);
       }
       
-      ServerWorld world = (ServerWorld) blockEntity.getWorld();
       ParticleEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0,fastAnim ? 1.75 : 1);
       
       ArcanaNovum.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {

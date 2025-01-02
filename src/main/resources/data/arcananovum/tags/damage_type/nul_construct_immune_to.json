@@ -1,0 +1,11 @@
+{
+  "values": [
+    "#minecraft:is_fire",
+    "#minecraft:is_explosion",
+    "#minecraft:is_drowning",
+    "#minecraft:wither_immune_to",
+    "minecraft:wither_skull",
+    "minecraft:wither",
+    "arcananovum:nul_damage"
+  ]
+}

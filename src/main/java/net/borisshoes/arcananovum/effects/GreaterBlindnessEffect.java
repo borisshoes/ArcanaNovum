@@ -11,6 +11,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -24,16 +25,16 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
    }
    
    @Override
-   public boolean canApplyUpdateEffect(int duration, int amplifier) {
+   public boolean canApplyUpdateEffect(int duration, int amplifier){
       return true;
    }
    
    @Override
-   public boolean applyUpdateEffect(LivingEntity entity, int amplifier){
+   public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier){
       MinecraftServer server = entity.getServer();
       
       if(entity instanceof ServerPlayerEntity player && server != null && server.getTicks() % 10 == 0){
-         ElementHolder holder = new ElementHolder() {
+         ElementHolder holder = new ElementHolder(){
             int lifeTime = 15;
             
             @Override
@@ -53,7 +54,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
                   }
                }
 
-               if(lifeTime-- <= 0) {
+               if(lifeTime-- <= 0){
                   setAttachment(null);
                   destroy(); // Time expired, remove
                }
@@ -84,6 +85,6 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
             }
          }
       }
-      return super.applyUpdateEffect(entity,amplifier);
+      return super.applyUpdateEffect(world, entity,amplifier);
    }
 }

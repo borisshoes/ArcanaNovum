@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": {
-      "item": "arcananovum:mundane_arcane_paper"
-    },
-    "X": {
-      "item": "minecraft:ender_eye"
-    }
+    "#": "arcananovum:mundane_arcane_paper",
+    "X": "minecraft:ender_eye"
   },
   "pattern": [
     " # ",

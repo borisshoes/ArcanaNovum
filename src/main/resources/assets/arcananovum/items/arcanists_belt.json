@@ -1,0 +1,7 @@
+{
+    "model": {
+        "type": "minecraft:model",
+        "model": "arcananovum:item/arcanists_belt"
+    },
+    "hand_animation_on_swap": false
+}

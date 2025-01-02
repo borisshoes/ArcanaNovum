@@ -56,7 +56,7 @@ public class RenameGui extends AnvilInputGui {
    }
    
    @Override
-   public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
+   public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(index == 2){
          ItemStack outputStack = getSlot(2) == null ? ItemStack.EMPTY : getSlot(2).getItemStack();
          if(item != null && !item.isEmpty() && !outputStack.isEmpty()){
@@ -76,7 +76,7 @@ public class RenameGui extends AnvilInputGui {
    }
    
    @Override
-   public void onInput(String input) {
+   public void onInput(String input){
       if(item == null || item.isEmpty()){
          setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
          return;
@@ -84,7 +84,7 @@ public class RenameGui extends AnvilInputGui {
       String string = sanitize(input);
       ItemStack newItem = item.copy();
       Text name = newItem.getName();
-      if (string == null || string.equals(name.getString())) {
+      if(string == null || string.equals(name.getString())){
          setSlot(2,GuiElementBuilder.from(ItemStack.EMPTY));
          return;
       }
@@ -107,9 +107,9 @@ public class RenameGui extends AnvilInputGui {
    }
    
    @Nullable
-   private static String sanitize(String name) {
+   private static String sanitize(String name){
       String string = StringHelper.stripInvalidChars(name);
-      if (string.length() <= 50) {
+      if(string.length() <= 50){
          return string;
       }
       return null;

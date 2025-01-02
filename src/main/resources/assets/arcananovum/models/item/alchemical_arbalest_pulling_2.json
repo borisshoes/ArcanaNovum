@@ -1,0 +1,6 @@
+{
+    "parent": "arcananovum:item/alchemical_arbalest",
+    "textures": {
+        "layer0": "arcananovum:item/alchemical_arbalest_pulling_2"
+    }
+}

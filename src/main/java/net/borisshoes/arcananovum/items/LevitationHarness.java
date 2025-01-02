@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -22,17 +23,21 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.equipment.EquipmentType;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
@@ -42,18 +47,20 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaRegistry.EQUIPMENT_ASSET_REGISTRY_KEY;
 
 public class LevitationHarness extends EnergyItem {
 	public static final String ID = "levitation_harness";
@@ -65,25 +72,20 @@ public class LevitationHarness extends EnergyItem {
    public static final String STONE_DATA_TAG = "stoneData";
    
    private static final double[] efficiencyChance = {0,.1,.25,.5};
-   private static final String TXT = "item/levitation_harness";
    
    public LevitationHarness(){
       id = ID;
       name = "Levitation Harness";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.EQUIPMENT};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       initEnergy = 3599; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
       itemVersion = 1;
       vanillaItem = Items.LEATHER_CHESTPLATE;
-      item = new LevitationHarnessItem(new Item.Settings().maxCount(1).fireproof().maxDamage(1024)
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.GRAY))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+      item = new LevitationHarnessItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
             .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0x966996,false))
             .component(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(false))
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      ));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SHULKER_CORE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.ADVANCEMENT_ELYTRA,ResearchTasks.UNLOCK_ARCANE_SINGULARITY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
@@ -202,7 +204,7 @@ public class LevitationHarness extends EnergyItem {
          putProperty(stack,STONE_DATA_TAG,new NbtCompound());
          putProperty(stack,SOULS_TAG,-1);
       }else{
-         putProperty(stack,STONE_DATA_TAG,stone.encodeAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,stone.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
          putProperty(stack,SOULS_TAG,Soulstone.getSouls(stone));
       }
    }
@@ -280,7 +282,7 @@ public class LevitationHarness extends EnergyItem {
    }
    
    @Override
-   public ItemStack forgeItem(Inventory inv){
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
       // Souls n stuff
       ItemStack coreStack = inv.getStack(12); // Should be the Core
       ItemStack newArcanaItem = null;
@@ -317,20 +319,24 @@ public class LevitationHarness extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Levitation Harness\n\nRarity: Sovereign\n\nThe sheer amount of effort and research that has gone into this is incomparable. A crowning achievement to be sure. The ability to fly freely through the sky is at my command, albeit fueled by innocent souls. ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Levitation Harness\n\nGlowstone was an\nadequate moderator for the Shulker Core but now it is an absolute necessity that is consumed in large quantities to stabilize the flight reaction. Even with more Glowstone, the reaction is incredibly sensitive to damage.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Levitation Harness\n\nWearing the Harness like a chestplate grants creative flight. Although the Harness provides no armor value and taking even the slightest bump while in flight will destabilize the flight process. The harness then needs a couple seconds to reactivate.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Levitation Harness").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe sheer amount of effort and research that has gone into this is incomparable. A crowning achievement to be sure. The ability to fly freely through the sky is at my command, albeit fueled by innocent souls.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Levitation Harness").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nGlowstone was an adequate moderator for the Shulker Core, but now it is an absolute necessity that is consumed in large quantities to stabilize the flight reaction. Even with more Glowstone, the reaction is incredibly sensitive to damage.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Levitation Harness").formatted(Formatting.GRAY,Formatting.BOLD),Text.literal("\nWearing the Harness grants creative flight. The Harness provides no armor value, and taking even the slightest bump while in flight will destabilize the flight process, dealing half my health in damage, and taking a few seconds to restabilize.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class LevitationHarnessItem extends ArcanaPolymerArmorItem {
       public LevitationHarnessItem(Item.Settings settings){
-         super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL,Type.CHESTPLATE,settings);
+         super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL, EquipmentType.CHESTPLATE,settings);
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         EquippableComponent equippableComponent = baseStack.get(DataComponentTypes.EQUIPPABLE);
+         EquippableComponent newComp = EquippableComponent.builder(equippableComponent.slot()).equipSound(equippableComponent.equipSound()).model(RegistryKey.of(EQUIPMENT_ASSET_REGISTRY_KEY, Identifier.of(MOD_ID,ID))).build();
+         baseStack.set(DataComponentTypes.EQUIPPABLE,newComp);
+         return baseStack;
       }
       
       @Override
@@ -398,11 +404,16 @@ public class LevitationHarness extends EnergyItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          if(playerEntity.isSneaking()){
             ItemStack item = playerEntity.getStackInHand(hand);
             openGui(playerEntity,item);
-            return TypedActionResult.success(item);
+            if(playerEntity instanceof ServerPlayerEntity player){
+               PlayerInventory inv = player.getInventory();
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, item));
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 6, player.getEquippedStack(EquipmentSlot.CHEST)));
+            }
+            return ActionResult.SUCCESS;
          }else{
             return super.use(world, playerEntity, hand);
          }

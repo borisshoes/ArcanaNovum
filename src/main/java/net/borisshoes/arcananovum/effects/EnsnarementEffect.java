@@ -18,7 +18,7 @@ public class EnsnarementEffect extends StatusEffect implements PolymerStatusEffe
    }
    
    @Override
-   public boolean canApplyUpdateEffect(int duration, int amplifier) {
+   public boolean canApplyUpdateEffect(int duration, int amplifier){
       return true;
    }
 }

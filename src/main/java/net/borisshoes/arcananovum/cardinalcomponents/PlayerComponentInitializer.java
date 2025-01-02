@@ -12,7 +12,7 @@ public class PlayerComponentInitializer implements EntityComponentInitializer {
          ComponentRegistryV3.INSTANCE.getOrCreate(Identifier.of("arcananovum", "profile"), IArcanaProfileComponent.class);
    
    @Override
-   public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
+   public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry){
       registry.registerForPlayers(PLAYER_DATA, ArcanaProfileComponent::new, RespawnCopyStrategy.ALWAYS_COPY);
    }
 }

@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items.charms;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -12,7 +11,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -21,20 +20,21 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,24 +45,15 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class FelidaeCharm extends ArcanaItem {
 	public static final String ID = "felidae_charm";
    
-   private static final String TXT = "item/felidae_charm";
-   private static final String TXT_PANTHERA = "item/felidae_charm_panthera";
-   
    public FelidaeCharm(){
       id = ID;
       name = "Charm of Felidae";
-      rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.STRING;
-      item = new FelidaeCharmItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.YELLOW))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
-      models.add(new Pair<>(vanillaItem,TXT_PANTHERA));
+      item = new FelidaeCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD,ResearchTasks.ADVANCEMENT_COMPLETE_CATALOGUE,ResearchTasks.CAT_SCARE,ResearchTasks.FEATHER_FALL,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
@@ -127,8 +118,8 @@ public class FelidaeCharm extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Charm of Felidae\n\nRarity: Empowered\n\nCats are quite powerful creatures, managing to frighten phantoms and scare creepers. They can even fall from any height without care.\nThis Charm seeks to mimic a fraction of that power.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Charm of Felidae\n\nThe Charm halves all fall damage, stops phantoms from swooping the holder, and gives creepers a good scare every now and then.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Charm of Felidae").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nCats are quite powerful creatures, managing to frighten phantoms and creepers. They can even fall from any height without care.\n\nThis Charm seeks to mimic a fraction of  ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Charm of Felidae").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\ntheir majestic power.\n\nThe Charm halves all fall damage, stops phantoms from swooping the holder, and gives creepers a good scare if they get too close.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -138,9 +129,16 @@ public class FelidaeCharm extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(TXT).value();
-         return ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.PANTHERA.id) >= 1 ? ArcanaRegistry.getModelData(TXT_PANTHERA).value() : ArcanaRegistry.getModelData(TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
+         
+         List<String> stringList = new ArrayList<>();
+         if(ArcanaAugments.getAugmentOnItem(itemStack,ArcanaAugments.PANTHERA.id) >= 1){
+            stringList.add("panthera");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -149,11 +147,11 @@ public class FelidaeCharm extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand){
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.pass(stack);
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_AMBIENT, 1f, (float) (0.5*(Math.random()-0.5)+1));
-         return TypedActionResult.success(stack);
+         return ActionResult.SUCCESS;
       }
       
       @Override

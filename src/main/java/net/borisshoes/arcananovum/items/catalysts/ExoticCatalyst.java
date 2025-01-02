@@ -11,17 +11,13 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,21 +29,14 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class ExoticCatalyst extends ArcanaItem {
 	public static final String ID = "exotic_catalyst";
    
-   private static final String TXT = "item/exotic_catalyst";
-   
    public ExoticCatalyst(){
       id = ID;
       name = "Exotic Augment Catalyst";
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.CATALYSTS};
       rarity = ArcanaRarity.MUNDANE;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.DIAMOND;
-      item = new ExoticCatalystItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new ExoticCatalystItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_EMPOWERED_CATALYST,ResearchTasks.OBTAIN_DIAMOND,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
@@ -103,18 +92,14 @@ public class ExoticCatalyst extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Exotic Augmentation\n         Catalyst\n\nRarity: Mundane\n\nI think I've cracked it, higher and higher quality gemstones can channel more of the Matrix's power. But now the Matrix seems less malleable in its range of possible augments...").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Exotic\n   Augmentation\n      Catalyst").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nI think I’ve cracked it. Higher and higher quality gemstones can channel more of the Matrix’s power. But now the Matrix seems less malleable in its ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Exotic\n   Augmentation\n      Catalyst").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nrange of possible augments…").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class ExoticCatalystItem extends ArcanaPolymerItem {
       public ExoticCatalystItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override

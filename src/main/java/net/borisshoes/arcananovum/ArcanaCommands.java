@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
+import eu.pb4.sgui.api.gui.BookGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -21,6 +22,7 @@ import net.borisshoes.arcananovum.gui.cache.CacheGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.utils.*;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -52,11 +54,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.*;
@@ -78,7 +81,7 @@ public class ArcanaCommands {
       try{
          ServerCommandSource source = ctx.getSource();
       
-         for (ServerPlayerEntity player : targets) {
+         for (ServerPlayerEntity player : targets){
             IArcanaProfileComponent profile = ArcanaNovum.data(player);
             
             NbtInt pointsEle = (NbtInt) profile.getMiscData(ArcanaProfileComponent.ADMIN_SKILL_POINTS_TAG);
@@ -127,7 +130,7 @@ public class ArcanaCommands {
       try{
          ServerCommandSource source = ctx.getSource();
          
-         for (ServerPlayerEntity player : targets) {
+         for (ServerPlayerEntity player : targets){
             IArcanaProfileComponent profile = ArcanaNovum.data(player);
             int oldValue = points ? profile.getXP() : profile.getLevel();
             int newAmount = set ? Math.max(amount, 0) : Math.max(oldValue + amount, 0);
@@ -220,8 +223,8 @@ public class ArcanaCommands {
       return count;
    }
    
-   public static int getBookData(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!DEV_MODE)
+   public static int getBookData(CommandContext<ServerCommandSource> objectCommandContext){
+      if(!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
@@ -238,20 +241,46 @@ public class ArcanaCommands {
                lines.add(page.get(false));
             }
          }
+         ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(player.getOffHandStack());
          
          if(lines.isEmpty()){
             player.sendMessage(Text.literal("Hold a written book to get data"),true);
          }else{
-            String path = "C:\\Users\\Boris\\Desktop\\bookdata.txt";
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
-            
-            for(String line : lines){
-               out.println("pages.add(Text.literal(\""+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK));");
+            Optional<Optional<Path>> outPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/datagen/"));
+            if(outPathOpt.isEmpty() || outPathOpt.get().isEmpty()){
+               return -1;
             }
+            
+            String path = outPathOpt.get().get() + "\\" + "bookdata.txt";
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
+            List<List<Text>> loreData = new ArrayList<>();
+            
+            boolean first = true;
+            for(String line : lines){
+               if(arcanaItem != null){
+                  String displayName = TextUtils.textToCode(Text.literal(arcanaItem.getNameString()).getWithStyle(arcanaItem.getDisplayName().getStyle()).getFirst()).replace(";","");
+                  if(first){
+                     loreData.add(List.of(arcanaItem.getDisplayName(),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(arcanaItem.getRarity(),false)),Text.literal("\n"+line).formatted(Formatting.BLACK)));
+                     out.println("list.add(List.of("+displayName+",Text.literal(\"\\nRarity: \").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal(\"\\n"+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK)));");
+                     first = false;
+                  }else{
+                     loreData.add(List.of(arcanaItem.getDisplayName(),Text.literal("\n"+line).formatted(Formatting.BLACK)));
+                     out.println("list.add(List.of("+displayName+",Text.literal(\"\\n"+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK)));");
+                  }
+               }else{
+                  loreData.add(List.of(Text.literal(line).formatted(Formatting.BLACK)));
+                  out.println("list.add(List.of(Text.literal(\""+line.replace("\n","\\n")+"\").formatted(Formatting.BLACK)));");
+               }
+            }
+            BookElementBuilder bookBuilder = new BookElementBuilder();
+            loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Text[0])));
+            BookGui loreGui = new BookGui(player,bookBuilder);
+            loreGui.open();
+            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, path))));
             
             out.close();
          }
-      } catch (Exception e) {
+      } catch (Exception e){
          log(2,e.toString());
       }
       return 0;
@@ -278,8 +307,8 @@ public class ArcanaCommands {
       }
    }
    
-   public static int getItemData(CommandContext<ServerCommandSource> objectCommandContext, String name) {
-      if (!DEV_MODE)
+   public static int getItemData(CommandContext<ServerCommandSource> objectCommandContext, String name){
+      if(!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
@@ -301,31 +330,65 @@ public class ArcanaCommands {
                itemName.append(c);
             }
             String fullName = itemName.toString();
-            String idName = fullName.replace(" ","_").toLowerCase();
+            String idName = fullName.replace(" ","_").toLowerCase(Locale.ROOT);
             
-            String path = "C:\\Users\\Boris\\Desktop\\itemdata.txt";
+            Optional<Optional<Path>> inPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/datagen/new_item_template.txt"));
+            Optional<Optional<Path>> outPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/datagen/"));
+            if(inPathOpt.isEmpty() || inPathOpt.get().isEmpty() || outPathOpt.isEmpty() || outPathOpt.get().isEmpty()){
+               return -1;
+            }
+            InputStream in = Files.newInputStream(inPathOpt.get().get());
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in))){
+               String line;
+               while ((line = bufferedReader.readLine()) != null){
+                  stringBuilder.append(line).append("\n");
+               }
+            }
+            String template = stringBuilder.toString();
+            
+            String path = outPathOpt.get().get() + "\\" + idName + ".txt";
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
             ArrayList<String> lines = new ArrayList<>();
             
+            template = template.replace("$FName",fullName);
+            template = template.replace("$SCName",idName);
+            template = template.replace("$CCName",name);
+            template = template.replace("$CName",idName.toUpperCase(Locale.ROOT));
             
-            // TODO New item gen
+            String nameCode = TextUtils.textToCode(stack.getName());
+            String parameters = Pattern.compile("\\.formatted\\((.*?)\\)") .matcher(nameCode).find() ? nameCode.replaceAll(".*\\.formatted\\((.*?)\\).*", "$1") : "";
+            template = template.replace("$NameFormat",parameters);
             
+            LoreComponent loreComp = stack.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
+            List<Text> loreLines = loreComp.styledLines();
+            
+            String lore = "";
+            for(Text loreLine : loreLines){
+               String loreCode = TextUtils.textToCode(loreLine).replace(";","");
+               lore += "lore.add("+loreCode.replace(",Formatting.ITALICS","")+");\n";
+            }
+            template = template.replace("$LoreText",lore);
+            
+            lines.add(template);
             
             for(String line : lines){
                out.println(line);
             }
+            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, path))));
+            
             out.close();
          }else{
             player.sendMessage(Text.literal("Hold an item to get data"),true);
          }
-      } catch (Exception e) {
+      } catch (Exception e){
          log(2,e.toString());
       }
       return 0;
    }
    
-   public static int makeCraftingRecipe(CommandContext<ServerCommandSource> objectCommandContext) {
-      if (!DEV_MODE)
+   public static int makeCraftingRecipe(CommandContext<ServerCommandSource> objectCommandContext){
+      if(!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
@@ -361,27 +424,27 @@ public class ArcanaCommands {
 
                   if(arcanaItem != null){
                      ingred = new GenericArcanaIngredient(arcanaItem,stack.getCount());
-                     String idName = arcanaItem.getId().toUpperCase();
+                     String idName = arcanaItem.getId().toUpperCase(Locale.ROOT);
                      lines.add("GenericArcanaIngredient "+letter+" = new GenericArcanaIngredient(ArcanaRegistry."+idName+","+stack.getCount()+");");
                   }else if(stack.contains(DataComponentTypes.POTION_CONTENTS)){
-                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
                      PotionContentsComponent potionsComp = stack.get(DataComponentTypes.POTION_CONTENTS);
                      String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
                      if(potionsComp.potion().isPresent()){
-                        ingredStr += ".withPotions(Potions."+Registries.POTION.getId(potionsComp.potion().get().value()).getPath().toUpperCase()+");";
+                        ingredStr += ".withPotions(Potions."+Registries.POTION.getId(potionsComp.potion().get().value()).getPath().toUpperCase(Locale.ROOT)+");";
                         ingred = ingred.withPotions(potionsComp.potion().get());
                      }
                      lines.add(ingredStr);
                   }else if(EnchantmentHelper.hasEnchantments(stack)){
-                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
                      ItemEnchantmentsComponent enchantComp = EnchantmentHelper.getEnchantments(stack);
                      String ingredStr = "ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+")";
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
                      
                      ArrayList<String> enchStrs = new ArrayList<>();
                      for(RegistryEntry<Enchantment> entry : enchantComp.getEnchantments()){
-                        enchStrs.add("new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments."+entry.getKey().get().getValue().getPath().toUpperCase()+"),"+enchantComp.getLevel(entry)+")");
+                        enchStrs.add("new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments."+entry.getKey().get().getValue().getPath().toUpperCase(Locale.ROOT)+"),"+enchantComp.getLevel(entry)+")");
                         ingred = ingred.withEnchantments(new EnchantmentLevelEntry(entry, enchantComp.getLevel(entry)));
                      }
                      
@@ -402,7 +465,7 @@ public class ArcanaCommands {
                      lines.add("ArcanaIngredient "+letter+" = ArcanaIngredient.EMPTY;");
                   }else{
                      ingred = new ArcanaIngredient(stack.getItem(),stack.getCount());
-                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase();
+                     String idName = Registries.ITEM.getId(stack.getItem()).getPath().toUpperCase(Locale.ROOT);
                      lines.add("ArcanaIngredient "+letter+" = new ArcanaIngredient(Items."+idName+","+stack.getCount()+");");
                   }
 
@@ -420,13 +483,11 @@ public class ArcanaCommands {
                         }
                      }
                   }
-                  if(!match) {
+                  if(!match){
                      ingredients[i][j] = new Pair<>(ingred, letter);
                      lineSet.put(letter,lines);
                   }
-                  //System.out.print(chestInventory.getStack(i*9+j).getItem().getName().getString()+" ");
                }
-               //System.out.println();
             }
             
             String forgeReqStr = "new ForgeRequirement()";
@@ -445,8 +506,13 @@ public class ArcanaCommands {
                   forgeReqStr += ".withSingularity()";
                }
             }
-   
-            String path = "C:\\Users\\Boris\\Desktop\\itemrecipe.txt";
+            
+            Optional<Optional<Path>> outPathOpt = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/datagen/"));
+            if(outPathOpt.isEmpty() || outPathOpt.get().isEmpty()){
+               return -1;
+            }
+            
+            String path = outPathOpt.get().get() + "\\" + "recipedata.txt";
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, false)));
             ArrayList<String> lines = new ArrayList<>();
    
@@ -472,61 +538,40 @@ public class ArcanaCommands {
             for(String line : lines){
                out.println(line);
             }
+            player.sendMessage(Text.literal("Click to get recipe data location").styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, path))));
+            
             out.close();
             return 1;
          }
          
-      } catch (Exception e) {
+      } catch (Exception e){
          log(2,e.toString());
       }
       return 0;
    }
    
-   public static int testCommand(CommandContext<ServerCommandSource> ctx) {
-      if (!DEV_MODE)
+   public static int testCommand(CommandContext<ServerCommandSource> ctx){
+      if(!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = ctx.getSource().getPlayer();
          
-//         PuzzleGui gui = new PuzzleGui(ScreenHandlerType.GENERIC_9X6,player,null);
-//         gui.buildPuzzle();
-//         gui.open();
-         
-         //ArcanaItem.putProperty(player.getMainHandStack(), GraphicalItem.GRAPHICS_TAG,"confirm");
-         
-//         ParticleEffectUtils.animatedLightningBolt(
-//               player.getServerWorld(),
-//               player.getPos().add(0,4,0),
-//               player.getPos().add(4,8,4),
-//               13,
-//               0.8,
-//               ParticleTypes.END_ROD,
-//               12,
-//               1,
-//               0,
-//               0,
-//               false,
-//               0,
-//               5
-//               );
-         
-         ParticleEffectUtils.aequalisTransmuteAnim(ctx.getSource().getWorld(),player.getPos().add(0,2,5),0,player.getRotationClient(),1,new ItemStack(Items.ACACIA_LOG),new ItemStack(Items.SPRUCE_LOG),new ItemStack(Items.COPPER_INGOT),new ItemStack(Items.EMERALD),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore());
-         
-      } catch (Exception e) {
+      } catch (Exception e){
          log(2,e.toString());
       }
       return 0;
    }
    
-   public static int testCommand(CommandContext<ServerCommandSource> objectCommandContext, int num) {
-      if (!DEV_MODE)
+   public static int testCommand(CommandContext<ServerCommandSource> objectCommandContext, int num){
+      if(!DEV_MODE)
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayer();
-         
          DEBUG_VALUE = num;
          
-      } catch (Exception e) {
+         
+         
+      } catch (Exception e){
          log(2,e.toString());
       }
       return 0;
@@ -548,7 +593,7 @@ public class ArcanaCommands {
    }
    
    public static CompletableFuture<Suggestions> getItemSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
-      String start = builder.getRemaining().toLowerCase();
+      String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       Set<String> items = new HashSet<>();
       ArcanaRegistry.ARCANA_ITEMS.getKeys().forEach(key -> items.add(key.getValue().getPath()));
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
@@ -556,7 +601,7 @@ public class ArcanaCommands {
    }
    
    public static CompletableFuture<Suggestions> getResearchSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
-      String start = builder.getRemaining().toLowerCase();
+      String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       Set<String> items = new HashSet<>();
       ArcanaRegistry.ARCANA_ITEMS.getKeys().forEach(key -> items.add(key.getValue().getPath()));
       items.add("all");
@@ -565,7 +610,7 @@ public class ArcanaCommands {
    }
    
    public static CompletableFuture<Suggestions> getAchievementSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
-      String start = builder.getRemaining().toLowerCase();
+      String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       Set<String> items = ArcanaAchievements.registry.keySet();
       items.stream().filter(s -> s.startsWith(start)).forEach(builder::suggest);
       return builder.buildFuture();
@@ -573,7 +618,7 @@ public class ArcanaCommands {
    
    public static CompletableFuture<Suggestions> getAugmentSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder){
       ServerCommandSource src = context.getSource();
-      String start = builder.getRemaining().toLowerCase();
+      String start = builder.getRemaining().toLowerCase(Locale.ROOT);
       ArcanaItem arcanaItem;
       if(src.isExecutedByPlayer() && src.getPlayer() != null){
          ItemStack handItem = src.getPlayer().getMainHandStack();
@@ -713,7 +758,7 @@ public class ArcanaCommands {
             items.add(arcanaItem);
          }
          
-         for (ServerPlayerEntity player : targets) {
+         for (ServerPlayerEntity player : targets){
             if(grant){
                for(ArcanaItem item : items){
                   ArcanaNovum.data(player).addResearchedItem(item.getId());
@@ -787,7 +832,7 @@ public class ArcanaCommands {
             return -1;
          }
       
-         for (ServerPlayerEntity player : targets) {
+         for (ServerPlayerEntity player : targets){
             if(grant){
                ArcanaAchievements.grant(player,id);
             }else{

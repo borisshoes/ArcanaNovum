@@ -1,0 +1,41 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "0",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/everlasting_rocket_0"
+                }
+            },
+            {
+                "when": "1",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/everlasting_rocket_1"
+                }
+            },
+            {
+                "when": "2",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/everlasting_rocket_2"
+                }
+            },
+            {
+                "when": "3",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/everlasting_rocket_3"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/everlasting_rocket_3"
+        }
+    },
+    "hand_animation_on_swap": false
+}

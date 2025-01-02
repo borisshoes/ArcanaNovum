@@ -16,6 +16,7 @@ import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.input.CraftingRecipeInput;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.collection.DefaultedList;
@@ -54,6 +55,7 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
    }
    
    public ItemStack getEnhancedStack(Inventory inv){
+      if(!(world instanceof ServerWorld serverWorld)) return null;
       DefaultedList<ItemStack> craftingStacks = DefaultedList.of();
       boolean hasGold = true;
       boolean hasPaper = true;
@@ -67,23 +69,26 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
          }
       }
       
-      Optional<RecipeEntry<CraftingRecipe>> optional = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,CraftingRecipeInput.create(3,3,craftingStacks),world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().getResult(world.getRegistryManager()))){
-         return optional.get().value().getResult(world.getRegistryManager()).copy();
+      CraftingRecipeInput input = CraftingRecipeInput.create(3,3,craftingStacks);
+      Optional<RecipeEntry<CraftingRecipe>> optional = serverWorld.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,input,world);
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().craft(input,world.getRegistryManager()))){
+         return optional.get().value().craft(input,world.getRegistryManager()).copy();
       }
       
       return hasGold && hasPaper ? new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER) : ItemStack.EMPTY;
    }
    
    public DefaultedList<ItemStack> getRemainders(Inventory inv){
+      if(!(world instanceof ServerWorld serverWorld)) return DefaultedList.of();
       DefaultedList<ItemStack> remainders = DefaultedList.of();
       DefaultedList<ItemStack> craftingStacks = DefaultedList.of();
       for(int i = 0; i < 9; i++){
          craftingStacks.add(inv.getStack(i));
       }
-      Optional<RecipeEntry<CraftingRecipe>> optional = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,CraftingRecipeInput.create(3,3,craftingStacks),world);
-      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().getResult(world.getRegistryManager()))){
-         return optional.get().value().getRemainder(CraftingRecipeInput.create(3,3,craftingStacks));
+      CraftingRecipeInput input = CraftingRecipeInput.create(3,3,craftingStacks);
+      Optional<RecipeEntry<CraftingRecipe>> optional = serverWorld.getRecipeManager().getFirstMatch(RecipeType.CRAFTING,input,world);
+      if(optional.isPresent() && EnhancedStatUtils.isItemEnhanceable(optional.get().value().craft(input,world.getRegistryManager()))){
+         return optional.get().value().getRecipeRemainders(input);
       }
       return remainders;
    }
@@ -128,7 +133,7 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
             craftingItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal("Click Here ").formatted(Formatting.GREEN))
                   .append(Text.literal("to begin forging this ").formatted(Formatting.DARK_AQUA))
-                  .append(Text.translatable(output.getTranslationKey()).formatted(Formatting.YELLOW))
+                  .append(Text.translatable(output.getItem().getTranslationKey()).formatted(Formatting.YELLOW))
                   .append(Text.literal("!").formatted(Formatting.DARK_AQUA)))));
             gui.setSlot(15,craftingItem);
          }else{

@@ -18,8 +18,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -45,6 +43,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,20 +55,17 @@ public class SpawnerInfuser extends ArcanaBlock {
 	public static final String ID = "spawner_infuser";
    
    public static final int[] pointsFromTier = {0,16,32,64,128,256,512,1024};
-   public static final Item pointsItem = Items.NETHER_STAR;
+   public static final Item POINTS_ITEM = Items.NETHER_STAR;
    
    public SpawnerInfuser(){
       id = ID;
       name = "Spawner Infuser";
       rarity = ArcanaRarity.SOVEREIGN;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.SOVEREIGN, TomeGui.TomeFilter.BLOCKS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SCULK_SHRIEKER;
       block = new SpawnerInfuserBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).strength(3.0f, 1200.0f).sounds(BlockSoundGroup.SCULK_SHRIEKER));
-      item = new SpawnerInfuserItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_GREEN))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new SpawnerInfuserItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_GREEN);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_ARCANE_SINGULARITY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_SPAWNER_HARNESS,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.ADVANCEMENT_KILL_MOB_NEAR_SCULK_CATALYST};
       
       ItemStack stack = new ItemStack(item);
@@ -159,10 +155,10 @@ public class SpawnerInfuser extends ArcanaBlock {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Spawner Infuser\n\nRarity: Sovereign\n\nOne of my most intricate and powerful creations to date.\nThis behemoth exploits a fascinating organism from the Deep Dark called Sculk. It acts as if soulsand became alive. It grows and feeds ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Spawner Infuser\n\nfrom souls. \nBy combining the tech from one of my earlier works, the Spawner Infuser, I believe I can use Arcana to overload the innate magic that summons creatures.\n\nAll the Sculk mechanisms need are ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Spawner Infuser\n\nsome souls, provided easily from a Soulstone, and some crystalline structure combined with a lot of energy. Nether Stars work as both a focusing crystal and a power source so that should do nicely.\nA simple Redstone signal will activate it.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Spawner Infuser\n\nAll aspects of the spawner can now be configured from range, to spawn delay, and a whole lot more.\n\nAs long as the Sculk has an adequate base of souls from the Soulstone, more and more upgrades can be added.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Infuser").formatted(Formatting.DARK_GREEN,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nOne of my most intricate and powerful creations to date. This behemoth exploits a fascinating organism from the Deep Dark called Sculk. It acts as if soulsand was alive, growing, and feeding on souls.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Infuser").formatted(Formatting.DARK_GREEN,Formatting.BOLD),Text.literal("\nBy combining the tech from one of my earlier works, the Spawner Infuser, I can use Arcana to overload the innate magic that summons creatures. All the Sculk mechanisms need are some souls, provided easily from a").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Infuser").formatted(Formatting.DARK_GREEN,Formatting.BOLD),Text.literal("\nSoulstone, and some crystalline structure combined with a lot of energy. Nether stars work both as a focusing crystal and a power source, so that should do nicely.\n \nA simple Redstone signal will activate it.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Infuser").formatted(Formatting.DARK_GREEN,Formatting.BOLD),Text.literal("\nAll aspects of the spawner can be configured, from range, to spawn delay, and a lot more. \nAs long as the Sculk has an adequate base of souls from the Soulstone, more and more upgrades can be added.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -183,42 +179,42 @@ public class SpawnerInfuser extends ArcanaBlock {
       public static final BooleanProperty ACTIVE = BooleanProperty.of("active");
       
       public SpawnerInfuserBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state){
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.SCULK_SHRIEKER.getDefaultState().with(Properties.CAN_SUMMON,state.get(ACTIVE));
       }
       
       @Nullable
-      public static SpawnerInfuserBlockEntity getEntity(World world, BlockPos pos) {
+      public static SpawnerInfuserBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof SpawnerInfuserBlock)) {
+         if(!(state.getBlock() instanceof SpawnerInfuserBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof SpawnerInfuserBlockEntity infuser ? infuser : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new SpawnerInfuserBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.SPAWNER_INFUSER_BLOCK_ENTITY, SpawnerInfuserBlockEntity::ticker);
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx) {
+      public BlockState getPlacementState(ItemPlacementContext ctx){
          return this.getDefaultState().with(ACTIVE,false);
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
          stateManager.add(ACTIVE);
       }
       
@@ -234,29 +230,26 @@ public class SpawnerInfuser extends ArcanaBlock {
       }
       
       @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-         if (state.isOf(newState.getBlock())) {
+      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved){
+         if(state.isOf(newState.getBlock())){
             return;
          }
          BlockEntity blockEntity = world.getBlockEntity(pos);
-         if (blockEntity instanceof SpawnerInfuserBlockEntity infuser) {
+         if(blockEntity instanceof SpawnerInfuserBlockEntity infuser){
             DefaultedList<ItemStack> drops = DefaultedList.of();
             int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(infuser.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
             int points = infuser.getPoints();
             if(points > 0){
                while(points/ratio > 64){
-                  ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+                  ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
                   dropItem.setCount(64);
                   drops.add(dropItem.copy());
                   points -= 64*ratio;
                }
-               ItemStack dropItem = new ItemStack(SpawnerInfuser.pointsItem);
+               ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
                dropItem.setCount(points/ratio);
                drops.add(dropItem.copy());
             }
-            
-            ItemStack stone = infuser.getSoulstone();
-            if(!stone.isEmpty()) drops.add(stone.copy());
             
             ItemScatterer.spawn(world, pos, drops);
          }
@@ -265,9 +258,9 @@ public class SpawnerInfuser extends ArcanaBlock {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof SpawnerInfuserBlockEntity infuser) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof SpawnerInfuserBlockEntity infuser){
             initializeArcanaBlock(stack,infuser);
             
             SoundUtils.soulSounds(player.getServerWorld(),pos,5,30);
@@ -277,7 +270,7 @@ public class SpawnerInfuser extends ArcanaBlock {
       }
       
       @Override
-      public boolean canPathfindThrough(BlockState state, NavigationType type) {
+      public boolean canPathfindThrough(BlockState state, NavigationType type){
          return false;
       }
    }

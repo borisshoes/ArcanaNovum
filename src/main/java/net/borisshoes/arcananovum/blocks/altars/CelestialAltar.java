@@ -17,8 +17,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -29,7 +27,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -39,9 +37,11 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,16 +57,13 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    public CelestialAltar(){
       id = ID;
       name = "Celestial Altar";
-      rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
+      rarity = ArcanaRarity.SOVEREIGN;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.ALTARS};
       itemVersion = 0;
       vanillaItem = Items.PEARLESCENT_FROGLIGHT;
       block = new CelestialAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.PINK).strength(.3f,1200.0f).luminance(state -> 15).sounds(BlockSoundGroup.FROGLIGHT));
-      item = new CelestialAltarItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.BLUE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new CelestialAltarItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
       ItemStack stack = new ItemStack(item);
@@ -151,8 +148,8 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("     Celestial Altar\n\nRarity: Exotic\n\nLeylines across the world have their influence extend into the orbit of the planet. If I can provide a sufficient energy source to the structure, I should be able to accelerate the planet, or the moon! ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("     Celestial Altar\n\nA Nether Star should be sufficient to let this altar change the time of day and the phase of the moon by accelerating the planet and moon's orbital periods for a brief moment before the Star is depleted and the orbits normalize.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Celestial Altar").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nLeylines across the world have their influence extend into the space beyond the world. If I can provide a sufficient energy source to the structure, I should be able to accelerate the sun or moon!").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Celestial Altar").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nA Nether Star should be sufficient to let this altar change the time of day and the phase of the moon by accelerating the motion of the celestial bodies for a moment before the Star is depleted.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -168,55 +165,55 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public class CelestialAltarBlock extends ArcanaPolymerBlockEntity {
-      public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
       
       public CelestialAltarBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state){
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.PEARLESCENT_FROGLIGHT.getDefaultState();
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx) {
+      public BlockState getPlacementState(ItemPlacementContext ctx){
          return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite());
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
          stateManager.add(HORIZONTAL_FACING);
       }
       
       @Override
-      public BlockState rotate(BlockState state, BlockRotation rotation) {
+      public BlockState rotate(BlockState state, BlockRotation rotation){
          return state.with(HORIZONTAL_FACING, rotation.rotate(state.get(HORIZONTAL_FACING)));
       }
       
       @Override
-      public BlockState mirror(BlockState state, BlockMirror mirror) {
+      public BlockState mirror(BlockState state, BlockMirror mirror){
          return state.rotate(mirror.getRotation(state.get(HORIZONTAL_FACING)));
       }
       
       @Nullable
-      public static CelestialAltarBlockEntity getEntity(World world, BlockPos pos) {
+      public static CelestialAltarBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof CelestialAltarBlock)) {
+         if(!(state.getBlock() instanceof CelestialAltarBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof CelestialAltarBlockEntity altar ? altar : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new CelestialAltarBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.CELESTIAL_ALTAR_BLOCK_ENTITY, CelestialAltarBlockEntity::ticker);
       }
       
@@ -227,7 +224,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
             if(playerEntity instanceof ServerPlayerEntity player){
                if(altar.isAssembled()){
                   altar.openGui(player);
-                  player.getItemCooldownManager().set(playerEntity.getMainHandStack().getItem(),1);
+                  player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
@@ -238,9 +235,9 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof CelestialAltarBlockEntity altar) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof CelestialAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
          }
       }

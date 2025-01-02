@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface EntityAccessor {
    
    @Accessor
-   static TrackedData<Boolean> getNO_GRAVITY() {
+   static TrackedData<Boolean> getNO_GRAVITY(){
       throw new UnsupportedOperationException();
    }
 }

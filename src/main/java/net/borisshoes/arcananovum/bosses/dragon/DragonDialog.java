@@ -585,7 +585,7 @@ public class DragonDialog {
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             mainMessage.add(Text.literal("")
-                  .append(Text.literal("   Even the stars obey ME! ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+                  .append(Text.literal("   Even the sky obeys ME! ").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             break;
          case ABILITY_TERRAIN_SHIFT:

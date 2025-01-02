@@ -13,20 +13,20 @@ public class SoulstoneIngredient extends ArcanaIngredient {
    private final String type;
    private final boolean consume;
    private final boolean repeatable;
-   private final boolean allowBosses;
+   private final boolean ignoreEssenceEggTypes;
    
-   public SoulstoneIngredient(int souls, boolean repeatable, boolean consume, boolean allowBosses, @Nullable String type){
+   public SoulstoneIngredient(int souls, boolean repeatable, boolean consume, boolean ignoreEssenceEggTypes, @Nullable String type){
       super(ArcanaRegistry.SOULSTONE.getPrefItem().getItem(), 1, true);
       this.souls = souls;
       this.repeatable = repeatable;
       this.consume = consume;
-      this.allowBosses = allowBosses;
+      this.ignoreEssenceEggTypes = ignoreEssenceEggTypes;
       this.type = type;
    }
    
    @Override
    public ArcanaIngredient copyWithCount(int newCount){
-      return new SoulstoneIngredient(souls,repeatable,consume,allowBosses,type);
+      return new SoulstoneIngredient(souls,repeatable,consume, ignoreEssenceEggTypes,type);
    }
    
    @Override
@@ -37,11 +37,9 @@ public class SoulstoneIngredient extends ArcanaIngredient {
                return false;
          }
 
-         if(!allowBosses){ // TODO Entity Tag
-            if((Soulstone.getType(stack).equals(EntityType.getId(EntityType.ENDER_DRAGON).toString()) ||
-                  Soulstone.getType(stack).equals(EntityType.getId(ArcanaRegistry.NUL_CONSTRUCT_ENTITY).toString()) ||
-                  Soulstone.getType(stack).equals(EntityType.getId(EntityType.WITHER).toString())))
-               return false;
+         if(!ignoreEssenceEggTypes){
+            EntityType<?> eType = EntityType.get(Soulstone.getType(stack)).orElse(null);
+            if(eType != null && eType.isIn(ArcanaRegistry.ESSENCE_EGG_DISALLOWED)) return false;
          }
          return Soulstone.getSouls(stack) >= souls;
       }else{
@@ -62,7 +60,7 @@ public class SoulstoneIngredient extends ArcanaIngredient {
          if(consume){
             return ItemStack.EMPTY;
          }else{
-            if(souls == 0) {
+            if(souls == 0){
                return stack;
             }
             if(repeatable){

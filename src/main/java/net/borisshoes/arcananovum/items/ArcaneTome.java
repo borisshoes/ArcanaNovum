@@ -14,8 +14,6 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -26,10 +24,9 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,22 +43,15 @@ public class ArcaneTome extends ArcanaItem {
    public static final String FORGE_TAG = "forgeCraftTick";
    public static final String TOME_TAG = "tomeCraftTick";
    
-   private static final String TXT = "item/arcane_tome";
-   
    public ArcaneTome(){
       id = ID;
       name = "Tome of Arcana Novum";
       rarity = ArcanaRarity.MUNDANE;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.MUNDANE, TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.KNOWLEDGE_BOOK;
-      item = new ArcaneTomeItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new ArcaneTomeItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
       ItemStack stack = new ItemStack(item);
@@ -165,9 +155,9 @@ public class ArcaneTome extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("Tome of Arcana Novum\n\nRarity: Empowered\n\nStrangely enough, this Tome is incredibly easy to craft compared to most other Arcana Items, like it wants to share its knowledge.\n\nThe way the Eye of Ender is so naturally ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Tome of Arcana Novum\n\nAttracted to the enchantment table is definitely curious.\n\nHowever, as a result of its ease of construction, it offers no Crafting XP like other Arcana Items do.\n\nIt acts as a guide and aid for those who").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("Tome of Arcana Novum\n\nseek the secrets of Arcana Novum.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Tome of Arcana           Novum").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis new type of paper has quite a few interesting properties.\n\nIt allows the inscription of active arcane elements. It makes an excellent parchment for this ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Tome of Arcana           Novum").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nnew notebook.\n\nEnchanting the pages together with an additional Eye of Ender should bind the whole Tome together nicely.\n\nIt is here that I shall \nscribe all the secrets ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Tome of Arcana           Novum").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),Text.literal("\nof this Arcana Novum that I seek to uncover.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -201,19 +191,14 @@ public class ArcaneTome extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
-      }
-      
-      @Override
       public ItemStack getDefaultStack(){
          return prefItem;
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          openGui(playerEntity, TomeGui.TomeMode.PROFILE,new TomeGui.CompendiumSettings(0,0));
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
       
       @Override

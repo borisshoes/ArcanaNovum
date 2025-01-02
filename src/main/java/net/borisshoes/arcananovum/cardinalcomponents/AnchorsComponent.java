@@ -20,13 +20,13 @@ public class AnchorsComponent implements IAnchorsComponent{
    
    @Override
    public boolean addAnchor(BlockPos anchor){
-      if (anchors.contains(anchor)) return false;
+      if(anchors.contains(anchor)) return false;
       return anchors.add(anchor);
    }
    
    @Override
    public boolean removeAnchor(BlockPos anchor){
-      if (!anchors.contains(anchor)) return false;
+      if(!anchors.contains(anchor)) return false;
       return anchors.remove(anchor);
    }
    
@@ -35,7 +35,7 @@ public class AnchorsComponent implements IAnchorsComponent{
       try{
          anchors.clear();
          NbtList anchorsTag = tag.getList("Anchors", NbtElement.COMPOUND_TYPE);
-         for (NbtElement e : anchorsTag) {
+         for (NbtElement e : anchorsTag){
             NbtCompound anchorTag = (NbtCompound) e;
             anchors.add(new BlockPos(anchorTag.getInt("x"),anchorTag.getInt("y"),anchorTag.getInt("z")));
          }

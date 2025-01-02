@@ -1,0 +1,27 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "on",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/cleansing_charm_on"
+                }
+            },
+            {
+                "when": "off",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/cleansing_charm_off"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/cleansing_charm_off"
+        }
+    },
+    "hand_animation_on_swap": false
+}

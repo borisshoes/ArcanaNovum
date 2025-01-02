@@ -20,8 +20,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CarvedPumpkinBlock;
 import net.minecraft.block.pattern.BlockPattern;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -34,7 +33,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -50,22 +48,15 @@ import static net.borisshoes.arcananovum.entities.NulConstructEntity.getConstruc
 public class DivineCatalyst extends ArcanaItem {
 	public static final String ID = "divine_catalyst";
    
-   private static final String TXT = "item/divine_catalyst";
-   
    public DivineCatalyst(){
       id = ID;
       name = "Divine Augment Catalyst";
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE, TomeGui.TomeFilter.CATALYSTS};
       rarity = ArcanaRarity.DIVINE;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       itemVersion = 1;
       vanillaItem = Items.AMETHYST_CLUSTER;
-      item = new DivineCatalystItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new DivineCatalystItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOVEREIGN_CATALYST,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
@@ -150,20 +141,17 @@ public class DivineCatalyst extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Divine Augmentation\n         Catalyst\n\nRarity: Divine\n\nThe Divine Artifacts are examples of divine Arcana, the Runic Matrix should be able to replicate that divine magic to some degree. But how? Perhaps I need to expose my strongest").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Divine Augmentation\n         Catalyst\n\nCatalyst to some divine Arcana. I just need to get the attention of a god without risking too much of their wrath. The Wither is an interesting creature with some divine connection, perhaps that is my answer.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Divine Augmentation\n         Catalyst\n\nI know not what God is responsible for the Wither, but the God of Death would be a good guess. Reinforcing the construct pattern of the Wither and placing my Catalyst inside as it comes to life should give it the divine energy it requires.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe Divine Artifacts are examples of Divine Arcana, the Runic Matrix should be able to replicate that Divine magic to some degree. But how?").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nPerhaps I need to expose my strongest Catalyst to some Divine Arcana for it to absorb and adapt to. I just need to get the attention of a Divine entity without risking too much of their wrath.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nI have three leads on Divine entities, one in each dimension. Given what I’ve heard, I’d rather not risk messing with the End’s mad tyrant. The entity in the leylines of the Overworld is one option. ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nI also believe that the entity behind the original Wither constructs is of Divine nature. Perhaps modifying the construct pattern with a Netherite heart and activating it with my ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("       Divine\n   Augmentation\n      Catalyst").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),Text.literal("\nCatalyst could draw out some Divine Arcana.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class DivineCatalystItem extends ArcanaPolymerItem {
       public DivineCatalystItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -184,9 +172,9 @@ public class DivineCatalyst extends ArcanaItem {
          
          if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY() && canSpawn){ // Check construct
             BlockPattern.Result patternResult = getConstructPattern().searchAround(world, pos);
-            if (patternResult != null) {
-               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world);
-               if (constructEntity != null && world instanceof ServerWorld serverWorld) {
+            if(patternResult != null){
+               NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, SpawnReason.TRIGGERED);
+               if(constructEntity != null && world instanceof ServerWorld serverWorld){
                   CarvedPumpkinBlock.breakPatternBlocks(world, patternResult);
                   BlockPos blockPos = patternResult.translate(1, 1, 0).getBlockPos();
                   constructEntity.refreshPositionAndAngles((double)blockPos.getX() + 0.5, (double)blockPos.getY() + 0.55, (double)blockPos.getZ() + 0.5, patternResult.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);

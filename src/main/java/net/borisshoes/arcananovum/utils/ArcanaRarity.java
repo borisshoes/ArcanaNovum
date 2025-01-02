@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.text.MutableText;
@@ -46,7 +47,7 @@ public enum ArcanaRarity {
          text = Text.translatableWithFallback(rarity.getTranslationKey(),rarity.label);
       }
       if(bold) text = text.formatted(Formatting.BOLD);
-      if (rarity == null) return text;
+      if(rarity == null) return text;
    
       return switch(rarity){
          case MUNDANE -> text.formatted(Formatting.GRAY);
@@ -148,6 +149,17 @@ public enum ArcanaRarity {
          case SOVEREIGN -> ArcanaRegistry.SOVEREIGN_ARCANE_PAPER;
          case DIVINE -> ArcanaRegistry.DIVINE_ARCANE_PAPER;
          default -> ArcanaRegistry.MUNDANE_ARCANE_PAPER;
+      };
+   }
+   
+   public static TomeGui.TomeFilter getTomeFilter(ArcanaRarity rarity){
+      return switch(rarity){
+         case MUNDANE -> TomeGui.TomeFilter.MUNDANE;
+         case EMPOWERED -> TomeGui.TomeFilter.EMPOWERED;
+         case EXOTIC -> TomeGui.TomeFilter.EXOTIC;
+         case SOVEREIGN -> TomeGui.TomeFilter.SOVEREIGN;
+         case DIVINE -> TomeGui.TomeFilter.DIVINE;
+         default -> TomeGui.TomeFilter.NONE;
       };
    }
 }

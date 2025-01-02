@@ -13,6 +13,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,11 +23,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Enchantment.class)
 public class EnchantmentMixin {
+   
    @Inject(method="isAcceptableItem",at=@At("HEAD"), cancellable = true)
    private void arcananovum_makeUnenchantable1(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())){
          Enchantment enchant = (Enchantment) (Object) this;
-         cir.setReturnValue(false);
+         cir.setReturnValue(enchant.description().toString().contains(Util.createTranslationKey("enchantment", ArcanaRegistry.FATE_ANCHOR.getValue())));
       }
    }
    
@@ -34,7 +36,7 @@ public class EnchantmentMixin {
    private void arcananovum_makeUnenchantable2(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())){
          Enchantment enchant = (Enchantment) (Object) this;
-         cir.setReturnValue(false);
+         cir.setReturnValue(enchant.description().toString().contains(Util.createTranslationKey("enchantment", ArcanaRegistry.FATE_ANCHOR.getValue())));
       }
    }
    

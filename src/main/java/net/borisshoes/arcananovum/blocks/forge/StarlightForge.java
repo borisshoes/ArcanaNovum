@@ -23,8 +23,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -43,6 +41,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,15 +60,12 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Starlight Forge";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.SMITHING_TABLE;
       block = new StarlightForgeBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
-      item = new StarlightForgeItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, TextUtils.withColor(Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD),0xFF99FF))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new StarlightForgeItem(this.block,(new Item.Settings().maxCount(1).fireproof()));
+      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_ARCANE_TOME,ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       
       ItemStack stack = new ItemStack(item);
@@ -173,9 +169,10 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("    Starlight Forge\n\nRarity: Empowered\n\nSomething about an Enchanted Golden Apple is so ancient and powerful, that its power cannot be replicated. However, my new theories show that the Arcana of this land is far more versatile than old ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Starlight Forge\n\nscholars believed. This could be the path to finally unlocking a novel field of Arcane research. Using the Arcane energy of Starlight, I can embue the ancient enchantment from this apple into a smithery. This shall become my new forge...").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("    Starlight Forge\n\nThe Starlight Forge allows the creation of new Arcana Items, and creating more powerful armor and weapons.\nIt creates a 17x11x17 workspace that can interact with additions to the forge that can be made as you advance.").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nEnchanted Golden Apples are a unique arcane artifact that I have discovered. Modern replicants do not seem to hold the same caliber of properties. My latest theories of Arcana suggest that the magic ").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nof this land is far more versatile than the old scholars believed. I just need something to kickstart my new field of research. It is possible that I can use some energy from starlight to transfer the ancient enchantment of a ").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nGolden Apple. If I am to be successful in my research, I will need a forge…\n\nThe Starlight Forge allows the creation of infused weapons, tools, and armor.\n\nIt creates a 17x11x17 workspace that can ").formatted(Formatting.BLACK)));
+      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\ninteract with additions to the forge that can be crafted as I advance my research.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -192,31 +189,31 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    
    public class StarlightForgeBlock extends ArcanaPolymerBlockEntity {
       public StarlightForgeBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state) {
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.SMITHING_TABLE.getDefaultState();
       }
       
       @Nullable
-      public static StarlightForgeBlockEntity getEntity(World world, BlockPos pos) {
+      public static StarlightForgeBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof StarlightForgeBlock)) {
+         if(!(state.getBlock() instanceof StarlightForgeBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof StarlightForgeBlockEntity forge ? forge : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new StarlightForgeBlockEntity(pos, state);
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.STARLIGHT_FORGE_BLOCK_ENTITY, StarlightForgeBlockEntity::ticker);
       }
       
@@ -237,9 +234,9 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof StarlightForgeBlockEntity forge) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof StarlightForgeBlockEntity forge){
             initializeArcanaBlock(stack,forge);
             forge.setSeedUses(getIntProperty(stack,SEED_USES_TAG));
          }

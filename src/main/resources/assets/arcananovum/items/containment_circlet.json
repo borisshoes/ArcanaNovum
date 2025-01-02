@@ -1,0 +1,41 @@
+{
+    "model": {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "cases": [
+            {
+                "when": "confinement_empty",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/containment_circlet_confinement_empty"
+                }
+            },
+            {
+                "when": "confinement_filled",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/containment_circlet_confinement_filled"
+                }
+            },
+            {
+                "when": "empty",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/containment_circlet_empty"
+                }
+            },
+            {
+                "when": "filled",
+                "model": {
+                    "type": "minecraft:model",
+                    "model": "arcananovum:item/containment_circlet_filled"
+                }
+            }
+        ],
+        "fallback": {
+            "type": "minecraft:model",
+            "model": "arcananovum:item/containment_circlet_empty"
+        }
+    },
+    "hand_animation_on_swap": false
+}

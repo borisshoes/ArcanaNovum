@@ -184,7 +184,7 @@ public class Multiblock {
       Direction storedDir = storedCore.get(Properties.HORIZONTAL_FACING);
       int numRotations = 0;
       Direction testDir = storedDir;
-      while(direction.getHorizontal() != testDir.getHorizontal()){
+      while(direction.getHorizontalQuarterTurns() != testDir.getHorizontalQuarterTurns()){
          testDir = testDir.rotateYCounterclockwise();
          numRotations++;
       }
@@ -203,8 +203,8 @@ public class Multiblock {
          int[][][] ret = new int[N][Y][M];
          
          for(int y = 0; y < Y; y++){
-            for (int r = 0; r < M; r++) {
-               for (int c = 0; c < N; c++) {
+            for (int r = 0; r < M; r++){
+               for (int c = 0; c < N; c++){
                   ret[c][y][M-1-r] = rotatedPattern[r][y][c];
                }
             }
@@ -227,8 +227,12 @@ public class Multiblock {
    }
    
    public static Multiblock loadFromFile(String id){
+      return loadFromFile(MOD_ID,id);
+   }
+   
+   public static Multiblock loadFromFile(String namespace, String id){
       try{
-         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(MOD_ID).map(container -> container.findPath("data/"+MOD_ID+"/multiblocks/"+id+".nbt"));
+         Optional<Optional<Path>> pathOptional = FabricLoader.getInstance().getModContainer(namespace).map(container -> container.findPath("data/"+namespace+"/multiblocks/"+id+".nbt"));
          if(pathOptional.isEmpty() || pathOptional.get().isEmpty()){
             return null;
          }
@@ -259,11 +263,11 @@ public class Multiblock {
             // Get the actual block
             NbtCompound blockTag = (NbtCompound) e;
             String blockName = blockTag.getString("Name");
-            BlockState rawState = NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(),blockTag); // Save raw state for display
+            BlockState rawState = NbtHelper.toBlockState(Registries.BLOCK,blockTag); // Save raw state for display
             Predicate<BlockState> pred;
             Identifier identifier = Identifier.of(blockName);
-            Optional<RegistryEntry.Reference<Block>> optional = Registries.BLOCK.getReadOnlyWrapper().getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
-            if (optional.isEmpty()) { // If block isn't found, let any block work
+            Optional<RegistryEntry.Reference<Block>> optional = Registries.BLOCK.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
+            if(optional.isEmpty()){ // If block isn't found, let any block work
                pred = blockState -> true;
                preds.add(new Pair<>(rawState,pred));
                continue;
@@ -272,12 +276,12 @@ public class Multiblock {
             // Block found, build predicate
             Block block = (Block)((RegistryEntry<?>)optional.get()).value();
             HashMap<Property<? extends Comparable<?>>,Comparable<?>> blockProperties = new HashMap<>();
-            if (blockTag.contains("Properties", NbtElement.COMPOUND_TYPE)) {
+            if(blockTag.contains("Properties", NbtElement.COMPOUND_TYPE)){
                NbtCompound properties = blockTag.getCompound("Properties");
                StateManager<Block, BlockState> stateManager = block.getStateManager();
-               for (String key : properties.getKeys()) {
+               for (String key : properties.getKeys()){
                   Property<?> p = stateManager.getProperty(key);
-                  if (p == null) continue;
+                  if(p == null) continue;
                   blockProperties.put(p,rawState.get(p)); // Add all properties to the map with all values that need to be checked
                }
             }
@@ -328,14 +332,14 @@ public class Multiblock {
    }
    
    public ElementHolder createHolder(BlockPos pos, BlockState cs, BlockPos cp, Predicate<BlockState> p){
-      return new ElementHolder() {
+      return new ElementHolder(){
          int lifeTime = 600;
          final BlockState coreState = cs;
          final BlockPos corePos = cp;
          final Predicate<BlockState> pred = p;
          
          @Override
-         public Vec3d getPos() {
+         public Vec3d getPos(){
             return new Vec3d(pos.getX(), pos.getY(), pos.getZ());
          }
          
@@ -343,7 +347,7 @@ public class Multiblock {
          protected void onTick(){
             super.onTick();
             
-            if(lifeTime-- <= 0) {
+            if(lifeTime-- <= 0){
                destroy(); // Time expired, remove
                return;
             }
@@ -372,7 +376,7 @@ public class Multiblock {
       };
    }
    
-   public BlockDisplayElement createEmptyElement() {
+   public BlockDisplayElement createEmptyElement(){
       BlockDisplayElement element = new BlockDisplayElement();
       element.setScale(new Vector3f(0.5F, 0.5F, 0.5F));
       element.setOffset(new Vec3d(0.25F, 0.25F, 0.25F));

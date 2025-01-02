@@ -3,16 +3,20 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.SojournerBoots;
 import net.borisshoes.arcananovum.research.EffectResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
+import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -28,23 +32,34 @@ import java.util.Map;
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
    
-//   @Inject(method="teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V",at=@At(value="INVOKE",target="Lnet/minecraft/server/network/ServerPlayerEntity;worldChanged(Lnet/minecraft/server/world/ServerWorld;)V", shift= At.Shift.AFTER))
-//   private void arcananovum_sendAbilitiesAfterDimChange(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci){
-//      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-//      player.networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
-//   }
-   // this may have been fixed? Test max HP armor and harness flying
+   @Inject(method="onDeath",at=@At("HEAD"))
+   private void arcananovum_restoreOffhandOnDeath(CallbackInfo ci){
+      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+      ArcanaNovum.data(player).restoreOffhand();
+   }
+   
+   @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;increaseStat(Lnet/minecraft/util/Identifier;I)V", ordinal = 0))
+   private void arcananovum_swimStats(double deltaX, double deltaY, double deltaZ, CallbackInfo ci){
+      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+      boolean hasCetacea = MiscUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, null, 0).stream().anyMatch(stack -> ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG));
+      if(hasCetacea){
+         int i = Math.round((float)Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) * 100.0F);
+         if(i > 0){
+            ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_MIGRATION.id, i);
+            LivingEntity entity = player.getServerWorld().getClosestEntity(DolphinEntity.class, TargetPredicate.createNonAttackable().setBaseMaxDistance(10.0).ignoreVisibility(), player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().expand(20.0));
+            if(entity != null) ArcanaAchievements.progress(player, ArcanaAchievements.CEPHALOS_IN_A_POD.id, i);
+         }
+      }
+   }
    
    @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;isSprinting()Z",shift = At.Shift.BEFORE))
    private void arcananovum_onGroundMove(double dx, double dy, double dz, CallbackInfo ci){
-      PlayerEntity playerEntity = (PlayerEntity) (Object) this;
-      if(playerEntity instanceof ServerPlayerEntity player){
-         ItemStack bootsItem = player.getEquippedStack(EquipmentSlot.FEET);
-         if(ArcanaItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
-            if(player.isSprinting()){
-               int i = Math.round((float)Math.sqrt(dx * dx + dz * dz) * 100.0f);
-               ArcanaAchievements.progress(player, ArcanaAchievements.PHEIDIPPIDES.id, i);
-            }
+      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+      ItemStack bootsItem = player.getEquippedStack(EquipmentSlot.FEET);
+      if(ArcanaItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
+         if(player.isSprinting()){
+            int i = Math.round((float)Math.sqrt(dx * dx + dz * dz) * 100.0f);
+            ArcanaAchievements.progress(player, ArcanaAchievements.PHEIDIPPIDES.id, i);
          }
       }
    }

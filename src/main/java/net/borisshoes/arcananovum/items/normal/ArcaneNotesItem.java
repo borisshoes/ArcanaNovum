@@ -16,26 +16,23 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ArcaneNotesItem extends NormalPolymerItem {
    
-   private static final String TXT = "item/arcane_notes";
-   
    public static final String UNLOCK_ID_TAG = "research_id";
    public static final String AUTHOR_TAG = "author";
    public static final String COST_TAG = "paper_cost";
    
-   public ArcaneNotesItem(Settings settings){
-      super(settings);
+   public ArcaneNotesItem(String id, Settings settings){
+      super(id, settings);
    }
    
    public static ItemStack buildLore(ItemStack stack){
@@ -61,11 +58,6 @@ public class ArcaneNotesItem extends NormalPolymerItem {
       stack.set(DataComponentTypes.LORE,new LoreComponent(loreText,loreText));
       
       return stack;
-   }
-   
-   @Override
-   public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-      return ArcanaRegistry.getModelData(TXT).value();
    }
    
    @Override
@@ -97,11 +89,11 @@ public class ArcaneNotesItem extends NormalPolymerItem {
    }
    
    @Override
-   public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand){
+   public ActionResult use(World world, PlayerEntity user, Hand hand){
       ItemStack itemStack = user.getStackInHand(hand);
       if(ArcanaItem.hasProperty(itemStack,UNLOCK_ID_TAG)){
          user.setCurrentHand(hand);
-         return TypedActionResult.consume(itemStack);
+         return ActionResult.CONSUME;
       }else{
          return super.use(world, user, hand);
       }
@@ -142,14 +134,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
    }
    
    @Override
-   public ArrayList<Pair<Item, String>> getModels(){
-      ArrayList<Pair<Item, String>> models = new ArrayList<>();
-      models.add(new Pair<>(Items.BOOK,TXT));
-      return models;
-   }
-   
-   @Override
-   public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player){
+   public Item getPolymerItem(ItemStack itemStack, PacketContext context){
       return Items.BOOK;
    }
 }

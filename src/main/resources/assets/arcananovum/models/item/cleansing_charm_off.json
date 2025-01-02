@@ -1,0 +1,6 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "arcananovum:item/cleansing_charm_off"
+    }
+}

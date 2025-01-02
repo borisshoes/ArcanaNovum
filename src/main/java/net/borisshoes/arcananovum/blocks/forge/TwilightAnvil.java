@@ -17,8 +17,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -29,7 +27,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -39,9 +37,11 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,15 +58,12 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       id = ID;
       name = "Twilight Anvil";
       rarity = ArcanaRarity.EMPOWERED;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EMPOWERED, TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS, TomeGui.TomeFilter.FORGE};
       itemVersion = 0;
       vanillaItem = Items.ANVIL;
       block = new TwilightAnvilBlock(AbstractBlock.Settings.create().mapColor(MapColor.IRON_GRAY).requiresTool().strength(5.0f, 1200.0f).sounds(BlockSoundGroup.ANVIL));
-      item = new TwilightAnvilItem(this.block,new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.BLUE))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
+      item = new TwilightAnvilItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_ANVIL,ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING};
       
       ItemStack stack = new ItemStack(item);
@@ -144,8 +141,8 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("      Twilight Anvil\n\nRarity: Empowered\n\nAnvils made of Iron have their limits. They don't interact with Arcana, and they are less durable than the diamond and netherite equipment used on them. An anvil reinforced with netherite and infused").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Twilight Anvil\n\nwith Arcana will have no such weaknesses.\n\nThe Anvil can act as a normal anvil, with its XP limit removed as well as allowing for the Augmentation and renaming of Arcana Items. It also is able to combine enhanced items from the Forge.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Twilight Anvil").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nAnvils made of iron have their limits. They don’t interact with Arcana, and they are less durable than the diamond and netherite equipment used on them, causing frequent damage. An anvil reinforced with").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Twilight Anvil").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nNetherite and infused with Arcana will have no such weaknesses.\n\nThe Anvil can act as a normal anvil, with no XP limit. The Anvil also enables the ability to Augment and rename Arcana items. It also can combine items infused with Stardust.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -161,41 +158,41 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
    }
    
    public class TwilightAnvilBlock extends ArcanaPolymerBlockEntity {
-      public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
       
       public TwilightAnvilBlock(AbstractBlock.Settings settings){
-         super(settings);
+         super(getThis(), settings);
       }
       
       @Override
-      public BlockState getPolymerBlockState(BlockState state){
+      public BlockState getPolymerBlockState(BlockState state, PacketContext context){
          return Blocks.ANVIL.getDefaultState().with(HORIZONTAL_FACING,state.get(HORIZONTAL_FACING));
       }
       
       @Nullable
       @Override
-      public BlockState getPlacementState(ItemPlacementContext ctx) {
+      public BlockState getPlacementState(ItemPlacementContext ctx){
          return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().rotateYClockwise());
       }
       
       @Override
-      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
          stateManager.add(HORIZONTAL_FACING);
       }
       
       @Override
-      public BlockState rotate(BlockState state, BlockRotation rotation) {
+      public BlockState rotate(BlockState state, BlockRotation rotation){
          return state.with(HORIZONTAL_FACING, rotation.rotate(state.get(HORIZONTAL_FACING)));
       }
       
       @Override
-      public BlockState mirror(BlockState state, BlockMirror mirror) {
+      public BlockState mirror(BlockState state, BlockMirror mirror){
          return state.rotate(mirror.getRotation(state.get(HORIZONTAL_FACING)));
       }
       
       @Nullable
       @Override
-      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+      public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type){
          return validateTicker(type, ArcanaRegistry.TWILIGHT_ANVIL_BLOCK_ENTITY, TwilightAnvilBlockEntity::ticker);
       }
       
@@ -220,23 +217,23 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       }
       
       @Nullable
-      public static TwilightAnvilBlockEntity getEntity(World world, BlockPos pos) {
+      public static TwilightAnvilBlockEntity getEntity(World world, BlockPos pos){
          BlockState state = world.getBlockState(pos);
-         if (!(state.getBlock() instanceof TwilightAnvilBlock)) {
+         if(!(state.getBlock() instanceof TwilightAnvilBlock)){
             return null;
          }
          return world.getBlockEntity(pos) instanceof TwilightAnvilBlockEntity anvil ? anvil : null;
       }
       
       @Override
-      public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+      public BlockEntity createBlockEntity(BlockPos pos, BlockState state){
          return new TwilightAnvilBlockEntity(pos, state);
       }
       
       @Override
-      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+      public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if (placer instanceof ServerPlayerEntity player && entity instanceof TwilightAnvilBlockEntity anvil) {
+         if(placer instanceof ServerPlayerEntity player && entity instanceof TwilightAnvilBlockEntity anvil){
             initializeArcanaBlock(stack,anvil);
          }
       }

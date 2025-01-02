@@ -76,11 +76,11 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       if(this.world == null || this.pos == null) return stacks;
       Direction direction = world.getBlockState(pos).get(HORIZONTAL_FACING);
       Vec3d centerPos = getPos().toCenterPos();
-      Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d positivePos = centerPos.add(new Vec3d(-3,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
+      Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d positivePos = centerPos.add(new Vec3d(-3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
       
       ItemEntity aequalisEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(aequalisPos)), e -> true));
       ItemEntity positiveEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(positivePos)), e -> true));
@@ -101,11 +101,11 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       if(this.world == null || this.pos == null) return null;
       Direction direction = world.getBlockState(pos).get(HORIZONTAL_FACING);
       Vec3d centerPos = getPos().toCenterPos();
-      Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d positivePos = centerPos.add(new Vec3d(-3,0.6,0).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
-      Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontal()*(Math.PI/2.0f))));
+      Vec3d aequalisPos = centerPos.add(new Vec3d(0,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d negativePos = centerPos.add(new Vec3d(3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d positivePos = centerPos.add(new Vec3d(-3,0.6,0).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
+      Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
       
       if(outputString.equals("positive")){
          return positivePos;
@@ -132,14 +132,14 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    public Multiblock.MultiblockCheck getMultiblockCheck(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return null;
       }
       return new Multiblock.MultiblockCheck(serverWorld,pos,serverWorld.getBlockState(pos),new BlockPos(((MultiblockCore) ArcanaRegistry.TRANSMUTATION_ALTAR).getCheckOffset()),world.getBlockState(pos).get(HORIZONTAL_FACING));
    }
    
    private void tick(){
-      if (!(this.world instanceof ServerWorld serverWorld)) {
+      if(!(this.world instanceof ServerWorld serverWorld)){
          return;
       }
       
@@ -198,21 +198,21 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
-      if (nbt.contains("arcanaUuid")) {
+      if(nbt.contains("arcanaUuid")){
          this.uuid = nbt.getString("arcanaUuid");
       }
-      if (nbt.contains("crafterId")) {
+      if(nbt.contains("crafterId")){
          this.crafterId = nbt.getString("crafterId");
       }
-      if (nbt.contains("customName")) {
+      if(nbt.contains("customName")){
          this.customName = nbt.getString("customName");
       }
-      if (nbt.contains("synthetic")) {
+      if(nbt.contains("synthetic")){
          this.synthetic = nbt.getBoolean("synthetic");
       }
-      if (nbt.contains("cooldown")) {
+      if(nbt.contains("cooldown")){
          this.cooldown = nbt.getInt("cooldown");
       }
       augments = new TreeMap<>();
@@ -226,7 +226,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.writeNbt(nbt, registryLookup);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();

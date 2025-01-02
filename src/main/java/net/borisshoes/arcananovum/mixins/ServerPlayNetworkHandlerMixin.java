@@ -5,19 +5,21 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtInt;
-import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.network.packet.c2s.play.*;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -37,6 +39,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
@@ -44,8 +47,34 @@ public class ServerPlayNetworkHandlerMixin {
    @Shadow
    public ServerPlayerEntity player;
    
+   @Shadow
+   private int requestedTeleportId;
+   
+   @Shadow
+   private Vec3d requestedTeleportPos;
+   
+   @Inject(method = "onPlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;", ordinal = 0))
+   private void arcananovum_onHandSwap(PlayerActionC2SPacket packet, CallbackInfo ci){
+      ItemStack offHand = player.getOffHandStack();
+      if(BinaryBlades.isFakeBlade(offHand)){
+         player.setStackInHand(Hand.OFF_HAND,ItemStack.EMPTY);
+         ArcanaNovum.data(player).restoreOffhand();
+      }
+   }
+   
+   @Inject(method = "onPlayerLoaded", at = @At("TAIL"))
+   private void arcananovum_onPlayerLoad(PlayerLoadedC2SPacket packet, CallbackInfo ci){
+      for(UUID uuid : ArcanaNovum.TOTEM_KILL_LIST){
+         if(uuid.equals(player.getUuid())){
+            player.damage(player.getServerWorld(), ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,player), player.getMaxHealth()*10);
+            break;
+         }
+      }
+      ArcanaNovum.TOTEM_KILL_LIST.removeIf(uuid -> uuid.equals(player.getUuid()));
+   }
+   
    @Inject(method = "onHandSwing", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V"))
-   private void arcananovum_handSwing(HandSwingC2SPacket packet, CallbackInfo ci) {
+   private void arcananovum_handSwing(HandSwingC2SPacket packet, CallbackInfo ci){
       ServerPlayNetworkHandler networkHandler = (ServerPlayNetworkHandler) (Object) this;
       
       // Hit through Greater Invisibility
@@ -93,8 +122,8 @@ public class ServerPlayNetworkHandlerMixin {
       }
    }
    
-   @Inject(method = "requestTeleport(DDDFFLjava/util/Set;)V", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_ensnarementPlayerTeleport(double x, double y, double z, float yaw, float pitch, Set<PositionFlag> flags, CallbackInfo ci) {
+   @Inject(method = "requestTeleport(Lnet/minecraft/entity/player/PlayerPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
+   private void arcananovum_ensnarementPlayerTeleport(PlayerPosition pos, Set<PositionFlag> flags, CallbackInfo ci){
       StatusEffectInstance effect = player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null && effect.getAmplifier() > 0){
          player.sendMessage(Text.literal("Your teleport has been ensnared!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
@@ -104,11 +133,23 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @Inject(method = "onPlayerMove", at = @At(value = "INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))
-   private void arcananovum_ensnarementPlayerTest(PlayerMoveC2SPacket packet, CallbackInfo ci) {
+   private void arcananovum_ensnarementPlayerOnMove(PlayerMoveC2SPacket packet, CallbackInfo ci){
       StatusEffectInstance effect = player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null){
-         player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(player.getX(),player.getY(),player.getZ(),0,0,PositionFlag.getFlags(0b11000),0));
-         //player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(player.getX(),player.getY(),player.getZ(),player.getYaw(),player.getPitch(),PositionFlag.getFlags(0b111),0));
+         if (++requestedTeleportId == Integer.MAX_VALUE) {
+            requestedTeleportId = 0;
+         }
+         requestedTeleportPos = player.getPos();
+         player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(requestedTeleportId,new PlayerPosition(player.getPos(),Vec3d.ZERO,0,0),PositionFlag.getFlags(0b11000)));
+         
+      }else{
+         ItemStack pants = player.getEquippedStack(EquipmentSlot.LEGS);
+         if(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus && ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) >= 1){
+            if(packet.horizontalCollision() && !player.getAbilities().flying){
+               player.setVelocity(new Vec3d(player.getVelocity().getX(),0.2,player.getVelocity().getZ()));
+               player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+            }
+         }
       }
    }
    

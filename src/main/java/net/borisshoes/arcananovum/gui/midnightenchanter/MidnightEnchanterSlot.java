@@ -19,7 +19,7 @@ public class MidnightEnchanterSlot extends Slot {
    }
    
    @Override
-   public int getMaxItemCount() {
+   public int getMaxItemCount(){
       return 64;
    }
 }

@@ -18,7 +18,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -28,6 +28,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -37,11 +38,12 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,24 +57,15 @@ public class SpawnerHarness extends ArcanaItem {
    
    public static final String SPAWNER_TAG = "spawner";
    
-   private static final String FULL_TXT = "item/spawner_harness";
-   private static final String EMPTY_TXT = "item/spawner_harness_empty";
-   
    public SpawnerHarness(){
       id = ID;
       name = "Spawner Harness";
-      rarity = ArcanaRarity.EXOTIC;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.EXOTIC, TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
+      rarity = ArcanaRarity.EMPOWERED;
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
       itemVersion = 1;
       vanillaItem = Items.SPAWNER;
-      item = new SpawnerHarnessItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.DARK_AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,FULL_TXT));
-      models.add(new Pair<>(vanillaItem,EMPTY_TXT));
+      item = new SpawnerHarnessItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_SILK_TOUCH,ResearchTasks.BREAK_SPAWNER,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
       ItemStack stack = new ItemStack(item);
@@ -149,9 +142,9 @@ public class SpawnerHarness extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Spawner Harness\n\nRarity: Exotic\n\nSpawners have always been one of the few blocks that have beyond the reach of the silk touch enchantment.\nPerhaps I can enhance the enchant a bit further by giving the magic a Harness").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Spawner Harness\n\nto channel additional Arcana to.\n\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however even with my best efforts the Harness can break after use.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Spawner Harness\n\nRight click on a spawner with the Harness to capture the spawner. \n\nThe Harness can then place the spawner elsewhere in the world with a 15% chance of breaking after use.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Harness").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nSpawners have always been one of the few blocks that are beyond the reach of the silk touch enchantment. Perhaps I can enhance the enchant a bit further by giving the magic a Harness to channel").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Harness").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nadditional Arcana to. \n\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however, even with my best efforts, the Harness can break after use.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Harness").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nUse the Harness on a spawner to capture the spawner.\n\nThe Harness can then place the spawner elsewhere, with a 15% chance to break after use.\n").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -179,11 +172,19 @@ public class SpawnerHarness extends ArcanaItem {
       }
       
       @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         if(!ArcanaItemUtils.isArcane(itemStack)) return ArcanaRegistry.getModelData(FULL_TXT).value();
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(!ArcanaItemUtils.isArcane(itemStack)) return baseStack;
+         
+         List<String> stringList = new ArrayList<>();
          NbtCompound spawnerData = getCompoundProperty(itemStack,SPAWNER_TAG);
          boolean hasSpawner = spawnerData.contains("SpawnData");
-         return hasSpawner ? ArcanaRegistry.getModelData(FULL_TXT).value() : ArcanaRegistry.getModelData(EMPTY_TXT).value();
+         
+         if(!hasSpawner){
+            stringList.add("empty");
+         }
+         baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
+         return baseStack;
       }
       
       @Override
@@ -206,13 +207,12 @@ public class SpawnerHarness extends ArcanaItem {
                if(world.getBlockState(placePos).isAir()){
                   BlockEntity blockEntity;
                   world.setBlockState(placePos,Blocks.SPAWNER.getDefaultState(), Block.NOTIFY_ALL);
-                  if ((blockEntity = world.getBlockEntity(placePos)) != null) {
+                  if((blockEntity = world.getBlockEntity(placePos)) != null){
                      blockEntity.read(spawnerTag,context.getWorld().getRegistryManager());
                   }
                   
-                  int reinforceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS.id));
-                  double breakChance = new double[]{.15,.13,.11,.09,.07,0}[reinforceLvl];
-                  if(Math.random() > breakChance){ // Chance of the harness breaking after use
+                  boolean reinforced = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS.id)) > 0;
+                  if(Math.random() > .15 && !reinforced){ // Chance of the harness breaking after use
                      player.sendMessage(Text.literal("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
                      putProperty(stack,SPAWNER_TAG,new NbtCompound());
@@ -226,7 +226,7 @@ public class SpawnerHarness extends ArcanaItem {
                      stack.decrementUnlessCreative(stack.getCount(),player);
                      if(scrap) giveScrap(player);
                   }
-                  ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaConfig.getInt(ArcanaRegistry.SPAWNER_HARNESS_USE)*breakChance)); // Add xp
+                  ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaConfig.getInt(ArcanaRegistry.SPAWNER_HARNESS_USE)*0.15)); // Add xp
                   return ActionResult.SUCCESS;
                }else{
                   player.sendMessage(Text.literal("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);

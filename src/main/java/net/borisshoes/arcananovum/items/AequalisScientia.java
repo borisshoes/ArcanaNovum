@@ -16,8 +16,6 @@ import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -32,7 +30,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -48,8 +49,6 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class AequalisScientia extends ArcanaItem {
    public static final String ID = "aequalis_scientia";
    
-   private static final String TXT = "item/aequalis_scientia";
-   
    public static final String USES_TAG = "uses";
    public static final String TRANSMUTATION_TAG = "transmutation_id";
    
@@ -57,16 +56,11 @@ public class AequalisScientia extends ArcanaItem {
       id = ID;
       name = "Aequalis Scientia";
       rarity = ArcanaRarity.DIVINE;
-      categories = new TomeGui.TomeFilter[]{TomeGui.TomeFilter.DIVINE,TomeGui.TomeFilter.ITEMS};
+      categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.DIAMOND;
       itemVersion = 2;
-      item = new AequalisScientiaItem(new Item.Settings().maxCount(1).fireproof()
-            .component(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+"."+ID).formatted(Formatting.BOLD,Formatting.AQUA))
-            .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
-            .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-      );
-      models = new ArrayList<>();
-      models.add(new Pair<>(vanillaItem,TXT));
+      item = new AequalisScientiaItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TRANSMUTATION_ALTAR,ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_CAKE_TO_NOTE_BLOCK,ResearchTasks.ADVANCEMENT_ALLAY_DELIVER_ITEM_TO_PLAYER};
       
       ItemStack stack = new ItemStack(item);
@@ -229,7 +223,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
-                  .append(Text.literal("\nNul might claim to be the god of knowledge. He 'forgets' that I have a few centuries of experience on him.").formatted(Formatting.AQUA))
+                  .append(Text.literal("\nNul might claim to be the god of knowledge. He 'forgets' that my experience beats his one hundred-fold.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
       ),new int[]{},0,1,1));
@@ -502,22 +496,19 @@ public class AequalisScientia extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Aequalis Scientia\n\nRarity: Divine\n\nI believe I have solved two mysteries in one!\nThe entity that powers my Transmutation Altar was, in fact, divine. They call themself Equayus, God of Balance. The transmutations that")));
-      list.add(List.of(Text.literal("   Aequalis Scientia\n\noccur are actually an implicit barter with Equayus for items of equal value.\nThey were kind enough to trade a few of my Sovereign Catalysts for some divine energy to use in another Catalyst. From there I was able to transmute a stone")));
-      list.add(List.of(Text.literal("   Aequalis Scientia\n\nwith the divine energy. Equayus was impressed with my understanding and has imbued the stone with their rune.\nThis stone is the final piece to the Altar and is used in the keystone position to conduct advanced transmutations.")));
-      list.add(List.of(Text.literal("   Aequalis Scientia\n\nEquayus told me that I have a solid grasp on the value of materials, but need to learn the value of knowledge.\n\nThe Aequalis Scientia is supposed to guide me to that realization by letting me exchange some of the skills I have learned")));
-      list.add(List.of(Text.literal("   Aequalis Scientia\n\nfor others.\n\nI can use the Aequalis in conjunction with two of my own Arcane Items and some reagents to transfer the skills I have learned from one item into skills I can learn for the other. ")));
+      list.add(List.of(Text.literal(" Aequalis Scientia").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nI believe I have solved two mysteries in one! The entity that powers my Transmutation Altar is a Divine creature that calls themselves Equayus, the God of Balance, Trade, and Wisdom.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Aequalis Scientia").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nThe transmutations that I perform are actually an implicit barter with Equayus for items of equal value. They were kind enough to trade a few of my Sovereign Catalysts for some Divine energy to use in another Catalyst.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Aequalis Scientia").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nFrom there I was able to transmute a stone with Divine energy. Equayus was impressed with my understanding and has imbued the stone with their rune. This stone is the final piece to the Altar").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Aequalis Scientia").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nand is used in the keystone position to conduct advanced transmutations.\n\nEquayus told me that I have a solid grasp on the value of materials, but need to learn the value of knowledge.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Aequalis Scientia").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nThe Aequalis Scientia is supposed to guide me to that realization by allowing me to exchange skills for others. Sometimes Equayus offers additional wisdom through the stone.\n\nI can use the Aequalis in conjunction with two ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Aequalis Scientia").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nof my own Arcane Items and some reagents to transfer the skills I have learned from one item into skills I can learn for the other.\n\nHowever, the stone has a limited amount of energy and can only do this a few times.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Aequalis Scientia").formatted(Formatting.AQUA,Formatting.BOLD),Text.literal("\nMy connection with Equayus also allows me to attune the Aequalis to a single transmutation, and they will help me perform the transmutation at will for half of the normal reagents.").formatted(Formatting.BLACK)));
       return list;
    }
    
    public class AequalisScientiaItem extends ArcanaPolymerItem {
       public AequalisScientiaItem(Item.Settings settings){
          super(getThis(),settings);
-      }
-      
-      @Override
-      public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player){
-         return ArcanaRegistry.getModelData(TXT).value();
       }
       
       @Override
@@ -536,10 +527,10 @@ public class AequalisScientia extends ArcanaItem {
       }
       
       @Override
-      public TypedActionResult<ItemStack> use(World world, PlayerEntity playerEntity, Hand hand) {
+      public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
          String transmutationId = getStringProperty(stack,TRANSMUTATION_TAG);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.SUCCESS;
          
          if(transmutationId.isEmpty()){
             TransmutationAltarRecipeGui transmutationGui = new TransmutationAltarRecipeGui(player,null, Optional.empty());
@@ -567,20 +558,20 @@ public class AequalisScientia extends ArcanaItem {
                      }
                      if(input == null){
                         player.sendMessage(Text.literal("You do not have a valid input item.").formatted(Formatting.RED,Formatting.ITALIC),false);
-                        return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                        return ActionResult.SUCCESS;
                      }
                      ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                      if(reagent1 == null){
                         MiscUtils.returnItems(new SimpleInventory(input),player);
-                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getTranslationKey())),false);
-                        return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
+                        return ActionResult.SUCCESS;
                      }
                      ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                      if(reagent2 == null){
                         MiscUtils.returnItems(new SimpleInventory(input),player);
                         MiscUtils.returnItems(new SimpleInventory(reagent1),player);
-                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getTranslationKey())),false);
-                        return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                        player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent2()).getName()),false);
+                        return ActionResult.SUCCESS;
                      }
                      ItemStack focus = playerEntity.getStackInHand(Hand.OFF_HAND).split(1);
                      
@@ -589,26 +580,26 @@ public class AequalisScientia extends ArcanaItem {
                   }else{
                      results = null;
                      player.sendMessage(Text.literal("Your offhand must be a valid focus item.").formatted(Formatting.RED,Formatting.ITALIC),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     return ActionResult.SUCCESS;
                   }
                }else if(recipe instanceof InfusionTransmutationRecipe infusionRecipe){
                   ItemStack input = getAndSplitValidStack(infusionRecipe.getInput(),player,true);
                   if(input == null){
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(infusionRecipe.getInput().getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(infusionRecipe.getInput().getName()),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      MiscUtils.returnItems(new SimpleInventory(reagent1),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent2()).getName()),false);
+                     return ActionResult.SUCCESS;
                   }
                   
                   items = List.of(input,ItemStack.EMPTY,reagent1,reagent2,stack);
@@ -616,21 +607,21 @@ public class AequalisScientia extends ArcanaItem {
                }else if(recipe instanceof PermutationTransmutationRecipe permutationRecipe){
                   ItemStack input = getAndSplitValidStack(permutationRecipe.getInput(),player,true);
                   if(input == null){
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(permutationRecipe.getInput().getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(permutationRecipe.getInput().getName()),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent1()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
+                     return ActionResult.SUCCESS;
                   }
                   ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      MiscUtils.returnItems(new SimpleInventory(reagent1),player);
-                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(Text.translatable(recipe.getAequalisReagent(recipe.getReagent2()).getTranslationKey())),false);
-                     return TypedActionResult.success(playerEntity.getStackInHand(hand));
+                     player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent2()).getName()),false);
+                     return ActionResult.SUCCESS;
                   }
                   
                   items = List.of(input,ItemStack.EMPTY,reagent1,reagent2,stack);
@@ -655,7 +646,7 @@ public class AequalisScientia extends ArcanaItem {
                putProperty(stack, AequalisScientia.TRANSMUTATION_TAG,"");
             }
          }
-         return TypedActionResult.success(playerEntity.getStackInHand(hand));
+         return ActionResult.SUCCESS;
       }
       
       private ItemStack getAndSplitValidStack(ItemStack stack, ServerPlayerEntity player, boolean repeat){
