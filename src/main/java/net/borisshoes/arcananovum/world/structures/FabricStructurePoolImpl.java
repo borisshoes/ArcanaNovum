@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.world.structures;
 
+import com.mojang.datafixers.util.Pair;
 import net.borisshoes.arcananovum.mixins.StructurePoolAccessor;
 import net.minecraft.structure.pool.StructurePool;
 import net.minecraft.structure.pool.StructurePoolElement;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
