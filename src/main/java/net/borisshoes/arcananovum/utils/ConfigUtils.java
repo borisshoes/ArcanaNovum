@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
+@SuppressWarnings({"unchecked","rawtype"})
 public class ConfigUtils {
    public List<IConfigValue> values;
    private final File file;
@@ -105,19 +106,19 @@ public class ConfigUtils {
             literal("arcana").then(literal("config").requires(source -> source.hasPermissionLevel(4))
                   .executes(ctx -> {
                      values.stream().filter(v -> v.command != null).forEach(value ->
-                           ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {String.valueOf(value.value)})), false));
+                           ctx.getSource().sendFeedback(()-> MutableText.of(new TranslatableTextContent(value.command.getterText, null, new String[] {String.valueOf(value.value.toString())})), false));
                      return 1;
                   }));
       values.stream().filter(v -> v.command != null).forEach(value ->
             out.then(literal("config").then(literal(value.name)
                   .executes(ctx -> {
-                     ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new Object[] {String.valueOf(value.value)})), false);
+                     ctx.getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.getterText, null, new String[] {String.valueOf(value.value.toString())})), false);
                      return 1;
                   })
                   .then(argument(value.name, value.getArgumentType()).suggests(value::getSuggestions)
                         .executes(ctx -> {
                            value.value = value.parseArgumentValue(ctx);
-                           ((CommandContext<ServerCommandSource>) ctx).getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.setterText, null, new Object[] {String.valueOf(value.value)})), true);
+                           ((CommandContext<ServerCommandSource>) ctx).getSource().sendFeedback(()->MutableText.of(new TranslatableTextContent(value.command.setterText, null, new String[] {String.valueOf(value.value.toString())})), true);
                            this.save();
                            return 1;
                         })))));

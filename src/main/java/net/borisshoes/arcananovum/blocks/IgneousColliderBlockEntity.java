@@ -60,7 +60,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       this.synthetic = synthetic;
       this.customName = customName == null ? "" : customName;
       int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION.id);
-      this.cooldown = IgneousCollider.COOLDOWN-1-2*injectionLvl;
+      this.cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
    }
    
    public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
@@ -74,123 +74,124 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
          return;
       }
       
-      if(serverWorld.getServer().getTicks() % 20 == 0){ // Tick the block every second
-         ArcanaNovum.addActiveBlock(new Pair<>(this,this));
+      if(cooldown > 0) cooldown--;
+      
+      if(serverWorld.getServer().getTicks() % 20 == 0){ // Block is active
+         ArcanaNovum.addActiveBlock(new Pair<>(this, this));
+      }
+      
+      if(cooldown <= 0 && serverWorld.getServer().getTicks() % 2 == 0){
+         // Do the check
+         BlockPos hasLava = null;
+         BlockPos hasWater = null;
+         BlockPos hasInventory = null;
+         BlockPos hasNetherite = null;
+         Inventory output = null;
+         boolean canUseIce = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CRYOGENIC_COOLING.id) >= 1;
          
-         if(cooldown-- <= 0){
-            // Do the check
-            BlockPos hasLava = null;
-            BlockPos hasWater = null;
-            BlockPos hasInventory = null;
-            BlockPos hasNetherite = null;
-            Inventory output = null;
-            boolean canUseIce = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CRYOGENIC_COOLING.id) >= 1;
+         Direction[] dirs = Direction.values();
+         int numDirs = dirs.length;
+         
+         for(int side = 0; side < numDirs; ++side){
+            Direction direction = dirs[side];
+            BlockPos pos2 = pos.offset(direction);
+            BlockState state2 = serverWorld.getBlockState(pos2);
+            Block block2 = state2.getBlock();
             
-            Direction[] dirs = Direction.values();
-            int numDirs = dirs.length;
-            
-            for(int side = 0; side < numDirs; ++side){
-               Direction direction = dirs[side];
-               BlockPos pos2 = pos.offset(direction);
-               BlockState state2 = serverWorld.getBlockState(pos2);
-               Block block2 = state2.getBlock();
-               
-               if(direction.getAxis() != Direction.Axis.Y){ // Check for fluid
-                  if(block2 == Blocks.LAVA && state2.getFluidState().isStill()){
-                     hasLava = pos2;
-                  }else if(block2 == Blocks.WATER  && state2.getFluidState().isStill()){
-                     hasWater = pos2;
-                  }else if(block2 == Blocks.LAVA_CAULDRON){
-                     hasLava = pos2;
-                  }else if(block2 == Blocks.WATER_CAULDRON){
-                     hasWater = pos2;
-                  }else if(canUseIce && block2 == Blocks.BLUE_ICE){
-                     hasWater = pos2;
-                  }
-               }else if(direction.getId() == 1){ // Check for chest
-                  if(block2 instanceof InventoryProvider){
-                     output = ((InventoryProvider)block2).getInventory(state2, serverWorld, pos2);
-                  } else if(state2.hasBlockEntity()){
-                     BlockEntity blockEntity = serverWorld.getBlockEntity(pos2);
-                     if(blockEntity instanceof Inventory){
-                        output = (Inventory)blockEntity;
-                        if(output instanceof ChestBlockEntity && block2 instanceof ChestBlock){
-                           output = ChestBlock.getInventory((ChestBlock)block2, state2, serverWorld, pos2, true);
-                        }
+            if(direction.getAxis() != Direction.Axis.Y){ // Check for fluid
+               if(block2 == Blocks.LAVA && state2.getFluidState().isStill()){
+                  hasLava = pos2;
+               }else if(block2 == Blocks.WATER  && state2.getFluidState().isStill()){
+                  hasWater = pos2;
+               }else if(block2 == Blocks.LAVA_CAULDRON){
+                  hasLava = pos2;
+               }else if(block2 == Blocks.WATER_CAULDRON){
+                  hasWater = pos2;
+               }else if(canUseIce && block2 == Blocks.BLUE_ICE){
+                  hasWater = pos2;
+               }
+            }else if(direction.getId() == 1){ // Check for chest
+               if(block2 instanceof InventoryProvider){
+                  output = ((InventoryProvider)block2).getInventory(state2, serverWorld, pos2);
+               } else if(state2.hasBlockEntity()){
+                  BlockEntity blockEntity = serverWorld.getBlockEntity(pos2);
+                  if(blockEntity instanceof Inventory){
+                     output = (Inventory)blockEntity;
+                     if(output instanceof ChestBlockEntity && block2 instanceof ChestBlock){
+                        output = ChestBlock.getInventory((ChestBlock)block2, state2, serverWorld, pos2, true);
                      }
                   }
-                  if(output != null){
-                     hasInventory = pos2;
-                  }
-               }else if(direction.getId() == 0){ //Check for netherite block
-                  if(block2 == Blocks.NETHERITE_BLOCK){
-                     hasNetherite = pos2;
-                  }
+               }
+               if(output != null){
+                  hasInventory = pos2;
+               }
+            }else if(direction.getId() == 0){ // Check for netherite block
+               if(block2 == Blocks.NETHERITE_BLOCK){
+                  hasNetherite = pos2;
                }
             }
-            if(hasLava != null && hasWater != null){ // Produce Obsidian
-               ItemStack obby;
-               if(hasNetherite == null){
-                  obby = new ItemStack(Items.OBSIDIAN);
-               }else{
-                  obby = new ItemStack(Items.CRYING_OBSIDIAN);
-               }
+         }
+         if(hasLava != null && hasWater != null){ // Produce Obsidian
+            ItemStack obby;
+            if(hasNetherite == null){
+               obby = new ItemStack(Items.OBSIDIAN);
+            }else{
+               obby = new ItemStack(Items.CRYING_OBSIDIAN);
+            }
+            
+            if(hasInventory == null){ // Drop above collider
+               serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+1.25,pos.getZ()+0.5,obby, 0, 0.2, 0));
+            }else{ // Put in inventory
                
-               if(hasInventory == null){ // Drop above collider
-                  serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+1.25,pos.getZ()+0.5,obby, 0, 0.2, 0));
-               }else{ // Put in inventory
+               try{
+                  Transaction transaction = Transaction.openOuter();
+                  int inserted = (int) StorageUtil.tryInsertStacking(InventoryStorage.of(output,Direction.DOWN), ItemVariant.of(obby),obby.getCount(), transaction);
+                  if(inserted < obby.getCount()){
+                     obby.setCount(obby.getCount() - inserted);
+                     serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+2.5,pos.getZ()+0.5,obby, 0, 0.2, 0));
+                  }
+                  if(inserted > 0){
+                     output.markDirty();
+                  }
+                  transaction.commit();
                   
-                  try{
-                     Transaction transaction = Transaction.openOuter();
-                     int inserted = (int) StorageUtil.tryInsertStacking(InventoryStorage.of(output,Direction.DOWN), ItemVariant.of(obby),obby.getCount(), transaction);
-                     if(inserted < obby.getCount()){
-                        obby.setCount(obby.getCount() - inserted);
-                        serverWorld.spawnEntity(new ItemEntity(serverWorld,pos.getX()+0.5,pos.getY()+2.5,pos.getZ()+0.5,obby, 0, 0.2, 0));
-                     }
-                     if(inserted > 0){
-                        output.markDirty();
-                     }
-                     transaction.commit();
-                     
-                  }catch(Exception e){
-                     ArcanaNovum.log(2,"Exception in Igneous Collider inventory insertion at "+this.pos.toShortString());
-                     e.printStackTrace();
-                  }
-               }
-               
-               // Remove Source Blocks
-               int efficiencyLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.THERMAL_EXPANSION.id);
-               if(Math.random() >= .1*efficiencyLvl){
-                  if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
-                     serverWorld.setBlockState(hasLava, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
-                  }else if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA_CAULDRON){
-                     serverWorld.setBlockState(hasLava, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
-                  }
-                  if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER){
-                     serverWorld.setBlockState(hasWater, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
-                  }else if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER_CAULDRON){
-                     serverWorld.setBlockState(hasWater, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
-                  }
-               }
-               
-               SoundUtils.playSound(serverWorld,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
-               
-               if(crafterId != null && !crafterId.isEmpty()){
-                  ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(crafterId));
-                  if(player == null){
-                     ArcanaNovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
-                     ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
-                  }else{
-                     ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,1);
-                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE));
-                     if(obby.isOf(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,ArcanaAchievements.EXPENSIVE_INFUSION.id);
-                  }
+               }catch(Exception e){
+                  ArcanaNovum.log(2,"Exception in Igneous Collider inventory insertion at "+this.pos.toShortString());
+                  e.printStackTrace();
                }
             }
             
+            // Remove Source Blocks
+            int efficiencyLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.THERMAL_EXPANSION.id);
+            if(Math.random() >= .1*efficiencyLvl){
+               if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA){
+                  serverWorld.setBlockState(hasLava, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+               }else if(serverWorld.getBlockState(hasLava).getBlock() == Blocks.LAVA_CAULDRON){
+                  serverWorld.setBlockState(hasLava, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+               }
+               if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER){
+                  serverWorld.setBlockState(hasWater, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
+               }else if(serverWorld.getBlockState(hasWater).getBlock() == Blocks.WATER_CAULDRON){
+                  serverWorld.setBlockState(hasWater, Blocks.CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+               }
+            }
+            
+            if(crafterId != null && !crafterId.isEmpty()){
+               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(crafterId));
+               if(player == null){
+                  ArcanaNovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
+                  ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
+               }else{
+                  ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,1);
+                  ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE));
+                  if(obby.isOf(Items.CRYING_OBSIDIAN)) ArcanaAchievements.grant(player,ArcanaAchievements.EXPENSIVE_INFUSION.id);
+               }
+            }
+            
+            SoundUtils.playSound(serverWorld,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, SoundCategory.BLOCKS, 1, .6f);
             world.emitGameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Emitter.of(getCachedState()));
             int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION.id);
-            cooldown = IgneousCollider.COOLDOWN-1-2*injectionLvl;
+            cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
          }
       }
    }

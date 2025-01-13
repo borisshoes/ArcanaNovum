@@ -43,7 +43,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentIn
 
 public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
-   private static final Logger logger = LogManager.getLogger("Arcana Novum");
+   private static final Logger LOGGER = LogManager.getLogger("Arcana Novum");
    public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
    public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
    public static final HashMap<ServerWorld,ArrayList<ChunkPos>> ANCHOR_CHUNKS = new HashMap<>();
@@ -63,7 +63,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    @Override
    public void onInitialize(){
-      CONFIG = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), logger, ArcanaRegistry.CONFIG_SETTINGS.stream().map(ArcanaConfig.ConfigSetting::makeConfigValue).collect(Collectors.toList()));
+      CONFIG = new ConfigUtils(FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile(), LOGGER, ArcanaRegistry.CONFIG_SETTINGS.stream().map(ArcanaConfig.ConfigSetting::makeConfigValue).collect(Collectors.toList()));
       ArcanaRegistry.initialize();
       
       ServerTickEvents.END_WORLD_TICK.register(WorldTickCallback::onWorldTick);
@@ -83,12 +83,12 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       ServerLifecycleEvents.SERVER_STARTING.register(ServerStartingCallback::serverStarting);
       ServerLifecycleEvents.SERVER_STARTED.register(ServerStartedCallback::serverStarted);
       
-      logger.info("Arcana Surges Through The World!");
+      LOGGER.info("Arcana Surges Through The World!");
    }
    
    @Override
    public void onInitializeClient(){
-      logger.info("Arcana Surges Through Your Client!");
+      LOGGER.info("Arcana Surges Through Your Client!");
    }
    
    public static <T extends ArcanaEvent> List<T> getEventsOfType(Class<T> eventType){
@@ -158,11 +158,11 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
     */
    public static void log(int level, String msg){
       switch(level){
-         case 0 -> logger.info(msg);
-         case 1 -> logger.warn(msg);
-         case 2 -> logger.error(msg);
-         case 3 -> logger.fatal(msg);
-         default -> logger.debug(msg);
+         case 0 -> LOGGER.info(msg);
+         case 1 -> LOGGER.warn(msg);
+         case 2 -> LOGGER.error(msg);
+         case 3 -> LOGGER.fatal(msg);
+         default -> LOGGER.debug(msg);
       }
    }
 }

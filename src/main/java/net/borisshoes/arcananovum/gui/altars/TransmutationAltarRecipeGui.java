@@ -111,18 +111,18 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       List<TransmutationRecipe> pageRecipes = recipes;
       int numPages = (int) Math.ceil((float)pageRecipes.size()/28.0);
       
-      GuiElementBuilder nextArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
-      nextArrow.setName((Text.literal("")
-            .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-      nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+      GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+      nextArrow.setName(Text.literal("Next Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
+      nextArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click").formatted(Formatting.YELLOW))
+            .append(Text.literal(" to go to the Next Page").formatted(Formatting.DARK_PURPLE))));
       setSlot(53,nextArrow);
       
-      GuiElementBuilder prevArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
-      prevArrow.setName((Text.literal("")
-            .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-      prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+      GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+      prevArrow.setName(Text.literal("Previous Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
+      prevArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
+            .append(Text.literal("Click").formatted(Formatting.YELLOW))
+            .append(Text.literal(" to go to the Previous Page").formatted(Formatting.DARK_PURPLE))));
       setSlot(45,prevArrow);
       
       int k = (page-1)*28;

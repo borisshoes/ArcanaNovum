@@ -334,7 +334,7 @@ public class BinaryBlades extends EnergyItem {
             
             if(world.getServer().getTicks() % 40 == 0 || (energy > 0 && energy < getMaxEnergy(stack))){
                char[] unicodeChars = {'▁', '▂', '▃', '▅', '▆', '▇', '▌'};
-               StringBuilder message = new StringBuilder("✦ ");
+               StringBuilder message = new StringBuilder("\uD83D\uDDE1 ✦ ");
                for (int i = 0; i < 10; i++) {
                   int segmentValue = energy - (i * 10);
                   if (segmentValue <= 0) {
@@ -346,7 +346,7 @@ public class BinaryBlades extends EnergyItem {
                      message.append(unicodeChars[charIndex]);
                   }
                }
-               message.append(" ✦");
+               message.append(" ✦ \uD83D\uDDE1");
                player.sendMessage(Text.literal(message.toString()).formatted(getColor(stack)), true);
             }
          }else if(split){

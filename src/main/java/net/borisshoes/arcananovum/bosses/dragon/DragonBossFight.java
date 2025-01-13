@@ -23,7 +23,6 @@ import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.BossBar;
@@ -556,23 +555,10 @@ public class DragonBossFight {
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
             ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
+            wings.addEnchantment(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR),1);
             ArcanaNovum.data(player).addCraftedSilent(wings);
-         
-            ItemEntity itemEntity;
-            boolean bl = player.getInventory().insertStack(wings);
-            if(!bl || !wings.isEmpty()){
-               itemEntity = player.dropItem(wings, false);
-               if(itemEntity == null) continue;
-               itemEntity.resetPickupDelay();
-               itemEntity.setOwner(player.getUuid());
-               continue;
-            }
-            wings.setCount(1);
-            itemEntity = player.dropItem(wings, false);
-            if(itemEntity != null){
-               itemEntity.setDespawnImmediately();
-            }
-         
+            MiscUtils.giveStacks(player, wings, new ItemStack(Items.DRAGON_EGG,1));
+            
             player.addExperience(5500);
          }
       

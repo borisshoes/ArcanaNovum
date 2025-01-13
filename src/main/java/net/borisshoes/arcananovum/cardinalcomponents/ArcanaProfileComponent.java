@@ -44,7 +44,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    private final HashMap<String,List<ArcanaAchievement>> achievements = new HashMap<>();
    private int level;
    private int xp;
-   private ItemStack storedOffhand;
+   private ItemStack storedOffhand = ItemStack.EMPTY;
    
    public ArcanaProfileComponent(PlayerEntity player){
       this.player = player;

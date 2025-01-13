@@ -70,6 +70,11 @@ public class ArcanaCommands {
    
    
    public static int openGuideBook(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException{
+      ServerCommandSource source = ctx.getSource();
+      if(!source.isExecutedByPlayer() || source.getPlayer() == null){
+         source.sendFeedback(()->Text.literal("Command must be executed by a player"), false);
+         return -1;
+      }
       ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
       BookElementBuilder bookBuilder = getGuideBook();
       LoreGui loreGui = new LoreGui(player,bookBuilder,null, TomeGui.TomeMode.NONE,null);

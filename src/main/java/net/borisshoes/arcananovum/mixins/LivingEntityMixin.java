@@ -517,7 +517,7 @@ public abstract class LivingEntityMixin {
          }
       }
       
-      List<NulConstructEntity> constructs = livingEntity.getWorld().getEntitiesByClass(NulConstructEntity.class,livingEntity.getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE*2),construct -> construct.getSummoner().getUuid().equals(livingEntity.getUuid()));
+      List<NulConstructEntity> constructs = livingEntity.getWorld().getEntitiesByClass(NulConstructEntity.class,livingEntity.getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE*2),construct -> construct.getSummoner() != null && construct.getSummoner().getUuid().equals(livingEntity.getUuid()));
       if (itemStack != null) {
          if(ArcanaItemUtils.identifyItem(itemStack) instanceof TotemOfVengeance vengeance){
             constructs.forEach(construct -> construct.triggerAdaptation(NulConstructEntity.ConstructAdaptations.USED_VENGEANCE_TOTEM));
