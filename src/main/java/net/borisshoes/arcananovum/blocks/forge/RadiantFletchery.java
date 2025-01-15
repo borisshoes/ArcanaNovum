@@ -194,6 +194,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
                   }else{
                      fletchery.openGui(player);
                      player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
+                     player.getItemCooldownManager().set(playerEntity.getOffHandStack(),1);
                   }
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
@@ -218,7 +219,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof RadiantFletcheryBlockEntity fletchery){
+         if(entity instanceof RadiantFletcheryBlockEntity fletchery){
             initializeArcanaBlock(stack,fletchery);
          }
       }

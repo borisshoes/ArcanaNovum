@@ -233,7 +233,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof MidnightEnchanterBlockEntity enchanter){
+         if(entity instanceof MidnightEnchanterBlockEntity enchanter){
             initializeArcanaBlock(stack,enchanter);
          }
       }

@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -29,6 +30,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
@@ -39,8 +41,10 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.block.WireOrientation;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -49,6 +53,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity.COST;
 
 public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "starpath_altar";
@@ -181,6 +186,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    
    public class StarpathAltarBlock extends ArcanaPolymerBlockEntity {
       public static final BooleanProperty BLOOM = Properties.BLOOM;
+      public static final BooleanProperty ACTIVATABLE = BooleanProperty.of("activatable");
       public StarpathAltarBlock(AbstractBlock.Settings settings){
          super(getThis(), settings);
       }
@@ -207,12 +213,12 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       @Nullable
       @Override
       public BlockState getPlacementState(ItemPlacementContext ctx){
-         return this.getDefaultState().with(BLOOM,false);
+         return this.getDefaultState().with(BLOOM,false).with(ACTIVATABLE,false);
       }
       
       @Override
       protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
-         stateManager.add(BLOOM);
+         stateManager.add(BLOOM,ACTIVATABLE);
       }
       
       @Nullable
@@ -229,6 +235,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
                if(altar.isAssembled()){
                   altar.openGui(player);
                   player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
+                  player.getItemCooldownManager().set(playerEntity.getOffHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
@@ -241,9 +248,27 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof StarpathAltarBlockEntity altar){
+         if(entity instanceof StarpathAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
             altar.readTargets(getListProperty(stack,TARGETS_TAG,NbtElement.COMPOUND_TYPE));
+         }
+      }
+      
+      private void tryActivate(BlockState state, World world, BlockPos pos){
+         BlockEntity entity = world.getBlockEntity(pos);
+         if(entity instanceof StarpathAltarBlockEntity altar && world instanceof ServerWorld serverWorld){
+            boolean paid = MiscUtils.removeItemEntities(serverWorld,new Box(pos.up()),(itemStack) -> itemStack.isOf(COST),altar.calculateCost());
+            if(paid) altar.startTeleport(null);
+         }
+      }
+      
+      @Override
+      protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
+         boolean bl = world.isReceivingRedstonePower(pos);
+         boolean bl2 = state.getOrEmpty(ACTIVATABLE).orElse(false);
+         if (bl && bl2) {
+            this.tryActivate(state, world, pos);
+            world.setBlockState(pos, state.with(ACTIVATABLE, false), Block.NOTIFY_LISTENERS);
          }
       }
    }

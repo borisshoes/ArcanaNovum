@@ -296,7 +296,7 @@ public class EverlastingRocket extends EnergyItem {
                if(((EnergyItem)getThis()).getEnergy(itemStack) > 0){
                   FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, getFireworkStack(itemStack), user);
                   world.spawnEntity(fireworkRocketEntity);
-                  if(!user.getAbilities().creativeMode){
+                  if(!user.isCreative()){
                      ((EnergyItem)getThis()).addEnergy(itemStack,-1);
                      buildItemLore(itemStack,player.getServer());
                      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp

@@ -35,6 +35,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -51,8 +52,32 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class MiscUtils {
+   
+   public static boolean removeItemEntities(ServerWorld serverWorld, Box area, Predicate<ItemStack> predicate, int count){
+      List<ItemEntity> entities = serverWorld.getEntitiesByClass(ItemEntity.class, area, entity -> predicate.test(entity.getStack()));
+      int foundCount = 0;
+      for(ItemEntity entity : entities){
+         foundCount += entity.getStack().getCount();
+         if(foundCount >= count) break;
+      }
+      if(foundCount < count) return false;
+      for(ItemEntity entity : entities){
+         ItemStack stack = entity.getStack();
+         int stackCount = stack.getCount();
+         int toRemove = Math.min(count, stackCount);
+         if(toRemove >= stackCount){
+            entity.discard();
+         }else{
+            stack.setCount(stackCount - toRemove);
+         }
+         count -= toRemove;
+         if(count <= 0) break;
+      }
+      return true;
+   }
    
    public static String convertToBase64(String binaryString) {
       int byteLength = (binaryString.length() + 7) / 8;

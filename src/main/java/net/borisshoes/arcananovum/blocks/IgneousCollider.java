@@ -26,7 +26,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -174,7 +173,7 @@ public class IgneousCollider extends ArcanaBlock {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity && entity instanceof IgneousColliderBlockEntity collider){
+         if(entity instanceof IgneousColliderBlockEntity collider){
             initializeArcanaBlock(stack,collider);
          }
       }

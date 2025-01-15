@@ -139,12 +139,17 @@ public class ArcanaAugments {
    public static final ArcanaAugment FIRESTARTER = ArcanaAugments.register(
          new ArcanaAugment("Firestarter", "firestarter", new ItemStack(Items.FLINT_AND_STEEL), ArcanaRegistry.CINDERS_CHARM,
          new String[]{"The Charm's Left Click abilities no"," longer consumes cinders on use"},
-         new ArcanaRarity[]{EXOTIC}
+         new ArcanaRarity[]{MUNDANE}
    ));
    public static final ArcanaAugment WILDFIRE = ArcanaAugments.register(
          new ArcanaAugment("Charm of Wildfire", "wildfire", new ItemStack(Items.BLAZE_POWDER), ArcanaRegistry.CINDERS_CHARM,
          new String[]{"Adds an extra cinder for each level","Final Level increases cinder recharge rate"},
          new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC,SOVEREIGN,DIVINE}
+   ));
+   public static final ArcanaAugment SUPERSMELTER = ArcanaAugments.register(
+         new ArcanaAugment("Super-Smelter", "supersmelter", new ItemStack(Items.BLAST_FURNACE), ArcanaRegistry.CINDERS_CHARM,
+         new String[]{"Smelting items consumes significantly less cinders"},
+         new ArcanaRarity[]{EXOTIC}
    ));
    
    // Charm of Feasting

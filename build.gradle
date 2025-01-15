@@ -24,6 +24,10 @@ repositories {
 	maven {
         name = "Ladysnake Mods"
         url = 'https://maven.ladysnake.org/releases'
+        content {
+            includeGroup 'io.github.ladysnake'
+            includeGroupByRegex 'org\\.ladysnake.*'
+        }
     }
     maven { url 'https://maven.nucleoid.xyz' }
     maven {
@@ -65,8 +69,9 @@ dependencies {
     modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
     modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-world:${project.cca_version}")
 
-    modImplementation "maven.modrinth:simple-voice-chat:fabric-${voicechat_version}"
+    modImplementation include("io.github.ladysnake:PlayerAbilityLib:${pal_version}")
 
+    modImplementation "maven.modrinth:simple-voice-chat:fabric-${voicechat_version}"
 }
 
 processResources {

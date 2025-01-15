@@ -222,8 +222,9 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       try{
          boolean active = getBooleanProperty(charm,ACTIVE_TAG);
          boolean cremation = ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.CREMATION.id) >= 1;
+         boolean smelter = ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.SUPERSMELTER.id) >= 1;
          Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
-         int energyToConsume = (int)Math.ceil(stack.getCount() / 2.0);
+         int energyToConsume = (int)Math.ceil(stack.getCount() / (smelter ? 8.0 : 2.0));
          if(active && getEnergy(charm) >= energyToConsume){
             // Smelting registry and auto smelt
             

@@ -6,6 +6,8 @@ import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import io.github.ladysnake.pal.AbilitySource;
+import io.github.ladysnake.pal.Pal;
 import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AlchemicalArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.areaeffects.AreaEffectTracker;
@@ -322,6 +324,9 @@ public class ArcanaRegistry {
    public static final LootFunctionType<? extends LootFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
    public static final LootFunctionType<? extends LootFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
    
+   // PlayerAbilityLib Identifiers
+   public static final AbilitySource LEVITATION_HARNESS_ABILITY = Pal.getAbilitySource(Identifier.of(MOD_ID, LEVITATION_HARNESS.getId()), AbilitySource.CONSUMABLE);
+   public static final AbilitySource DRAGON_TOWER_ABILITY = Pal.getAbilitySource(Identifier.of(MOD_ID, "dragon_tower"), AbilitySource.FREE);
    
    // Config Settings
    public static final ArcanaConfig.ConfigSetting<?> DO_CONCENTRATION_DAMAGE = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true, "Whether players are damaged for going over their concentration limit",

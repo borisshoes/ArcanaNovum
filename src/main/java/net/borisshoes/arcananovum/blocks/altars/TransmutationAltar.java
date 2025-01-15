@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -30,7 +31,10 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
@@ -44,6 +48,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.block.WireOrientation;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -181,6 +186,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    
    public class TransmutationAltarBlock extends ArcanaPolymerBlockEntity {
       public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final BooleanProperty ACTIVATABLE = BooleanProperty.of("activatable");
       
       public TransmutationAltarBlock(AbstractBlock.Settings settings){
          super(getThis(), settings);
@@ -203,12 +209,12 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       @Nullable
       @Override
       public BlockState getPlacementState(ItemPlacementContext ctx){
-         return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite());
+         return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite()).with(ACTIVATABLE,false);
       }
       
       @Override
       protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
-         stateManager.add(HORIZONTAL_FACING);
+         stateManager.add(HORIZONTAL_FACING, ACTIVATABLE);
       }
       
       @Override
@@ -240,6 +246,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
                if(altar.isAssembled()){
                   altar.openGui(player);
                   player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
+                  player.getItemCooldownManager().set(playerEntity.getOffHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
@@ -254,6 +261,26 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
          BlockEntity entity = world.getBlockEntity(pos);
          if(placer instanceof ServerPlayerEntity player && entity instanceof TransmutationAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
+         }
+      }
+      
+      private void tryActivate(BlockState state, World world, BlockPos pos){
+         BlockEntity entity = world.getBlockEntity(pos);
+         if(entity instanceof TransmutationAltarBlockEntity altar){
+            boolean started = altar.startTransmute(null);
+            if(!started){
+               SoundUtils.playSound(world, pos, SoundEvents.ENTITY_ALLAY_HURT, SoundCategory.BLOCKS,0.5f,0.7f);
+            }
+         }
+      }
+      
+      @Override
+      protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
+         boolean bl = world.isReceivingRedstonePower(pos);
+         boolean bl2 = state.getOrEmpty(ACTIVATABLE).orElse(false);
+         if (bl && bl2) {
+            this.tryActivate(state, world, pos);
+            world.setBlockState(pos, state.with(ACTIVATABLE, false), Block.NOTIFY_LISTENERS);
          }
       }
    }

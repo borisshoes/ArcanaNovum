@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -20,19 +21,25 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.block.WireOrientation;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -41,6 +48,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.COST;
 
 public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "stormcaller_altar";
@@ -152,6 +160,8 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public class StormcallerAltarBlock extends ArcanaPolymerBlockEntity {
+      public static final BooleanProperty ACTIVATABLE = BooleanProperty.of("activatable");
+      
       public StormcallerAltarBlock(AbstractBlock.Settings settings){
          super(getThis(), settings);
       }
@@ -168,6 +178,17 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
             return null;
          }
          return world.getBlockEntity(pos) instanceof StormcallerAltarBlockEntity altar ? altar : null;
+      }
+      
+      @Nullable
+      @Override
+      public BlockState getPlacementState(ItemPlacementContext ctx){
+         return this.getDefaultState().with(ACTIVATABLE,false);
+      }
+      
+      @Override
+      protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
+         stateManager.add(ACTIVATABLE);
       }
       
       @Override
@@ -189,6 +210,7 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
                if(altar.isAssembled()){
                   altar.openGui(player);
                   player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
+                  player.getItemCooldownManager().set(playerEntity.getOffHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
@@ -201,8 +223,26 @@ public class StormcallerAltar extends ArcanaBlock implements MultiblockCore {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof StormcallerAltarBlockEntity altar){
+         if(entity instanceof StormcallerAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
+         }
+      }
+      
+      private void tryActivate(BlockState state, World world, BlockPos pos){
+         BlockEntity entity = world.getBlockEntity(pos);
+         if(entity instanceof StormcallerAltarBlockEntity altar && world instanceof ServerWorld serverWorld){
+            boolean paid = MiscUtils.removeItemEntities(serverWorld,new Box(pos.up()),(itemStack) -> itemStack.isOf(COST.getLeft()),COST.getRight());
+            if(paid) altar.startWeatherChange(null);
+         }
+      }
+      
+      @Override
+      protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
+         boolean bl = world.isReceivingRedstonePower(pos);
+         boolean bl2 = state.getOrEmpty(ACTIVATABLE).orElse(false);
+         if (bl && bl2) {
+            this.tryActivate(state, world, pos);
+            world.setBlockState(pos, state.with(ACTIVATABLE, false), Block.NOTIFY_LISTENERS);
          }
       }
    }

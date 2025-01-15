@@ -260,12 +260,14 @@ public class SpawnerInfuser extends ArcanaBlock {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof SpawnerInfuserBlockEntity infuser){
+         if(entity instanceof SpawnerInfuserBlockEntity infuser){
             initializeArcanaBlock(stack,infuser);
             
-            SoundUtils.soulSounds(player.getServerWorld(),pos,5,30);
-            SoundUtils.playSound(world,pos,SoundEvents.BLOCK_SCULK_SHRIEKER_SHRIEK,SoundCategory.BLOCKS,1,.6f);
-            player.sendMessage(Text.literal("The Infuser makes a most unsettling sound...").formatted(Formatting.DARK_GREEN),true);
+            if(placer instanceof ServerPlayerEntity player){
+               SoundUtils.soulSounds(player.getServerWorld(),pos,5,30);
+               SoundUtils.playSound(world,pos,SoundEvents.BLOCK_SCULK_SHRIEKER_SHRIEK,SoundCategory.BLOCKS,1,.6f);
+               player.sendMessage(Text.literal("The Infuser makes a most unsettling sound...").formatted(Formatting.DARK_GREEN),true);
+            }
          }
       }
       

@@ -3,15 +3,14 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.ArcanaConfig;
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
+import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.item.ItemStack;
@@ -20,20 +19,18 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
-import static net.borisshoes.arcananovum.blocks.altars.CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING;
+import static net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity.COST;
 
 public class CelestialAltarGui extends SimpleGui {
    private final CelestialAltarBlockEntity blockEntity;
    private final boolean control;
    private final int[] lightLvl = {15,11,7,3,0,3,7,11};
-   private final int[] times = {6000,9000,12000,14000,18000,20000,23000,2000};
    
    public CelestialAltarGui(ServerPlayerEntity player, CelestialAltarBlockEntity blockEntity){
       super(ScreenHandlerType.HOPPER, player, false);
@@ -42,31 +39,7 @@ public class CelestialAltarGui extends SimpleGui {
       control = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STELLAR_CONTROL.id) >= 1;
    }
    
-   private void changeTime(){
-      if(!(blockEntity.getWorld() instanceof ServerWorld serverWorld)) return;
-      int phase = blockEntity.getPhase();
-      int mode = blockEntity.getMode();
-      long timeOfDay = serverWorld.getTimeOfDay();
-      if(mode == 0){
-         int curTime = (int) (timeOfDay % 24000L);
-         int targetTime = times[phase];
-         int timeDiff = (targetTime - curTime + 24000) % 24000;
-         serverWorld.setTimeOfDay(timeOfDay + timeDiff);
-         
-         ArcanaAchievements.grant(player,ArcanaAchievements.POWER_OF_THE_SUN.id);
-      }else{
-         int day = (int) (timeOfDay/24000L % Integer.MAX_VALUE);
-         int curPhase = day % 8;
-         int phaseDiff = (phase - curPhase + 8) % 8;
-         serverWorld.setTimeOfDay(timeOfDay + phaseDiff * 24000L);
-         
-         if(phase == 0){
-            ArcanaAchievements.grant(player,ArcanaAchievements.LYCANTHROPE.id);
-         }
-      }
-      SoundUtils.playSound(serverWorld, blockEntity.getPos(), SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.BLOCKS, 1, 0.5f);
-      blockEntity.setActive(false);
-   }
+   
    
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action){
@@ -83,18 +56,12 @@ public class CelestialAltarGui extends SimpleGui {
             blockEntity.setMode((mode+1) % 2);
          }else{
             if(blockEntity.getCooldown() <= 0 && blockEntity.getWorld() instanceof ServerWorld serverWorld){
-               if(MiscUtils.removeItems(player,Items.NETHER_STAR,1)){
-                  ParticleEffectUtils.celestialAltarAnim(serverWorld,blockEntity.getPos().toCenterPos(), 0, serverWorld.getBlockState(blockEntity.getPos()).get(HORIZONTAL_FACING));
-                  blockEntity.resetCooldown();
-                  blockEntity.setActive(true);
-                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(400, () -> {
-                     changeTime();
-                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CELESTIAL_ALTAR_ACTIVATE));
-                  }));
+               if(MiscUtils.removeItems(player, COST.getLeft(),COST.getRight())){
+                  blockEntity.startStarChange(player);
                   close();
                }else{
-                  player.sendMessage(Text.literal("You do not have a ").formatted(Formatting.RED,Formatting.ITALIC)
-                        .append(Text.translatable(Items.NETHER_STAR.getTranslationKey()).formatted(Formatting.YELLOW,Formatting.ITALIC))
+                  player.sendMessage(Text.literal("You do not have "+ StormcallerAltarBlockEntity.COST.getRight()+" ").formatted(Formatting.RED,Formatting.ITALIC)
+                        .append(Text.translatable(COST.getLeft().getTranslationKey()).formatted(Formatting.YELLOW,Formatting.ITALIC))
                         .append(Text.literal(" to power the Altar").formatted(Formatting.RED,Formatting.ITALIC)),false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
                   close();
@@ -198,7 +165,8 @@ public class CelestialAltarGui extends SimpleGui {
             .append(Text.literal("Right Click to switch modes").formatted(Formatting.DARK_GRAY)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Text.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("The Altar Requires 1 Nether Star").formatted(Formatting.AQUA)))));
+            .append(Text.literal("The Altar Requires "+COST.getRight()+" ").formatted(Formatting.AQUA))
+            .append(Text.translatable(COST.getLeft().getTranslationKey()).formatted(Formatting.AQUA)))));
       setSlot(4,activateItem);
    }
    

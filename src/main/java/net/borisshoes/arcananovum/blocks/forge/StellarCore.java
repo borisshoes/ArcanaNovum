@@ -263,7 +263,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof StellarCoreBlockEntity core){
+         if(entity instanceof StellarCoreBlockEntity core){
             initializeArcanaBlock(stack,core);
          }
       }

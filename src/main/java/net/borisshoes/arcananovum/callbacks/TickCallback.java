@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import io.github.ladysnake.pal.VanillaAbilities;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -40,6 +41,8 @@ import net.minecraft.world.World;
 import java.util.*;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.*;
+import static net.borisshoes.arcananovum.ArcanaRegistry.DRAGON_TOWER_ABILITY;
+import static net.borisshoes.arcananovum.ArcanaRegistry.LEVITATION_HARNESS_ABILITY;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
 public class TickCallback {
@@ -206,41 +209,40 @@ public class TickCallback {
    }
    
    private static void flightCheck(ServerPlayerEntity player){
-      if(player.isCreative() || player.isSpectator())
-         return;
-      
       // Levitation Harness
       ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
-      boolean allowFly = false;
-      if(ArcanaItemUtils.isArcane(item)){
-         if(ArcanaItemUtils.identifyItem(item) instanceof LevitationHarness harness){
-            if(harness.getEnergy(item) > 0 && harness.getStall(item) == -1){
-               allowFly = true;
-            }
+      boolean harnessFly = false;
+      if(ArcanaItemUtils.identifyItem(item) instanceof LevitationHarness harness){
+         if(harness.getEnergy(item) > 0 && harness.getStall(item) == -1){
+            harnessFly = true;
          }
+      }
+
+      if(LEVITATION_HARNESS_ABILITY.grants(player, VanillaAbilities.ALLOW_FLYING) && !harnessFly){
+         LEVITATION_HARNESS_ABILITY.revokeFrom(player, VanillaAbilities.ALLOW_FLYING);
+      }else if(!LEVITATION_HARNESS_ABILITY.grants(player, VanillaAbilities.ALLOW_FLYING) && harnessFly){
+         LEVITATION_HARNESS_ABILITY.grantTo(player, VanillaAbilities.ALLOW_FLYING);
       }
       
       // Dragon Tower Check
+      boolean dragonTowerFly = false;
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(player.getServer().getWorld(World.END)).getBossFight();
       if(bossFight != null && bossFight.getLeft() == BossFights.DRAGON){
          List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
          if(reclaimStates != null){
             for(DragonBossFight.ReclaimState reclaimState : reclaimStates){
                if(reclaimState.getPlayer() != null && reclaimState.getPlayer().equals(player)){
-                  allowFly = true;
+                  dragonTowerFly = true;
                }
             }
          }
       }
-      
-      if(player.getAbilities().allowFlying != allowFly){
-         if(player.getAbilities().flying && !allowFly){
-            player.getAbilities().flying = false;
-         }
-         player.getAbilities().allowFlying = allowFly;
-         player.sendAbilitiesUpdate();
+
+      if(DRAGON_TOWER_ABILITY.grants(player, VanillaAbilities.ALLOW_FLYING) && !dragonTowerFly){
+         DRAGON_TOWER_ABILITY.revokeFrom(player, VanillaAbilities.ALLOW_FLYING);
+      }else if(!DRAGON_TOWER_ABILITY.grants(player, VanillaAbilities.ALLOW_FLYING) && dragonTowerFly){
+         DRAGON_TOWER_ABILITY.grantTo(player, VanillaAbilities.ALLOW_FLYING);
       }
-      
    }
    
    

@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import io.github.ladysnake.pal.VanillaAbilities;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -61,6 +62,7 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 import static net.borisshoes.arcananovum.ArcanaRegistry.EQUIPMENT_ASSET_REGISTRY_KEY;
+import static net.borisshoes.arcananovum.ArcanaRegistry.LEVITATION_HARNESS_ABILITY;
 
 public class LevitationHarness extends EnergyItem {
 	public static final String ID = "levitation_harness";
@@ -350,7 +352,7 @@ public class LevitationHarness extends EnergyItem {
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean chestItem = ItemStack.areItemsAndComponentsEqual(player.getEquippedStack(EquipmentSlot.CHEST),stack);
          boolean survival = !(player.isCreative() || player.isSpectator());
-         boolean flying = player.getAbilities().flying;
+         boolean flying = VanillaAbilities.ALLOW_FLYING.isEnabledFor(player) && LEVITATION_HARNESS_ABILITY.isActivelyGranting(player, VanillaAbilities.ALLOW_FLYING) && VanillaAbilities.FLYING.isEnabledFor(player);
          boolean wasFlying = getBooleanProperty(stack,WAS_FLYING_TAG);
          
          int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER.id));

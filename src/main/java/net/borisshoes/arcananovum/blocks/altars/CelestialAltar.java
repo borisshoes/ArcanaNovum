@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -25,8 +26,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
@@ -37,9 +40,11 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.block.WireOrientation;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -48,6 +53,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity.COST;
 
 public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "celestial_altar";
@@ -166,6 +172,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    
    public class CelestialAltarBlock extends ArcanaPolymerBlockEntity {
       public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+      public static final BooleanProperty ACTIVATABLE = BooleanProperty.of("activatable");
       
       public CelestialAltarBlock(AbstractBlock.Settings settings){
          super(getThis(), settings);
@@ -179,12 +186,12 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       @Nullable
       @Override
       public BlockState getPlacementState(ItemPlacementContext ctx){
-         return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite());
+         return this.getDefaultState().with(HORIZONTAL_FACING,ctx.getHorizontalPlayerFacing().getOpposite()).with(ACTIVATABLE,false);
       }
       
       @Override
       protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager){
-         stateManager.add(HORIZONTAL_FACING);
+         stateManager.add(HORIZONTAL_FACING,ACTIVATABLE);
       }
       
       @Override
@@ -225,6 +232,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
                if(altar.isAssembled()){
                   altar.openGui(player);
                   player.getItemCooldownManager().set(playerEntity.getMainHandStack(),1);
+                  player.getItemCooldownManager().set(playerEntity.getOffHandStack(),1);
                }else{
                   player.sendMessage(Text.literal("Multiblock not constructed."));
                   multiblock.displayStructure(altar.getMultiblockCheck(),player);
@@ -237,8 +245,26 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof CelestialAltarBlockEntity altar){
+         if(entity instanceof CelestialAltarBlockEntity altar){
             initializeArcanaBlock(stack,altar);
+         }
+      }
+      
+      private void tryActivate(BlockState state, World world, BlockPos pos){
+         BlockEntity entity = world.getBlockEntity(pos);
+         if(entity instanceof CelestialAltarBlockEntity altar && world instanceof ServerWorld serverWorld){
+            boolean paid = MiscUtils.removeItemEntities(serverWorld,new Box(pos.up()),(itemStack) -> itemStack.isOf(COST.getLeft()),COST.getRight());
+            if(paid) altar.startStarChange(null);
+         }
+      }
+      
+      @Override
+      protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, @Nullable WireOrientation wireOrientation, boolean notify) {
+         boolean bl = world.isReceivingRedstonePower(pos);
+         boolean bl2 = state.getOrEmpty(ACTIVATABLE).orElse(false);
+         if (bl && bl2) {
+            this.tryActivate(state, world, pos);
+            world.setBlockState(pos, state.with(ACTIVATABLE, false), Block.NOTIFY_LISTENERS);
          }
       }
    }

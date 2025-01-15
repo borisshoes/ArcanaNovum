@@ -71,10 +71,10 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       
       for(int i = 0; i < iterations; i++){
          ItemStack outputStack = output.copy();
-         if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(outputStack) && player != null){
+         if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),false,player.getServer());
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),false,ArcanaNovum.SERVER);
          }
          
          outputs.add(new Pair<>(outputStack,outputPos));

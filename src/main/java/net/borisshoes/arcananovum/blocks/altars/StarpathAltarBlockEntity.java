@@ -1,8 +1,10 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
+import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
@@ -10,29 +12,40 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StarpathAltarGui;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
+   public static final Item COST = Items.ENDER_EYE;
+   
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -73,6 +86,63 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       StarpathAltarGui gui = new StarpathAltarGui(player,this);;
       gui.build();
       gui.open();
+   }
+   
+   private void teleport(@Nullable ServerPlayerEntity player){
+      if(!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+      Box teleportBox = (new Box(this.getPos().add(0,2,0))).expand(5,2,5);
+      List<LivingEntity> targets = this.getWorld().getEntitiesByClass(LivingEntity.class,teleportBox,(e)->true);
+      
+      int tries = 0; int range = 4; int height = 2;
+      ArrayList<BlockPos> locations;
+      do{
+         locations = SpawnPile.makeSpawnLocations(targets.size(),range, this.getTargetCoords().getY()+height, serverWorld, this.getTargetCoords());
+         tries++; range++; height += 16; // Expand search area
+      }while(locations.size() != targets.size() && tries < 5);
+      if(locations.size() != targets.size()){
+         for(LivingEntity target : targets){
+            if(target instanceof ServerPlayerEntity targetPlayer) targetPlayer.sendMessage(Text.literal("The teleport goes awry, everyone is shunted uncontrollably!").formatted(Formatting.RED,Formatting.ITALIC),false);
+         }
+         locations = new ArrayList<>();
+         for(int i = 0; i < targets.size(); i++){
+            locations.add(this.getTargetCoords());
+         }
+      }
+      
+      for(int i = 0; i < targets.size(); i++){
+         LivingEntity target = targets.get(i);
+         BlockPos location = locations.get(i);
+         target.teleportTo(new TeleportTarget(serverWorld, location.toCenterPos(), Vec3d.ZERO, target.getYaw(), target.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
+         ParticleEffectUtils.recallTeleport(serverWorld,target.getPos());
+         
+         if(target instanceof ServerPlayerEntity p && Math.sqrt(this.getPos().getSquaredDistance(this.getTargetCoords())) >= 100000){
+            ArcanaAchievements.grant(p,ArcanaAchievements.FAR_FROM_HOME.id);
+         }
+         if(player != null && (target instanceof TameableEntity tameable && tameable.isOwner(player) || (target instanceof ServerPlayerEntity && target != player)) && targets.contains(player)){
+            ArcanaAchievements.grant(player,ArcanaAchievements.ADVENTURING_PARTY.id);
+         }
+      }
+      SoundUtils.playSound(serverWorld,this.getTargetCoords(), SoundEvents.BLOCK_PORTAL_TRAVEL, SoundCategory.BLOCKS, 2, 1.5f);
+   }
+   
+   public boolean startTeleport(@Nullable ServerPlayerEntity player){
+      if(this.getCooldown() > 0 || !(this.getWorld() instanceof ServerWorld serverWorld)) return false;
+      if(player == null && getCrafterId() != null){
+         PlayerEntity crafter = serverWorld.getPlayerByUuid(MiscUtils.getUUID(getCrafterId()));
+         if(crafter instanceof ServerPlayerEntity){
+            player = (ServerPlayerEntity) crafter;
+         }
+      }
+      @Nullable ServerPlayerEntity finalPlayer = player;
+      
+      this.setActiveTicks(500);
+      this.resetCooldown();
+      ParticleEffectUtils.starpathAltarAnim(serverWorld,this.getPos().toCenterPos());
+      ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(500, () -> {
+         teleport(finalPlayer);
+         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARPATH_ALTAR_ACTIVATE));
+      }));
+      return true;
    }
    
    public static <E extends BlockEntity> void ticker(World world, BlockPos blockPos, BlockState blockState, E e){
@@ -125,6 +195,12 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       if(serverWorld.getServer().getTicks() % 20 == 0 && this.isAssembled()){
          ArcanaNovum.addActiveBlock(new Pair<>(this,this));
       }
+      
+      boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(StarpathAltar.StarpathAltarBlock.ACTIVATABLE).orElse(false);
+      boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
+      if(activatable ^ shouldBeActivatable){
+         serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(StarpathAltar.StarpathAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+      }
    }
    
    public boolean isActive(){
@@ -133,6 +209,14 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    
    public void setActiveTicks(int ticks){
       this.activeTicks = ticks;
+      
+      if(this.world instanceof ServerWorld serverWorld){
+         boolean activatable = serverWorld.getBlockState(pos).getOrEmpty(StarpathAltar.StarpathAltarBlock.ACTIVATABLE).orElse(false);
+         boolean shouldBeActivatable = this.cooldown <= 0 && this.isAssembled() && !this.isActive();
+         if(activatable ^ shouldBeActivatable){
+            serverWorld.setBlockState(pos, serverWorld.getBlockState(pos).with(StarpathAltar.StarpathAltarBlock.ACTIVATABLE, shouldBeActivatable), Block.NOTIFY_LISTENERS);
+         }
+      }
    }
    
    public int getCooldown(){

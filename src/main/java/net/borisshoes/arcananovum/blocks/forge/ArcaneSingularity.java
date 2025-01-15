@@ -273,7 +273,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof ArcaneSingularityBlockEntity singularity){
+         if(entity instanceof ArcaneSingularityBlockEntity singularity){
             initializeArcanaBlock(stack,singularity);
             singularity.initializeBooks(getListProperty(stack,BOOKS_TAG,NbtElement.COMPOUND_TYPE),world.getRegistryManager());
          }

@@ -30,6 +30,7 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -176,13 +177,15 @@ public class FractalSponge extends ArcanaBlock {
       return blocksAbsorbed;
    }
    
-   private int absorbHelper(ServerPlayerEntity player, World world, ItemStack item, BlockPos pos, boolean doCheck){
+   private int absorbHelper(@Nullable LivingEntity placer, World world, ItemStack item, BlockPos pos, boolean doCheck){
       if(doCheck && !(world.getBlockState(pos).isOf(getBlock()))) return 0;
       int absorbed = absorb(item, world, pos);
       if(absorbed > 0){
-         SoundUtils.playSound(player.getServerWorld(),pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
-         ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
-         ArcanaAchievements.progress(player,ArcanaAchievements.OCEAN_CLEANUP.id, absorbed);
+         SoundUtils.playSound(world,pos,SoundEvents.ENTITY_ELDER_GUARDIAN_HURT, SoundCategory.BLOCKS,1,.8f);
+         if(placer instanceof ServerPlayerEntity player){
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FRACTAL_SPONGE_ABSORB_BLOCK) * absorbed); // Add xp
+            ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_CLEANUP.id, absorbed);
+         }
       }
       return absorbed;
    }
@@ -257,17 +260,17 @@ public class FractalSponge extends ArcanaBlock {
       @Override
       public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack){
          BlockEntity entity = world.getBlockEntity(pos);
-         if(placer instanceof ServerPlayerEntity player && entity instanceof FractalSpongeBlockEntity sponge){
+         if(world instanceof ServerWorld serverWorld && entity instanceof FractalSpongeBlockEntity sponge){
             initializeArcanaBlock(stack,sponge);
             
             try{
-               int absorbed = absorbHelper(player,world,stack,pos,false);
+               int absorbed = absorbHelper(placer,world,stack,pos,false);
                
                boolean cantor = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CANTOR.id)) >= 1;
                if(cantor && absorbed > 0){
-                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(50, () -> absorbHelper(player,world,stack,pos,true)));
-                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(100, () -> absorbHelper(player,world,stack,pos,true)));
-                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(150, () -> absorbHelper(player,world,stack,pos,true)));
+                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(50, () -> absorbHelper(placer,world,stack,pos,true)));
+                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> absorbHelper(placer,world,stack,pos,true)));
+                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(150, () -> absorbHelper(placer,world,stack,pos,true)));
                }
             }catch(Exception e){
                e.printStackTrace();

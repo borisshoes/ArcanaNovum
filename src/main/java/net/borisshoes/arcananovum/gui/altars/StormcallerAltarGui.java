@@ -3,15 +3,13 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.borisshoes.arcananovum.ArcanaConfig;
-import net.borisshoes.arcananovum.ArcanaNovum;
-import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.item.ItemStack;
@@ -19,17 +17,17 @@ import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
+import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.COST;
+import static net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity.DURATIONS;
+
 public class StormcallerAltarGui  extends SimpleGui {
    private final StormcallerAltarBlockEntity blockEntity;
-   private final int[] durations = {-1,2,4,6,8,10,15,20,25,30,35,40,45,50,55,60};
    private final boolean tempest;
    
    public StormcallerAltarGui(ServerPlayerEntity player, StormcallerAltarBlockEntity blockEntity){
@@ -37,27 +35,6 @@ public class StormcallerAltarGui  extends SimpleGui {
       this.blockEntity = blockEntity;
       setTitle(Text.literal("Altar of the Stormcaller"));
       tempest = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PERSISTENT_TEMPEST.id) >= 1;
-   }
-   
-   private void changeWeather(){
-      if(!(blockEntity.getWorld() instanceof ServerWorld serverWorld)) return;
-      int duration = blockEntity.getDuration();
-      int mode = blockEntity.getMode();
-      SoundUtils.playSound(serverWorld, blockEntity.getPos(), SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.BLOCKS, 1, 0.5f);
-      int dur = durations[duration];
-      
-      dur = switch(mode){
-         case 0 -> dur == -1 ? ServerWorld.CLEAR_WEATHER_DURATION_PROVIDER.get(player.getWorld().getRandom()) : dur * 3600;
-         case 1 -> dur == -1 ? ServerWorld.RAIN_WEATHER_DURATION_PROVIDER.get(player.getWorld().getRandom()) : dur * 1200;
-         case 2 -> dur == -1 ? ServerWorld.THUNDER_WEATHER_DURATION_PROVIDER.get(player.getWorld().getRandom()) : dur * 600;
-         default -> dur;
-      };
-      if(mode == 0 && player.getServerWorld().isRaining()){
-         ArcanaAchievements.grant(player,ArcanaAchievements.COME_AGAIN_RAIN.id);
-      }
-      
-      player.getServerWorld().setWeather(mode == 0 ? dur : 0, mode >= 1 ? dur : 0, mode >= 1, mode == 2);
-      blockEntity.setActive(false);
    }
    
    @Override
@@ -71,18 +48,12 @@ public class StormcallerAltarGui  extends SimpleGui {
             blockEntity.setMode((mode+1) % 3);
          }else{
             if(blockEntity.getCooldown() <= 0){
-               if(MiscUtils.removeItems(player,Items.DIAMOND_BLOCK,1)){
-                  ParticleEffectUtils.stormcallerAltarAnim(player.getServerWorld(),blockEntity.getPos().toCenterPos(), 0);
-                  blockEntity.resetCooldown();
-                  blockEntity.setActive(true);
-                  ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(100, () -> {
-                     changeWeather();
-                     ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STORMCALLER_ALTAR_ACTIVATE));
-                  }));
+               if(MiscUtils.removeItems(player, COST.getLeft(),COST.getRight())){
+                  blockEntity.startWeatherChange(player);
                   close();
                }else{
-                  player.sendMessage(Text.literal("You do not have a ").formatted(Formatting.RED,Formatting.ITALIC)
-                        .append(Text.translatable(Items.DIAMOND_BLOCK.getTranslationKey()).formatted(Formatting.AQUA,Formatting.ITALIC))
+                  player.sendMessage(Text.literal("You do not have "+COST.getRight()+" ").formatted(Formatting.RED,Formatting.ITALIC)
+                        .append(Text.translatable(COST.getLeft().getTranslationKey()).formatted(Formatting.AQUA,Formatting.ITALIC))
                         .append(Text.literal(" to power the Altar").formatted(Formatting.RED,Formatting.ITALIC)),false);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH,1,.5f);
                   close();
@@ -140,9 +111,9 @@ public class StormcallerAltarGui  extends SimpleGui {
       
       if(tempest){
          int dur = switch(mode){
-            case 0 ->  durations[duration] * 3;
-            case 1 ->  durations[duration];
-            case 2 ->  durations[duration] / 2;
+            case 0 ->  DURATIONS[duration] * 3;
+            case 1 ->  DURATIONS[duration];
+            case 2 ->  DURATIONS[duration] / 2;
             default -> 0;
          };
          String durStr = dur <= 0 ? "Random" : dur + " Minutes";
@@ -177,7 +148,8 @@ public class StormcallerAltarGui  extends SimpleGui {
             .append(Text.literal("Right Click to switch modes").formatted(Formatting.GOLD)))));
       activateItem.addLoreLine(TextUtils.removeItalics((Text.literal(""))));
       activateItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("The Altar Requires 1 Diamond Block").formatted(Formatting.AQUA)))));
+            .append(Text.literal("The Altar Requires "+COST.getRight()+" ").formatted(Formatting.AQUA))
+            .append(Text.translatable(COST.getLeft().getTranslationKey()).formatted(Formatting.AQUA)))));
       setSlot(4,activateItem);
    }
    
