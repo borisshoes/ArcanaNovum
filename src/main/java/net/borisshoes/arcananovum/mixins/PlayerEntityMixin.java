@@ -25,9 +25,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -64,7 +62,7 @@ public class PlayerEntityMixin {
       }
    }
    
-   @ModifyConstant(method = "getBlockBreakingSpeed", constant = @Constant(floatValue = 5.0F))
+   @ModifyExpressionValue(method = "getBlockBreakingSpeed", at = @At(value = "CONSTANT", args = "floatValue=5.0"))
    private float arcananovum_offGroundBlockBreakingSpeed(float constant){
       PlayerEntity player = (PlayerEntity) (Object) this; // This part of the augment currently works even if the player is not in water, not sure if I will leave it like this
       List<ItemStack> stacks = MiscUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);

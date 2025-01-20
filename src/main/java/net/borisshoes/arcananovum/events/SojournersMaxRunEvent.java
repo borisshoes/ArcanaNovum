@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.events;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
-import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class SojournersMaxRunEvent extends ArcanaEvent{

@@ -20,6 +20,8 @@ import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.TeleportTarget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,8 +31,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.PLAYER_MOVEMENT_TRACKER;
+
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
+   
+   @Inject(method = "onTeleportationDone", at = @At("HEAD"))
+   private void archetypes_resetVelTrackerTeleport(CallbackInfo ci){
+      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+      if(PLAYER_MOVEMENT_TRACKER.containsKey(player)){
+         PLAYER_MOVEMENT_TRACKER.put(player, new Pair<>(player.getPos(), new Vec3d(0,0,0)));
+      }
+   }
    
    @Inject(method="onDeath",at=@At("HEAD"))
    private void arcananovum_restoreOffhandOnDeath(CallbackInfo ci){

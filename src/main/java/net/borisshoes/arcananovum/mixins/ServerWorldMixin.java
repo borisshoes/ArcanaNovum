@@ -53,6 +53,7 @@ public class ServerWorldMixin {
       }
    }
    
+   // Todo: no redirect
    @Redirect(method = "shouldTickEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager;shouldTickEntities(J)Z"))
    private boolean arcananovum_injectedChunkManagerCall(ChunkTicketManager chunkTicketManager, long chunkPos){
       ServerWorld serverWorld = (ServerWorld)(Object)this;

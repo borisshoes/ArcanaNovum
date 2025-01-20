@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(PersistentProjectileEntity.class)
 public class PersistentProjectileEntityMixin {
  
+   // Todo: no redirect
    @Redirect(method = "<init>(Lnet/minecraft/entity/EntityType;DDDLnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)V", at=@At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;copy()Lnet/minecraft/item/ItemStack;"))
    private ItemStack arcananovum_removeQuiverData(ItemStack instance){
       ItemStack stack = instance.copy();
