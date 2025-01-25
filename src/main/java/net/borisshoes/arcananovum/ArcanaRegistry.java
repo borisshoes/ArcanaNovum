@@ -620,7 +620,7 @@ public class ArcanaRegistry {
       return Registry.register(Registries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, Identifier.of(MOD_ID,id), ((ComponentType.Builder)builderOperator.apply(ComponentType.builder())).build());
    }
    
-   public static Identifier getModelData(String id){
+   public static Identifier arcanaIdentifier(String id){
       return Identifier.of(MOD_ID,id);
    }
    

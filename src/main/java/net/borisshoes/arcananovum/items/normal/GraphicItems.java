@@ -23,7 +23,8 @@ public enum GraphicItems{
    MENU_TOP_CONNECTOR("menu_top_connector"),
    MENU_BOTTOM_CONNECTOR("menu_bottom_connector"),
    TRANSMUTATION_BOOK("transmutation_book"),
-   PAGE_BG("page_bg")
+   PAGE_BG("page_bg"),
+   CASINO_CHIP("casino_chip")
    ;
    
    public final String id;

@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "arcananovum:item/casino_chip",
+	"layer1": "arcananovum:item/casino_chip_overlay"
+  }
+}
