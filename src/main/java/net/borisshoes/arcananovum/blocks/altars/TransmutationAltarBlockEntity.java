@@ -290,7 +290,7 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
    }
    
    public void resetCooldown(){
-      this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.HASTY_BARGAIN.id) * 6000;
+      this.cooldown = 13200 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.HASTY_BARGAIN.id) * 2400;
    }
    
    public void refundCooldown(){

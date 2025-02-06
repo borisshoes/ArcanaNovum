@@ -92,6 +92,7 @@ public class ArcanaRegistry {
    
    // Custom Tags
    public static final TagKey<Item> ALL_ARCANA_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"arcana_items"));
+   public static final TagKey<Item> UNSTACKABLE_ARCANA_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"unstackable_arcana_items"));
    public static final TagKey<Item> VILLAGE_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"village_research_items"));
    public static final TagKey<Item> WORKSHOP_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"workshop_research_items"));
    public static final TagKey<Item> NUL_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"nul_research_items"));
@@ -118,6 +119,8 @@ public class ArcanaRegistry {
    
    public static final TagKey<Enchantment> FATE_ANCHOR_EXCLUSIVE_SET = TagKey.of(RegistryKeys.ENCHANTMENT, Identifier.of(MOD_ID,"exclusive_set/fate_anchor"));
    
+   // Enchantments
+   public static final RegistryKey<Enchantment> FATE_ANCHOR = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of(MOD_ID,"fate_anchor"));
    
    // Registering Banner Recipe
    public static final SpecialCraftingRecipe.SpecialRecipeSerializer<ArcanaShieldDecoratorRecipe> ARCANA_SHIELD_DECORATION_SERIALIZER;
@@ -178,9 +181,6 @@ public class ArcanaRegistry {
    public static final AreaEffectTracker SMOKE_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new SmokeArrowAreaEffectTracker());
    public static final AreaEffectTracker AFTERSHOCK_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AftershockAreaEffectTracker());
    public static final AreaEffectTracker ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AlchemicalArrowAreaEffectTracker());
-   
-   // Enchantments
-   public static final RegistryKey<Enchantment> FATE_ANCHOR = RegistryKey.of(RegistryKeys.ENCHANTMENT, Identifier.of(MOD_ID,"fate_anchor"));
    
    // Normal Items
    public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence", new NebulousEssenceItem("nebulous_essence", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
@@ -445,9 +445,9 @@ public class ArcanaRegistry {
       
       ResearchTasks.registerResearchTasks();
       
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/plains/houses"),Identifier.of(MOD_ID,"village/plains_arcanists_house"),5);
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/desert/houses"),Identifier.of(MOD_ID,"village/desert_arcanists_house"),7);
-      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/savanna/houses"),Identifier.of(MOD_ID,"village/savanna_arcanists_house"),7);
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/plains/houses"),Identifier.of(MOD_ID,"village/plains_arcanists_house"),4);
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/desert/houses"),Identifier.of(MOD_ID,"village/desert_arcanists_house"),12);
+      FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/savanna/houses"),Identifier.of(MOD_ID,"village/savanna_arcanists_house"),10);
       FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/taiga/houses"),Identifier.of(MOD_ID,"village/taiga_arcanists_house"),5);
       FabricStructurePoolRegistry.registerSimple(Identifier.ofVanilla("village/snowy/houses"),Identifier.of(MOD_ID,"village/snowy_arcanists_house"),4);
       

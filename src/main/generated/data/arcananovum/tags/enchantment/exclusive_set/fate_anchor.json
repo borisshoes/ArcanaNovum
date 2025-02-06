@@ -1,0 +1,9 @@
+{
+  "values": [
+    {
+      "id": "arcananovum:fate_anchor",
+      "required": false
+    },
+    "minecraft:vanishing_curse"
+  ]
+}

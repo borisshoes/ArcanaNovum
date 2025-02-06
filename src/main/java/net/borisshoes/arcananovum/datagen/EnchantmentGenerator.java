@@ -42,6 +42,6 @@ public class EnchantmentGenerator extends FabricDynamicRegistryProvider {
    
    @Override
    public String getName(){
-      return "ArcanaNovum - Enchantment Generator";
+      return "Arcana Novum - Enchantment Generator";
    }
 }

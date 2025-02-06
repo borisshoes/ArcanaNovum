@@ -1,9 +1,9 @@
 {
   "values": [
     "arcananovum:arcanists_belt",
+    "arcananovum:shield_of_fortitude",
     "arcananovum:overflowing_quiver",
     "arcananovum:runic_quiver",
-    "arcananovum:shield_of_fortitude",
     "minecraft:shield",
     "#minecraft:bundles",
     "#minecraft:shulker_boxes"

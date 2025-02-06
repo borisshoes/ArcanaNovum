@@ -309,6 +309,8 @@ public class TransmutationRecipes {
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Cream Reduction",new ItemStack(Items.MAGMA_CREAM,1),new ItemStack(Items.SLIME_BALL,1),new ItemStack(Items.CHARCOAL,16),new ItemStack(Items.SUGAR,16)));
       
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Wool Decomposition",new ItemStack(Items.WHITE_WOOL,1),new ItemStack(Items.STRING,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Honeycomb Decomposition",new ItemStack(Items.HONEYCOMB_BLOCK,1),new ItemStack(Items.HONEYCOMB,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Amethyst Decomposition",new ItemStack(Items.AMETHYST_BLOCK,1),new ItemStack(Items.AMETHYST_SHARD,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
@@ -369,7 +371,7 @@ public class TransmutationRecipes {
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Enchanted Golden Apple Synthesis",new ItemStack(Items.TOTEM_OF_UNDYING,1),new ItemStack(Items.ENCHANTED_GOLDEN_APPLE,1),new ItemStack(Items.GOLD_BLOCK,8),new ItemStack(Items.GOLDEN_APPLE,16)));
       
-      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Dragon Egg Synthesis",new ItemStack(Items.DRAGON_EGG,1),new ItemStack(Items.DRAGON_EGG,2),new ItemStack(Items.DRAGON_BREATH,64),new ItemStack(Items.DIAMOND,64)));
+      //TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Dragon Egg Synthesis",new ItemStack(Items.DRAGON_EGG,1),new ItemStack(Items.DRAGON_EGG,2),new ItemStack(Items.DRAGON_BREATH,64),new ItemStack(Items.DIAMOND,64)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Divine Catalyst Synthesis",ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore(),ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(),ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore(),ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore()));
       

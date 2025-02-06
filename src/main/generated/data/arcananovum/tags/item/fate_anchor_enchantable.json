@@ -2,6 +2,6 @@
   "values": [
     "#minecraft:enchantable/durability",
     "#minecraft:enchantable/vanishing",
-    "#arcananovum:arcana_items"
+    "#arcananovum:unstackable_arcana_items"
   ]
 }

@@ -9,5 +9,7 @@ public class DataGenerator implements DataGeneratorEntrypoint {
    public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator){
       FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
       pack.addProvider(EnchantmentGenerator::new);
+      pack.addProvider(ItemTagGenerator::new);
+      pack.addProvider(EnchantmentTagGenerator::new);
    }
 }

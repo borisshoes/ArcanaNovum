@@ -211,7 +211,7 @@ public class SpawnerHarness extends ArcanaItem {
                   }
                   
                   boolean reinforced = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS.id)) > 0;
-                  if(Math.random() > .15 && !reinforced){ // Chance of the harness breaking after use
+                  if(Math.random() > .15 || reinforced){ // Chance of the harness breaking after use
                      player.sendMessage(Text.literal("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
                      putProperty(stack,SPAWNER_TAG,new NbtCompound());
