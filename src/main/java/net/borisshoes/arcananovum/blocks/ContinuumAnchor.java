@@ -136,7 +136,9 @@ public class ContinuumAnchor extends ArcanaBlock {
    public static boolean isChunkLoaded(ServerWorld serverWorld, ChunkPos chunk){
       List<ChunkPos> chunks = getLoadedChunks(serverWorld);
       for(ChunkPos chunkPos : chunks){
-         if(chunkPos.toLong() == chunk.toLong()) return true;
+         if(chunkPos.toLong() == chunk.toLong()){
+            return true;
+         }
       }
       return false;
    }

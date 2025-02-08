@@ -42,6 +42,7 @@
     "RegistryLoaderMixin",
     "RemoveEffectsConsumeEffectMixin",
     "ServerChunkLoadingManagerMixin",
+    "ServerChunkManagerMixin",
     "ServerPlayerEntityScreenHandlerListenerMixin",
     "ServerPlayerInteractionManagerMixin",
     "ServerPlayerMixin",

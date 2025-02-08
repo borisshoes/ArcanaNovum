@@ -49,6 +49,7 @@
   "achievement.arcananovum.name.finally_useful": "Finally Useful",
   "achievement.arcananovum.name.finally_useful_2": "Finally Useful II",
   "achievement.arcananovum.name.food_poisont": "Food Poison't",
+  "achievement.arcananovum.name.fractal_attunement": "Fractal Attunement",
   "achievement.arcananovum.name.frequent_flier": "Frequent Flier",
   "achievement.arcananovum.name.glassblower": "Glassblower",
   "achievement.arcananovum.name.god_boon": "Boon of the True Gods",
@@ -199,6 +200,7 @@
   "augment.arcananovum.name.hasty_bargain": "Hasty Bargain",
   "augment.arcananovum.name.healing_circlet": "Healing Circlet",
   "augment.arcananovum.name.hiking_boots": "Hiking Boots",
+  "augment.arcananovum.name.impermanent_permutation": "Impermanent Permutation",
   "augment.arcananovum.name.infused_charcoal": "Infused Charcoal",
   "augment.arcananovum.name.invigoration": "Charm of Invigoration",
   "augment.arcananovum.name.juggernaut": "Juggernaut",
@@ -460,6 +462,7 @@
   "tag.item.arcananovum.fate_anchor_enchantable": "Fate Anchor Enchantable Items",
   "tag.item.arcananovum.nonprotective_armor_repair": "Nonprotective Armor Repair Items",
   "tag.item.arcananovum.nul_research_items": "Nul Research Items",
+  "tag.item.arcananovum.unstackable_arcana_items": "Unstackable Arcana Items",
   "tag.item.arcananovum.village_research_items": "Village Research Items",
   "tag.item.arcananovum.workshop_research_items": "Workshop Research Items",
   "text.arcananovum.materials_copy_message": "Click to copy the materials list"

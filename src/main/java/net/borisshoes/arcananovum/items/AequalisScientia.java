@@ -550,7 +550,7 @@ public class AequalisScientia extends ArcanaItem {
                      
                      for(ItemStack communalInput : commieRecipe.getCommunalInputs()){
                         if(communalInput.isOf(playerEntity.getStackInHand(Hand.OFF_HAND).getItem())) continue;
-                        ItemStack removed = getAndSplitValidStack(communalInput,player,true);
+                        ItemStack removed = getAndSplitValidStack(stack,communalInput,player,true);
                         if(removed != null){
                            input = removed;
                            break;
@@ -560,13 +560,13 @@ public class AequalisScientia extends ArcanaItem {
                         player.sendMessage(Text.literal("You do not have a valid input item.").formatted(Formatting.RED,Formatting.ITALIC),false);
                         return ActionResult.SUCCESS;
                      }
-                     ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
+                     ItemStack reagent1 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                      if(reagent1 == null){
                         MiscUtils.returnItems(new SimpleInventory(input),player);
                         player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
                         return ActionResult.SUCCESS;
                      }
-                     ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
+                     ItemStack reagent2 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                      if(reagent2 == null){
                         MiscUtils.returnItems(new SimpleInventory(input),player);
                         MiscUtils.returnItems(new SimpleInventory(reagent1),player);
@@ -583,18 +583,18 @@ public class AequalisScientia extends ArcanaItem {
                      return ActionResult.SUCCESS;
                   }
                }else if(recipe instanceof InfusionTransmutationRecipe infusionRecipe){
-                  ItemStack input = getAndSplitValidStack(infusionRecipe.getInput(),player,true);
+                  ItemStack input = getAndSplitValidStack(stack,infusionRecipe.getInput(),player,true);
                   if(input == null){
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(infusionRecipe.getInput().getName()),false);
                      return ActionResult.SUCCESS;
                   }
-                  ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
+                  ItemStack reagent1 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
                      return ActionResult.SUCCESS;
                   }
-                  ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
+                  ItemStack reagent2 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      MiscUtils.returnItems(new SimpleInventory(reagent1),player);
@@ -605,18 +605,18 @@ public class AequalisScientia extends ArcanaItem {
                   items = List.of(input,ItemStack.EMPTY,reagent1,reagent2,stack);
                   results = infusionRecipe.doTransmutation(input,null,reagent1,reagent2,stack,player);
                }else if(recipe instanceof PermutationTransmutationRecipe permutationRecipe){
-                  ItemStack input = getAndSplitValidStack(permutationRecipe.getInput(),player,true);
+                  ItemStack input = getAndSplitValidStack(stack,permutationRecipe.getInput(),player,true);
                   if(input == null){
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(permutationRecipe.getInput().getName()),false);
                      return ActionResult.SUCCESS;
                   }
-                  ItemStack reagent1 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent1()),player,false);
+                  ItemStack reagent1 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
                      return ActionResult.SUCCESS;
                   }
-                  ItemStack reagent2 = getAndSplitValidStack(recipe.getAequalisReagent(recipe.getReagent2()),player,false);
+                  ItemStack reagent2 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
                      MiscUtils.returnItems(new SimpleInventory(input),player);
                      MiscUtils.returnItems(new SimpleInventory(reagent1),player);
@@ -649,12 +649,13 @@ public class AequalisScientia extends ArcanaItem {
          return ActionResult.SUCCESS;
       }
       
-      private ItemStack getAndSplitValidStack(ItemStack stack, ServerPlayerEntity player, boolean repeat){
+      private ItemStack getAndSplitValidStack(ItemStack aequalis, ItemStack stack, ServerPlayerEntity player, boolean repeat){
          PlayerInventory inventory = player.getInventory();
          
          for(int i = 0; i < inventory.size(); i++){
             if(i == PlayerInventory.OFF_HAND_SLOT) continue;
             ItemStack invStack = inventory.getStack(i);
+            if(invStack.equals(aequalis)) continue;
             
             if(invStack.isOf(stack.getItem()) && invStack.getCount() >= stack.getCount()){
                int splitAmount = repeat ? stack.getCount() * (invStack.getCount() / stack.getCount()) : stack.getCount();

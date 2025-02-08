@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.borisshoes.arcananovum.accessors.ServerChunkLoadingManagerAccessor;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
 import net.borisshoes.arcananovum.utils.DensityCap;
@@ -12,7 +13,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,16 +45,13 @@ public class SpawnDensityCapperMixin {
       }
    }
    
-   @Inject(method = "canSpawn", at = @At(value = "HEAD"), cancellable = true)
-   private void canSpawn(SpawnGroup spawnGroup, ChunkPos chunkPos, CallbackInfoReturnable<Boolean> cir){
-      if(ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkLoadingManager)).getHookedWorld(), chunkPos)){
+   @ModifyReturnValue(method = "canSpawn", at = @At(value = "RETURN"))
+   private boolean canSpawn(boolean original, SpawnGroup spawnGroup, ChunkPos chunkPos){
+      if(!original && ContinuumAnchor.isChunkLoaded(((ServerChunkLoadingManagerAccessor)(chunkLoadingManager)).getHookedWorld(), chunkPos)){
          DensityCap densityCap = this.chunkPosDensityCapMap.get(chunkPos);
-         if(densityCap != null && densityCap.canSpawn(spawnGroup))
-            cir.setReturnValue(true);
-         else
-            cir.setReturnValue(false);
-         cir.cancel();
+         return densityCap != null && densityCap.canSpawn(spawnGroup);
       }
+      return original;
    }
 }
 

@@ -173,19 +173,21 @@ public class ArcaneSingularityGui extends SimpleGui {
       
       MiscUtils.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.empty());
       
-      GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
-      nextArrow.setName((Text.literal("")
-            .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-      nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(53,nextArrow);
-      
-      GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
-      prevArrow.setName((Text.literal("")
-            .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-      prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(45,prevArrow);
+      if(maxPages > 1){
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         nextArrow.setName((Text.literal("")
+               .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
+         nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(53,nextArrow);
+         
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         prevArrow.setName((Text.literal("")
+               .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
+         prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(45,prevArrow);
+      }
       
       GuiElementBuilder singularityItem = new GuiElementBuilder(Items.LECTERN).hideDefaultTooltip();
       singularityItem.setName((Text.literal("")

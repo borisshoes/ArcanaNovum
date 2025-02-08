@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -10,7 +11,6 @@ import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.passive.CatEntity;
@@ -33,9 +33,9 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    @Shadow
    PhantomEntity field_7333; // Outer class synthetic field
    
-   @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isSpectator()Z"), cancellable = true)
-   private void arcananovum_shouldContinue(CallbackInfoReturnable<Boolean> cir, @Local LivingEntity livingEntity){
-      if(livingEntity instanceof ServerPlayerEntity player){
+   @ModifyReturnValue(method = "shouldContinue", at = @At(value = "RETURN"))
+   private boolean arcananovum_shouldContinue(boolean original){
+      if(original && field_7333.getTarget() instanceof ServerPlayerEntity player){
          PlayerInventory inv = player.getInventory();
          for(int i=0; i<inv.size();i++){
             ItemStack item = inv.getStack(i);
@@ -49,15 +49,16 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
          
             if(ArcanaItemUtils.identifyItem(item) instanceof FelidaeCharm || ArcanistsBelt.checkBeltAndHasItem(item, ArcanaRegistry.FELIDAE_CHARM.getItem())){
                if(field_7333 instanceof DragonPhantomEntity){
-                  return; // Guardian Phantoms immune to Felidae Charm
+                  return true; // Guardian Phantoms immune to Felidae Charm
                }
                
                SoundUtils.playSongToPlayer(player,SoundEvents.ENTITY_CAT_HISS, .1f, 1);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_SCARE_PHANTOM)); // Add xp
-               cir.setReturnValue(false);
+               return false;
             }
          }
       }
+      return original;
    }
    
    @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/CatEntity;hiss()V"))

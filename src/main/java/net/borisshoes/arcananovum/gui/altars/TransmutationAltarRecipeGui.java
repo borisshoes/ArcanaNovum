@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltar;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
@@ -69,6 +70,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             if(ind >= pageRecipes.size()) return true;
             TransmutationRecipe recipe = pageRecipes.get(ind);
             if(selectionModeStack != null && ArcanaItemUtils.identifyItem(selectionModeStack) instanceof AequalisScientia aq){
+               if(recipe.getName().equals("Aequalis Reconfiguration")) ArcanaAchievements.grant(player,ArcanaAchievements.FRACTAL_ATTUNEMENT);
                ArcanaItem.putProperty(selectionModeStack, AequalisScientia.TRANSMUTATION_TAG,recipe.getName());
                aq.buildItemLore(selectionModeStack,player.getServer());
                SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM,1,0.8f);
@@ -111,19 +113,21 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       List<TransmutationRecipe> pageRecipes = recipes;
       int numPages = (int) Math.ceil((float)pageRecipes.size()/28.0);
       
-      GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
-      nextArrow.setName(Text.literal("Next Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
-      nextArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.YELLOW))
-            .append(Text.literal(" to go to the Next Page").formatted(Formatting.DARK_PURPLE))));
-      setSlot(53,nextArrow);
-      
-      GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
-      prevArrow.setName(Text.literal("Previous Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
-      prevArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal("Click").formatted(Formatting.YELLOW))
-            .append(Text.literal(" to go to the Previous Page").formatted(Formatting.DARK_PURPLE))));
-      setSlot(45,prevArrow);
+      if(numPages > 1){
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         nextArrow.setName(Text.literal("Next Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
+         nextArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to go to the Next Page").formatted(Formatting.DARK_PURPLE))));
+         setSlot(53,nextArrow);
+         
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         prevArrow.setName(Text.literal("Previous Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
+         prevArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to go to the Previous Page").formatted(Formatting.DARK_PURPLE))));
+         setSlot(45,prevArrow);
+      }
       
       int k = (page-1)*28;
       for(int i = 0; i < 4; i++){
@@ -259,19 +263,21 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       int numPages = (int) Math.ceil((float)inputs.size()/28.0);
       int bargainLvl = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       
-      GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
-      nextArrow.setName((Text.literal("")
-            .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-      nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(53,nextArrow);
-      
-      GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
-      prevArrow.setName((Text.literal("")
-            .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-      prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(45,prevArrow);
+      if(numPages > 1){
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         nextArrow.setName((Text.literal("")
+               .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
+         nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(53,nextArrow);
+         
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         prevArrow.setName((Text.literal("")
+               .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
+         prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(45,prevArrow);
+      }
       
       int k = (commiePage-1)*28;
       for(int i = 0; i < 4; i++){

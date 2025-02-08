@@ -1,10 +1,17 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
 
@@ -18,6 +25,28 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    public CommutativeTransmutationRecipe(String name, List<ItemStack> communalInputs, ItemStack reagent1, ItemStack reagent2){
       super(name,reagent1,reagent2);
       this.communalInputs = communalInputs;
+   }
+   
+   public CommutativeTransmutationRecipe(String name, Either<TagKey<Item>,TagKey<Block>> tag, ItemStack reagent1, ItemStack reagent2){
+      super(name,reagent1,reagent2);
+      this.communalInputs = new ArrayList<>();
+      
+      if(tag.left().isPresent()){
+         for(RegistryEntry<Item> itemEntry : Registries.ITEM.getIndexedEntries()){
+            if(itemEntry.isIn(tag.left().get())){
+               this.communalInputs.add(new ItemStack(itemEntry.value()));
+            }
+         }
+      }else if(tag.right().isPresent()){
+         for(RegistryEntry<Item> itemEntry : Registries.ITEM.getIndexedEntries()){
+            if(itemEntry.value() instanceof BlockItem blockItem){
+               if(blockItem.getBlock().getRegistryEntry().isIn(tag.right().get())){
+                  this.communalInputs.add(new ItemStack(itemEntry.value()));
+               }
+            }
+         }
+      }
+      
    }
    
    @Override

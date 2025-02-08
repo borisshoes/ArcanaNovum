@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -93,14 +94,15 @@ public abstract class LivingEntityMixin {
       }
    }
   
-   @Inject(method = "disablesShield", at = @At("RETURN"), cancellable = true)
-   private void arcananovum_disablesShield(CallbackInfoReturnable<Boolean> cir){
-      if(!cir.getReturnValueZ()){
+   @ModifyReturnValue(method = "disablesShield", at = @At("RETURN"))
+   private boolean arcananovum_disablesShield(boolean original){
+      if(!original){
          LivingEntity livingEntity = (LivingEntity) (Object) this;
          if(livingEntity.getWeaponStack().isOf(ArcanaRegistry.GRAVITON_MAUL.getItem())){
-            cir.setReturnValue(true);
+            return true;
          }
       }
+      return original;
    }
    
    @Inject(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("RETURN"))
@@ -219,11 +221,25 @@ public abstract class LivingEntityMixin {
       }
    }
    
+   @Inject(method = "damage", at = @At("HEAD"), cancellable = true, order = 892)
+   private void arcananovum_cancelDamage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+      LivingEntity entity = (LivingEntity) (Object) this;
+      
+      if(entity instanceof ServerPlayerEntity player){
+         if(source.isIn(DamageTypeTags.IS_FALL) && !MiscUtils.getArcanaItemsWithAug(player,ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.FELINE_GRACE,4).isEmpty()){
+            SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
+            ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL_CAP),ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL)*(amount))); // Add xp
+            if(amount > player.getHealth()) ArcanaAchievements.grant(player,ArcanaAchievements.LAND_ON_FEET.id);
+            cir.setReturnValue(false);
+         }
+      }
+   }
+   
    
    // Mixin for damage modifiers
-   @Inject(method = "modifyAppliedDamage", at = @At("RETURN"), cancellable = true)
-   private void arcananovum_modifyDamage(DamageSource source, float amount, CallbackInfoReturnable<Float> cir){
-      float newReturn = cir.getReturnValueF();
+   @ModifyReturnValue(method = "modifyAppliedDamage", at = @At("RETURN"))
+   private float arcananovum_modifyDamage(float original, DamageSource source, float amount){
+      float newReturn = original;
       LivingEntity entity = (LivingEntity) (Object) this;
       Entity attacker = source.getAttacker();
       
@@ -464,7 +480,7 @@ public abstract class LivingEntityMixin {
          }
       }
       
-      cir.setReturnValue(newReturn);
+      return newReturn;
    }
    
    @ModifyExpressionValue(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/damage/DamageSource;isIn(Lnet/minecraft/registry/tag/TagKey;)Z"))
@@ -573,27 +589,29 @@ public abstract class LivingEntityMixin {
       livingEntity.setInvisible(livingEntity.isInvisible() || livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT));
    }
    
-   @Inject(method="getAttackDistanceScalingFactor", at=@At("RETURN"), cancellable = true)
-   private void arcananovum_greaterInvisibilityAttackRangeScale(Entity entity, CallbackInfoReturnable<Double> cir){
+   @ModifyReturnValue(method="getAttackDistanceScalingFactor", at=@At("RETURN"))
+   private double arcananovum_greaterInvisibilityAttackRangeScale(double original, Entity entity){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      if(livingEntity.getType().isIn(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return;
+      if(livingEntity.getType().isIn(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return original;
       if(livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
-         cir.setReturnValue(cir.getReturnValue()*0.01);
+         return original * 0.01;
       }
+      return original;
    }
    
-   @Inject(method="canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at=@At("RETURN"), cancellable = true)
-   private void arcananovum_canTarget(LivingEntity target, CallbackInfoReturnable<Boolean> cir){
+   @ModifyReturnValue(method="canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at=@At("RETURN"))
+   private boolean arcananovum_canTarget(boolean original, LivingEntity target){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       if(livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_BLINDNESS_EFFECT) && !livingEntity.getType().isIn(ArcanaRegistry.IGNORES_GREATER_BLINDNESS)){
-         cir.setReturnValue(false);
+         return false;
       }
       if(target.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT) && !livingEntity.getType().isIn(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)){
-         cir.setReturnValue(false);
+         return false;
       }
       if(livingEntity.getType().isIn(ArcanaRegistry.NUL_CONSTRUCT_FRIENDS) && target instanceof NulConstructEntity){
-         cir.setReturnValue(false);
+         return false;
       }
+      return original;
    }
    
    @Inject(method="onEquipStack", at=@At("HEAD"), cancellable = true)

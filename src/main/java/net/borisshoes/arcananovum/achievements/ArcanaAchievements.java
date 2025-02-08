@@ -169,7 +169,7 @@ public class ArcanaAchievements {
                new String[]{"Have 30 Arcana Items taking concentration"}
          ));
    public static final ArcanaAchievement ALL_ACHIEVEMENTS = ArcanaAchievements.register(
-         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000, 666,
+         new EventAchievement("One With the Abyss", "all_achievements", new ItemStack(Items.ENDER_EYE), ArcanaRegistry.ARCANE_TOME, 1000000, 6666,
                new String[]{"Unlock all Achievements for currently obtainable items", "(Grants Unobtainable Achievements honorarily)"}
          ));
    
@@ -627,6 +627,10 @@ public class ArcanaAchievements {
    public static final ArcanaAchievement QUESTIONABLE_EXCHANGE = ArcanaAchievements.register(
          new EventAchievement("A Questionable Exchange", "questionable_exchange", new ItemStack(Items.NETHERITE_HOE), ArcanaRegistry.AEQUALIS_SCIENTIA, 10000, 3,
                new String[]{"Use an Aequalis Scientia to transfer", " skill points between the same item type"}
+         ));
+   public static final ArcanaAchievement FRACTAL_ATTUNEMENT = ArcanaAchievements.register(
+         new EventAchievement("Fractal Attunement", "fractal_attunement", new ItemStack(Items.END_CRYSTAL), ArcanaRegistry.AEQUALIS_SCIENTIA, 10000, 3,
+               new String[]{"Attune an Aequalis Scientia to", " reconfigure other Aequalis Scientias"}
          ));
    
    // Ensnarement Arrows

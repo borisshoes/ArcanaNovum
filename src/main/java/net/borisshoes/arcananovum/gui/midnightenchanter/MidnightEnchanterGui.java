@@ -214,6 +214,7 @@ public class MidnightEnchanterGui extends SimpleGui {
                   bookshelves++;
                }
             }
+            this.enchants = getEnchantsForItem(this.stack);
             lapisLevel = -1;
             xpCost = -1;
          }
@@ -251,12 +252,9 @@ public class MidnightEnchanterGui extends SimpleGui {
          buildGui();
       }else if(index % 9 > 0 && index % 9 < 8 && index > 18 && index < 44){
          if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
-            if(index == 19){
-               lapisLevel = 1;
-            }else if(index == 28){
-               lapisLevel = 2;
-            }else if(index == 37){
-               lapisLevel = 3;
+            int row = (index / 9) - 1;
+            if(getSlot(index) != null && (getSlot(index).getItemStack().isOf(Items.ENCHANTED_BOOK) ||  getSlot(index).getItemStack().isOf(Items.LAPIS_LAZULI))){
+               lapisLevel = row;
             }
             buildGui();
          }else{
@@ -310,19 +308,21 @@ public class MidnightEnchanterGui extends SimpleGui {
          }
       }
       
-      GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
-      nextArrow.setName((Text.literal("")
-            .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-      nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(35,nextArrow);
-      
-      GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
-      prevArrow.setName((Text.literal("")
-            .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-      prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(27,prevArrow);
+      if(maxPages > 1 && !(stack.isEnchantable() && !enchanted && bookshelves >= 0)){
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         nextArrow.setName((Text.literal("")
+               .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
+         nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(35,nextArrow);
+         
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         prevArrow.setName((Text.literal("")
+               .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
+         prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(27,prevArrow);
+      }
       
       if(enchanted){
          GuiElementBuilder essenceItem = GuiElementBuilder.from(MiscUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack())).hideDefaultTooltip();
@@ -406,9 +406,9 @@ public class MidnightEnchanterGui extends SimpleGui {
             setSlot(i+18,bgPane2);
          }
          setSlot(11,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_CONNECTOR,color)).hideDefaultTooltip().setName(name));
-         setSlot(20,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,color)).hideDefaultTooltip().setName(name));
-         setSlot(29,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,color)).hideDefaultTooltip().setName(name));
-         setSlot(38,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,color)).hideDefaultTooltip().setName(name));
+         setSlot(20,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,lapisLevel == 1 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
+         setSlot(29,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,lapisLevel == 2 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
+         setSlot(38,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,lapisLevel == 3 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
          setSlot(47,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          
          Random random = Random.create();
@@ -443,9 +443,15 @@ public class MidnightEnchanterGui extends SimpleGui {
                for(int j = 0; j < list.size() && j < 5; j++){
                   EnchantmentLevelEntry entry = list.get(j);
                   
-                  GuiElementBuilder enchantBook = new GuiElementBuilder(Items.ENCHANTED_BOOK).glow().hideDefaultTooltip();
+                  GuiElementBuilder enchantBook = new GuiElementBuilder(Items.ENCHANTED_BOOK).hideDefaultTooltip();
+                  enchantBook.glow(false);
                   enchantBook.setName((Text.literal("")
                         .append(Enchantment.getName(entry.enchantment,entry.level)).formatted(Formatting.AQUA)));
+                  if(lapisLevel == i+1){
+                     enchantBook.glow();
+                     enchantBook.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                           .append(Text.literal("Selected").formatted(Formatting.AQUA)))));
+                  }
                   setSlot(21 + i*9 + j,enchantBook);
                }
             }
@@ -517,8 +523,21 @@ public class MidnightEnchanterGui extends SimpleGui {
             enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Enchantment.getName(entry.enchantment,entry.level)).formatted(Formatting.AQUA))));
          }
+         
+         enchantItem.addLoreLine(TextUtils.removeItalics(Text.empty()));
+         enchantItem.addLoreLine(TextUtils.removeItalics(Text.literal("Costs: ").formatted(Formatting.LIGHT_PURPLE)));
+         if(xpCost > 0 && (!selected.isEmpty() || paperUpgrade)){
+            enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                  .append(Text.literal(xpCost+" Levels").formatted(Formatting.DARK_GREEN)))));
+            if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
+               enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                     .append(Text.literal(lapisLevel+" Lapis Lazuli").formatted(Formatting.BLUE)))));
+            }else{
+               enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                     .append(Text.literal(essenceCost+" Nebulous Essence").formatted(Formatting.DARK_PURPLE)))));
+            }
+         }
       }
-      setSlot(49,enchantItem);
       
       GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideDefaultTooltip();
       String costStr = bookshelves >= 0 && !paperUpgrade ? "Lapis" : "Essence";
@@ -538,6 +557,8 @@ public class MidnightEnchanterGui extends SimpleGui {
          xpItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("Select Enchantments").formatted(Formatting.DARK_GREEN)))));
       }
+      
+      setSlot(49,enchantItem);
       setSlot(1,xpItem);
    }
    

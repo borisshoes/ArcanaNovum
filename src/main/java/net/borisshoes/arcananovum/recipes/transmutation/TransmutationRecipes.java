@@ -1,7 +1,11 @@
 package net.borisshoes.arcananovum.recipes.transmutation;
 
+import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.items.AequalisScientia;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.SuspiciousStewEffectsComponent;
@@ -13,7 +17,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.InstrumentTags;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Rarity;
@@ -38,6 +44,11 @@ public class TransmutationRecipes {
             new ItemStack(Items.POLISHED_BLACKSTONE), new ItemStack(Items.POLISHED_BLACKSTONE_BRICKS), new ItemStack(Items.CRACKED_POLISHED_BLACKSTONE_BRICKS)
       )),new ItemStack(Items.COAL,16),new ItemStack(Items.QUARTZ,12)));
       
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Sandstones",new ArrayList<>(Arrays.asList(
+            new ItemStack(Items.SANDSTONE),new ItemStack(Items.CHISELED_SANDSTONE), new ItemStack(Items.CUT_SANDSTONE), new ItemStack(Items.SMOOTH_SANDSTONE),
+            new ItemStack(Items.RED_SAND),new ItemStack(Items.CHISELED_RED_SANDSTONE), new ItemStack(Items.CUT_RED_SANDSTONE), new ItemStack(Items.SMOOTH_RED_SANDSTONE)
+      )),new ItemStack(Items.REDSTONE,16),new ItemStack(Items.QUARTZ,12)));
+      
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Copper",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.OXIDIZED_COPPER), new ItemStack(Items.WEATHERED_COPPER), new ItemStack(Items.EXPOSED_COPPER), new ItemStack(Items.COPPER_BLOCK),
             new ItemStack(Items.OXIDIZED_CUT_COPPER), new ItemStack(Items.WEATHERED_CUT_COPPER), new ItemStack(Items.EXPOSED_CUT_COPPER), new ItemStack(Items.CUT_COPPER),
@@ -49,108 +60,53 @@ public class TransmutationRecipes {
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Logs",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.ACACIA_LOG),new ItemStack(Items.BAMBOO_BLOCK),new ItemStack(Items.BIRCH_LOG),new ItemStack(Items.CHERRY_LOG),
             new ItemStack(Items.CRIMSON_STEM),new ItemStack(Items.DARK_OAK_LOG),new ItemStack(Items.JUNGLE_LOG),new ItemStack(Items.MANGROVE_LOG),
-            new ItemStack(Items.OAK_LOG),new ItemStack(Items.SPRUCE_LOG),new ItemStack(Items.WARPED_STEM),
+            new ItemStack(Items.OAK_LOG),new ItemStack(Items.SPRUCE_LOG),new ItemStack(Items.WARPED_STEM),new ItemStack(Items.PALE_OAK_LOG),
             new ItemStack(Items.STRIPPED_ACACIA_LOG),new ItemStack(Items.STRIPPED_BAMBOO_BLOCK),new ItemStack(Items.STRIPPED_BIRCH_LOG),new ItemStack(Items.STRIPPED_CHERRY_LOG),
             new ItemStack(Items.STRIPPED_CRIMSON_STEM),new ItemStack(Items.STRIPPED_DARK_OAK_LOG),new ItemStack(Items.STRIPPED_JUNGLE_LOG),new ItemStack(Items.STRIPPED_MANGROVE_LOG),
-            new ItemStack(Items.STRIPPED_OAK_LOG),new ItemStack(Items.STRIPPED_SPRUCE_LOG),new ItemStack(Items.STRIPPED_WARPED_STEM)
+            new ItemStack(Items.STRIPPED_OAK_LOG),new ItemStack(Items.STRIPPED_SPRUCE_LOG),new ItemStack(Items.STRIPPED_WARPED_STEM),new ItemStack(Items.STRIPPED_PALE_OAK_LOG)
       )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Wood",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.ACACIA_WOOD),new ItemStack(Items.BAMBOO_BLOCK),new ItemStack(Items.BIRCH_WOOD),new ItemStack(Items.CHERRY_WOOD),
             new ItemStack(Items.CRIMSON_HYPHAE),new ItemStack(Items.DARK_OAK_WOOD),new ItemStack(Items.JUNGLE_WOOD),new ItemStack(Items.MANGROVE_WOOD),
-            new ItemStack(Items.OAK_WOOD),new ItemStack(Items.SPRUCE_WOOD),new ItemStack(Items.WARPED_HYPHAE),
+            new ItemStack(Items.OAK_WOOD),new ItemStack(Items.SPRUCE_WOOD),new ItemStack(Items.WARPED_HYPHAE),new ItemStack(Items.PALE_OAK_WOOD),
             new ItemStack(Items.STRIPPED_ACACIA_WOOD),new ItemStack(Items.STRIPPED_BAMBOO_BLOCK),new ItemStack(Items.STRIPPED_BIRCH_WOOD),new ItemStack(Items.STRIPPED_CHERRY_WOOD),
             new ItemStack(Items.STRIPPED_CRIMSON_HYPHAE),new ItemStack(Items.STRIPPED_DARK_OAK_WOOD),new ItemStack(Items.STRIPPED_JUNGLE_WOOD),new ItemStack(Items.STRIPPED_MANGROVE_WOOD),
-            new ItemStack(Items.STRIPPED_OAK_WOOD),new ItemStack(Items.STRIPPED_SPRUCE_WOOD),new ItemStack(Items.STRIPPED_WARPED_HYPHAE)
+            new ItemStack(Items.STRIPPED_OAK_WOOD),new ItemStack(Items.STRIPPED_SPRUCE_WOOD),new ItemStack(Items.STRIPPED_WARPED_HYPHAE),new ItemStack(Items.STRIPPED_PALE_OAK_WOOD)
       )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Planks",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_PLANKS),new ItemStack(Items.BAMBOO_PLANKS),new ItemStack(Items.BIRCH_PLANKS),new ItemStack(Items.CHERRY_PLANKS),
-            new ItemStack(Items.CRIMSON_PLANKS),new ItemStack(Items.DARK_OAK_PLANKS),new ItemStack(Items.JUNGLE_PLANKS),new ItemStack(Items.MANGROVE_PLANKS),
-            new ItemStack(Items.OAK_PLANKS),new ItemStack(Items.SPRUCE_PLANKS),new ItemStack(Items.WARPED_PLANKS)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Planks",Either.left(ItemTags.PLANKS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Stairs",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_STAIRS),new ItemStack(Items.BAMBOO_STAIRS),new ItemStack(Items.BIRCH_STAIRS),new ItemStack(Items.CHERRY_STAIRS),
-            new ItemStack(Items.CRIMSON_STAIRS),new ItemStack(Items.DARK_OAK_STAIRS),new ItemStack(Items.JUNGLE_STAIRS),new ItemStack(Items.MANGROVE_STAIRS),
-            new ItemStack(Items.OAK_STAIRS),new ItemStack(Items.SPRUCE_STAIRS),new ItemStack(Items.WARPED_STAIRS)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Stairs",Either.left(ItemTags.WOODEN_STAIRS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Slabs",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_SLAB),new ItemStack(Items.BAMBOO_SLAB),new ItemStack(Items.BIRCH_SLAB),new ItemStack(Items.CHERRY_SLAB),
-            new ItemStack(Items.CRIMSON_SLAB),new ItemStack(Items.DARK_OAK_SLAB),new ItemStack(Items.JUNGLE_SLAB),new ItemStack(Items.MANGROVE_SLAB),
-            new ItemStack(Items.OAK_SLAB),new ItemStack(Items.SPRUCE_SLAB),new ItemStack(Items.WARPED_SLAB)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Slabs",Either.left(ItemTags.WOODEN_SLABS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Fences",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_FENCE),new ItemStack(Items.BAMBOO_FENCE),new ItemStack(Items.BIRCH_FENCE),new ItemStack(Items.CHERRY_FENCE),
-            new ItemStack(Items.CRIMSON_FENCE),new ItemStack(Items.DARK_OAK_FENCE),new ItemStack(Items.JUNGLE_FENCE),new ItemStack(Items.MANGROVE_FENCE),
-            new ItemStack(Items.OAK_FENCE),new ItemStack(Items.SPRUCE_FENCE),new ItemStack(Items.WARPED_FENCE)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Fences",Either.left(ItemTags.WOODEN_FENCES),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Fence Gates",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_FENCE_GATE),new ItemStack(Items.BAMBOO_FENCE_GATE),new ItemStack(Items.BIRCH_FENCE_GATE),new ItemStack(Items.CHERRY_FENCE_GATE),
-            new ItemStack(Items.CRIMSON_FENCE_GATE),new ItemStack(Items.DARK_OAK_FENCE_GATE),new ItemStack(Items.JUNGLE_FENCE_GATE),new ItemStack(Items.MANGROVE_FENCE_GATE),
-            new ItemStack(Items.OAK_FENCE_GATE),new ItemStack(Items.SPRUCE_FENCE_GATE),new ItemStack(Items.WARPED_FENCE_GATE)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Fence Gates",Either.left(ItemTags.FENCE_GATES),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Signs",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_SIGN),new ItemStack(Items.BAMBOO_SIGN),new ItemStack(Items.BIRCH_SIGN),new ItemStack(Items.CHERRY_SIGN),
-            new ItemStack(Items.CRIMSON_SIGN),new ItemStack(Items.DARK_OAK_SIGN),new ItemStack(Items.JUNGLE_SIGN),new ItemStack(Items.MANGROVE_SIGN),
-            new ItemStack(Items.OAK_SIGN),new ItemStack(Items.SPRUCE_SIGN),new ItemStack(Items.WARPED_SIGN)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Signs",Either.left(ItemTags.SIGNS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Hanging Signs",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_HANGING_SIGN),new ItemStack(Items.BAMBOO_HANGING_SIGN),new ItemStack(Items.BIRCH_HANGING_SIGN),new ItemStack(Items.CHERRY_HANGING_SIGN),
-            new ItemStack(Items.CRIMSON_HANGING_SIGN),new ItemStack(Items.DARK_OAK_HANGING_SIGN),new ItemStack(Items.JUNGLE_HANGING_SIGN),new ItemStack(Items.MANGROVE_HANGING_SIGN),
-            new ItemStack(Items.OAK_HANGING_SIGN),new ItemStack(Items.SPRUCE_HANGING_SIGN),new ItemStack(Items.WARPED_HANGING_SIGN)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Hanging Signs",Either.left(ItemTags.HANGING_SIGNS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Doors",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_DOOR),new ItemStack(Items.BAMBOO_DOOR),new ItemStack(Items.BIRCH_DOOR),new ItemStack(Items.CHERRY_DOOR),
-            new ItemStack(Items.CRIMSON_DOOR),new ItemStack(Items.DARK_OAK_DOOR),new ItemStack(Items.JUNGLE_DOOR),new ItemStack(Items.MANGROVE_DOOR),
-            new ItemStack(Items.OAK_DOOR),new ItemStack(Items.SPRUCE_DOOR),new ItemStack(Items.WARPED_DOOR)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Doors",Either.left(ItemTags.WOODEN_DOORS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Trapdoors",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_TRAPDOOR),new ItemStack(Items.BAMBOO_TRAPDOOR),new ItemStack(Items.BIRCH_TRAPDOOR),new ItemStack(Items.CHERRY_TRAPDOOR),
-            new ItemStack(Items.CRIMSON_TRAPDOOR),new ItemStack(Items.DARK_OAK_TRAPDOOR),new ItemStack(Items.JUNGLE_TRAPDOOR),new ItemStack(Items.MANGROVE_TRAPDOOR),
-            new ItemStack(Items.OAK_TRAPDOOR),new ItemStack(Items.SPRUCE_TRAPDOOR),new ItemStack(Items.WARPED_TRAPDOOR)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Trapdoors",Either.left(ItemTags.WOODEN_TRAPDOORS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Pressure Plates",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_PRESSURE_PLATE),new ItemStack(Items.BAMBOO_PRESSURE_PLATE),new ItemStack(Items.BIRCH_PRESSURE_PLATE),new ItemStack(Items.CHERRY_PRESSURE_PLATE),
-            new ItemStack(Items.CRIMSON_PRESSURE_PLATE),new ItemStack(Items.DARK_OAK_PRESSURE_PLATE),new ItemStack(Items.JUNGLE_PRESSURE_PLATE),new ItemStack(Items.MANGROVE_PRESSURE_PLATE),
-            new ItemStack(Items.OAK_PRESSURE_PLATE),new ItemStack(Items.SPRUCE_PRESSURE_PLATE),new ItemStack(Items.WARPED_PRESSURE_PLATE)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Pressure Plates",Either.left(ItemTags.WOODEN_PRESSURE_PLATES),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Buttons",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_BUTTON),new ItemStack(Items.BAMBOO_BUTTON),new ItemStack(Items.BIRCH_BUTTON),new ItemStack(Items.CHERRY_BUTTON),
-            new ItemStack(Items.CRIMSON_BUTTON),new ItemStack(Items.DARK_OAK_BUTTON),new ItemStack(Items.JUNGLE_BUTTON),new ItemStack(Items.MANGROVE_BUTTON),
-            new ItemStack(Items.OAK_BUTTON),new ItemStack(Items.SPRUCE_BUTTON),new ItemStack(Items.WARPED_BUTTON)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Buttons",Either.left(ItemTags.BUTTONS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Boats",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_BOAT),new ItemStack(Items.BAMBOO_RAFT),new ItemStack(Items.BIRCH_BOAT),new ItemStack(Items.CHERRY_BOAT),
-            new ItemStack(Items.DARK_OAK_BOAT),new ItemStack(Items.JUNGLE_BOAT),new ItemStack(Items.MANGROVE_BOAT),
-            new ItemStack(Items.OAK_BOAT),new ItemStack(Items.SPRUCE_BOAT)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Boats",Either.left(ItemTags.BOATS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Chest boats",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.ACACIA_CHEST_BOAT),new ItemStack(Items.BAMBOO_CHEST_RAFT),new ItemStack(Items.BIRCH_CHEST_BOAT),new ItemStack(Items.CHERRY_CHEST_BOAT),
-            new ItemStack(Items.DARK_OAK_CHEST_BOAT),new ItemStack(Items.JUNGLE_CHEST_BOAT),new ItemStack(Items.MANGROVE_CHEST_BOAT),
-            new ItemStack(Items.OAK_CHEST_BOAT),new ItemStack(Items.SPRUCE_CHEST_BOAT)
-      )),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Chest boats",Either.left(ItemTags.CHEST_BOATS),new ItemStack(Items.COPPER_INGOT,12),new ItemStack(Items.EMERALD,6)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Seeds",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.WHEAT_SEEDS), new ItemStack(Items.PUMPKIN_SEEDS), new ItemStack(Items.MELON_SEEDS), new ItemStack(Items.BEETROOT_SEEDS), new ItemStack(Items.TORCHFLOWER_SEEDS),
             new ItemStack(Items.PITCHER_POD), new ItemStack(Items.POTATO), new ItemStack(Items.CARROT)
       )),new ItemStack(Items.LAPIS_LAZULI,16),new ItemStack(Items.EMERALD,24)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Leaves",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.OAK_LEAVES), new ItemStack(Items.SPRUCE_LEAVES), new ItemStack(Items.BIRCH_LEAVES), new ItemStack(Items.JUNGLE_LEAVES), new ItemStack(Items.ACACIA_LEAVES),
-            new ItemStack(Items.CHERRY_LEAVES), new ItemStack(Items.DARK_OAK_LEAVES), new ItemStack(Items.MANGROVE_LEAVES), new ItemStack(Items.AZALEA_LEAVES), new ItemStack(Items.FLOWERING_AZALEA_LEAVES)
-      )),new ItemStack(Items.LAPIS_LAZULI,16),new ItemStack(Items.EMERALD,12)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Leaves",Either.right(BlockTags.LEAVES),new ItemStack(Items.LAPIS_LAZULI,16),new ItemStack(Items.EMERALD,12)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Flowers",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.PEONY), new ItemStack(Items.ROSE_BUSH), new ItemStack(Items.LILAC), new ItemStack(Items.SUNFLOWER), new ItemStack(Items.AZURE_BLUET),
@@ -202,15 +158,11 @@ public class TransmutationRecipes {
             new ItemStack(Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE),
             new ItemStack(Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE),
             new ItemStack(Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE),
-            new ItemStack(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE)
+            new ItemStack(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE), new ItemStack(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE),
+            new ItemStack(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE)
       )),new ItemStack(Items.DIAMOND,16),new ItemStack(Items.LAPIS_LAZULI,64)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Pottery Sherds",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.SNORT_POTTERY_SHERD), new ItemStack(Items.SKULL_POTTERY_SHERD), new ItemStack(Items.HEARTBREAK_POTTERY_SHERD), new ItemStack(Items.HOWL_POTTERY_SHERD), new ItemStack(Items.MINER_POTTERY_SHERD),
-            new ItemStack(Items.MOURNER_POTTERY_SHERD), new ItemStack(Items.PLENTY_POTTERY_SHERD), new ItemStack(Items.PRIZE_POTTERY_SHERD), new ItemStack(Items.SHEAF_POTTERY_SHERD), new ItemStack(Items.SHELTER_POTTERY_SHERD),
-            new ItemStack(Items.FRIEND_POTTERY_SHERD), new ItemStack(Items.EXPLORER_POTTERY_SHERD), new ItemStack(Items.DANGER_POTTERY_SHERD), new ItemStack(Items.BURN_POTTERY_SHERD), new ItemStack(Items.BREWER_POTTERY_SHERD),
-            new ItemStack(Items.BLADE_POTTERY_SHERD), new ItemStack(Items.ARMS_UP_POTTERY_SHERD), new ItemStack(Items.ARCHER_POTTERY_SHERD), new ItemStack(Items.ANGLER_POTTERY_SHERD), new ItemStack(Items.HEART_POTTERY_SHERD)
-      )),new ItemStack(Items.AMETHYST_SHARD,36),new ItemStack(Items.LAPIS_LAZULI,24)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Pottery Sherds",Either.left(ItemTags.DECORATED_POT_SHERDS),new ItemStack(Items.AMETHYST_SHARD,36),new ItemStack(Items.LAPIS_LAZULI,24)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Music Discs",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.MUSIC_DISC_13), new ItemStack(Items.MUSIC_DISC_CAT), new ItemStack(Items.MUSIC_DISC_BLOCKS), new ItemStack(Items.MUSIC_DISC_CHIRP), new ItemStack(Items.MUSIC_DISC_FAR),
@@ -226,26 +178,12 @@ public class TransmutationRecipes {
             new ItemStack(Items.BROWN_DYE),new ItemStack(Items.BLACK_DYE),new ItemStack(Items.GRAY_DYE),new ItemStack(Items.LIGHT_GRAY_DYE)
       )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Terracotta",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.WHITE_TERRACOTTA),new ItemStack(Items.ORANGE_TERRACOTTA),new ItemStack(Items.MAGENTA_TERRACOTTA),new ItemStack(Items.LIGHT_BLUE_TERRACOTTA),
-            new ItemStack(Items.RED_TERRACOTTA),new ItemStack(Items.YELLOW_TERRACOTTA),new ItemStack(Items.LIME_TERRACOTTA),new ItemStack(Items.GREEN_TERRACOTTA),
-            new ItemStack(Items.BLUE_TERRACOTTA),new ItemStack(Items.CYAN_TERRACOTTA),new ItemStack(Items.PINK_TERRACOTTA),new ItemStack(Items.PURPLE_TERRACOTTA),
-            new ItemStack(Items.BROWN_TERRACOTTA),new ItemStack(Items.BLACK_TERRACOTTA),new ItemStack(Items.GRAY_TERRACOTTA),new ItemStack(Items.LIGHT_GRAY_TERRACOTTA), new ItemStack(Items.TERRACOTTA)
-      )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Terracotta",Either.right(BlockTags.TERRACOTTA),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Wool",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.WHITE_WOOL),new ItemStack(Items.ORANGE_WOOL),new ItemStack(Items.MAGENTA_WOOL),new ItemStack(Items.LIGHT_BLUE_WOOL),
-            new ItemStack(Items.RED_WOOL),new ItemStack(Items.YELLOW_WOOL),new ItemStack(Items.LIME_WOOL),new ItemStack(Items.GREEN_WOOL),
-            new ItemStack(Items.BLUE_WOOL),new ItemStack(Items.CYAN_WOOL),new ItemStack(Items.PINK_WOOL),new ItemStack(Items.PURPLE_WOOL),
-            new ItemStack(Items.BROWN_WOOL),new ItemStack(Items.BLACK_WOOL),new ItemStack(Items.GRAY_WOOL),new ItemStack(Items.LIGHT_GRAY_WOOL)
-      )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Carpet",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.WHITE_CARPET),new ItemStack(Items.ORANGE_CARPET),new ItemStack(Items.MAGENTA_CARPET),new ItemStack(Items.LIGHT_BLUE_CARPET),
-            new ItemStack(Items.RED_CARPET),new ItemStack(Items.YELLOW_CARPET),new ItemStack(Items.LIME_CARPET),new ItemStack(Items.GREEN_CARPET),
-            new ItemStack(Items.BLUE_CARPET),new ItemStack(Items.CYAN_CARPET),new ItemStack(Items.PINK_CARPET),new ItemStack(Items.PURPLE_CARPET),
-            new ItemStack(Items.BROWN_CARPET),new ItemStack(Items.BLACK_CARPET),new ItemStack(Items.GRAY_CARPET),new ItemStack(Items.LIGHT_GRAY_CARPET)
-      )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Wool", Either.left(ItemTags.WOOL),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
+      
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Carpet",Either.left(ItemTags.WOOL_CARPETS),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Glass",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.WHITE_STAINED_GLASS),new ItemStack(Items.ORANGE_STAINED_GLASS),new ItemStack(Items.MAGENTA_STAINED_GLASS),new ItemStack(Items.LIGHT_BLUE_STAINED_GLASS),
@@ -261,12 +199,7 @@ public class TransmutationRecipes {
             new ItemStack(Items.BROWN_STAINED_GLASS_PANE),new ItemStack(Items.BLACK_STAINED_GLASS_PANE),new ItemStack(Items.GRAY_STAINED_GLASS_PANE),new ItemStack(Items.LIGHT_GRAY_STAINED_GLASS_PANE), new ItemStack(Items.GLASS_PANE)
       )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Candles",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.WHITE_CANDLE),new ItemStack(Items.ORANGE_CANDLE),new ItemStack(Items.MAGENTA_CANDLE),new ItemStack(Items.LIGHT_BLUE_CANDLE),
-            new ItemStack(Items.RED_CANDLE),new ItemStack(Items.YELLOW_CANDLE),new ItemStack(Items.LIME_CANDLE),new ItemStack(Items.GREEN_CANDLE),
-            new ItemStack(Items.BLUE_CANDLE),new ItemStack(Items.CYAN_CANDLE),new ItemStack(Items.PINK_CANDLE),new ItemStack(Items.PURPLE_CANDLE),
-            new ItemStack(Items.BROWN_CANDLE),new ItemStack(Items.BLACK_CANDLE),new ItemStack(Items.GRAY_CANDLE),new ItemStack(Items.LIGHT_GRAY_CANDLE)
-      )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Candles",Either.left(ItemTags.CANDLES),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Glazed Terracotta",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.WHITE_GLAZED_TERRACOTTA),new ItemStack(Items.ORANGE_GLAZED_TERRACOTTA),new ItemStack(Items.MAGENTA_GLAZED_TERRACOTTA),new ItemStack(Items.LIGHT_BLUE_GLAZED_TERRACOTTA),
@@ -290,26 +223,17 @@ public class TransmutationRecipes {
             new ItemStack(Items.GRAVEL), new ItemStack(Items.SAND), new ItemStack(Items.RED_SAND)
       )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Banners",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.WHITE_BANNER),new ItemStack(Items.ORANGE_BANNER),new ItemStack(Items.MAGENTA_BANNER),new ItemStack(Items.LIGHT_BLUE_BANNER),
-            new ItemStack(Items.RED_BANNER),new ItemStack(Items.YELLOW_BANNER),new ItemStack(Items.LIME_BANNER),new ItemStack(Items.GREEN_BANNER),
-            new ItemStack(Items.BLUE_BANNER),new ItemStack(Items.CYAN_BANNER),new ItemStack(Items.PINK_BANNER),new ItemStack(Items.PURPLE_BANNER),
-            new ItemStack(Items.BROWN_BANNER),new ItemStack(Items.BLACK_BANNER),new ItemStack(Items.GRAY_BANNER),new ItemStack(Items.LIGHT_GRAY_BANNER)
-      )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Banners",Either.right(BlockTags.BANNERS),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
-      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Beds",new ArrayList<>(Arrays.asList(
-            new ItemStack(Items.WHITE_BED),new ItemStack(Items.ORANGE_BED),new ItemStack(Items.MAGENTA_BED),new ItemStack(Items.LIGHT_BLUE_BED),
-            new ItemStack(Items.RED_BED),new ItemStack(Items.YELLOW_BED),new ItemStack(Items.LIME_BED),new ItemStack(Items.GREEN_BED),
-            new ItemStack(Items.BLUE_BED),new ItemStack(Items.CYAN_BED),new ItemStack(Items.PINK_BED),new ItemStack(Items.PURPLE_BED),
-            new ItemStack(Items.BROWN_BED),new ItemStack(Items.BLACK_BED),new ItemStack(Items.GRAY_BED),new ItemStack(Items.LIGHT_GRAY_BED)
-      )),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
-      
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Beds",Either.right(BlockTags.BEDS),new ItemStack(Items.LAPIS_LAZULI,24),new ItemStack(Items.GLOWSTONE_DUST,12)));
       
       // Infusion Recipes
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Cream Reduction",new ItemStack(Items.MAGMA_CREAM,1),new ItemStack(Items.SLIME_BALL,1),new ItemStack(Items.CHARCOAL,16),new ItemStack(Items.SUGAR,16)));
       
-      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Wool Decomposition",new ItemStack(Items.WHITE_WOOL,1),new ItemStack(Items.STRING,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Sand Decomposition",new ItemStack(Items.SANDSTONE,1),new ItemStack(Items.SAND,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Fiber Decomposition",new ItemStack(Items.WHITE_WOOL,1),new ItemStack(Items.STRING,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Honeycomb Decomposition",new ItemStack(Items.HONEYCOMB_BLOCK,1),new ItemStack(Items.HONEYCOMB,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
       
@@ -321,6 +245,8 @@ public class TransmutationRecipes {
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Quartz Decomposition",new ItemStack(Items.QUARTZ_BLOCK,1),new ItemStack(Items.QUARTZ,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
       
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Nether Brick Decomposition",new ItemStack(Items.NETHER_BRICKS,1),new ItemStack(Items.NETHER_BRICK,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
+      
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Glowstone Decomposition",new ItemStack(Items.GLOWSTONE,1),new ItemStack(Items.GLOWSTONE_DUST,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Magma Decomposition",new ItemStack(Items.MAGMA_BLOCK,1),new ItemStack(Items.MAGMA_CREAM,4),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
@@ -328,6 +254,8 @@ public class TransmutationRecipes {
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Nether Wart Decomposition",new ItemStack(Items.NETHER_WART_BLOCK,1),new ItemStack(Items.NETHER_WART,9),new ItemStack(Items.GUNPOWDER,4),new ItemStack(ArcanaRegistry.STARDUST,1)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Blaze Rod Decomposition",new ItemStack(Items.BLAZE_ROD,1),new ItemStack(Items.BLAZE_POWDER,6),new ItemStack(Items.GUNPOWDER,24),new ItemStack(ArcanaRegistry.STARDUST,8)));
+      
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Breeze Rod Decomposition",new ItemStack(Items.BREEZE_ROD,1),new ItemStack(Items.WIND_CHARGE,9),new ItemStack(Items.GUNPOWDER,24),new ItemStack(ArcanaRegistry.STARDUST,8)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Blackstone Infusion",new ItemStack(Items.BLACKSTONE,1),new ItemStack(Items.GILDED_BLACKSTONE,1),new ItemStack(Items.GLOWSTONE_DUST,24),new ItemStack(Items.GOLD_INGOT,12)));
       
@@ -401,6 +329,13 @@ public class TransmutationRecipes {
          minecraftServer.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries().forEach(enchants::add);
          return EnchantmentHelper.enchant(Random.create(), newBook, (int)(Math.random()*30+1),enchants.stream());
       }, Text.literal("A Random ").append(Text.translatable(Items.ENCHANTED_BOOK.getTranslationKey()))));
+      
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Aequalis Reconfiguration", ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore(), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 48)), new ItemStack(Items.AMETHYST_SHARD,48),  (stack, minecraftServer) -> {
+         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AequalisScientia aeq)) return stack;
+         ArcanaItem.putProperty(stack, AequalisScientia.TRANSMUTATION_TAG,"");
+         aeq.buildItemLore(stack,server);
+         return stack;
+      }, Text.literal("An Unattuned ").append(Text.translatable(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem().getTranslationKey()))));
       
       // Aequalis Scientia Recipes
       TRANSMUTATION_RECIPES.add(new AequalisSkillTransmutationRecipe("Transfer Skill Points"));

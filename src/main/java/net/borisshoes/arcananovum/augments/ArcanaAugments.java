@@ -902,6 +902,11 @@ public class ArcanaAugments {
          new String[]{"Gives the Aequalis Scientia have infinite reallocation uses"},
          new ArcanaRarity[]{DIVINE}
    ));
+   public static final ArcanaAugment IMPERMANENT_PERMUTATION = ArcanaAugments.register(
+         new ArcanaAugment("Impermanent Permutation", "impermanent_permutation", MiscUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack()), ArcanaRegistry.AEQUALIS_SCIENTIA,
+         new String[]{"Unlocks a transmutation recipe to reset"," the Aequalis's attuned transmutation"},
+         new ArcanaRarity[]{DIVINE}
+   ));
    
    // Ensnarement Arrows
    public static final ArcanaAugment ETHEREAL_ANCHOR = ArcanaAugments.register(

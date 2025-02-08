@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -51,15 +52,16 @@ public class PlayerEntityMixin {
       }
    }
    
-   @Inject(method = "isClimbing", at = @At("RETURN"), cancellable = true)
-   private void arcananovum_greavesClimbing(CallbackInfoReturnable<Boolean> cir){
+   @ModifyReturnValue(method = "isClimbing", at = @At("RETURN"))
+   private boolean arcananovum_greavesClimbing(boolean original){
       PlayerEntity player = (PlayerEntity)(Object) this;
-      if(cir.getReturnValue()) return;
+      if(original) return true;
       ItemStack pants = player.getEquippedStack(EquipmentSlot.LEGS);
-      if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) < 1) return;
+      if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) < 1) return original;
       if(player.horizontalCollision){
-         cir.setReturnValue(true);
+         return true;
       }
+      return original;
    }
    
    @ModifyExpressionValue(method = "getBlockBreakingSpeed", at = @At(value = "CONSTANT", args = "floatValue=5.0"))

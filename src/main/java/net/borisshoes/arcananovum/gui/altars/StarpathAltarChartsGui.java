@@ -139,19 +139,21 @@ public class StarpathAltarChartsGui extends SimpleGui {
             .append(Text.literal(" to add a new destination").formatted(Formatting.BLUE)))));
       setSlot(49,newItem);
       
-      GuiElementBuilder nextArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
-      nextArrow.setName((Text.literal("")
-            .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
-      nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(53,nextArrow);
-      
-      GuiElementBuilder prevArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
-      prevArrow.setName((Text.literal("")
-            .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
-      prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
-            .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
-      setSlot(45,prevArrow);
+      if(numPages > 1){
+         GuiElementBuilder nextArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
+         nextArrow.setName((Text.literal("")
+               .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
+         nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(53,nextArrow);
+         
+         GuiElementBuilder prevArrow = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
+         prevArrow.setName((Text.literal("")
+               .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
+         prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("("+page+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
+         setSlot(45,prevArrow);
+      }
       
       GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
       sortBuilt.setName(Text.literal("Sort Destinations").formatted(Formatting.DARK_PURPLE));

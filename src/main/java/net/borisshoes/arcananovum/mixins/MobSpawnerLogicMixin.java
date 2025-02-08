@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -25,13 +26,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 // Credit to xZarex for some of the Chunk Loading mixin code
 @Mixin(MobSpawnerLogic.class)
 public class MobSpawnerLogicMixin {
-   @Inject(method = "isPlayerInRange", at = @At(value = "HEAD"), cancellable = true)
-   private void arcananovum_isPlayerInRange(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir){
+   @ModifyReturnValue(method = "isPlayerInRange", at = @At(value = "RETURN"))
+   private boolean arcananovum_isPlayerInRange(boolean original, World world, BlockPos pos){
+      if(original) return true;
+      
       if(world instanceof ServerWorld serverWorld){
          Chunk chunk = world.getChunk(pos);
          if(ContinuumAnchor.isChunkLoaded(serverWorld,chunk.getPos())){
-            cir.setReturnValue(true);
-            cir.cancel();
+            return true;
          }
    
          BlockPos infuserPos = pos.add(0,-2,0);
@@ -41,14 +43,14 @@ public class MobSpawnerLogicMixin {
             if(infuser.isActive()){
                boolean emulator = ArcanaAugments.getAugmentFromMap(infuser.getAugments(),ArcanaAugments.SPIRIT_EMULATOR.id) >= 1;
                if(emulator){
-                  cir.setReturnValue(true);
-                  cir.cancel();
+                  return true;
                }
             }
          }
          
          
       }
+      return false;
    }
    
    @Inject(method = "isPlayerInRange", at = @At("RETURN"))
