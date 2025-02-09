@@ -217,7 +217,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       }
       double concMod = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHUNT_RUNES.id) > 0 ? 0.25 : 0.5;
       
-      return new ArcanaItemContainer(inv, size,3, "RQ", "Runic Quiver", concMod);
+      return new ArcanaItemContainer(inv, size,20, "RQ", "Runic Quiver", concMod);
    }
    
    public class RunicQuiverItem extends ArcanaPolymerItem {

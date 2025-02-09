@@ -172,20 +172,19 @@ public class MiscUtils {
    public static Pair<ContainerComponent,ItemStack> tryAddStackToContainerComp(ContainerComponent container, int size, ItemStack stack){
       List<ItemStack> beltList = new ArrayList<>(container.stream().toList());
       
-      int curCount;
-      do { // Fill up existing slots first
-         curCount = stack.getCount();
-         for(ItemStack existingStack : beltList){
-            boolean canCombine = !existingStack.isEmpty()
-                  && ItemStack.areItemsAndComponentsEqual(existingStack, stack)
-                  && existingStack.isStackable()
-                  && existingStack.getCount() < existingStack.getMaxCount();
-            if(!canCombine) continue;
-            int toAdd = Math.min(existingStack.getMaxCount() - existingStack.getCount(),curCount);
-            existingStack.increment(toAdd);
-            stack.setCount(curCount - toAdd);
-         }
-      } while (!stack.isEmpty() && stack.getCount() < curCount);
+      // Fill up existing slots first
+      for(ItemStack existingStack : beltList){
+         int curCount = stack.getCount();
+         if(stack.isEmpty()) break;
+         boolean canCombine = !existingStack.isEmpty()
+               && ItemStack.areItemsAndComponentsEqual(existingStack, stack)
+               && existingStack.isStackable()
+               && existingStack.getCount() < existingStack.getMaxCount();
+         if(!canCombine) continue;
+         int toAdd = Math.min(existingStack.getMaxCount() - existingStack.getCount(),curCount);
+         existingStack.increment(toAdd);
+         stack.setCount(curCount - toAdd);
+      }
       
       int nonEmpty = (int) beltList.stream().filter(s -> !s.isEmpty()).count();
       

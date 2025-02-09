@@ -166,7 +166,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       for(int i = 0; i < streamList.size(); i++){
          inv.setStack(i,streamList.get(i));
       }
-      return new ArcanaItemContainer(inv, size,1, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
+      return new ArcanaItemContainer(inv, size,10, "AB", "Arcanist's Belt", padding ? 0.25 : 0.5);
    }
    
    @Override

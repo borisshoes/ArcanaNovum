@@ -157,7 +157,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          }
       }
       
-      return new ArcanaItemContainer(inv, 27,4, "CT", "Chest Translocator", 0.5);
+      return new ArcanaItemContainer(inv, 27,25, "CT", "Chest Translocator", 0.5);
    }
    
    @Override

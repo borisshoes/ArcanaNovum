@@ -21,6 +21,8 @@ import net.borisshoes.arcananovum.items.QuiverItem;
 import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
@@ -70,10 +72,19 @@ public class TickCallback {
             for(int i=0; i<inv.size();i++){
                ItemStack item = inv.getStack(i);
                
+               
+               
                // Version Update Check
                boolean isArcane = ArcanaItemUtils.isArcane(item);
-               if(!isArcane)
+               if(!isArcane){
+                  if(item.contains(DataComponentTypes.BUNDLE_CONTENTS)){
+                     BundleContentsComponent bundleComp = item.get(DataComponentTypes.BUNDLE_CONTENTS);
+                     for(ItemStack invStack : bundleComp.iterate()){
+                        invStack.getItem().inventoryTick(invStack,player.getServerWorld(),player,-1,false);
+                     }
+                  }
                   continue; // Item not arcane, skip
+               }
                
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
                if(ArcanaItem.hasProperty(item,ArcanaItem.UNINITIALIZED_TAG)){

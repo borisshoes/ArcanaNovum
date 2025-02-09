@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.core.*;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -179,7 +180,19 @@ public class ArcanaItemUtils {
             continue;
          boolean isArcane = ArcanaItemUtils.isArcane(item);
          boolean isBox = item.isOf(Items.SHULKER_BOX) || item.isOf(Items.WHITE_SHULKER_BOX) || item.isOf(Items.BLACK_SHULKER_BOX) || item.isOf(Items.BLUE_SHULKER_BOX) || item.isOf(Items.BROWN_SHULKER_BOX) || item.isOf(Items.CYAN_SHULKER_BOX) || item.isOf(Items.GRAY_SHULKER_BOX) || item.isOf(Items.GREEN_SHULKER_BOX) || item.isOf(Items.LIGHT_BLUE_SHULKER_BOX) || item.isOf(Items.LIGHT_GRAY_SHULKER_BOX) || item.isOf(Items.LIME_SHULKER_BOX) || item.isOf(Items.MAGENTA_SHULKER_BOX) || item.isOf(Items.ORANGE_SHULKER_BOX) || item.isOf(Items.PINK_SHULKER_BOX) || item.isOf(Items.PURPLE_SHULKER_BOX) || item.isOf(Items.RED_SHULKER_BOX) || item.isOf(Items.YELLOW_SHULKER_BOX);
-         if(isBox && !isArcane){
+         boolean isBundle = item.contains(DataComponentTypes.BUNDLE_CONTENTS);
+         if(isBundle && !isArcane){
+            BundleContentsComponent bundleComp = item.get(DataComponentTypes.BUNDLE_CONTENTS);
+            SimpleInventory bundleInv = new SimpleInventory(bundleComp.size());
+            int index = 0;
+            for(ItemStack itemStack : bundleComp.iterateCopy()){
+               bundleInv.setStack(index,itemStack);
+               index++;
+            }
+            ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
+            containersCopy.add(new ArcanaItemContainer(bundleInv,bundleInv.size(),5,"BD","Bundle",1));
+            arcanaInvHelper(bundleInv,arcanaInv,containersCopy);
+         }else if(isBox && !isArcane){
             ContainerComponent comp = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
             DefaultedList<ItemStack> shulkerItems = DefaultedList.ofSize(27, ItemStack.EMPTY);
             comp.copyTo(shulkerItems);
@@ -188,7 +201,7 @@ public class ArcanaItemUtils {
                shulkerInv.setStack(j,shulkerItems.get(j));
             }
             ArrayList<ArcanaItemContainer> containersCopy = new ArrayList<>(containers);
-            containersCopy.add(new ArcanaItemContainer(shulkerInv,shulkerInv.size(),10,"SB","Shulker Box",0.5));
+            containersCopy.add(new ArcanaItemContainer(shulkerInv,shulkerInv.size(),50,"SB","Shulker Box",0.5));
             arcanaInvHelper(shulkerInv,arcanaInv,containersCopy);
          }
          if(!isArcane){
