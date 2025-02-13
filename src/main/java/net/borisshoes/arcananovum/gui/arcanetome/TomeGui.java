@@ -171,7 +171,16 @@ public class TomeGui extends SimpleGui {
             }else if(indexInCenter){
                ItemStack item = this.getSlot(index).getItemStack();
                if(!item.isEmpty()){
-                  tome.openItemGui(player,settings, ArcanaItem.getStringProperty(item,ArcaneTome.DISPLAY_TAG));
+                  String itemId = ArcanaItem.getStringProperty(item,ArcaneTome.DISPLAY_TAG);
+                  ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(itemId);
+                  if(arcanaItem != null){
+                     if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
+                        tome.openItemGui(player,settings, itemId);
+                     }else{
+                        player.sendMessage(Text.literal("You Have Not Researched This Item").formatted(Formatting.RED),false);
+                     }
+                  }
+                  
                }
             }else if(index == 0){
                boolean backwards = type == ClickType.MOUSE_RIGHT;

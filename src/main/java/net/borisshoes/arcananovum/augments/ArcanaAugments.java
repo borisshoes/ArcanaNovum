@@ -52,8 +52,8 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment BLAST_MINE = ArcanaAugments.register(
          new ArcanaAugment("Blast Mine", "blast_mine", new ItemStack(Items.COBBLESTONE), ArcanaRegistry.DETONATION_ARROWS,
-         new String[]{"Increases terrain and lowers mob damage","Final level grants no creature damage","Mutually Exclusive with Anti-Personnel"},
-         new ArcanaRarity[]{MUNDANE,EMPOWERED,EXOTIC}
+         new String[]{"Increases terrain damage and removes creature damage","Mutually Exclusive with Anti-Personnel"},
+         new ArcanaRarity[]{EXOTIC}
    ));
    
    // Expulsion Arrows

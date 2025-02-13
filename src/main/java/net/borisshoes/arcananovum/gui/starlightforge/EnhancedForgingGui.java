@@ -347,7 +347,7 @@ public class EnhancedForgingGui extends SimpleGui {
       final int finalCost = game.getTotalCost();
       
       ArcanaNovum.addTickTimerCallback(world, new GenericTimer(fast ? (int) (350 / 1.75) : 350, () -> {
-         if(percentile >= 0.99){
+         if(percentile >= 0.99 && !enhancedStack.isOf(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
             ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
          }
          ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARDUST_INFUSION_PER_STARDUST)*finalCost);

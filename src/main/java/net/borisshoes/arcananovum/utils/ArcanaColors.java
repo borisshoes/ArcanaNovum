@@ -15,4 +15,5 @@ public class ArcanaColors {
    public static final int STARLIGHT_FORGE_COLOR = 0xFF99FF;
    public static final int SHULKER_CORE_COLOR = 0xFFFF99;
    public static final int CONSTRUCT_ABILITY_COLOR = 0x999999;
+   public static final int ERROR_COLOR = 0xbf0202;
 }

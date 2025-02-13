@@ -9,7 +9,6 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
@@ -122,7 +121,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
          if(recipe instanceof AequalisSkillTransmutationRecipe && !ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA)){
             return false;
          }
-         if(recipe instanceof PermutationTransmutationRecipe r && ArcanaItemUtils.identifyItem(r.getInput()) instanceof AequalisScientia && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.IMPERMANENT_PERMUTATION.id) > 0)){
+         if(recipe instanceof AequalisUnattuneTransmutationRecipe && !(ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.IMPERMANENT_PERMUTATION.id) > 0)){
             return false;
          }
          return true;

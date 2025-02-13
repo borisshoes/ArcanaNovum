@@ -3,9 +3,6 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.items.AequalisScientia;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.SuspiciousStewEffectsComponent;
@@ -330,14 +327,9 @@ public class TransmutationRecipes {
          return EnchantmentHelper.enchant(Random.create(), newBook, (int)(Math.random()*30+1),enchants.stream());
       }, Text.literal("A Random ").append(Text.translatable(Items.ENCHANTED_BOOK.getTranslationKey()))));
       
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Aequalis Reconfiguration", ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore(), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 48)), new ItemStack(Items.AMETHYST_SHARD,48),  (stack, minecraftServer) -> {
-         if(!(ArcanaItemUtils.identifyItem(stack) instanceof AequalisScientia aeq)) return stack;
-         ArcanaItem.putProperty(stack, AequalisScientia.TRANSMUTATION_TAG,"");
-         aeq.buildItemLore(stack,server);
-         return stack;
-      }, Text.literal("An Unattuned ").append(Text.translatable(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem().getTranslationKey()))));
-      
       // Aequalis Scientia Recipes
+      TRANSMUTATION_RECIPES.add(new AequalisUnattuneTransmutationRecipe("Aequalis Reconfiguration"));
+      
       TRANSMUTATION_RECIPES.add(new AequalisSkillTransmutationRecipe("Transfer Skill Points"));
       
       TRANSMUTATION_RECIPES.add(new AequalisCatalystTransmutationRecipe("Reclaim Catalysts"));

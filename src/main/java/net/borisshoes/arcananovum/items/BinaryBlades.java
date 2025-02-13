@@ -406,8 +406,10 @@ public class BinaryBlades extends EnergyItem {
          
          int pulsar = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PULSAR_BLADES);
          int energy = getEnergy(stack);
+         int energyCost = (25*(3-pulsar));
+         int energyGain = 0;
          
-         if(pulsar > 0 && energy > (25*(3-pulsar))){
+         if(pulsar > 0 && energy > energyCost){
             MiscUtils.LasercastResult lasercast = MiscUtils.lasercast(world, player.getEyePos(), player.getRotationVecClient(), 25, true, player);
             float damage = pulsar * 7;
             for(Entity hit : lasercast.sortedHits()){
@@ -419,10 +421,12 @@ public class BinaryBlades extends EnergyItem {
                   }
                }
                hit.damage(player.getServerWorld(), ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,player), damage);
+               ArcanaItem.putProperty(stack,BinaryBlades.LAST_HIT_TAG,20);
+               energyGain += 10;
             }
             ParticleEffectUtils.pulsarBladeShoot(player.getServerWorld(),player.getEyePos().subtract(0,player.getHeight()/4,0),lasercast.endPos(),0);
             SoundUtils.playSound(player.getServerWorld(),player.getBlockPos(),SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS,1.0f,2.0f);
-            addEnergy(stack, -25*(3-pulsar));
+            addEnergy(stack, energyGain-energyCost);
             player.getItemCooldownManager().set(stack,10);
             player.getServerWorld().getChunkManager().sendToNearbyPlayers(player, new EntityAnimationS2CPacket(player, EntityAnimationS2CPacket.SWING_OFF_HAND));
             return ActionResult.SUCCESS;

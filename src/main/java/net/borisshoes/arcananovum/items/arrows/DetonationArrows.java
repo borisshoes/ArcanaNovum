@@ -101,9 +101,10 @@ public class DetonationArrows extends RunicArrow {
       DamageSource source1 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_TERRAIN,arrow.getOwner(),arrow);
       DamageSource source2 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_DAMAGE,arrow.getOwner(),arrow);
       if(personLvl != 3){ // Terrain explosion except when personnel lvl 3
-         arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,(float)(power*(1+.4*blastLvl)),false, World.ExplosionSourceType.TNT);
+         float terrainPower = (float) (blastLvl >= 1 ? power * 2.5f: power);
+         arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,terrainPower,false, World.ExplosionSourceType.TNT);
       }
-      if(blastLvl != 3){ // Damage explosion except when blast lvl 3
+      if(blastLvl == 0){ // Damage explosion except when blast is present
          arrow.getEntityWorld().createExplosion(null, source2, null,pos.x,pos.y,pos.z,(float)(power*0.75*(1+.25*personLvl)),false, World.ExplosionSourceType.NONE);
       }
       

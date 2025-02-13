@@ -47,6 +47,8 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
    public void enableSelectionMode(ItemStack stack){
       selectionModeStack = stack;
       recipes.removeIf(recipe -> recipe instanceof AequalisCatalystTransmutationRecipe || recipe instanceof AequalisSkillTransmutationRecipe);
+      boolean hasImpermanent = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.IMPERMANENT_PERMUTATION) > 0;
+      if(!hasImpermanent) recipes.removeIf(recipe -> recipe instanceof AequalisUnattuneTransmutationRecipe);
    }
    
    @Override
@@ -185,6 +187,23 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
                         .append(permutation.getOutputDescription()).formatted(Formatting.AQUA))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
+                        .append(Text.translatable(recipe.getReagent1().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
+                        .append(Text.literal(reagent2Count+" ").formatted(Formatting.DARK_AQUA))
+                        .append(Text.translatable(recipe.getReagent2().getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
+               }else if(recipe instanceof AequalisUnattuneTransmutationRecipe){
+                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Aequalis Transmutation").formatted(Formatting.AQUA)));
+                  viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Input: ").formatted(Formatting.GRAY))
+                        .append(Text.literal("An Aequalis Scientia").formatted(Formatting.DARK_PURPLE)))));
+                  viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+                        .append(Text.literal("Output: ").formatted(Formatting.DARK_GRAY))
+                        .append(Text.literal("An Unattuned Aequalis Scientia").formatted(Formatting.DARK_PURPLE)))));
                   viewItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                         .append(Text.literal("Reagent: ").formatted(Formatting.LIGHT_PURPLE))
                         .append(Text.literal(reagent1Count+" ").formatted(Formatting.DARK_AQUA))
