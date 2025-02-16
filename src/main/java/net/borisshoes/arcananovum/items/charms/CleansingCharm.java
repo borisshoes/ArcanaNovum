@@ -231,7 +231,7 @@ public class CleansingCharm extends EnergyItem {
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, 0.5f,.8f);
             }
             
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          
          return ActionResult.PASS;

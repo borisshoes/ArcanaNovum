@@ -226,7 +226,7 @@ public class SpawnerHarness extends ArcanaItem {
                      if(scrap) giveScrap(player);
                   }
                   ArcanaNovum.data(player).addXP((int) Math.max(0, ArcanaConfig.getInt(ArcanaRegistry.SPAWNER_HARNESS_USE)*0.15)); // Add xp
-                  return ActionResult.SUCCESS;
+                  return ActionResult.SUCCESS_SERVER;
                }else{
                   player.sendMessage(Text.literal("The harness cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
                   SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -248,7 +248,7 @@ public class SpawnerHarness extends ArcanaItem {
                SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
                buildItemLore(stack,player.getServer());
                
-               return ActionResult.SUCCESS;
+               return ActionResult.SUCCESS_SERVER;
             }
          }catch (Exception e){
             e.printStackTrace();

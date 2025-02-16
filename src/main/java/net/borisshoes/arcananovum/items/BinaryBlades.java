@@ -429,7 +429,7 @@ public class BinaryBlades extends EnergyItem {
             addEnergy(stack, energyGain-energyCost);
             player.getItemCooldownManager().set(stack,10);
             player.getServerWorld().getChunkManager().sendToNearbyPlayers(player, new EntityAnimationS2CPacket(player, EntityAnimationS2CPacket.SWING_OFF_HAND));
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          
          return ActionResult.PASS;

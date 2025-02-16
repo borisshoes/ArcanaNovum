@@ -273,7 +273,7 @@ public class SojournerBoots extends EnergyItem {
                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, stack));
                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 8, player.getEquippedStack(EquipmentSlot.FEET)));
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }else{
             return super.use(world,user,hand);
          }

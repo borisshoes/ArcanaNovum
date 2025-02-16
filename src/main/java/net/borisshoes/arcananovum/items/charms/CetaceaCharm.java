@@ -217,7 +217,7 @@ public class CetaceaCharm extends ArcanaItem {
                SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PUFFER_FISH_BLOW_OUT, 0.5f,0.7f);
             }
             
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          
          return ActionResult.PASS;

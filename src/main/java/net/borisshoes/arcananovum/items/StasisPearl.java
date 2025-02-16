@@ -292,7 +292,7 @@ public class StasisPearl extends EnergyItem {
                      pearlEntity.setStasis(false);
                      putProperty(stack,ACTIVE_TAG,false);
                      playerEntity.getItemCooldownManager().set(stack, 0);
-                     return ActionResult.SUCCESS;
+                     return ActionResult.SUCCESS_SERVER;
                   }
                }
                
@@ -312,7 +312,7 @@ public class StasisPearl extends EnergyItem {
                      pearlEntity.setStasis(true);
                      putProperty(stack,ACTIVE_TAG,true);
                      playerEntity.getItemCooldownManager().set(stack, 0);
-                     return ActionResult.SUCCESS;
+                     return ActionResult.SUCCESS_SERVER;
                   }
                }
                // If this is reached, something went wrong and the pearl needs to be reset
@@ -322,7 +322,7 @@ public class StasisPearl extends EnergyItem {
          }catch(Exception e){
             e.printStackTrace();
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

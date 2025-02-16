@@ -204,7 +204,7 @@ public class AquaticEversource extends ArcanaItem {
                player.sendMessage(Text.literal("The Eversource Condenses").formatted(Formatting.BLUE,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_FILL,1.0f,1.0f);
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          
          Fluid fluid = mode == 1 ? Fluids.EMPTY : Fluids.WATER;
@@ -228,7 +228,7 @@ public class AquaticEversource extends ArcanaItem {
                   playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
                   fluidDrainable.getBucketFillSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
                   world.emitGameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
-                  return ActionResult.SUCCESS;
+                  return ActionResult.SUCCESS_SERVER;
                }
                return ActionResult.FAIL;
             }
@@ -249,7 +249,7 @@ public class AquaticEversource extends ArcanaItem {
                ArcanaAchievements.progress(player,ArcanaAchievements.POCKET_OCEAN.id,1);
                playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
                playerEntity.getItemCooldownManager().set(stack,5);
-               return ActionResult.SUCCESS;
+               return ActionResult.SUCCESS_SERVER;
             }
             return ActionResult.FAIL;
          }

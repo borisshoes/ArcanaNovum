@@ -176,7 +176,7 @@ public class DragonAbilities {
       if(corruptArcanaTicks < 200 && corruptArcanaTicks % 20 == 0){
          List<ServerPlayerEntity> nearbyPlayers300 = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(0,100,0)) <= 300*300);
          for(ServerPlayerEntity player : nearbyPlayers300){
-            float damage = ArcanaItemUtils.getUsedConcentration(player)/8f * (player.getMaxHealth()/20f);
+            float damage = ArcanaItemUtils.getUsedConcentration(player)/16f * (player.getMaxHealth()/20f);
             if(player.isCreative() || player.isSpectator() || damage < 0.1) continue; // Skip creative and spectator players
             
             player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),damage);

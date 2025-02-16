@@ -367,7 +367,7 @@ public class ShulkerCore extends EnergyItem {
          }else if(playerEntity != null){
             levitate(playerEntity,context.getWorld(),context.getHand());
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override
@@ -381,7 +381,7 @@ public class ShulkerCore extends EnergyItem {
          }else{
             levitate(playerEntity,world,hand);
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

@@ -415,7 +415,7 @@ public class LevitationHarness extends EnergyItem {
                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, item));
                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 6, player.getEquippedStack(EquipmentSlot.CHEST)));
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }else{
             return super.use(world, playerEntity, hand);
          }

@@ -278,7 +278,7 @@ public class EverlastingRocket extends EnergyItem {
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override
@@ -310,7 +310,7 @@ public class EverlastingRocket extends EnergyItem {
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
                }
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          return ActionResult.PASS;
       }

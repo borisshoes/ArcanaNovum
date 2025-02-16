@@ -151,7 +151,7 @@ public class FelidaeCharm extends ArcanaItem {
          ItemStack stack = playerEntity.getStackInHand(hand);
          if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_AMBIENT, 1f, (float) (0.5*(Math.random()-0.5)+1));
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

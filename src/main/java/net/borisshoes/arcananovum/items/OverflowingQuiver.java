@@ -217,7 +217,7 @@ public class OverflowingQuiver extends QuiverItem{
             gui.build();
             gui.open();
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

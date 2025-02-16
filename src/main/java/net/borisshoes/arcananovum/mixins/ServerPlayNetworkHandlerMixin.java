@@ -148,6 +148,7 @@ public class ServerPlayNetworkHandlerMixin {
             if(packet.horizontalCollision() && !player.getAbilities().flying){
                player.setVelocity(new Vec3d(player.getVelocity().getX(),0.2,player.getVelocity().getZ()));
                player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
+               player.networkHandler.floatingTicks = 0;
             }
          }
       }

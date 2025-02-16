@@ -501,15 +501,15 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       if(server == null) return;
       
       if(isExalted){ // TODO proper loot table?
-         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(16),getPos());
-         dropItem(getWorld(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(4,12)),getPos());
+         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(24),getPos());
+         dropItem(getWorld(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(8,16)),getPos());
       }else{
          for(int i = 0; i < this.random.nextBetween(4,16); i++){
             ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
             dropItem(getWorld(),stack,getPos());
             dropItem(getWorld(),stack.copyWithCount(1),getPos());
          }
-         dropItem(getWorld(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(2,8)),getPos());
+         dropItem(getWorld(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(4,12)),getPos());
       }
       
       if(summoner == null) return;

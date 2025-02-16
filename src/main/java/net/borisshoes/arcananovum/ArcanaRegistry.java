@@ -48,6 +48,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DamageResistantComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -206,8 +207,9 @@ public class ArcanaRegistry {
    public static final Item SOVEREIGN_ARCANE_PAPER = registerItem("sovereign_arcane_paper", new SovereignArcanePaper("sovereign_arcane_paper", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
          .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
-   public static final Item DIVINE_ARCANE_PAPER = registerItem("divine_arcane_paper", new DivineArcanePaper("divine_arcane_paper", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.EPIC)
-         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true))
+   public static final Item DIVINE_ARCANE_PAPER = registerItem("divine_arcane_paper", new DivineArcanePaper("divine_arcane_paper", new Item.Settings().maxCount(64).rarity(Rarity.EPIC)
+         .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
+         .component(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(ARCANA_ITEM_IMMUNE_TO)))
    );
    public static final Item GRAPHICAL_ITEM = registerItem("graphical_item", new GraphicalItem("graphical_item", new Item.Settings().maxCount(64)));
    

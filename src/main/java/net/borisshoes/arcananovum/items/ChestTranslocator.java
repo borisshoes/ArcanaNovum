@@ -293,7 +293,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

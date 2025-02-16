@@ -432,7 +432,7 @@ public class LightCharm extends ArcanaItem {
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, .3f,2f);
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LIGHT_CHARM_MANUAL)); // Add xp
             ArcanaAchievements.progress(player,ArcanaAchievements.ENLIGHTENED.id,1);
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          return ActionResult.PASS;
       }
@@ -445,7 +445,7 @@ public class LightCharm extends ArcanaItem {
             changeSetting((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
          }
          
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

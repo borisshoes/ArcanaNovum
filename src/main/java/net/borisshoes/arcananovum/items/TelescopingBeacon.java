@@ -356,7 +356,7 @@ public class TelescopingBeacon extends ArcanaItem {
          ItemStack stack = context.getStack();
          NbtList blocks = getListProperty(stack,BLOCKS_TAG, NbtElement.COMPOUND_TYPE);
          boolean hasBeacon = getBooleanProperty(stack,BEACON_TAG);
-         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.SUCCESS;
+         if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.SUCCESS_SERVER;
          
          Direction side = context.getSide();
          BlockPos placePos = hasBeacon ? context.getBlockPos().add(side.getVector()) : context.getBlockPos();
@@ -394,7 +394,7 @@ public class TelescopingBeacon extends ArcanaItem {
             if(!placeState.isOf(Blocks.BEACON) || !(blockEntity instanceof BeaconBlockEntity beaconBlock)){
                playerEntity.sendMessage(Text.literal("No Beacon Present").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
-               return ActionResult.SUCCESS;
+               return ActionResult.SUCCESS_SERVER;
             }
             
             // Scan for support blocks
@@ -458,7 +458,7 @@ public class TelescopingBeacon extends ArcanaItem {
             player.getItemCooldownManager().set(stack,20);
          }
          
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

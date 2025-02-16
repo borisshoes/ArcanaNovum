@@ -447,7 +447,7 @@ public class MagnetismCharm extends ArcanaItem {
          }else{
             activeUse((ServerPlayerEntity) playerEntity, world, stack);
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

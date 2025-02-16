@@ -65,7 +65,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    
    public void setStasis(boolean stasis){
       inStasis = stasis;
-      ArcanaItem.putProperty(pearlStack, StasisPearl.ACTIVE_TAG,stasis);
+      ArcanaItem.putProperty(pearlStack, StasisPearl.ACTIVE_TAG,stasis); // For visuals only, not related to stack in inventory
       ArcanaItem.putProperty(pearlStack, StasisPearl.PEARL_ID_TAG,stasis ? "-" : "");
       
       if(inStasis){
@@ -101,20 +101,29 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
          }
       }
       
+      // Update holder every second
       MinecraftServer server = this.getServer();
       if(server != null){
-         // Update holder every second
          if(server.getTicks() % 20 == 0){
-            ServerPlayerEntity holder = ArcanaItemUtils.findHolder(server,itemStackId);
-            if(holder != null && holder.networkHandler.isConnectionOpen()){
-               setOwner(holder);
-            }
+            resyncHolder();
          }
          
          if(this.getWorld() instanceof ServerWorld serverWorld){
             ParticleEffectUtils.stasisPearl(serverWorld,getPos());
          }
       }
+      
+   }
+   
+   public void resyncHolder(){
+      ServerPlayerEntity holder = ArcanaItemUtils.findHolder(this.getServer(),itemStackId);
+      if(holder != null && holder.networkHandler.isConnectionOpen()){
+         setOwner(holder);
+         ItemStack stack = ArcanaItemUtils.getHolderStack(holder,itemStackId);
+         ArcanaItem.putProperty(stack, StasisPearl.PEARL_ID_TAG, this.getUuidAsString());
+         ArcanaItem.putProperty(stack, StasisPearl.ACTIVE_TAG, this.inStasis);
+      }
+      
    }
    
    @Override

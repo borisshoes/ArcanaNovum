@@ -362,7 +362,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          
          serverWorld.spawnParticles(particleType,pos.getX(),pos.getY(),pos.getZ(),1,0.1,0.1,0.1,0);
       }
-      return ActionResult.SUCCESS;
+      return ActionResult.SUCCESS_SERVER;
    }
    
    private ActionResult pyroblast(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
@@ -421,7 +421,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       ParticleEffectUtils.line(serverWorld,null,startPos.subtract(0,.3,0),center,particleType,(int)(center.distanceTo(startPos)*4),1,0,0);
       serverWorld.spawnParticles(particleType,center.getX(),center.getY(),center.getZ(),100,0.1,0.1,0.1,0.4);
       
-      return ActionResult.SUCCESS;
+      return ActionResult.SUCCESS_SERVER;
    }
    
    private ActionResult fireweb(PlayerEntity playerEntity, World world, ItemStack itemStack, int lvl){
@@ -484,7 +484,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          player.sendMessage(Text.literal(message.toString()).formatted(color), true);
       }
       
-      return ActionResult.SUCCESS;
+      return ActionResult.SUCCESS_SERVER;
    }
    
    private ActionResult toggleActive(ServerPlayerEntity player, ItemStack item){
@@ -499,7 +499,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          player.sendMessage(Text.literal("The Charm's Heat Calms").formatted(color,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, .3f,.8f);
       }
-      return ActionResult.SUCCESS;
+      return ActionResult.SUCCESS_SERVER;
    }
    
    private boolean inCone(PlayerEntity user, Vec3d targetPos){

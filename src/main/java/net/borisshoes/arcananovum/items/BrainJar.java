@@ -302,7 +302,7 @@ public class BrainJar extends EnergyItem {
          }else{
             openGui(playerEntity, stack);
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override
@@ -310,7 +310,7 @@ public class BrainJar extends EnergyItem {
          PlayerEntity playerEntity = context.getPlayer();
          ItemStack stack = context.getStack();
          openGui(playerEntity, stack);
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

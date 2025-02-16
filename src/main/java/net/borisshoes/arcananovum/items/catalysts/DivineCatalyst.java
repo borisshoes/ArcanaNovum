@@ -35,6 +35,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -165,13 +166,14 @@ public class DivineCatalyst extends ArcanaItem {
          PlayerEntity playerEntity = context.getPlayer();
          BlockPos pos = context.getBlockPos();
          BlockState state = world.getBlockState(pos);
-         boolean canSpawn = true;
-         if(playerEntity instanceof ServerPlayerEntity serverPlayer){
+         boolean canSpawn = world.getDifficulty() != Difficulty.PEACEFUL;
+         if(canSpawn && playerEntity instanceof ServerPlayerEntity serverPlayer){
             canSpawn = ArcanaNovum.data(serverPlayer).hasResearched(ArcanaRegistry.NUL_MEMENTO);
          }
          
          if(state.isOf(Blocks.NETHERITE_BLOCK) && pos.getY() >= world.getBottomY() && canSpawn){ // Check construct
-            BlockPattern.Result patternResult = getConstructPattern().searchAround(world, pos);
+            BlockPattern pattern = getConstructPattern();
+            BlockPattern.Result patternResult = pattern.searchAround(world, pos.add(-1,-1,-1));
             if(patternResult != null){
                NulConstructEntity constructEntity = (NulConstructEntity) ArcanaRegistry.NUL_CONSTRUCT_ENTITY.create(world, SpawnReason.TRIGGERED);
                if(constructEntity != null && world instanceof ServerWorld serverWorld){
@@ -190,7 +192,7 @@ public class DivineCatalyst extends ArcanaItem {
                   
                   context.getStack().decrement(1);
                }
-               return ActionResult.SUCCESS;
+               return ActionResult.SUCCESS_SERVER;
             }
          }
          return ActionResult.PASS;

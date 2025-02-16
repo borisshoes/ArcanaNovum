@@ -49,7 +49,7 @@ public interface CauldronBehaviorMixin {
                player.incrementStat(Stats.CLEAN_ARMOR);
                LeveledCauldronBlock.decrementFluidLevel(state, world, pos);
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
       };
       
@@ -66,7 +66,7 @@ public interface CauldronBehaviorMixin {
                stack.remove(DataComponentTypes.BASE_COLOR);
                LeveledCauldronBlock.decrementFluidLevel(state, world, pos);
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
       });
       
@@ -87,7 +87,7 @@ public interface CauldronBehaviorMixin {
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AQUATIC_EVERSOURCE_USE)); // Add xp
             ArcanaAchievements.progress(serverPlayer,ArcanaAchievements.POCKET_OCEAN.id,1);
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
       
       waterCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
@@ -110,7 +110,7 @@ public interface CauldronBehaviorMixin {
             }
             serverPlayer.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
       
       lavaCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
@@ -128,7 +128,7 @@ public interface CauldronBehaviorMixin {
                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
       
       snowCauldronMap.put(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
@@ -146,7 +146,7 @@ public interface CauldronBehaviorMixin {
                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
       
       
@@ -177,7 +177,7 @@ public interface CauldronBehaviorMixin {
             ArcanaItem.putProperty(stack,MagmaticEversource.USES_TAG,charges-1);
             eversource.buildItemLore(stack, serverPlayer.getServer());
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
       
       lavaCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
@@ -196,7 +196,7 @@ public interface CauldronBehaviorMixin {
                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
       
       waterCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
@@ -216,7 +216,7 @@ public interface CauldronBehaviorMixin {
                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
       
       snowCauldronMap.put(ArcanaRegistry.MAGMATIC_EVERSOURCE.getItem(), (state, world, pos, player, hand, stack) -> {
@@ -235,7 +235,7 @@ public interface CauldronBehaviorMixin {
                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       });
    }
 }

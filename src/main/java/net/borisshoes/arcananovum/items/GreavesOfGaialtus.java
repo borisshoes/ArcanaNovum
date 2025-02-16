@@ -314,7 +314,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
             PlayerInventory inv = player.getInventory();
             player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, stack));
             player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 7, player.getEquippedStack(EquipmentSlot.LEGS)));
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          return super.use(world,playerEntity,hand);
       }

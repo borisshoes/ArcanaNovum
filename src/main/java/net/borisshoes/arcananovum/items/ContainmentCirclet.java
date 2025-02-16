@@ -164,12 +164,12 @@ public class ContainmentCirclet extends ArcanaItem {
       if(!contents.isEmpty()){
          user.sendMessage(Text.literal("The Circlet is occupied").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       if(entity.getType().isIn(ArcanaRegistry.CONTAINMENT_CIRCLET_DISALLOWED) || entity.isDead()){
          user.sendMessage(Text.literal("The Circlet cannot contain this creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       boolean hostiles = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CONFINEMENT.id) > 0;
@@ -190,7 +190,7 @@ public class ContainmentCirclet extends ArcanaItem {
          buildItemLore(stack,user.getServer());
       }
       
-      return ActionResult.SUCCESS;
+      return ActionResult.SUCCESS_SERVER;
    }
    
    @Override
@@ -282,7 +282,7 @@ public class ContainmentCirclet extends ArcanaItem {
                }
             }
             buildItemLore(stack,serverWorld.getServer());
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          
          return ActionResult.PASS;

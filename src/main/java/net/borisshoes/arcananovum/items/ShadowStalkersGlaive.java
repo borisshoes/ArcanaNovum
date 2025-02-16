@@ -314,7 +314,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                      living.addStatusEffect(blind);
                   }
                   
-                  return ActionResult.SUCCESS;
+                  return ActionResult.SUCCESS_SERVER;
                }
             }else{
                player.sendMessage(TextUtils.withColor(Text.literal("The Glaive Needs At Least 4 Charges"),ArcanaColors.NUL_COLOR),true);
@@ -342,7 +342,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                StatusEffectInstance invis = new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, invisDur, 0, false, false, true);
                player.addStatusEffect(invis);
                
-               return ActionResult.SUCCESS;
+               return ActionResult.SUCCESS_SERVER;
             }else{
                player.sendMessage(TextUtils.withColor(Text.literal("The Glaive Needs At Least 1 Charge"),ArcanaColors.NUL_COLOR),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);

@@ -231,7 +231,7 @@ public class FeastingCharm extends ArcanaItem {
       @Override
       public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          toggleMode((ServerPlayerEntity) playerEntity,playerEntity.getStackInHand(hand));
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

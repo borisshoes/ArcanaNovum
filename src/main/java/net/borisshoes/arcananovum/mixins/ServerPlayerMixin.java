@@ -1,9 +1,11 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.entities.StasisPearlEntity;
 import net.borisshoes.arcananovum.items.SojournerBoots;
 import net.borisshoes.arcananovum.research.EffectResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTask;
@@ -18,6 +20,7 @@ import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
@@ -36,8 +39,15 @@ import static net.borisshoes.arcananovum.ArcanaNovum.PLAYER_MOVEMENT_TRACKER;
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
    
+   @Inject(method = "method_64127", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;addEnderPearlTicket(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/ChunkPos;)J"))
+   private void arcananovum_readdStasisPearls(NbtElement enderPearlNbt, CallbackInfo ci, @Local Entity entity){
+      if(entity instanceof StasisPearlEntity stasisPearl){
+         stasisPearl.resyncHolder();
+      }
+   }
+   
    @Inject(method = "onTeleportationDone", at = @At("HEAD"))
-   private void archetypes_resetVelTrackerTeleport(CallbackInfo ci){
+   private void arcananovum_resetVelTrackerTeleport(CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       if(PLAYER_MOVEMENT_TRACKER.containsKey(player)){
          PLAYER_MOVEMENT_TRACKER.put(player, new Pair<>(player.getPos(), new Vec3d(0,0,0)));

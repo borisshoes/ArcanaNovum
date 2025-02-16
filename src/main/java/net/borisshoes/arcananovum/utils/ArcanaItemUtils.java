@@ -119,18 +119,23 @@ public class ArcanaItemUtils {
    
    public static ServerPlayerEntity findHolder(MinecraftServer server, String uuid){
       for(ServerPlayerEntity player : server.getPlayerManager().getPlayerList()){
-         PlayerInventory inv = player.getInventory();
-         for(int i=0; i<inv.size();i++){
-            ItemStack item = inv.getStack(i);
-            if(item.isEmpty()){
-               continue;
-            }
-            
-            ArcanaItem arcanaItem = identifyItem(item);
-            if(arcanaItem != null){
-               String itemUuid = ArcanaItem.getUUID(item);
-               if(uuid.equals(itemUuid)) return player;
-            }
+         if(getHolderStack(player, uuid) != null) return player;
+      }
+      return null;
+   }
+   
+   public static ItemStack getHolderStack(ServerPlayerEntity player, String uuid){
+      PlayerInventory inv = player.getInventory();
+      for(int i=0; i<inv.size();i++){
+         ItemStack item = inv.getStack(i);
+         if(item.isEmpty()){
+            continue;
+         }
+         
+         ArcanaItem arcanaItem = identifyItem(item);
+         if(arcanaItem != null){
+            String itemUuid = ArcanaItem.getUUID(item);
+            if(uuid.equals(itemUuid)) return item;
          }
       }
       return null;

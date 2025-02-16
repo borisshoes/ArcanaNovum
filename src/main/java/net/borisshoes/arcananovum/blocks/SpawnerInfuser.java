@@ -226,7 +226,7 @@ public class SpawnerInfuser extends ArcanaBlock {
                infuser.openGui(player);
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

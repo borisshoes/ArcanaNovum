@@ -338,7 +338,7 @@ public class PearlOfRecall extends EnergyItem {
                }
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

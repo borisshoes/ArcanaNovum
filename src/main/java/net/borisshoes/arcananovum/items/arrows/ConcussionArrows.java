@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
+import net.borisshoes.arcananovum.entities.NulConstructEntity;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -107,7 +108,7 @@ public class ConcussionArrows extends RunicArrow {
       float percent = (1+levelBoost*.75f)*range/6;
       int mobsHit = 0;
       for(Entity entity : entities){
-         if(entity instanceof LivingEntity e && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity)){
+         if(entity instanceof LivingEntity e && !(entity instanceof EnderDragonEntity || entity instanceof WitherEntity || entity instanceof NulConstructEntity)){
             if(e instanceof MobEntity) mobsHit++;
             
             StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, (int)(25*percent), 2, false, false, true);

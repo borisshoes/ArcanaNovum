@@ -229,7 +229,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
             gui.build();
             gui.open();
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

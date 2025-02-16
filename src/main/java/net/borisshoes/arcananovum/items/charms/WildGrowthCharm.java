@@ -308,7 +308,7 @@ public class WildGrowthCharm extends ArcanaItem {
                   SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
                }
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          return ActionResult.PASS;
       }
@@ -333,7 +333,7 @@ public class WildGrowthCharm extends ArcanaItem {
                playerEntity.sendMessage(Text.literal("The Charm Recedes").formatted(Formatting.GREEN,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BONE_MEAL_USE, 2f,.5f);
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          
          if(ArcanaAugments.getAugmentOnItem(context.getStack(),ArcanaAugments.CHARM_OF_BLOOMING.id) < 1){
@@ -344,7 +344,7 @@ public class WildGrowthCharm extends ArcanaItem {
             if(!world.isClient){
                world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          BlockState blockState = world.getBlockState(blockPos);
          boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
@@ -352,7 +352,7 @@ public class WildGrowthCharm extends ArcanaItem {
             if(!world.isClient){
                world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos2, 15);
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          return ActionResult.PASS;
       }

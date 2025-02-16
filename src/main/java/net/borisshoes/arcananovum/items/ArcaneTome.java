@@ -198,7 +198,7 @@ public class ArcaneTome extends ArcanaItem {
       @Override
       public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          openGui(playerEntity, TomeGui.TomeMode.PROFILE,new TomeGui.CompendiumSettings(0,0));
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

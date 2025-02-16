@@ -20,7 +20,7 @@ public class BlockAttackCallback {
          if(ArcanaItemUtils.isLeftClickItem(item)){
             arcanaItem = ArcanaItemUtils.identifyLeftClickItem(item);
             boolean useReturn = arcanaItem.attackBlock(playerEntity, world, hand, blockPos, direction);
-            result = useReturn ? ActionResult.PASS : ActionResult.SUCCESS;
+            result = useReturn ? ActionResult.PASS : ActionResult.SUCCESS_SERVER;
          }
          
          return result;

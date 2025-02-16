@@ -254,7 +254,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
             gui.build();
             gui.open();
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

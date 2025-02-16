@@ -242,7 +242,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
                }
             }
          }
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
       
       @Override

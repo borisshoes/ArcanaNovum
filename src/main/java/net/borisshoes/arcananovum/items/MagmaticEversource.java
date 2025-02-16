@@ -253,7 +253,7 @@ public class MagmaticEversource extends EnergyItem {
                player.sendMessage(Text.literal("The Eversource Condenses").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUCKET_FILL_LAVA,1.0f,1.0f);
             }
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          
          if(mode != 1 && charges <= 0){
@@ -283,7 +283,7 @@ public class MagmaticEversource extends EnergyItem {
                   playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
                   fluidDrainable.getBucketFillSound().ifPresent(sound -> playerEntity.playSound(sound, 1.0f, 1.0f));
                   world.emitGameEvent(playerEntity, GameEvent.FLUID_PICKUP, blockPos);
-                  return ActionResult.SUCCESS;
+                  return ActionResult.SUCCESS_SERVER;
                }
                return ActionResult.FAIL;
             }
@@ -295,7 +295,7 @@ public class MagmaticEversource extends EnergyItem {
                putProperty(stack,USES_TAG,charges-1);
                buildItemLore(stack, playerEntity.getServer());
                playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
-               return ActionResult.SUCCESS;
+               return ActionResult.SUCCESS_SERVER;
             }
             return ActionResult.FAIL;
          }

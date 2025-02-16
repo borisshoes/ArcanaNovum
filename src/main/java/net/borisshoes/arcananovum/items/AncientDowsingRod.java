@@ -268,7 +268,7 @@ public class AncientDowsingRod extends EnergyItem {
             }
          }
          
-         return ActionResult.SUCCESS;
+         return ActionResult.SUCCESS_SERVER;
       }
    }
 }

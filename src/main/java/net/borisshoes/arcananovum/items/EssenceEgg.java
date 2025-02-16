@@ -284,7 +284,7 @@ public class EssenceEgg extends ArcanaItem {
                }
             }
             
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }catch(Exception e){
             e.printStackTrace();
             return ActionResult.PASS;
@@ -297,7 +297,7 @@ public class EssenceEgg extends ArcanaItem {
          if(playerEntity.isCreative()){
             if(!getType(item).equals("unattuned"))
                addUses(item,1);
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
          }
          return ActionResult.PASS;
       }
