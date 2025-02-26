@@ -115,7 +115,7 @@ public class TickCallback {
                }
             }
             
-            if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.0000075){
+            if(ArcanaItemUtils.hasItemInInventory(player, Items.DRAGON_EGG) && Math.random() < 0.0000075){ //0.0000075
                dragonEggDialog(player);
             }
             
@@ -264,15 +264,15 @@ public class TickCallback {
    
    public static void dragonEggDialog(ServerPlayerEntity player){
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
-      // Conditions: 0 - Crafted Memento, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Aequalis, 5 - Crafted Memento and Aequalis, 6 - Has Aequalis and Memento
+      // Conditions: 0 - Crafted Memento, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Aequalis, 5 - Has Greaves, 6 - Has Spear
       boolean[] conditions = new boolean[]{
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
-            ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO) && ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
-            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()) && ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()),
       };
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -283,7 +283,7 @@ public class TickCallback {
                   .append(Text.literal("\nINSOLENT INSECT! Do you intend to carry me as your trophy for all eternity!?").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -293,7 +293,7 @@ public class TickCallback {
                   .append(Text.literal("\nRelease me at once! And I will grant you a swift death for your defiance!").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -303,7 +303,7 @@ public class TickCallback {
                   .append(Text.literal("\nI have been banished to this Egg more times than there are islands in my sky! My return is inevitable!").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -313,7 +313,7 @@ public class TickCallback {
                   .append(Text.literal("\nYou do not know what it means to suffer! Upon my return I shall teach you myself!").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -333,7 +333,7 @@ public class TickCallback {
                   .append(Text.literal("\nThose mewling kids call themselves Gods... I AM THE TRUE ASCENDANT!! And one day, they will yield to me!").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
-      ),new int[]{},0,1,5));
+      ),new int[]{},0,1,0b11));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -343,7 +343,59 @@ public class TickCallback {
                   .append(Text.literal("\nThat Old Fool left behind a pickaxe? Well, I guess Ceptyus wasn't so foolish after all...").formatted(Formatting.DARK_PURPLE))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
-      ),new int[]{},0,1,2));
+      ),new int[]{},0,1,0b100));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nTake that Spear and return it to oblivion! Nothing good ever comes of anything bearing its name.").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},0,1,0b1000000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nI hoped to never see that dreaded storm ever again. Do your self a favor and throw that Spear into the void.").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},0,1,0b1000000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nThe scent on those Greaves smells faintly familiar... where do I know this from?").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{},0,1,0b100000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nI still remember what it was like to be impaled by dozens of those Spears. An agony nearly unparalleled...\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nWill you ever share with us what truly happened back then? Maybe sharing will help give you some peace.\n").formatted(Formatting.AQUA)),
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nWill you ever just leave me alone like I ask!?\n").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.4f,1.5f))
+      ),new int[]{0,80},0,1,0b1010000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -359,7 +411,7 @@ public class TickCallback {
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,1.4f))
-      ),new int[]{0,80},0,1,3));
+      ),new int[]{0,80},0,1,0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -375,7 +427,7 @@ public class TickCallback {
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
-      ),new int[]{0,100},0,1,3));
+      ),new int[]{0,100},0,1,0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -397,7 +449,7 @@ public class TickCallback {
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.9f))
-      ),new int[]{0,100,100},0,1,4));
+      ),new int[]{0,100,100},0,1,0b10000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -473,7 +525,7 @@ public class TickCallback {
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.1f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
-      ),new int[]{0,80,100,80,80,140,120,120,80,160,80,140},0,1,6));
+      ),new int[]{0,80,100,80,80,140,120,120,80,160,80,140},0,1,0b11000));
       
       DialogHelper helper = new DialogHelper(dialogOptions,conditions);
       helper.sendDialog(List.of(player),helper.getWeightedResult(),true);

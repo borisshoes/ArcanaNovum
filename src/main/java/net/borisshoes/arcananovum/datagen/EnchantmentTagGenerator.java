@@ -20,6 +20,7 @@ public class EnchantmentTagGenerator extends FabricTagProvider<Enchantment> {
       getOrCreateTagBuilder(ArcanaRegistry.FATE_ANCHOR_EXCLUSIVE_SET)
             .addOptional(ArcanaRegistry.FATE_ANCHOR)
             .add(Enchantments.VANISHING_CURSE)
+            .add(Enchantments.BINDING_CURSE)
       ;
    }
    

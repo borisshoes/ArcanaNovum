@@ -408,13 +408,15 @@ public class NulMemento extends EnergyItem {
    
    public void inventoryDialog(ServerPlayerEntity player){
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
-      // Conditions: 0 - Crafted Wings, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Aequalis, 4 - Has Egg
+      // Conditions: 0 - Crafted Wings, 1 - Crafted Aequalis, 2 - Has Ceptyus Pickaxe, 3 - Has Aequalis, 4 - Has Egg, 5 - Has Greaves, 6 - Has Spear
       boolean[] conditions = new boolean[]{
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.AEQUALIS_SCIENTIA),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.AEQUALIS_SCIENTIA.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()),
       };
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -424,7 +426,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("My Chosen... Will you continue show the courage that your peers lack?").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -433,7 +435,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("My dear Player, will you help us revitalize these realms to new heights?").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -442,7 +444,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("Everything faces me once... Few have ever faced me twice.").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -451,7 +453,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("Take care in the dark secrets you seek. For only I can ever take them away.").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -460,7 +462,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("What do you think of my Sister's realm? Do you see the need for my mission now?").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b1));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -469,7 +471,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("So you've met my kin, Equayus? What sort of exchange did you have?").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,1));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -478,7 +480,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("I sense my kin's Arcana on you... I trust your deal was worthwhile.").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,1));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -487,7 +489,7 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("Equayus and I might not always see eye to eye, but we both have these realms' best intentions at heart.").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,1));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -496,7 +498,41 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
             Text.literal("")
                   .append(Text.literal("A relic of Ceptyus?! How fascinating! I wonder if it was forgotten as they fled.").formatted(Formatting.DARK_GRAY))
-      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,2));
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b100));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
+            Text.literal("")
+                  .append(Text.literal("Gaialtus turned its back on this world and left it to fall to ruin. What good is a creator that abandons their creation?").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b100000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
+            Text.literal("")
+                  .append(Text.literal("If Gaialtus was still here, none of my work would be necessary. Yet here I am, picking up its slack to maintain peace.").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b100000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nGaialtus's negligence is responsible for the decay that has befallen our world. Don't let those trousers sway your mind.\n").formatted(Formatting.DARK_GRAY)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nBrother, you know not of what you speak. Decay is sometimes a necessary precursor to greater regrowth.").formatted(Formatting.AQUA))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
+      ),new int[]{0,90},0,1,0b101000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -512,7 +548,47 @@ public class NulMemento extends EnergyItem {
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,60},0,1,3));
+      ),new int[]{0,60},0,1,0b1000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
+            Text.literal("")
+                  .append(Text.literal("That Spear you wield harnesses shadow Arcana far darker than anything I have seen, It's almost frightening. Be cautious with it.").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b1000000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)),
+            Text.literal("")
+                  .append(Text.literal("I never knew such vitriol could come from a mere Spear. Tenbrous must've been quite powerful.").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},0,1,0b1000000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nYou carry an intriguing weapon... I know little of Tenbrous, I wish we had the chance to meet.\n").formatted(Formatting.DARK_GRAY)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nNo one will have to meet that monster EVER again! I made sure of it!\n").formatted(Formatting.DARK_PURPLE)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nAre you sure whatever you did was truly permanent? Such a shame all that power went to waste on you...").formatted(Formatting.DARK_GRAY))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.5f,1.4f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
+      ),new int[]{0,60,60},0,1,0b1010000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -534,7 +610,7 @@ public class NulMemento extends EnergyItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,1.2f))
-      ),new int[]{0,60,60},0,1,3));
+      ),new int[]{0,60,60},0,1,0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -556,7 +632,7 @@ public class NulMemento extends EnergyItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.5f,1.4f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
-      ),new int[]{0,60,60},0,1,4));
+      ),new int[]{0,60,60},0,1,0b10000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -590,7 +666,7 @@ public class NulMemento extends EnergyItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.1f,0.6f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))
-      ),new int[]{0,80,100,80,60},0,1,4));
+      ),new int[]{0,80,100,80,60},0,1,0b10000));
       
       
       DialogHelper helper = new DialogHelper(dialogOptions,conditions);
@@ -694,7 +770,7 @@ public class NulMemento extends EnergyItem {
          }
          
          // 0.0000075 ~ 120 minutes between voice lines
-         if(Math.random() < 0.0000075){
+         if(Math.random() < 0.0000075){ // 0.0000075
             inventoryDialog(player);
          }
       }

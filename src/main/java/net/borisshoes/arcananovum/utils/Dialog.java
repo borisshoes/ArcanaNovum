@@ -9,11 +9,18 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 
-public record Dialog(ArrayList<MutableText> message, ArrayList<DialogSound> sounds, int[] delay, int weightNoCond, int weightWithCond, int condInd){
+public record Dialog(ArrayList<MutableText> message, ArrayList<DialogSound> sounds, int[] delay, int weightNoCond, int weightWithCond, int condMask){
    
    public int getWeight(boolean[] args){
-      if(condInd == -1) return weightWithCond;
-      return (args.length > condInd && args[condInd]) ? weightWithCond : weightNoCond;
+      int bitflag = condMask;
+      for(int i = 0; bitflag > 0 && i < args.length; i++, bitflag >>= 1){
+         if((bitflag & 1) == 1){
+            if(!args[i]){
+               return weightNoCond;
+            }
+         }
+      }
+      return weightWithCond;
    }
    
    public record DialogSound(SoundEvent soundEvent, float volume, float pitch){

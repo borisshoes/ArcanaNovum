@@ -488,7 +488,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       NulConstructDialog.announce(summoner.getServer(),summoner,this, Announcements.SUMMON_TEXT);
       NulConstructEntity construct = this;
       ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), () -> {
-         NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine,summonerHasWings,false, isExalted});
+         NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
          setHealth(getMaxHealth());
       }));
    }
@@ -528,7 +528,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
-      NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasDivine,summonerHasWings,dropped&&!isExalted, isExalted, isExalted &&dropped, isExalted &&!dropped});
+      NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, dropped, !dropped, isExalted, !isExalted});
       
       if(summoner instanceof ServerPlayerEntity player){
          ArcanaAchievements.grant(player,ArcanaAchievements.CONSTRUCT_DECONSTRUCTED.id);
@@ -540,7 +540,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    public void deconstruct(){
       if(summoner != null){
-         NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasDivine,summonerHasWings,false, isExalted});
+         NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
       }
       
       dropItem(getWorld(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1),getPos());
@@ -1720,7 +1720,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Dark Presence").formatted(Formatting.DARK_GRAY, Formatting.ITALIC, Formatting.BOLD))
                      .append(Text.literal(" Looms...").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,0b0));
          
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -1730,7 +1730,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal("? They know not what they are toying with...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Those unworthy of ").formatted(Formatting.DARK_GRAY))
@@ -1739,14 +1739,14 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("nothing").formatted(Formatting.GRAY))
                      .append(Text.literal("...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Player").formatted(Formatting.GOLD))
                      .append(Text.literal(" grow bolder by the minute. Perhaps they need to be put in their place.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
@@ -1755,7 +1755,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal("? Let them try...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Of all the ").formatted(Formatting.DARK_GRAY))
@@ -1768,7 +1768,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Death").formatted(Formatting.GRAY))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I am the ").formatted(Formatting.DARK_GRAY))
@@ -1785,7 +1785,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("latter").formatted(Formatting.BLUE))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,0b0));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("So you have defeated ").formatted(Formatting.DARK_GRAY))
@@ -1796,7 +1796,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Death").formatted(Formatting.GRAY, Formatting.BOLD))
                      .append(Text.literal("!?").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,0b10));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I watched as you defeated ").formatted(Formatting.DARK_GRAY))
@@ -1807,7 +1807,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("indolent").formatted(Formatting.DARK_RED))
                      .append(Text.literal(" as her.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,0b10));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You have tasted the ").formatted(Formatting.DARK_GRAY))
@@ -1816,7 +1816,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("greed").formatted(Formatting.GOLD))
                      .append(Text.literal(" is not your downfall.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0));
+         )),new ArrayList<>(),new int[]{},0,10,0b1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Just because you already carry the ").formatted(Formatting.DARK_GRAY))
@@ -1825,7 +1825,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("entitled").formatted(Formatting.GOLD))
                      .append(Text.literal(" to more.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0));
+         )),new ArrayList<>(),new int[]{},0,10,0b1));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("So you would sacrifice my ").formatted(Formatting.DARK_GRAY))
@@ -1834,7 +1834,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("favor").formatted(Formatting.GOLD))
                      .append(Text.literal("? Let's see if you're worth it...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,0b100000));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You reject my ").formatted(Formatting.DARK_GRAY))
@@ -1843,7 +1843,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("worthy").formatted(Formatting.GOLD))
                      .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,0b100000));
          DIALOG.get(Announcements.SUMMON_DIALOG).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("If you want my ").formatted(Formatting.DARK_GRAY))
@@ -1852,7 +1852,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("real").formatted(Formatting.GOLD, Formatting.ITALIC))
                      .append(Text.literal(" challenge!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,0b100000));
          
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -1862,7 +1862,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" power.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Impressive, I have imbued your ").formatted(Formatting.DARK_GRAY))
@@ -1871,7 +1871,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Divine Energy").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(", I'm curious as to how you'll use it.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You have defeated my ").formatted(Formatting.DARK_GRAY))
@@ -1881,13 +1881,13 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal(" remains for your ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Catalyst").formatted(Formatting.GOLD)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Death").formatted(Formatting.GRAY))
                      .append(Text.literal(" does not come for you today, I shall grant you what you have sought.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
@@ -1896,14 +1896,14 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("true power").formatted(Formatting.LIGHT_PURPLE))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A valiant fight! ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" must be getting nervous. Perhaps she will finally learn her lesson...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},1,0,1));
+         )),new ArrayList<>(),new int[]{},1,0,0b100));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I can see how you defeated ").formatted(Formatting.DARK_GRAY))
@@ -1914,7 +1914,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Construct").formatted(Formatting.GRAY))
                      .append(Text.literal(" to greet you.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,0b10));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You helped my ").formatted(Formatting.DARK_GRAY))
@@ -1923,7 +1923,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Boon").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" and may we meet again.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,0b10));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You have earned your ").formatted(Formatting.DARK_GRAY))
@@ -1934,14 +1934,14 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("personally").formatted(Formatting.DARK_RED, Formatting.ITALIC))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,1));
+         )),new ArrayList<>(),new int[]{},0,10,0b1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("It seems you are worthy enough to add another piece of the ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(" to your collection.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,10,0));
+         )),new ArrayList<>(),new int[]{},0,10,0b1));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You are unlike any I have seen before. Perhaps you are worthy of my ").formatted(Formatting.DARK_GRAY))
@@ -1950,7 +1950,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Memento").formatted(Formatting.BLACK, Formatting.BOLD))
                      .append(Text.literal(" shall be my gift to you.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,-1,2));
+         )),new ArrayList<>(),new int[]{},0,-1,0b1001000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You did well to survive my ").formatted(Formatting.DARK_GRAY))
@@ -1959,7 +1959,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("impress").formatted(Formatting.GOLD))
                      .append(Text.literal(" me.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,5));
+         )),new ArrayList<>(),new int[]{},0,200,0b110000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("You may have survived, but your performance showed ").formatted(Formatting.DARK_GRAY))
@@ -1968,7 +1968,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("tolerate").formatted(Formatting.GOLD))
                      .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,5));
+         )),new ArrayList<>(),new int[]{},0,200,0b110000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("So your").formatted(Formatting.DARK_GRAY))
@@ -1981,7 +1981,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("wisdom").formatted(Formatting.BLUE))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,4));
+         )),new ArrayList<>(),new int[]{},0,200,0b101000));
          DIALOG.get(Announcements.SUCCESS).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
@@ -1994,7 +1994,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("guide").formatted(Formatting.BLUE))
                      .append(Text.literal(" you well.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,4));
+         )),new ArrayList<>(),new int[]{},0,200,0b101000));
          
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
@@ -2002,7 +2002,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Player").formatted(Formatting.GOLD))
                      .append(Text.literal(", not worthy of my time.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},5,5,-1));
+         )),new ArrayList<>(),new int[]{},5,5,0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Such a simple ").formatted(Formatting.DARK_GRAY))
@@ -2011,7 +2011,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Divine").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD))
                      .append(Text.literal(".").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Such a small sample of ").formatted(Formatting.DARK_GRAY))
@@ -2020,7 +2020,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("harnessing").formatted(Formatting.BLUE))
                      .append(Text.literal(" it in the first place?").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("An expected result from calling upon the ").formatted(Formatting.GRAY))
@@ -2028,14 +2028,14 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal(" of Death").formatted(Formatting.GRAY, Formatting.BOLD))
                      .append(Text.literal(". Do not waste my time again.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Arrogant enough to tempt ").formatted(Formatting.DARK_GRAY))
                      .append(Text.literal("Death").formatted(Formatting.GRAY))
                      .append(Text.literal("... I can't fathom how you expected to win.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},3,3,-1));
+         )),new ArrayList<>(),new int[]{},3,3,0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("There is ").formatted(Formatting.DARK_GRAY))
@@ -2044,7 +2044,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("wisdom").formatted(Formatting.AQUA))
                      .append(Text.literal(" to find it.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("This ").formatted(Formatting.DARK_GRAY))
@@ -2053,7 +2053,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("foolish").formatted(Formatting.DARK_RED))
                      .append(Text.literal(" enough to find out why.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},1,1,-1));
+         )),new ArrayList<>(),new int[]{},1,1,0b0));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("A ").formatted(Formatting.DARK_GRAY))
@@ -2064,7 +2064,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("her").formatted(Formatting.DARK_PURPLE))
                      .append(Text.literal(" couldn't get any lower.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,20,1));
+         )),new ArrayList<>(),new int[]{},0,20,0b10));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Whatever petty tricks got you the ").formatted(Formatting.DARK_GRAY))
@@ -2073,7 +2073,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("Knowledge").formatted(Formatting.BLUE))
                      .append(Text.literal(" must be earned!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,20,0));
+         )),new ArrayList<>(),new int[]{},0,20,0b1));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("I always knew you were too ").formatted(Formatting.DARK_GRAY))
@@ -2082,7 +2082,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("power").formatted(Formatting.LIGHT_PURPLE))
                      .append(Text.literal("...").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,150,3));
+         )),new ArrayList<>(),new int[]{},0,150,0b100000));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("An interesting ").formatted(Formatting.DARK_GRAY))
@@ -2091,7 +2091,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("skilled").formatted(Formatting.BLUE))
                      .append(Text.literal(" enough to execute it.").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,0b100000));
          DIALOG.get(Announcements.FAILURE).add(new Dialog(new ArrayList<>(Arrays.asList(
                Text.literal("")
                      .append(Text.literal("Your ").formatted(Formatting.DARK_GRAY))
@@ -2104,7 +2104,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                      .append(Text.literal("forfeit").formatted(Formatting.GOLD))
                      .append(Text.literal("!").formatted(Formatting.DARK_GRAY)),
                Text.literal("")
-         )),new ArrayList<>(),new int[]{},0,200,3));
+         )),new ArrayList<>(),new int[]{},0,200,0b100000));
       }
       
       public static void abilityText(PlayerEntity summoner, NulConstructEntity construct, Text text){
@@ -2120,6 +2120,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       }
       
       // hasDivine, hasWings, droppedMemento & !isExalted, isExalted, droppedMemento & isExalted, !droppedMemento & isExalted
+      // hasDivine, hasWings, !hasWings, droppedMemento, !droppedMemento, isExalted, !isExalted
       public static void announce(MinecraftServer server, PlayerEntity summoner, NulConstructEntity construct, Announcements type, boolean[] args){
          DialogHelper dialogHelper = new DialogHelper(DIALOG.get(type),args);
          ArrayList<MutableText> message = dialogHelper.getWeightedResult().message();

@@ -211,13 +211,15 @@ public class AequalisScientia extends ArcanaItem {
    
    public void inventoryDialog(ServerPlayerEntity player){
       ArrayList<Dialog> dialogOptions = new ArrayList<>();
-      // Conditions: 0 - Crafted Wings, 1 - Crafted Memento, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Egg
+      // Conditions: 0 - Crafted Wings, 1 - Crafted Memento, 2 - Has Ceptyus Pickaxe, 3 - Has Memento, 4 - Has Egg, 5 - Has Greaves, 6 - Has Spear
       boolean[] conditions = new boolean[]{
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.WINGS_OF_ENDERIA),
             ArcanaNovum.data(player).hasCrafted(ArcanaRegistry.NUL_MEMENTO),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.PICKAXE_OF_CEPTYUS.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.NUL_MEMENTO.getItem()),
             ArcanaItemUtils.hasItemInInventory(player,Items.DRAGON_EGG),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem()),
+            ArcanaItemUtils.hasItemInInventory(player,ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()),
       };
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
@@ -228,7 +230,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nNul might claim to be the god of knowledge. He 'forgets' that my experience beats his one hundred-fold.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,1));
+      ),new int[]{},0,1,0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -238,7 +240,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nYou have one of Ceptyus's Picks? How in the world did you acquire this?! For once, I do not think I have anything equivalent to trade.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,1.3f))
-      ),new int[]{},0,1,2));
+      ),new int[]{},0,1,0b100));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -248,7 +250,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nEverything has value, especially life. My Sister knows that better than anyone, I just wish she'd remember that more often.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,0));
+      ),new int[]{},0,1,0b1));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -258,7 +260,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nKnowledge is a most interesting possession. Its value changes based on who holds it.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -268,7 +270,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nA skill for a skill, an augment for an augment... Would you call that a fair trade?").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -278,7 +280,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nWhat do you think of my Brother? Is it worth dealing with Death?").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,1));
+      ),new int[]{},0,1,0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -288,7 +290,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nVery few have had the wisdom to make my grand trade. I'm glad that you did.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -298,7 +300,7 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nHave caution when taking my Brother's challenges. He forgets how fragile you can be.").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},0,1,1));
+      ),new int[]{},0,1,0b10));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -308,7 +310,75 @@ public class AequalisScientia extends ArcanaItem {
                   .append(Text.literal("\nPerfectly Balanced. As all things should be...").formatted(Formatting.AQUA))
       )),new ArrayList<>(Arrays.asList(
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{},1,1,-1));
+      ),new int[]{},1,1,0b0));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nYou too have a relic of Gaialtus? Treasure that rare gift!").formatted(Formatting.AQUA))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
+      ),new int[]{},0,1,0b100000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nThat Spear frightens me. Such cruel violence should never be endorsed.").formatted(Formatting.AQUA))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
+      ),new int[]{},0,1,0b1000000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nAs much as I wish to learn from your Spear, I feel it would be better forgotten.\n").formatted(Formatting.AQUA)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD))
+                  .append(Text.literal("\nAt least you have some sense in you. Bury that Spear in the deepest hole you can dig!").formatted(Formatting.DARK_PURPLE))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f))
+      ),new int[]{0,80},0,1,0b1010000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nGaialtus's power is unlike any other's, the world itself becomes your sandbox.\n").formatted(Formatting.AQUA)),
+            Text.literal("")
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
+                  .append(Text.literal("\nYou speak too favorably of Gaialtus. Do not grant it favor for being the source of your power.\n").formatted(Formatting.DARK_GRAY)),
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nYou do not know Gaialtus as I do. And my true power comes not from divinity, but from the lifetimes I spent researching our world.").formatted(Formatting.AQUA))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.6f))
+      ),new int[]{0,80,100},0,1,0b101000));
+      
+      dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
+            Text.literal("\n")
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD))
+                  .append(Text.literal("\nTreasure those trousers, they will help you create anything your mind desires.").formatted(Formatting.AQUA))
+      )),new ArrayList<>(Arrays.asList(
+            new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
+      ),new int[]{},0,1,0b100000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -336,7 +406,7 @@ public class AequalisScientia extends ArcanaItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.6f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.6f))
-      ),new int[]{0,80,100,50},0,1,3));
+      ),new int[]{0,80,100,50},0,1,0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -364,7 +434,7 @@ public class AequalisScientia extends ArcanaItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.9f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,1.4f))
-      ),new int[]{0,60,80,60},0,1,3));
+      ),new int[]{0,60,80,60},0,1,0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -393,7 +463,7 @@ public class AequalisScientia extends ArcanaItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,1.4f))
-      ),new int[]{0,80,60,60},0,1,3));
+      ),new int[]{0,80,60,60},0,1,0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -415,7 +485,7 @@ public class AequalisScientia extends ArcanaItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.8f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,100,120},0,1,3));
+      ),new int[]{0,100,120},0,1,0b1000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -437,7 +507,7 @@ public class AequalisScientia extends ArcanaItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,120,100},0,1,4));
+      ),new int[]{0,120,100},0,1,0b10000));
       
       dialogOptions.add(new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n")
@@ -459,7 +529,7 @@ public class AequalisScientia extends ArcanaItem {
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL,0.3f,1.4f),
             new Dialog.DialogSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM,0.5f,0.7f))
-      ),new int[]{0,120,100},0,1,4));
+      ),new int[]{0,120,100},0,1,0b10000));
       
       DialogHelper helper = new DialogHelper(dialogOptions,conditions);
       helper.sendDialog(List.of(player),helper.getWeightedResult(),true);
@@ -523,7 +593,7 @@ public class AequalisScientia extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         if(Math.random() < 0.0000075){
+         if(Math.random() < 0.0000075){ // 0.0000075
             inventoryDialog(player);
          }
       }

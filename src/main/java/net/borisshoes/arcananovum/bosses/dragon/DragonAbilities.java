@@ -257,7 +257,7 @@ public class DragonAbilities {
             for(DragonBossFight.ReclaimState state : reclaimStates){
                if(state.getState() == 2) count++;
             }
-            actions.put(DragonAbilityTypes.OBLITERATE_TOWER,10*count);
+            actions.put(DragonAbilityTypes.OBLITERATE_TOWER,20*count);
          }
       
          int healthCount = 30 - (int)(30 * dragon.getHealth() / dragon.getMaxHealth());

@@ -4,6 +4,7 @@
       "id": "arcananovum:fate_anchor",
       "required": false
     },
-    "minecraft:vanishing_curse"
+    "minecraft:vanishing_curse",
+    "minecraft:binding_curse"
   ]
 }
