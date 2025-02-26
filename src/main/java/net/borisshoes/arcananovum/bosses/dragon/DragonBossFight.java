@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
+import net.borisshoes.arcananovum.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
 import net.borisshoes.arcananovum.entities.DragonWizardEntity;
@@ -447,10 +448,9 @@ public class DragonBossFight {
          if(state == States.PHASE_ONE || state == States.PHASE_TWO || state == States.PHASE_THREE){
             crystals.forEach(c -> tickCrystal(endWorld,c,phase));
             
-            int minTime = 60;
-            if(lastGoonSpawn > 20*minTime) spawnGoons(endWorld,phase);
-            if(lastLairAction > 20*minTime-100 && lairActions.startAction(phase)) lastLairAction = 0;
-            if(lastDragonAction > 20*minTime/2 && dragonAbilities.doAbility(phase)) lastDragonAction = 0;
+            if(lastGoonSpawn > 20*45) spawnGoons(endWorld,phase);
+            if(lastLairAction > 20*35 && lairActions.startAction(phase)) lastLairAction = 0;
+            if(lastDragonAction > 20*25 && dragonAbilities.doAbility(phase)) lastDragonAction = 0;
          }
       
          if(gm != null) gmNotifs.forEach(gm::sendMessage);
@@ -557,7 +557,8 @@ public class DragonBossFight {
             ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
             wings.addEnchantment(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR),1);
             ArcanaNovum.data(player).addCraftedSilent(wings);
-            MiscUtils.giveStacks(player, wings, new ItemStack(Items.DRAGON_EGG,1));
+            ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(wings,player));
+            ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(new ItemStack(Items.DRAGON_EGG,1),player));
             
             player.addExperience(5500);
          }

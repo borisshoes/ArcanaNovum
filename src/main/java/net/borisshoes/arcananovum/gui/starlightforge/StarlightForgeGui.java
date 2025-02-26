@@ -283,7 +283,11 @@ public class StarlightForgeGui extends SimpleGui {
          ItemScatterer.spawn(world,pos.x,pos.y,pos.z,newArcanaItem);
       }));
       
-      close();
+      if(fastAnim){
+         blockEntity.openGui(4,player, arcanaItem.getId(), settings);
+      }else{
+         close();
+      }
    }
    
    private HashMap<ArcanaAugment,Integer> getSkilledOptions(ArcanaItem arcanaItem, ServerPlayerEntity player){
@@ -528,7 +532,21 @@ public class StarlightForgeGui extends SimpleGui {
          return;
       }
       
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      for(int i = 0; i < getSize(); i++){
+         if(i%9 == 0 || i%9 == 6){
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 8){
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }else if(i%9 == 7){
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         }
+      }
+      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GuiElementBuilder returnBook = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
       returnBook.setName((Text.literal("")
@@ -539,14 +557,6 @@ public class StarlightForgeGui extends SimpleGui {
       setSlot(7,returnBook);
       
       ArcanaRecipe recipe = arcanaItem.getRecipe();
-      
-      GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
-      table.setName(Text.literal("Forge Item").formatted(Formatting.DARK_PURPLE));
-      table.addLoreLine(TextUtils.removeItalics(Text.literal("")
-            .append(Text.literal("Click Here").formatted(Formatting.GREEN))
-            .append(Text.literal(" to forge this item!").formatted(Formatting.LIGHT_PURPLE))));
-      if(!(recipe instanceof ExplainRecipe)) setSlot(43,table);
-      
       
       setSlot(25,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
       
@@ -559,6 +569,71 @@ public class StarlightForgeGui extends SimpleGui {
       }
       
       HashMap<String, Pair<Integer,ItemStack>> ingredList = recipe.getIngredientList();
+      if(!(recipe instanceof ExplainRecipe)){
+         boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION.id) >= 1;
+         ArrayList<Inventory> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
+         Inventory playerInventory = player.getInventory();
+         HashMap<String,Integer> ingredCounts = new HashMap<>();
+         
+         for(int i = 0; i < 25; i++){
+            ArcanaIngredient ingredient = ingredients[i / 5][i % 5];
+            if(ingredient.ingredientAsStack().isEmpty() || ingredCounts.containsKey(ingredient.getName())) continue;
+            Set<ItemStack> matchingStacks = new HashSet<>(); // Build a list of matching stacks
+            
+            // Check player's inventory
+            for(int j = 0; j < playerInventory.size(); j++){
+               ItemStack invSlot = playerInventory.getStack(j);
+               if(invSlot.isEmpty()) continue;
+               
+               if(ingredient.validStackIgnoreCount(invSlot)){
+                  matchingStacks.add(invSlot);
+               }
+            }
+            
+            // Check nearby inventories (list is empty without Mystic Collection)
+            for(Inventory inventory : inventories){
+               for(int j = 0; j < inventory.size(); j++){
+                  ItemStack invSlot = inventory.getStack(j);
+                  if(invSlot.isEmpty()) continue;
+                  
+                  if(ingredient.validStackIgnoreCount(invSlot)){
+                     matchingStacks.add(invSlot);
+                  }
+               }
+            }
+            
+            int totalCount = 0;
+            for(ItemStack matchingStack : matchingStacks){
+               totalCount += matchingStack.getCount();
+            }
+            ingredCounts.put(ingredient.getName(),totalCount);
+         }
+         
+         
+         GuiElementBuilder table = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
+         table.setName(Text.literal("Forge Item").formatted(Formatting.DARK_PURPLE));
+         table.addLoreLine(TextUtils.removeItalics(Text.literal("")
+               .append(Text.literal("Click Here").formatted(Formatting.GREEN))
+               .append(Text.literal(" to forge this item!").formatted(Formatting.LIGHT_PURPLE))));
+         table.addLoreLine(TextUtils.removeItalics(Text.literal("")));
+         table.addLoreLine(TextUtils.removeItalics(Text.literal("-----------------------").formatted(Formatting.LIGHT_PURPLE)));
+         for(String key : ingredList.keySet()){ //✔✘
+            int foundCount = ingredCounts.get(key);
+            int neededCount = ingredList.get(key).getLeft();
+            
+            MutableText text = Text.literal("")
+                  .append(Text.literal(foundCount >= neededCount ? "✔ " : "✘ ").formatted(foundCount >= neededCount ? Formatting.GREEN : Formatting.RED))
+                  .append(Text.literal(key).formatted(Formatting.AQUA))
+                  .append(Text.literal(" - ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(LevelUtils.readableInt(foundCount)).formatted(foundCount >= neededCount ? Formatting.GREEN : Formatting.RED))
+                  .append(Text.literal(" / ").formatted(Formatting.DARK_PURPLE))
+                  .append(Text.literal(LevelUtils.readableInt(neededCount)).formatted(foundCount >= neededCount ? Formatting.GREEN : Formatting.RED));
+            table.addLoreLine(TextUtils.removeItalics(text));
+         }
+         
+         setSlot(43,table);
+      }
+      
       GuiElementBuilder recipeList = new GuiElementBuilder(Items.PAPER).hideDefaultTooltip();
       recipeList.setName(Text.literal("Total Ingredients").formatted(Formatting.DARK_PURPLE));
       recipeList.addLoreLine(TextUtils.removeItalics(Text.literal("-----------------------").formatted(Formatting.LIGHT_PURPLE)));

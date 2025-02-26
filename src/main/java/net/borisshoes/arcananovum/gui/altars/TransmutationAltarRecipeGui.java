@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltar;
@@ -29,6 +30,7 @@ import java.util.Optional;
 public class TransmutationAltarRecipeGui extends SimpleGui {
    private int page = 1;
    private int commiePage = 1;
+   private int costMode;
    private String curRecipeName = "";
    private CommutativeTransmutationRecipe curRecipe = null;
    private final List<TransmutationRecipe> recipes;
@@ -41,14 +43,14 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       this.recipes = TransmutationAltar.getUnlockedRecipes(player);
       this.blockEntity = altarOpt.orElse(null);
       this.returnGui = returnGui;
+      this.costMode = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       setTitle(Text.literal("Transmutation Altar"));
    }
    
    public void enableSelectionMode(ItemStack stack){
       selectionModeStack = stack;
       recipes.removeIf(recipe -> recipe instanceof AequalisCatalystTransmutationRecipe || recipe instanceof AequalisSkillTransmutationRecipe);
-      boolean hasImpermanent = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.IMPERMANENT_PERMUTATION) > 0;
-      if(!hasImpermanent) recipes.removeIf(recipe -> recipe instanceof AequalisUnattuneTransmutationRecipe);
+      if(stack.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())) this.costMode = -1;
    }
    
    @Override
@@ -84,6 +86,13 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             curRecipe = cr;
             curRecipeName = cr.getName();
             buildRecipeViewGui(curRecipeName);
+         }else if(index == 8){
+            int bargainTiers = ArcanaAugments.HASTY_BARGAIN.getTiers().length;
+            this.costMode += type.isRight ? 0 : 2;
+            if(this.costMode >= (bargainTiers+2)) this.costMode = 0;
+            if(this.costMode < 0) this.costMode = (bargainTiers+1);
+            this.costMode--;
+            buildRecipeListGui();
          }
       }else{
          List<ItemStack> inputs = curRecipe.getCommunalInputs();
@@ -103,6 +112,13 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                commiePage++;
                buildRecipeViewGui(curRecipeName);
             }
+         }else if(index == 8){
+            int bargainTiers = ArcanaAugments.HASTY_BARGAIN.getTiers().length;
+            this.costMode += type.isRight ? 0 : 2;
+            if(this.costMode >= (bargainTiers+2)) this.costMode = 0;
+            if(this.costMode < 0) this.costMode = (bargainTiers+1);
+            this.costMode--;
+            buildRecipeViewGui(curRecipeName);
          }
       }
       return true;
@@ -131,6 +147,38 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
          setSlot(45,prevArrow);
       }
       
+      GuiElementBuilder costItem;
+      if(this.costMode == -1){
+         costItem = GuiElementBuilder.from(ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore()).hideDefaultTooltip();
+         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName().formatted(Formatting.AQUA)))));
+         costItem.addLoreLine(Text.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+      }else if(this.costMode == 0){
+         costItem = GuiElementBuilder.from(new ItemStack(Items.EMERALD)).hideDefaultTooltip();
+         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Normal").formatted(Formatting.GREEN)))));
+         costItem.addLoreLine(Text.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+      }else{
+         costItem = GuiElementBuilder.from(new ItemStack(Items.AMETHYST_SHARD,this.costMode)).hideDefaultTooltip();
+         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.translatable(ArcanaAugments.HASTY_BARGAIN.getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(" "+LevelUtils.intToRoman(this.costMode)).formatted(Formatting.LIGHT_PURPLE)))));
+         costItem.addLoreLine(Text.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+      }
+      setSlot(8,costItem);
+      
       int k = (page-1)*28;
       for(int i = 0; i < 4; i++){
          for(int j = 0; j < 7; j++){
@@ -139,9 +187,14 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
                GuiElementBuilder viewItem = GuiElementBuilder.from(recipe.getViewStack()).hideDefaultTooltip();
                viewItem.setName(Text.literal(recipe.getName()).formatted(Formatting.AQUA,Formatting.BOLD));
                
-               int bargainLvl = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
-               int reagent1Count = recipe.getBargainReagent(recipe.getReagent1(),bargainLvl).getCount();
-               int reagent2Count = recipe.getBargainReagent(recipe.getReagent2(),bargainLvl).getCount();
+               int reagent1Count, reagent2Count;
+               if(this.costMode == -1){
+                  reagent1Count = recipe.getAequalisReagent(recipe.getReagent1()).getCount();
+                  reagent2Count = recipe.getAequalisReagent(recipe.getReagent2()).getCount();
+               }else{
+                  reagent1Count = recipe.getBargainReagent(recipe.getReagent1(),this.costMode).getCount();
+                  reagent2Count = recipe.getBargainReagent(recipe.getReagent2(),this.costMode).getCount();
+               }
                
                if(recipe instanceof CommutativeTransmutationRecipe){
                   viewItem.addLoreLine(TextUtils.removeItalics(Text.literal("Commutative Transmutation").formatted(Formatting.GREEN)));
@@ -280,7 +333,6 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       
       List<ItemStack> inputs = curRecipe.getCommunalInputs();
       int numPages = (int) Math.ceil((float)inputs.size()/28.0);
-      int bargainLvl = blockEntity == null ? 0 : ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       
       if(numPages > 1){
          GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
@@ -318,7 +370,47 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
          }
       }
       
-      ItemStack reagent1 = this.curRecipe.getBargainReagent(this.curRecipe.getReagent1(),bargainLvl);
+      GuiElementBuilder costItem;
+      if(this.costMode == -1){
+         costItem = GuiElementBuilder.from(ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore()).hideDefaultTooltip();
+         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(ArcanaRegistry.AEQUALIS_SCIENTIA.getTranslatedName().formatted(Formatting.AQUA)))));
+         costItem.addLoreLine(Text.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+      }else if(this.costMode == 0){
+         costItem = GuiElementBuilder.from(new ItemStack(Items.EMERALD)).hideDefaultTooltip();
+         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Normal").formatted(Formatting.GREEN)))));
+         costItem.addLoreLine(Text.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+      }else{
+         costItem = GuiElementBuilder.from(new ItemStack(Items.AMETHYST_SHARD,this.costMode)).hideDefaultTooltip();
+         costItem.setName(Text.literal("Cost Calculation Mode").formatted(Formatting.DARK_AQUA));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.translatable(ArcanaAugments.HASTY_BARGAIN.getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(" "+LevelUtils.intToRoman(this.costMode)).formatted(Formatting.LIGHT_PURPLE)))));
+         costItem.addLoreLine(Text.literal(""));
+         costItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
+               .append(Text.literal("Click").formatted(Formatting.YELLOW))
+               .append(Text.literal(" to change cost calculation").formatted(Formatting.BLUE)))));
+      }
+      setSlot(8,costItem);
+      
+      ItemStack reagent1, reagent2;
+      if(this.costMode == -1){
+         reagent1 = this.curRecipe.getAequalisReagent(this.curRecipe.getReagent1());
+         reagent2 = this.curRecipe.getAequalisReagent(this.curRecipe.getReagent2());
+      }else{
+         reagent1 = this.curRecipe.getBargainReagent(this.curRecipe.getReagent1(),this.costMode);
+         reagent2 = this.curRecipe.getBargainReagent(this.curRecipe.getReagent2(),this.costMode);
+      }
+
       GuiElementBuilder reagent1Item = GuiElementBuilder.from(reagent1).hideDefaultTooltip();
       reagent1Item.setName((Text.translatable(reagent1.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
       reagent1Item.addLoreLine(TextUtils.removeItalics((Text.literal("")
@@ -327,8 +419,6 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             .append(Text.translatable(reagent1.getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
       setSlot(48,reagent1Item);
       
-      
-      ItemStack reagent2 = this.curRecipe.getBargainReagent(this.curRecipe.getReagent2(),bargainLvl);
       GuiElementBuilder reagent2Item = GuiElementBuilder.from(reagent2).hideDefaultTooltip();
       reagent2Item.setName((Text.translatable(reagent2.getItem().getTranslationKey()).formatted(Formatting.BOLD,Formatting.GREEN)));
       reagent2Item.addLoreLine(TextUtils.removeItalics((Text.literal("")

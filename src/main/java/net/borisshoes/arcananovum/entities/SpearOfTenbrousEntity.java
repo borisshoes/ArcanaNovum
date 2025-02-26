@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.mixins.TridentEntityAccessor;
 import net.borisshoes.arcananovum.utils.MiscUtils;
@@ -26,6 +27,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustColorTransitionParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
@@ -40,6 +42,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
@@ -49,7 +52,7 @@ import static net.minecraft.item.Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
 
 public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements PolymerEntity {
    
-   private final float damage;
+   private float damage;
    
    public SpearOfTenbrousEntity(EntityType<? extends SpearOfTenbrousEntity> entityType, World world) {
       super(entityType, world);
@@ -67,6 +70,18 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
          }
       }
       this.damage = dmg;
+   }
+   
+   @Override
+   public void writeCustomDataToNbt(NbtCompound nbt){
+      super.writeCustomDataToNbt(nbt);
+      nbt.putFloat("spearDamage",damage);
+   }
+   
+   @Override
+   public void readCustomDataFromNbt(NbtCompound nbt){
+      super.readCustomDataFromNbt(nbt);
+      this.damage = nbt.getFloat("spearDamage");
    }
    
    @Override
@@ -175,9 +190,9 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    @Override
    public void remove(RemovalReason reason){
       super.remove(reason);
-      if(this.getOwner() != null && this.isOwnerAlive() && this.getOwner() instanceof ServerPlayerEntity player && getWorld() instanceof ServerWorld serverWorld){
+      if(this.getOwner() != null && this.getOwner() instanceof ServerPlayerEntity player && getWorld() instanceof ServerWorld serverWorld){
          int cooldownTime = 20 * (9 - 2*Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.UNENDING_HATRED)));
-         if(!player.isInCreativeMode()) MiscUtils.giveStacks(player,stack);
+         if(!player.isInCreativeMode()) ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(stack,player));
          player.getItemCooldownManager().set(stack,cooldownTime);
          
          this.playSound(SoundEvents.ENTITY_PLAYER_TELEPORT, 1.0F, 1.0F);
@@ -188,14 +203,22 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       }
    }
    
+   @Nullable
+   @Override
+   public Entity getOwner() {
+      if (this.owner != null) {
+         return this.owner;
+      } else if (this.ownerUuid != null) {
+         this.owner = this.getEntity(this.ownerUuid);
+         return this.owner;
+      } else {
+         return null;
+      }
+   }
+   
    @Override
    protected ItemStack getDefaultItemStack(){
       return ArcanaRegistry.SPEAR_OF_TENBROUS.getNewItem();
-   }
-   
-   private boolean isOwnerAlive() {
-      Entity entity = this.getOwner();
-      return entity != null && entity.isAlive() && (!(entity instanceof ServerPlayerEntity) || !entity.isSpectator());
    }
    
    @Override

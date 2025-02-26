@@ -138,10 +138,10 @@ public class DragonLairActions {
       }
       if(quakeTicks > 0){
          for(ServerPlayerEntity player : nearbyPlayers){
-            endWorld.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.END_STONE.getDefaultState()), player.getX(), player.getY()-.5, player.getZ(), 40, 3, 1, 3, .5);
+            endWorld.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.END_STONE.getDefaultState()), player.getX(), player.getY()-.5, player.getZ(), 20, 3, 1, 3, .5);
             
             if(quakeTicks % 4 == 0){
-               player.tiltScreen(Math.random()*10-5, Math.random()*10-5);
+               player.tiltScreen(Math.random()*5-2.5, Math.random()*5-2.5);
             }
          }
          quakeTicks--;
@@ -204,7 +204,7 @@ public class DragonLairActions {
             
                makeChasm(chasmStart,chasmEnd);
             }else{
-               int numSpikes = 4;
+               int numSpikes = 6;
                spikes = new ArrayList<>();
                spikeBlocks = new HashMap<>();
             
@@ -279,20 +279,20 @@ public class DragonLairActions {
          actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,8));
          actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
          actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,3));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,5));
+         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,3));
          actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
       }else if(phase == 2){
-         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,4));
+         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,6));
          actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,6));
          actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,2));
          actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,1));
+         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,3));
       }else if(phase == 3){
-         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,3));
-         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,1));
+         actions.add(new Pair<>(DragonLairActionTypes.TERRAIN_SHIFT,4));
+         actions.add(new Pair<>(DragonLairActionTypes.GRAVITY_LAPSE,2));
          actions.add(new Pair<>(DragonLairActionTypes.DIMENSION_SHIFT,5));
-         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,2));
-         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,4));
+         actions.add(new Pair<>(DragonLairActionTypes.QUAKE,1));
+         actions.add(new Pair<>(DragonLairActionTypes.STARFALL,5));
       }
    
       for(Pair<DragonLairActionTypes, Integer> action : actions){

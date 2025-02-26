@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.world.ServerWorld;
@@ -13,11 +14,13 @@ public abstract class LoginCallback {
    
    public abstract void onLogin(ServerPlayNetworkHandler netHandler, MinecraftServer server);
    
-   public abstract void setData(NbtCompound data);
+   public abstract void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup);
    
-   public abstract NbtCompound getData();
+   public abstract NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup);
    
-   public abstract void combineCallbacks(LoginCallback callback);
+   public abstract boolean combineCallbacks(LoginCallback callback);
+   
+   public abstract LoginCallback makeNew();
    
    public void setPlayer(String playerUUID){ this.playerUUID = playerUUID;}
    

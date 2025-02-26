@@ -265,6 +265,8 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                   blockState = Blocks.CHEST.getPlacementState(ipc);
                }else if(blockState.isOf(Blocks.TRAPPED_CHEST)){
                   blockState = Blocks.TRAPPED_CHEST.getPlacementState(ipc);
+               }else if(blockState.isOf(Blocks.BARREL)){
+                  blockState = Blocks.BARREL.getPlacementState(ipc);
                }
                world.setBlockState(placePos,blockState,Block.NOTIFY_ALL);
                BlockEntity blockEntity = world.getBlockEntity(placePos);

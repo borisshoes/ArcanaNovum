@@ -121,7 +121,7 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
       super.tick();
       
       if(this.construct != null && this.getWorld() instanceof ServerWorld serverWorld){
-         if(this.construct.isDead() || !this.construct.getWorld().getRegistryKey().equals(this.getWorld().getRegistryKey())){
+         if(!this.construct.isAlive() || !this.construct.getWorld().getRegistryKey().equals(this.getWorld().getRegistryKey())){
             this.kill(serverWorld);
          }else if(this.mage){
             if(this.age % 20 == 0 && this.construct.distanceTo(this) < NulConstructEntity.FIGHT_RANGE){

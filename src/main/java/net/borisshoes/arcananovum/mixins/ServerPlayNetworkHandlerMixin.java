@@ -141,11 +141,10 @@ public class ServerPlayNetworkHandlerMixin {
          }
          requestedTeleportPos = player.getPos();
          player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(requestedTeleportId,new PlayerPosition(player.getPos(),Vec3d.ZERO,0,0),PositionFlag.getFlags(0b11000)));
-         
       }else{
          ItemStack pants = player.getEquippedStack(EquipmentSlot.LEGS);
          if(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus && ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) >= 1){
-            if(packet.horizontalCollision() && !player.getAbilities().flying){
+            if(packet.horizontalCollision() && !player.getAbilities().flying && player.isSneaking()){
                player.setVelocity(new Vec3d(player.getVelocity().getX(),0.2,player.getVelocity().getZ()));
                player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
                player.networkHandler.floatingTicks = 0;

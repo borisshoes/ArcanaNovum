@@ -366,21 +366,22 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
             SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_BLAZE_DEATH, SoundCategory.BLOCKS, 1, 0.8f);
             SoundUtils.playSound(serverWorld,getPos(), SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.BLOCKS, 1, 1.2f);
          }else if(moltenCore){
-            Item moltenItem = MOLTEN_CORE_ITEMS.get(stack.getItem());
+            ItemStack moltenItem = MOLTEN_CORE_ITEMS.get(stack.getItem());
             if(moltenItem != null){
-               int returnCount = stack.getCount() * 2;
+               int returnCount = stack.getCount() * moltenItem.getCount();
                inv.setStack(0,ItemStack.EMPTY);
                int finalReturnCount = returnCount;
+               final int xpPerSmelt = ArcanaConfig.getInt(ArcanaRegistry.STELLAR_CORE_SMELT) * ((stack.getItem().getTranslationKey().contains("raw") && stack.getItem().getTranslationKey().contains("block")) ? 9 : 1);
                
-               watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STELLAR_CORE_SMELT) * (moltenItem instanceof BlockItem ? finalReturnCount * 9 : finalReturnCount * 1)));
+               watchingPlayers.forEach(player -> ArcanaNovum.data(player).addXP(xpPerSmelt * finalReturnCount));
                ArrayList<ItemStack> items = new ArrayList<>();
                
                while(returnCount > 64){
-                  items.add(new ItemStack(moltenItem,64));
+                  items.add(moltenItem.copyWithCount(64));
                   returnCount -= 64;
                }
                if(returnCount > 0){
-                  items.add(new ItemStack(moltenItem,returnCount));
+                  items.add(moltenItem.copyWithCount(returnCount));
                }
                for(ItemStack itemStack : items){
                   ItemScatterer.spawn(serverWorld, itemSpawnPos.getX(),itemSpawnPos.getY(),itemSpawnPos.getZ(), itemStack);

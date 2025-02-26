@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.core;
 
 import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -21,7 +22,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.equipment.trim.ArmorTrim;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -33,7 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 
 public abstract class ArcanaItem implements Comparable<ArcanaItem>{
@@ -513,17 +517,35 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       }
       
       ItemEnchantmentsComponent enchantComp = EnchantmentHelper.getEnchantments(item);
-      Set<Object2IntMap.Entry<RegistryEntry<Enchantment>>> enchants = enchantComp.getEnchantmentEntries();
+      Object2IntOpenHashMap<RegistryEntry<Enchantment>> enchants = new Object2IntOpenHashMap<>();
+      enchantComp.getEnchantmentEntries().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
       
       if(!enchants.isEmpty()){
          loreList.add(Text.literal(""));
          loreList.add(TextUtils.removeItalics(Text.literal("Enchantments:").formatted(Formatting.AQUA)));
          
-         for(Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : enchants){
-            RegistryEntry<Enchantment> registryEntry = entry.getKey();
-            int level = entry.getIntValue();
-            
-            loreList.add(TextUtils.removeItalics(Text.literal(Enchantment.getName(registryEntry,level).getString()).formatted(Formatting.BLUE)));
+         RegistryEntryList<Enchantment> registryEntryList = null;
+         if(server != null){
+            Optional<RegistryEntryList.Named<Enchantment>> optional = server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
+            if(optional.isPresent()){
+               registryEntryList = optional.get();
+            }
+         }
+         
+         if(registryEntryList == null){
+            for(Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : enchants.object2IntEntrySet()){
+               RegistryEntry<Enchantment> registryEntry = entry.getKey();
+               int level = entry.getIntValue();
+               loreList.add(TextUtils.removeItalics(Text.literal(Enchantment.getName(registryEntry,level).getString()).formatted(Formatting.BLUE)));
+            }
+         }else{
+            for(int i = 0; i < registryEntryList.size(); i++){
+               RegistryEntry<Enchantment> enchantment = registryEntryList.get(i);
+               if(enchants.containsKey(enchantment)){
+                  int level = enchants.getInt(enchantment);
+                  loreList.add(TextUtils.removeItalics(Text.literal(Enchantment.getName(enchantment,level).getString()).formatted(Formatting.BLUE)));
+               }
+            }
          }
       }
       

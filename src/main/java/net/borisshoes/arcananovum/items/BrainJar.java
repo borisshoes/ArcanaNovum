@@ -110,7 +110,7 @@ public class BrainJar extends EnergyItem {
       Text mendText = mending ? Text.literal("ON").formatted(Formatting.DARK_GREEN) : Text.literal("OFF").formatted(Formatting.RED);
       
       lore.add(Text.literal("")
-            .append(Text.literal(xp+" XP Stored - Mending ").formatted(Formatting.GREEN))
+            .append(Text.literal(LevelUtils.readableInt(xp)+" XP Stored - Mending ").formatted(Formatting.GREEN))
             .append(mendText));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }

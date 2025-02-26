@@ -166,6 +166,7 @@ public class StasisPearl extends EnergyItem {
       List<List<Text>> list = new ArrayList<>();
       list.add(List.of(Text.literal("    Stasis Pearl").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nBy freezing an Ender Pearl in flight, I can leave it hanging in the air until I need it, out of phase from the timeline, unable to be destroyed. When unfrozen, it acts like a normal Ender Pearl.").formatted(Formatting.BLACK)));
       list.add(List.of(Text.literal("    Stasis Pearl").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nUse the Pearl to throw it like normal.\n\nUsing it again will freeze or unfreeze the Pearl from stasis.\n\nThe Pearl takes time after activation to resync to the timeline before subsequent use.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Stasis Pearl").formatted(Formatting.BLUE,Formatting.BOLD),Text.literal("\nThe Pearl cannot sustain stasis forever, and will decay if left in stasis for longer than 30 minutes.\n\nPerhaps a different item is more suitable for reliable teleportation over long periods of time.").formatted(Formatting.BLACK)));
       return list;
    }
    

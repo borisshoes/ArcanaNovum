@@ -3,7 +3,9 @@
     "arcananovum:dragon_wizard",
     "arcananovum:dragon_phantom",
     "arcananovum:nul_construct",
+    "arcananovum:nul_guardian",
     "minecraft:ender_dragon",
-    "minecraft:wither"
+    "minecraft:wither",
+    "minecraft:warden"
   ]
 }

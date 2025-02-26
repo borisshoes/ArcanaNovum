@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.items.arrows.SiphoningArrows;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -42,14 +43,14 @@ public class OverhealLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       //Data tag just has single float for hearts
       this.data = data;
       hearts = data.getFloat("hearts");
    }
    
    @Override
-   public NbtCompound getData(){
+   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
       NbtCompound data = new NbtCompound();
       data.putFloat("hearts",hearts);
       this.data = data;
@@ -57,8 +58,16 @@ public class OverhealLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void combineCallbacks(LoginCallback callback){
-      if(callback instanceof OverhealLoginCallback newCallback)
+   public boolean combineCallbacks(LoginCallback callback){
+      if(callback instanceof OverhealLoginCallback newCallback){
          this.hearts += newCallback.hearts;
+         return true;
+      }
+      return false;
+   }
+   
+   @Override
+   public LoginCallback makeNew(){
+      return new OverhealLoginCallback();
    }
 }

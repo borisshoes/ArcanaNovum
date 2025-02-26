@@ -842,7 +842,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment MOLTEN_CORE = ArcanaAugments.register(
          new ArcanaAugment("Molten Core", "molten_core", new ItemStack(Items.MAGMA_BLOCK), ArcanaRegistry.STELLAR_CORE,
-         new String[]{"The Core can now smelt raw ores and raw ore blocks"," giving two ingots or metal blocks per raw ore smelted"},
+         new String[]{"The Core can now smelt raw ores and raw ore blocks"," giving two ingots or metal blocks per raw ore smelted","Sand can be smelted for two glass and debris for one scrap"},
          new ArcanaRarity[]{EXOTIC}
    ));
    
@@ -1018,7 +1018,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment EARTHEN_ASCENT = ArcanaAugments.register(
          new ArcanaAugment("Earthen Ascent", "earthen_ascent", new ItemStack(Items.LADDER), ArcanaRegistry.GREAVES_OF_GAIALTUS,
-         new String[]{"The Greaves allow you to effortlessly scale"," walls in a similar manner to climbing a ladder"},
+         new String[]{"The Greaves allow you to effortlessly scale walls"," in a similar manner to climbing a ladder when sneaking"},
          new ArcanaRarity[]{EXOTIC}
    ));
    

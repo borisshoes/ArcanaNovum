@@ -11,5 +11,6 @@ public class DataGenerator implements DataGeneratorEntrypoint {
       pack.addProvider(EnchantmentGenerator::new);
       pack.addProvider(ItemTagGenerator::new);
       pack.addProvider(EnchantmentTagGenerator::new);
+      pack.addProvider(BlockTagGenerator::new);
    }
 }

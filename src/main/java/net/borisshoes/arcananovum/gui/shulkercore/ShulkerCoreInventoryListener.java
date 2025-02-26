@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
@@ -35,7 +36,7 @@ public class ShulkerCoreInventoryListener implements InventoryChangedListener {
          boolean hasStone = validSoulstone(inv);
          
          GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
-         String paneText = hasStone ? core.getEnergy(item) + " Shulker Souls" : "No Soulstone Inserted";
+         String paneText = hasStone ? LevelUtils.readableInt(core.getEnergy(item)) + " Shulker Souls" : "No Soulstone Inserted";
          Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
    
          gui.setSlot(0,pane.setName(Text.literal(paneText).formatted(textColor)));

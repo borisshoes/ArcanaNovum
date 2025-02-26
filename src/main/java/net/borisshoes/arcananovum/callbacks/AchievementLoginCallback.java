@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -32,9 +33,12 @@ public class AchievementLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void combineCallbacks(LoginCallback callback){
-      if(callback instanceof AchievementLoginCallback newCallback)
+   public boolean combineCallbacks(LoginCallback callback){
+      if(callback instanceof AchievementLoginCallback newCallback){
          this.achievements.addAll(newCallback.achievements.stream().filter(a -> !this.achievements.contains(a)).toList());
+         return true;
+      }
+      return false;
    }
    
    @Override
@@ -51,7 +55,7 @@ public class AchievementLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
       achievements = new ArrayList<>();
       if(data.contains("achievements")){
@@ -65,7 +69,7 @@ public class AchievementLoginCallback extends LoginCallback{
    }
    
    @Override
-   public NbtCompound getData(){
+   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
       NbtCompound data = new NbtCompound();
       NbtList achTag = new NbtList();
       for(ArcanaAchievement achievement : achievements){
@@ -74,5 +78,10 @@ public class AchievementLoginCallback extends LoginCallback{
       data.put("achievements",achTag);
       this.data = data;
       return this.data;
+   }
+   
+   @Override
+   public LoginCallback makeNew(){
+      return new AchievementLoginCallback();
    }
 }

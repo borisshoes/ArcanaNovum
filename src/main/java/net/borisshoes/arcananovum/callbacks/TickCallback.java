@@ -79,9 +79,14 @@ public class TickCallback {
                if(!isArcane){
                   if(item.contains(DataComponentTypes.BUNDLE_CONTENTS)){
                      BundleContentsComponent bundleComp = item.get(DataComponentTypes.BUNDLE_CONTENTS);
+                     List<ItemStack> newStacks = new ArrayList<>();
                      for(ItemStack invStack : bundleComp.iterate()){
                         invStack.getItem().inventoryTick(invStack,player.getServerWorld(),player,-1,false);
+                        if(!invStack.isEmpty()){
+                           newStacks.add(invStack);
+                        }
                      }
+                     item.set(DataComponentTypes.BUNDLE_CONTENTS,new BundleContentsComponent(newStacks));
                   }
                   continue; // Item not arcane, skip
                }

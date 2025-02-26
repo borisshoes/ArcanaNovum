@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -23,9 +24,12 @@ public class XPLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void combineCallbacks(LoginCallback callback){
-      if(callback instanceof XPLoginCallback newCallback)
+   public boolean combineCallbacks(LoginCallback callback){
+      if(callback instanceof XPLoginCallback newCallback){
          this.xp += newCallback.xp;
+         return true;
+      }
+      return false;
    }
    
    @Override
@@ -38,16 +42,21 @@ public class XPLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
       xp = data.getInt("xp");
    }
    
    @Override
-   public NbtCompound getData(){
+   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
       NbtCompound data = new NbtCompound();
       data.putInt("xp", xp);
       this.data = data;
       return this.data;
+   }
+   
+   @Override
+   public LoginCallback makeNew(){
+      return new XPLoginCallback();
    }
 }

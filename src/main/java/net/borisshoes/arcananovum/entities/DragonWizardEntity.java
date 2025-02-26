@@ -120,10 +120,11 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    
    @Override
    protected float modifyAppliedDamage(DamageSource source, float amount){
-      float scale = numPlayers > 0 ? 2f/numPlayers : 1;
+      float scale = numPlayers > 0 ? 1.25f/numPlayers : 1;
       scale = Math.max(scale,0.1f);
       if(source.getAttacker() instanceof EnderDragonEntity) amount = 0;
       if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)) amount *= 0.25f; // Reduce damage from magic sources and immune to the dragon
+      if(amount > getMaxHealth() / 0.1) amount = getMaxHealth() / 0.1f;
       amount *= scale;
       return amount;
    }

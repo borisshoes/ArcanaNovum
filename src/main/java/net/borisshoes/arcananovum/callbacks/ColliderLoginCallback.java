@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -23,9 +24,12 @@ public class ColliderLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void combineCallbacks(LoginCallback callback){
-      if(callback instanceof ColliderLoginCallback newCallback)
+   public boolean combineCallbacks(LoginCallback callback){
+      if(callback instanceof ColliderLoginCallback newCallback){
          this.blocks += newCallback.blocks;
+         return true;
+      }
+      return false;
    }
    
    @Override
@@ -38,17 +42,22 @@ public class ColliderLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
       blocks = data.getInt("blocks");
    }
    
    @Override
-   public NbtCompound getData(){
+   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
       NbtCompound data = new NbtCompound();
       data.putInt("blocks",blocks);
       this.data = data;
       return this.data;
+   }
+   
+   @Override
+   public LoginCallback makeNew(){
+      return new ColliderLoginCallback();
    }
 }
 

@@ -734,7 +734,7 @@ public class TomeGui extends SimpleGui {
                GuiElementBuilder achievementItem = GuiElementBuilder.from(displayItem);
                achievementItem.hideDefaultTooltip().setName(Text.literal("").formatted(Formatting.LIGHT_PURPLE).append(achievement.getTranslatedName()).append(" - ").append(achievement.getArcanaItem().getTranslatedName()))
                      .addLoreLine(TextUtils.removeItalics(Text.literal("")
-                           .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
+                           .append(Text.literal(LevelUtils.readableInt(achievement.xpReward)).formatted(Formatting.AQUA))
                            .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
                            .append(Text.literal("  |  ").formatted(Formatting.DARK_AQUA))
                            .append(Text.literal(""+achievement.pointsReward).formatted(Formatting.AQUA))
@@ -1089,7 +1089,7 @@ public class TomeGui extends SimpleGui {
          GuiElementBuilder achievementItem = GuiElementBuilder.from(achievement.getDisplayItem());
          achievementItem.hideDefaultTooltip().setName(achievement.getTranslatedName().formatted(Formatting.LIGHT_PURPLE))
                .addLoreLine(TextUtils.removeItalics(Text.literal("")
-                     .append(Text.literal(""+achievement.xpReward).formatted(Formatting.AQUA))
+                     .append(Text.literal(LevelUtils.readableInt(achievement.xpReward)).formatted(Formatting.AQUA))
                      .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
                      .append(Text.literal("  |  ").formatted(Formatting.DARK_AQUA))
                      .append(Text.literal(""+achievement.pointsReward).formatted(Formatting.AQUA))

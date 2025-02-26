@@ -12,10 +12,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.EntityType;
@@ -111,7 +108,7 @@ public class Soulstone extends ArcanaItem {
       }
       
       lore.add(Text.literal(attunedString).formatted(Formatting.LIGHT_PURPLE));
-      lore.add(Text.literal("Tier "+tier+" - ("+souls+" Mobs Killed)").formatted(Formatting.GRAY));
+      lore.add(Text.literal("Tier "+tier+" - ("+ LevelUtils.readableInt(souls)+" Mobs Killed)").formatted(Formatting.GRAY));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    

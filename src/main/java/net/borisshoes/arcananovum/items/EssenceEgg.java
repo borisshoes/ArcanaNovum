@@ -14,10 +14,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -115,7 +112,7 @@ public class EssenceEgg extends ArcanaItem {
       }
       
       lore.add(Text.literal(attunedString).formatted(Formatting.LIGHT_PURPLE));
-      lore.add(Text.literal(uses+" Uses Left").formatted(Formatting.GRAY));
+      lore.add(Text.literal(LevelUtils.readableInt(uses)+" Uses Left").formatted(Formatting.GRAY));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
    

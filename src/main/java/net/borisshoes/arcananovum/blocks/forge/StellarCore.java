@@ -57,13 +57,17 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
 	public static final String ID = "stellar_core";
    
    private Multiblock multiblock;
-   public static Map<Item,Item> MOLTEN_CORE_ITEMS = Map.ofEntries(
-         entry(Items.RAW_IRON,Items.IRON_INGOT),
-         entry(Items.RAW_COPPER,Items.COPPER_INGOT),
-         entry(Items.RAW_GOLD,Items.GOLD_INGOT),
-         entry(Items.RAW_IRON_BLOCK,Items.IRON_BLOCK),
-         entry(Items.RAW_COPPER_BLOCK,Items.COPPER_BLOCK),
-         entry(Items.RAW_GOLD_BLOCK,Items.GOLD_BLOCK)
+   public static Map<Item,ItemStack> MOLTEN_CORE_ITEMS = Map.ofEntries(
+         entry(Items.RAW_IRON,new ItemStack(Items.IRON_INGOT,2)),
+         entry(Items.RAW_COPPER,new ItemStack(Items.COPPER_INGOT,2)),
+         entry(Items.RAW_GOLD,new ItemStack(Items.GOLD_INGOT,2)),
+         entry(Items.RAW_IRON_BLOCK,new ItemStack(Items.IRON_BLOCK,2)),
+         entry(Items.RAW_COPPER_BLOCK,new ItemStack(Items.COPPER_BLOCK,2)),
+         entry(Items.RAW_GOLD_BLOCK,new ItemStack(Items.GOLD_BLOCK,2)),
+         entry(Items.NETHER_GOLD_ORE,new ItemStack(Items.GOLD_INGOT,2)),
+         entry(Items.SAND,new ItemStack(Items.GLASS,2)),
+         entry(Items.RED_SAND,new ItemStack(Items.GLASS,2)),
+         entry(Items.ANCIENT_DEBRIS,new ItemStack(Items.NETHERITE_SCRAP,1))
    );
    
    public StellarCore(){

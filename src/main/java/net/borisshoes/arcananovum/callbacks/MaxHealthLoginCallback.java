@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,13 +31,13 @@ public class MaxHealthLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data){
+   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
       hp = data.getFloat("hp");
    }
    
    @Override
-   public NbtCompound getData(){
+   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
       NbtCompound data = new NbtCompound();
       data.putFloat("hp",hp);
       this.data = data;
@@ -44,8 +45,16 @@ public class MaxHealthLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void combineCallbacks(LoginCallback callback){
-      if(callback instanceof MaxHealthLoginCallback newCallback && newCallback.hp > hp)
+   public boolean combineCallbacks(LoginCallback callback){
+      if(callback instanceof MaxHealthLoginCallback newCallback && newCallback.hp > hp){
          this.hp = newCallback.hp;
+         return true;
+      }
+      return false;
+   }
+   
+   @Override
+   public LoginCallback makeNew(){
+      return new MaxHealthLoginCallback();
    }
 }

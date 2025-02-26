@@ -235,7 +235,7 @@ public class ShulkerCore extends EnergyItem {
       }
       
       GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
-      String paneText = hasStone ? getEnergy(stack) + " Shulker Souls" : "No Soulstone Inserted";
+      String paneText = hasStone ? LevelUtils.readableInt(getEnergy(stack)) + " Shulker Souls" : "No Soulstone Inserted";
       Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
       
       gui.setSlot(0,pane.setName(Text.literal(paneText).formatted(textColor)));

@@ -23,8 +23,9 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
       if(callbacks.contains(callback)) return false;
       for(LoginCallback loginCallback : callbacks){
          if(callback.getId().equals(loginCallback.getId()) && callback.getPlayer().equals(loginCallback.getPlayer())){
-            loginCallback.combineCallbacks(callback);
-            return true;
+            if(loginCallback.combineCallbacks(callback)){
+               return true;
+            }
          }
       }
       return callbacks.add(callback);
@@ -45,8 +46,9 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
             NbtCompound callbackTag = (NbtCompound) e;
             String playerUUID = callbackTag.getString("uuid");
             String callbackId = callbackTag.getString("id");
-            LoginCallback callback = LoginCallbacks.registry.get(callbackId);
-            callback.setData(callbackTag.getCompound("data"));
+            LoginCallback callback = LoginCallbacks.createCallback(callbackId);
+            if(callback == null) continue;
+            callback.setData(callbackTag.getCompound("data"), registryLookup);
             callback.setPlayer(playerUUID);
             callbacks.add(callback);
          }
@@ -61,7 +63,7 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
          NbtList callbacksTag = new NbtList();
          for(LoginCallback callback : callbacks){
             NbtCompound callbackTag = new NbtCompound();
-            NbtCompound dataTag = callback.getData();
+            NbtCompound dataTag = callback.getData(registryLookup);
             callbackTag.putString("uuid",callback.getPlayer());
             callbackTag.putString("id",callback.getId());
             callbackTag.put("data",dataTag);

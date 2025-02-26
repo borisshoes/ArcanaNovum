@@ -19,8 +19,10 @@ import net.minecraft.entity.MovementType;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.DolphinEntity;
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
@@ -91,6 +93,7 @@ public class ServerPlayerMixin {
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       if(player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          player.move(MovementType.PLAYER,player.getVelocity());
+         player.networkHandler.requestTeleport(new PlayerPosition(player.getPos(), player.getVelocity(), 0, 0), PositionFlag.getFlags(0b11000));
       }
    }
    

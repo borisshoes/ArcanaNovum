@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.achievements;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -73,9 +74,9 @@ public class ProgressAchievement extends ArcanaAchievement{
       double percent = 100.0 * (achievement == null ? 0 : achievement.getProgress()) / (double) goal;
       text[0] = Text.literal("")
             .append(Text.literal("Progress: ").formatted(Formatting.DARK_AQUA))
-            .append(Text.literal("" + (achievement == null ? 0 : achievement.getProgress())).formatted(Formatting.AQUA))
+            .append(Text.literal("" + (achievement == null ? 0 : LevelUtils.readableInt(achievement.getProgress()))).formatted(Formatting.AQUA))
             .append(Text.literal(" / ").formatted(Formatting.AQUA))
-            .append(Text.literal("" + goal).formatted(Formatting.AQUA))
+            .append(Text.literal(LevelUtils.readableInt(goal)).formatted(Formatting.AQUA))
             .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
             .append(Text.literal(df.format(percent)+"%").formatted(Formatting.BLUE));
       

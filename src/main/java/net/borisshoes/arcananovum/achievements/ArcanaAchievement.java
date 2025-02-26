@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -110,7 +111,7 @@ public abstract class ArcanaAchievement {
                                     .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
                                     .append(Text.literal("")
-                                          .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))
+                                          .append(Text.literal("\n"+LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
                                           .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
                                           .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
                                           .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
@@ -129,7 +130,7 @@ public abstract class ArcanaAchievement {
                                     .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
                                     .append(Text.literal("")
-                                          .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))
+                                          .append(Text.literal("\n"+LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
                                           .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
                                           .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
                                           .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
@@ -146,7 +147,7 @@ public abstract class ArcanaAchievement {
                                     .append(getTranslatedName().formatted(Formatting.AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))
                                     .append(Text.literal("")
-                                          .append(Text.literal("\n"+xpReward).formatted(Formatting.AQUA))
+                                          .append(Text.literal("\n"+ LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
                                           .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
                                           .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
                                           .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))

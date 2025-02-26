@@ -43,7 +43,6 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
@@ -55,32 +54,6 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    
    public static final String CEPTYUS_TICK = "ceptyusPickTick";
    public static final String CEPTYUS_ENERGY = "ceptyusPickEnergy";
-
-   public static final ArrayList<Block> VEIN_ORES = new ArrayList<>(Arrays.asList(
-         Blocks.COAL_ORE,
-         Blocks.DEEPSLATE_COAL_ORE,
-         Blocks.IRON_ORE,
-         Blocks.DEEPSLATE_IRON_ORE,
-         Blocks.COPPER_ORE,
-         Blocks.DEEPSLATE_COPPER_ORE,
-         Blocks.GOLD_ORE,
-         Blocks.DEEPSLATE_GOLD_ORE,
-         Blocks.REDSTONE_ORE,
-         Blocks.DEEPSLATE_REDSTONE_ORE,
-         Blocks.EMERALD_ORE,
-         Blocks.DEEPSLATE_EMERALD_ORE,
-         Blocks.LAPIS_ORE,
-         Blocks.DEEPSLATE_LAPIS_ORE,
-         Blocks.DIAMOND_ORE,
-         Blocks.DEEPSLATE_DIAMOND_ORE,
-         Blocks.NETHER_GOLD_ORE,
-         Blocks.NETHER_QUARTZ_ORE,
-         Blocks.ANCIENT_DEBRIS,
-         Blocks.RAW_COPPER_BLOCK,
-         Blocks.RAW_GOLD_BLOCK,
-         Blocks.RAW_IRON_BLOCK,
-         Blocks.AMETHYST_CLUSTER
-   ));
    
    public PickaxeOfCeptyus(){
       id = ID;
@@ -145,7 +118,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    public void veinMine(World world, PlayerEntity player, ItemStack item, BlockPos pos){
       if(!(world instanceof ServerWorld serverWorld)) return;
       Block type = world.getBlockState(pos).getBlock();
-      if(!VEIN_ORES.contains(type)) return;
+      if(!world.getBlockState(pos).isIn(ArcanaRegistry.CEPTYUS_VEIN_MINEABLE)) return;
       
       int veinLevel = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.WITH_THE_DEPTHS.id));
       int maxDepth = 8 + 2*veinLevel;
@@ -153,13 +126,13 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       
       Queue<Pair<BlockPos, Integer>> queue = Lists.newLinkedList();
       Queue<BlockPos> visited = Lists.newLinkedList();
-      queue.add(new Pair(pos, 0));
+      queue.add(new Pair<>(pos, 0));
       ArrayList<BlockPos> toMine = new ArrayList<>();
       
       while(!queue.isEmpty()){
-         Pair<BlockPos, Integer> pair = (Pair)queue.poll();
-         BlockPos blockPos = (BlockPos)pair.getLeft();
-         int depth = (Integer)pair.getRight();
+         Pair<BlockPos, Integer> pair = queue.poll();
+         BlockPos blockPos = pair.getLeft();
+         int depth = pair.getRight();
          visited.add(blockPos);
          Block curType = world.getBlockState(blockPos).getBlock();
          
@@ -173,8 +146,8 @@ public class PickaxeOfCeptyus extends ArcanaItem {
                   for(int k = -1; k <= 1; k++){
                      if(!(i==0 && j==0 && k==0) && depth < maxDepth){
                         BlockPos pos2 = blockPos.add(i,j,k);
-                        if(!queue.contains(pos2) && !visited.contains(pos2)){
-                           queue.add(new Pair(pos2,depth+1));
+                        if(queue.stream().noneMatch(p -> p.getLeft().equals(pos2)) && !visited.contains(pos2)){
+                           queue.add(new Pair<>(pos2,depth+1));
                         }
                      }
                   }}}

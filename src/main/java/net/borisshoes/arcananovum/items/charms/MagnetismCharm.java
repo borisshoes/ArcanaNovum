@@ -42,7 +42,10 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -52,70 +55,6 @@ public class MagnetismCharm extends ArcanaItem {
 	public static final String ID = "magnetism_charm";
    
    public static final String FILTER_TAG = "filter";
-   
-   private static final ArrayList<Item> NEODYMIUM_TARGETS = new ArrayList<>(Arrays.asList(
-         Items.IRON_INGOT,
-         Items.IRON_BLOCK,
-         Items.IRON_BARS,
-         Items.IRON_AXE,
-         Items.IRON_BOOTS,
-         Items.IRON_CHESTPLATE,
-         Items.IRON_DOOR,
-         Items.IRON_HELMET,
-         Items.IRON_HOE,
-         Items.IRON_HORSE_ARMOR,
-         Items.IRON_LEGGINGS,
-         Items.IRON_NUGGET,
-         Items.IRON_PICKAXE,
-         Items.IRON_SHOVEL,
-         Items.IRON_SWORD,
-         Items.IRON_TRAPDOOR,
-         Items.GOLD_INGOT,
-         Items.GOLD_BLOCK,
-         Items.GOLDEN_AXE,
-         Items.GOLDEN_BOOTS,
-         Items.GOLDEN_CHESTPLATE,
-         Items.GOLDEN_HELMET,
-         Items.GOLDEN_HOE,
-         Items.GOLDEN_HORSE_ARMOR,
-         Items.GOLDEN_LEGGINGS,
-         Items.GOLD_NUGGET,
-         Items.GOLDEN_PICKAXE,
-         Items.GOLDEN_SHOVEL,
-         Items.GOLDEN_SWORD,
-         Items.SHIELD,
-         Items.CROSSBOW,
-         Items.CHAIN,
-         Items.LIGHTNING_ROD,
-         Items.COPPER_BLOCK,
-         Items.COPPER_INGOT,
-         Items.TRIPWIRE_HOOK,
-         Items.CHAIN,
-         Items.CHAINMAIL_BOOTS,
-         Items.CHAINMAIL_CHESTPLATE,
-         Items.CHAINMAIL_HELMET,
-         Items.CHAINMAIL_LEGGINGS,
-         Items.BUCKET,
-         Items.LAVA_BUCKET,
-         Items.WATER_BUCKET,
-         Items.MILK_BUCKET,
-         Items.AXOLOTL_BUCKET,
-         Items.COD_BUCKET,
-         Items.POWDER_SNOW_BUCKET,
-         Items.PUFFERFISH_BUCKET,
-         Items.SALMON_BUCKET,
-         Items.TROPICAL_FISH_BUCKET,
-         Items.TADPOLE_BUCKET,
-         Items.CAULDRON,
-         Items.MINECART,
-         Items.HOPPER_MINECART,
-         Items.BLAST_FURNACE,
-         Items.SMITHING_TABLE,
-         Items.BELL,
-         Items.LANTERN,
-         Items.SOUL_LANTERN,
-         Items.HOPPER
-   ));
    
    public MagnetismCharm(){
       id = ID;
@@ -236,7 +175,7 @@ public class MagnetismCharm extends ArcanaItem {
                
                for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
                   ItemStack item = entry.getValue();
-                  if(NEODYMIUM_TARGETS.contains(item.getItem())){
+                  if(item.isIn(ArcanaRegistry.NEODYMIUM_STEALABLE)){
                      ItemEntity droppedItem = e.dropStack(player.getServerWorld(), item);
                      if(droppedItem != null){
                         double x = playerPos.getX() - droppedItem.getX();

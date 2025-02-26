@@ -228,9 +228,9 @@ public class LevitationHarness extends EnergyItem {
       int souls = getSouls(stack);
       int glow = getGlow(stack);
       int energy = getEnergy(stack);
-      String soulText = souls > -1 ? souls + " Shulker Souls" : "No Soulstone Inserted";
+      String soulText = souls > -1 ? LevelUtils.readableInt(souls) + " Shulker Souls" : "No Soulstone Inserted";
       String durationText = energy > 0 ? "Flight Time Remaining: "+getDuration(stack) : "No Fuel!";
-      String glowText = glow > 0 ? glow + " Glowstone Left" : "No Glowstone Remaining";
+      String glowText = glow > 0 ? LevelUtils.readableInt(glow) + " Glowstone Left" : "No Glowstone Remaining";
       GuiElementBuilder soulPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,souls > -1 ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
       GuiElementBuilder durationPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,energy > 0 ? ArcanaColors.LIGHT_COLOR : 0x880000));
       GuiElementBuilder glowPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,glow > 0 ? 0xffdd00 : ArcanaColors.DARK_COLOR));
@@ -352,7 +352,9 @@ public class LevitationHarness extends EnergyItem {
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean chestItem = ItemStack.areItemsAndComponentsEqual(player.getEquippedStack(EquipmentSlot.CHEST),stack);
          boolean survival = !(player.isCreative() || player.isSpectator());
-         boolean flying = VanillaAbilities.ALLOW_FLYING.isEnabledFor(player) && LEVITATION_HARNESS_ABILITY.isActivelyGranting(player, VanillaAbilities.ALLOW_FLYING) && VanillaAbilities.FLYING.isEnabledFor(player);
+         boolean flying = VanillaAbilities.ALLOW_FLYING.getTracker(player).isEnabled() &&
+               VanillaAbilities.ALLOW_FLYING.getTracker(player).isGrantedBy(LEVITATION_HARNESS_ABILITY) &&
+               VanillaAbilities.FLYING.isEnabledFor(player);
          boolean wasFlying = getBooleanProperty(stack,WAS_FLYING_TAG);
          
          int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER.id));

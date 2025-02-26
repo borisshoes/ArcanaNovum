@@ -57,9 +57,9 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 public class ContainmentCirclet extends ArcanaItem {
 	public static final String ID = "containment_circlet";
    
-   private static final String CONTENTS_TAG = "contents";
-   private static final String HP_TAG = "hp";
-   private static final String MAX_HP_TAG = "maxHP";
+   public static final String CONTENTS_TAG = "contents";
+   public static final String HP_TAG = "hp";
+   public static final String MAX_HP_TAG = "maxHP";
    
    public ContainmentCirclet(){
       id = ID;

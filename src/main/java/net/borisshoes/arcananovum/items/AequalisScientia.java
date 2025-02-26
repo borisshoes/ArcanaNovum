@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -661,6 +662,10 @@ public class AequalisScientia extends ArcanaItem {
                   
                   ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(500, () -> {
                      for(ItemStack result : results){
+                        if(result.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())){
+                           ArcanaNovum.data(player).addCraftedSilent(result);
+                           ArcanaAchievements.grant(player,ArcanaAchievements.PRICE_OF_KNOWLEDGE.id);
+                        }
                         ItemScatterer.spawn(world, center.x,center.y,center.z,result);
                      }
                      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.AEQUALIS_SCIENTIA_ATTUNED_TRANSMUTE));

@@ -13,8 +13,10 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
+import net.borisshoes.arcananovum.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -918,7 +920,7 @@ public class ArcanaCommands {
             }else{
                String uuid = ArcanaItem.getUUID(item);
                source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
-               target.giveItemStack(item);
+               ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(item,target));
             }
          }
          return 1;
@@ -943,7 +945,7 @@ public class ArcanaCommands {
          }else{
             String uuid = ArcanaItem.getUUID(item);
             source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
-            source.getPlayerOrThrow().giveItemStack(item);
+            ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(item,source.getPlayerOrThrow()));
             return 1;
          }
       }catch(Exception e){
@@ -1237,6 +1239,69 @@ public class ArcanaCommands {
          
          handItem.set(DataComponentTypes.LORE,new LoreComponent(lines));
          return 1;
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int placedBlocks(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity player){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         
+         ArrayList<MutableText> blocks = new ArrayList<>();
+         for(Pair<BlockEntity, ArcanaBlockEntity> pair : ACTIVE_ARCANA_BLOCKS.keySet().stream().filter(pair -> player.getUuidAsString().equals(pair.getRight().getCrafterId()) && pair.getLeft().hasWorld() && pair.getLeft().getWorld().getBlockEntity(pair.getLeft().getPos()) == pair.getLeft()).toList()){
+            BlockEntity blockEntity = pair.getLeft();
+            ArcanaBlockEntity arcanaBlockEntity = pair.getRight();
+            
+            String dim = blockEntity.getWorld().getRegistryKey().getValue().toString();
+            MutableText dimensionName = Text.literal("Unknown").formatted(Formatting.GRAY);
+            if(dim.equals(ServerWorld.OVERWORLD.getValue().toString())){
+               dimensionName = Text.literal("The Overworld").formatted(Formatting.GREEN);
+            }else if(dim.equals(ServerWorld.NETHER.getValue().toString())){
+               dimensionName = Text.literal("The Nether").formatted(Formatting.RED);
+            }else if(dim.equals(ServerWorld.END.getValue().toString())){
+               dimensionName = Text.literal("The End").formatted(Formatting.YELLOW);
+            }
+            BlockPos pos = blockEntity.getPos();
+            String posStr = pos.getX()+","+pos.getY()+","+pos.getZ();
+            
+            MutableText blockText = Text.literal("")
+                  .append(arcanaBlockEntity.getArcanaItem().getDisplayName())
+                  .append(Text.literal(" in ").formatted(Formatting.LIGHT_PURPLE))
+                  .append(dimensionName)
+                  .append(Text.literal(" at (").formatted(Formatting.LIGHT_PURPLE))
+                  .append(Text.literal(posStr).formatted(Formatting.AQUA,Formatting.BOLD))
+                  .append(Text.literal(")").formatted(Formatting.LIGHT_PURPLE));
+            blocks.add(blockText);
+         }
+         
+         MutableText feedback = Text.literal("")
+               .append(player.getDisplayName())
+               .append(Text.literal(" has ").formatted(Formatting.LIGHT_PURPLE))
+               .append(Text.literal(Integer.toString(blocks.size())).formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
+               .append(Text.literal(" placed Arcana Blocks.").formatted(Formatting.LIGHT_PURPLE));
+         src.sendFeedback(()->Text.literal(""),false);
+         src.sendFeedback(()->feedback,false);
+         src.sendFeedback(()->Text.literal("================================").formatted(Formatting.LIGHT_PURPLE),false);
+         for(MutableText r : blocks){
+            src.sendFeedback(()->r,false);
+         }
+         return blocks.size();
+      }catch(Exception e){
+         log(2,e.toString());
+         return -1;
+      }
+   }
+   
+   public static int placedBlocks(CommandContext<ServerCommandSource> ctx){
+      try{
+         ServerCommandSource src = ctx.getSource();
+         if(!src.isExecutedByPlayer()){
+            src.sendError(Text.literal("Must run command as a player"));
+            return -1;
+         }
+         return placedBlocks(ctx, src.getPlayer());
       }catch(Exception e){
          log(2,e.toString());
          return -1;

@@ -68,8 +68,8 @@ public class BrainJarGui extends SimpleGui {
             .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))));
       setSlot(4,bottle);
       
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Text.literal(jar.getEnergy(stack)+" XP Stored").formatted(Formatting.GREEN)));
-      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Text.literal(jar.getEnergy(stack)+" XP Stored").formatted(Formatting.GREEN)));
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
+      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
       
       if(!active){
          GuiElementBuilder notmending = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL));

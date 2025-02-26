@@ -74,6 +74,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
       scale = Math.max(scale,0.1f);
       if(source.getAttacker() instanceof EnderDragonEntity) amount = 0;
       if(source.isIn(DamageTypeTags.BYPASSES_ARMOR)) amount *= 0.25f; // Reduce damage from magic sources and immune to the dragon
+      if(amount > getMaxHealth() / 0.1) amount = getMaxHealth() / 0.1f;
       amount *= scale;
       return amount;
    }

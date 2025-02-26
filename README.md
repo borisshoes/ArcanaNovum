@@ -1,4 +1,4 @@
-![Arcana Novum](ArcanaNovum_Banner.png)
+![Arcana Novum](non-mod-resources/ArcanaNovum_Banner.png)
 
 # A fabric server-sided magic mod that adds new items and multiblocks to Minecraft.
 
