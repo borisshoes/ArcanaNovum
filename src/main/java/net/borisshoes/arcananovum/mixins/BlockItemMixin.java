@@ -41,7 +41,7 @@ public class BlockItemMixin {
          
          if(stack.isOf(Items.DIAMOND_BLOCK)){
             ArcanaAchievements.grant(player,ArcanaAchievements.MINERS_WALLET);
-         }else if(stack.getItem() instanceof BlockItem blockItem && (blockItem.getBlock().getRegistryEntry().isIn(BlockTags.BASE_STONE_OVERWORLD) || blockItem.getBlock().getRegistryEntry().isIn(BlockTags.DIRT))){
+         }else if(stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() != null && (blockItem.getBlock().getRegistryEntry().isIn(BlockTags.BASE_STONE_OVERWORLD) || blockItem.getBlock().getRegistryEntry().isIn(BlockTags.DIRT))){
             ArcanaAchievements.progress(player,ArcanaAchievements.TERRAFORMER,amtToRefill);
          }
          

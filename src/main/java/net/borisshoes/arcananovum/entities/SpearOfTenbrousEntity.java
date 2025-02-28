@@ -38,9 +38,8 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
@@ -52,6 +51,7 @@ import static net.minecraft.item.Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
 
 public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements PolymerEntity {
    
+   private long chunkTicketExpiryTicks = 0L;
    private float damage;
    
    public SpearOfTenbrousEntity(EntityType<? extends SpearOfTenbrousEntity> entityType, World world) {
@@ -98,8 +98,30 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    public void tick() {
       if (this.inGroundTime >= 1) {
          this.discard();
+         return;
       }
+      int chunkX = ChunkSectionPos.getSectionCoordFloored(this.getPos().getX());
+      int chunkZ = ChunkSectionPos.getSectionCoordFloored(this.getPos().getZ());
       super.tick();
+      
+      if (this.isAlive()) {
+         BlockPos blockPos = BlockPos.ofFloored(this.getPos());
+         ChunkPos chunkPos = this.getChunkPos();
+         if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != ChunkSectionPos.getSectionCoord(blockPos.getX()) || chunkZ != ChunkSectionPos.getSectionCoord(blockPos.getZ())) && getWorld() instanceof ServerWorld serverWorld) {
+            serverWorld.resetIdleTimeout();
+            this.chunkTicketExpiryTicks = ServerPlayerEntity.addEnderPearlTicket(serverWorld, chunkPos) - 1L;
+         }
+      }
+   }
+   
+   @Nullable
+   @Override
+   public Entity teleportTo(TeleportTarget teleportTarget) {
+      Entity entity = super.teleportTo(teleportTarget);
+      if (entity != null) {
+         entity.addPortalChunkTicketAt(BlockPos.ofFloored(entity.getPos()));
+      }
+      return entity;
    }
    
    private void applyImpactEffects(Entity hitEntity, List<LivingEntity> affectedEntities){

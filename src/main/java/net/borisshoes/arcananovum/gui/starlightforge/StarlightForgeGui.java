@@ -284,6 +284,7 @@ public class StarlightForgeGui extends SimpleGui {
       }));
       
       if(fastAnim){
+         close();
          blockEntity.openGui(4,player, arcanaItem.getId(), settings);
       }else{
          close();

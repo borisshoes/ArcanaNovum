@@ -206,7 +206,7 @@ public class DragonBossFight {
                      List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
                      for(ServerPlayerEntity player : players){
                         if(!player.isCreative() && !player.isSpectator()){
-                           player.teleportTo(new TeleportTarget(endWorld, new Vec3d(00.5+(Math.random()*3-1.5),51,0.5+(Math.random()*3-1.5)), Vec3d.ZERO, 90, 0, TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
+                           player.teleportTo(new TeleportTarget(endWorld, new Vec3d(100.5+(Math.random()*3-1.5),51,0.5+(Math.random()*3-1.5)), Vec3d.ZERO, 90, 0, TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
                         }
                      }
    

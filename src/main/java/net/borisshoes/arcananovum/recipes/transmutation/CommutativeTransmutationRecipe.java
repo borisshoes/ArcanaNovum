@@ -40,7 +40,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
       }else if(tag.right().isPresent()){
          for(RegistryEntry<Item> itemEntry : Registries.ITEM.getIndexedEntries()){
             if(itemEntry.value() instanceof BlockItem blockItem){
-               if(blockItem.getBlock().getRegistryEntry().isIn(tag.right().get())){
+               if(blockItem.getBlock() != null && blockItem.getBlock().getRegistryEntry().isIn(tag.right().get())){
                   this.communalInputs.add(new ItemStack(itemEntry.value()));
                }
             }
