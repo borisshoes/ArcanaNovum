@@ -98,8 +98,8 @@ public class DetonationArrows extends RunicArrow {
    
    private void explode(PersistentProjectileEntity arrow, Vec3d pos, int blastLvl, int personLvl){
       double power = MathHelper.clamp(2*arrow.getVelocity().length(),1.5,8);
-      DamageSource source1 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_TERRAIN,arrow.getOwner(),arrow);
-      DamageSource source2 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_DAMAGE,arrow.getOwner(),arrow);
+      DamageSource source1 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_TERRAIN,arrow,arrow.getOwner());
+      DamageSource source2 = ArcanaDamageTypes.of(arrow.getWorld(),ArcanaDamageTypes.DETONATION_DAMAGE,arrow,arrow.getOwner());
       if(personLvl != 3){ // Terrain explosion except when personnel lvl 3
          float terrainPower = (float) (blastLvl >= 1 ? power * 2.5f: power);
          arrow.getEntityWorld().createExplosion(null, source1, null,pos.x,pos.y,pos.z,terrainPower,false, World.ExplosionSourceType.TNT);

@@ -37,9 +37,15 @@ public class TransmutationRecipes {
             new ItemStack(Items.COBBLESTONE),new ItemStack(Items.STONE), new ItemStack(Items.GRANITE), new ItemStack(Items.POLISHED_GRANITE), new ItemStack(Items.DIORITE), new ItemStack(Items.POLISHED_DIORITE),
             new ItemStack(Items.ANDESITE), new ItemStack(Items.POLISHED_ANDESITE), new ItemStack(Items.DEEPSLATE), new ItemStack(Items.COBBLED_DEEPSLATE), new ItemStack(Items.POLISHED_DEEPSLATE),
             new ItemStack(Items.DEEPSLATE_TILES), new ItemStack(Items.CRACKED_DEEPSLATE_TILES), new ItemStack(Items.CALCITE), new ItemStack(Items.TUFF), new ItemStack(Items.DRIPSTONE_BLOCK), new ItemStack(Items.SMOOTH_STONE),
-            new ItemStack(Items.STONE_BRICKS), new ItemStack(Items.MOSSY_STONE_BRICKS), new ItemStack(Items.CRACKED_STONE_BRICKS), new ItemStack(Items.CHISELED_STONE_BRICKS), new ItemStack(Items.BLACKSTONE),
-            new ItemStack(Items.POLISHED_BLACKSTONE), new ItemStack(Items.POLISHED_BLACKSTONE_BRICKS), new ItemStack(Items.CRACKED_POLISHED_BLACKSTONE_BRICKS)
+            new ItemStack(Items.STONE_BRICKS), new ItemStack(Items.MOSSY_STONE_BRICKS), new ItemStack(Items.CRACKED_STONE_BRICKS), new ItemStack(Items.CHISELED_STONE_BRICKS), new ItemStack(Items.MOSSY_COBBLESTONE),
+            new ItemStack(Items.BASALT), new ItemStack(Items.POLISHED_BASALT), new ItemStack(Items.SMOOTH_BASALT),
+            new ItemStack(Items.BLACKSTONE), new ItemStack(Items.POLISHED_BLACKSTONE), new ItemStack(Items.POLISHED_BLACKSTONE_BRICKS), new ItemStack(Items.CRACKED_POLISHED_BLACKSTONE_BRICKS)
       )),new ItemStack(Items.COAL,16),new ItemStack(Items.QUARTZ,12)));
+      
+      TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Dirts",new ArrayList<>(Arrays.asList(
+            new ItemStack(Items.GRASS_BLOCK),new ItemStack(Items.DIRT), new ItemStack(Items.COARSE_DIRT), new ItemStack(Items.ROOTED_DIRT), new ItemStack(Items.DIRT_PATH), new ItemStack(Items.PODZOL),
+            new ItemStack(Items.MYCELIUM)
+      )),new ItemStack(Items.EMERALD,6),new ItemStack(Items.QUARTZ,12)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Sandstones",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.SANDSTONE),new ItemStack(Items.CHISELED_SANDSTONE), new ItemStack(Items.CUT_SANDSTONE), new ItemStack(Items.SMOOTH_SANDSTONE),
@@ -100,8 +106,8 @@ public class TransmutationRecipes {
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Seeds",new ArrayList<>(Arrays.asList(
             new ItemStack(Items.WHEAT_SEEDS), new ItemStack(Items.PUMPKIN_SEEDS), new ItemStack(Items.MELON_SEEDS), new ItemStack(Items.BEETROOT_SEEDS), new ItemStack(Items.TORCHFLOWER_SEEDS),
-            new ItemStack(Items.PITCHER_POD), new ItemStack(Items.POTATO), new ItemStack(Items.CARROT)
-      )),new ItemStack(Items.LAPIS_LAZULI,16),new ItemStack(Items.EMERALD,24)));
+            new ItemStack(Items.PITCHER_POD), new ItemStack(Items.POTATO), new ItemStack(Items.CARROT), new ItemStack(Items.COCOA_BEANS)
+            )),new ItemStack(Items.LAPIS_LAZULI,16),new ItemStack(Items.EMERALD,24)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Leaves",Either.right(BlockTags.LEAVES),new ItemStack(Items.LAPIS_LAZULI,16),new ItemStack(Items.EMERALD,12)));
       
@@ -110,7 +116,7 @@ public class TransmutationRecipes {
             new ItemStack(Items.OXEYE_DAISY), new ItemStack(Items.CORNFLOWER), new ItemStack(Items.WITHER_ROSE), new ItemStack(Items.TORCHFLOWER), new ItemStack(Items.PITCHER_PLANT),
             new ItemStack(Items.PINK_PETALS), new ItemStack(Items.DANDELION), new ItemStack(Items.POPPY), new ItemStack(Items.BLUE_ORCHID), new ItemStack(Items.ALLIUM),
             new ItemStack(Items.RED_TULIP), new ItemStack(Items.ORANGE_TULIP), new ItemStack(Items.WHITE_TULIP), new ItemStack(Items.PINK_TULIP), new ItemStack(Items.SPORE_BLOSSOM),
-            new ItemStack(Items.FLOWERING_AZALEA), new ItemStack(Items.CHORUS_FLOWER)
+            new ItemStack(Items.FLOWERING_AZALEA), new ItemStack(Items.OPEN_EYEBLOSSOM), new ItemStack(Items.CLOSED_EYEBLOSSOM), new ItemStack(Items.CHORUS_FLOWER)
       )),new ItemStack(Items.GLOWSTONE_DUST,16),new ItemStack(Items.LAPIS_LAZULI,32)));
       
       TRANSMUTATION_RECIPES.add(new CommutativeTransmutationRecipe("Froglights",new ArrayList<>(Arrays.asList(
@@ -275,6 +281,10 @@ public class TransmutationRecipes {
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Condensed String",new ItemStack(Items.STRING,16),new ItemStack(Items.COBWEB,1),new ItemStack(Items.SLIME_BLOCK,4),new ItemStack(Items.HONEY_BLOCK,4)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Key Ominousification",new ItemStack(Items.TRIAL_KEY,1),new ItemStack(Items.OMINOUS_TRIAL_KEY,1),new ItemStack(Items.OMINOUS_BOTTLE,1),new ItemStack(Items.DIAMOND,8)));
+      
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Sand Susification",new ItemStack(Items.SAND,1),new ItemStack(Items.SUSPICIOUS_SAND,1),new ItemStack(Items.SUSPICIOUS_STEW,1),new ItemStack(ArcanaRegistry.STARDUST,8)));
+      
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Gravel Susification",new ItemStack(Items.GRAVEL,1),new ItemStack(Items.SUSPICIOUS_GRAVEL,1),new ItemStack(Items.SUSPICIOUS_STEW,1),new ItemStack(ArcanaRegistry.STARDUST,8)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Liquid Experience",new ItemStack(Items.SCULK,64),new ItemStack(Items.EXPERIENCE_BOTTLE,16),new ItemStack(Items.GLASS_BOTTLE,16),new ItemStack(Items.LAPIS_LAZULI,32)));
       

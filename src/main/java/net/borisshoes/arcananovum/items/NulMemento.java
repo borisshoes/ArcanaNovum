@@ -10,6 +10,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
+import net.borisshoes.arcananovum.events.NulMementoEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
@@ -267,9 +268,6 @@ public class NulMemento extends EnergyItem {
       final int maxConc = LevelUtils.concFromXp(ArcanaNovum.data(player).getXP(),resolve);
       DialogHelper dialogHelper = new DialogHelper();
       
-      
-      
-      
       dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
             Text.literal("\n\n\n\n")
                   .append(Text.literal("As the crushing weight of ").formatted(Formatting.DARK_GRAY))
@@ -278,6 +276,7 @@ public class NulMemento extends EnergyItem {
                   .append(TextUtils.withColor(Text.literal("Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR))
                   .append(Text.literal(" whisper...")).formatted(Formatting.DARK_GRAY)
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
+      ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
       
       ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*1, () -> {
          if(cont[0]){
@@ -286,6 +285,7 @@ public class NulMemento extends EnergyItem {
                cont[0] = false;
                processHalted(player);
             }else{
+               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
@@ -303,6 +303,7 @@ public class NulMemento extends EnergyItem {
                cont[0] = false;
                processHalted(player);
             }else{
+               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal("You feel as though your ").formatted(Formatting.DARK_GRAY))
@@ -323,6 +324,7 @@ public class NulMemento extends EnergyItem {
                cont[0] = false;
                processHalted(player);
             }else{
+               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
@@ -340,6 +342,7 @@ public class NulMemento extends EnergyItem {
                cont[0] = false;
                processHalted(player);
             }else{
+               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
@@ -357,6 +360,7 @@ public class NulMemento extends EnergyItem {
                cont[0] = false;
                processHalted(player);
             }else{
+               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
@@ -382,6 +386,7 @@ public class NulMemento extends EnergyItem {
       }));
       ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*6, () -> {
          if(cont[0]){
+            ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
             dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                   Text.literal("\n\n\n\n")
                         .append(Text.literal("All of your Skill Points have been deallocated.").formatted(Formatting.AQUA))

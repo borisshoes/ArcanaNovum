@@ -1300,7 +1300,7 @@ public class DragonBossFight {
          ParticleEffectUtils.dragonReclaimTowerShield(endWorld,shieldPos,0);
       }
       
-      public void castLaser(){
+      public void castLaser(){ // TODO: Update all this
          Vec3d end = player.getEyePos().add(player.getRotationVector().normalize().multiply(75));
          BlockHitResult result = endWorld.raycast(new RaycastContext(player.getEyePos(),end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE,player));
          Vec3d hit = result.getPos();
@@ -1318,7 +1318,7 @@ public class DragonBossFight {
             }
          }
          if(MiscUtils.distToLine(dragon.getPos(),player.getPos(),hit) < 10){
-            float damage = Math.min(100,20f+numPlayers*4);
+            float damage = Math.min(100,15+numPlayers*3);
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));
             dragon.damage(endWorld, endWorld.getDamageSources().playerAttack(player),damage);

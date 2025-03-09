@@ -16,6 +16,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -31,19 +32,19 @@ import net.minecraft.util.Pair;
 import java.util.List;
 
 public class EntityKilledCallback {
-   public static void killedEntity(ServerWorld serverWorld, Entity entity, LivingEntity livingEntity){
+   public static void killedEntity(ServerWorld serverWorld, DamageSource damageSource, Entity attacker, LivingEntity killed){
       try{
          ServerPlayerEntity player = null;
          SpearOfTenbrousEntity spear = null;
-         if(entity instanceof ServerPlayerEntity){
-            player = (ServerPlayerEntity) entity;
-         }else if(entity instanceof SpearOfTenbrousEntity spearEntity && spearEntity.getOwner() instanceof ServerPlayerEntity){
+         if(damageSource.getSource() instanceof SpearOfTenbrousEntity spearEntity && spearEntity.getOwner() instanceof ServerPlayerEntity){
             player = (ServerPlayerEntity) spearEntity.getOwner();
             spear = spearEntity;
+         }else if(attacker instanceof ServerPlayerEntity){
+            player = (ServerPlayerEntity) attacker;
          }
          
          if(player != null){
-            String entityTypeId = EntityType.getId(livingEntity.getType()).toString();
+            String entityTypeId = EntityType.getId(killed.getType()).toString();
             
             // Check for soulstone then activate
             List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(player);
@@ -67,7 +68,7 @@ public class EntityKilledCallback {
                   
                   if(arcanaItem instanceof Soulstone stone && !procdStone){
                      if(Soulstone.getType(item).equals(entityTypeId)){
-                        stone.killedEntity(serverWorld,player,livingEntity,item,spear != null ? spear.getWeaponStack() : player.getWeaponStack());
+                        stone.killedEntity(serverWorld,player,killed,item,spear != null ? spear.getWeaponStack() : player.getWeaponStack());
                         procdStone = true; // Only activate one soulstone per kill
                      }
                   }
@@ -93,22 +94,22 @@ public class EntityKilledCallback {
                   player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
                }
                
-               if((livingEntity instanceof ServerPlayerEntity || livingEntity instanceof WardenEntity) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
+               if((killed instanceof ServerPlayerEntity || killed instanceof WardenEntity) && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.OMAE_WA.id)){
                   ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,1);
                }
-               if(livingEntity instanceof MobEntity && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id) && ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY.id) % 2 == 0){
+               if(killed instanceof MobEntity && ArcanaAchievements.isTimerActive(player,ArcanaAchievements.SHADOW_FURY.id) && ArcanaAchievements.getProgress(player,ArcanaAchievements.SHADOW_FURY.id) % 2 == 0){
                   ArcanaAchievements.progress(player,ArcanaAchievements.SHADOW_FURY.id,1);
                }
             }
             
             ItemStack chestItem = player.getEquippedStack(EquipmentSlot.CHEST);
-            if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isGliding() && livingEntity instanceof MobEntity){
+            if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings && player.isGliding() && killed instanceof MobEntity){
                ArcanaAchievements.grant(player,ArcanaAchievements.ANGEL_OF_DEATH.id);
             }
             
             if(player.getWeaponStack().isOf(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem()) || spear != null){
-               if(((ConditionalsAchievement)ArcanaAchievements.KILL_THEM_ALL).getConditions().containsKey(livingEntity.getType().getName().getString())){
-                  ArcanaAchievements.setCondition(player,ArcanaAchievements.KILL_THEM_ALL.id,livingEntity.getType().getName().getString(),true);
+               if(((ConditionalsAchievement)ArcanaAchievements.KILL_THEM_ALL).getConditions().containsKey(killed.getType().getName().getString())){
+                  ArcanaAchievements.setCondition(player,ArcanaAchievements.KILL_THEM_ALL.id,killed.getType().getName().getString(),true);
                }
             }
          }

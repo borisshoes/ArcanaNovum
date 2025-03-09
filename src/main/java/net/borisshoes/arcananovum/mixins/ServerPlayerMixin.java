@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.callbacks.EntityKilledCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.StasisPearlEntity;
 import net.borisshoes.arcananovum.items.SojournerBoots;
@@ -17,6 +18,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.ai.TargetPredicate;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.entity.player.PlayerPosition;
@@ -54,6 +56,12 @@ public class ServerPlayerMixin {
       if(PLAYER_MOVEMENT_TRACKER.containsKey(player)){
          PLAYER_MOVEMENT_TRACKER.put(player, new Pair<>(player.getPos(), new Vec3d(0,0,0)));
       }
+   }
+   
+   @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onKilledBy(Lnet/minecraft/entity/LivingEntity;)V"))
+   private void arcananovum_onEntityKilledOther(DamageSource damageSource, CallbackInfo ci){
+      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+      EntityKilledCallback.killedEntity(player.getServerWorld(),damageSource, damageSource.getAttacker(),player);
    }
    
    @Inject(method="onDeath",at=@At("HEAD"))

@@ -27,6 +27,6 @@ public class ArcanaDamageTypes {
    }
    
    public static DamageSource of(World world, RegistryKey<DamageType> key, Entity source, Entity attacker){
-      return new DamageSource((world.getRegistryManager().getOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(key)),attacker,source);
+      return new DamageSource((world.getRegistryManager().getOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(key)),source,attacker);
    }
 }

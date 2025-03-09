@@ -8,7 +8,6 @@ import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityCombatEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -71,7 +70,6 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
       UseEntityCallback.EVENT.register(EntityUseCallback::useEntity);
       AttackBlockCallback.EVENT.register(BlockAttackCallback::attackBlock);
       PlayerBlockBreakEvents.BEFORE.register(BlockBreakCallback::breakBlock);
-      ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(EntityKilledCallback::killedEntity);
       AttackEntityCallback.EVENT.register(EntityAttackCallback::attackEntity);
       ServerPlayConnectionEvents.JOIN.register(PlayerConnectionCallback::onPlayerJoin);
       ServerPlayConnectionEvents.DISCONNECT.register(PlayerConnectionCallback::onPlayerLeave);

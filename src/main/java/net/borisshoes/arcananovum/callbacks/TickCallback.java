@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.ArcanaEvent;
+import net.borisshoes.arcananovum.events.NulMementoEvent;
 import net.borisshoes.arcananovum.items.LevitationHarness;
 import net.borisshoes.arcananovum.items.NulMemento;
 import net.borisshoes.arcananovum.items.QuiverItem;
@@ -110,7 +111,8 @@ public class TickCallback {
                }
    
                // Reset Nul Memento
-               if(arcanaItem instanceof NulMemento nulMemento && nulMemento.isActive(item) && i != 39){
+               if(arcanaItem instanceof NulMemento nulMemento && nulMemento.isActive(item) &&
+                     (i != 39 || ArcanaNovum.getEventsOfType(NulMementoEvent.class).stream().noneMatch(event -> event.getPlayer().equals(player) && ArcanaItem.getUUID(event.getMemento()).equals(ArcanaItem.getUUID(item))))){
                   ArcanaItem.putProperty(item, ArcanaItem.ACTIVE_TAG,false);
                }
             }

@@ -150,7 +150,7 @@ public class Soulstone extends ArcanaItem {
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, 1,1f);
          if(tier > maxTier){
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SOULSTONE_LEVEL_UP_PER_SOUL)*souls); // Add xp
-            putProperty(stone,MAX_TIER_TAG,maxTier);
+            putProperty(stone,MAX_TIER_TAG,tier);
          }
          if(tier == 7){
             ArcanaAchievements.grant(player, ArcanaAchievements.PRIME_EVIL);

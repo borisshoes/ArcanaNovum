@@ -105,7 +105,7 @@ public class PhotonicArrows extends RunicArrow {
                continue;
             }
          }
-         hit.damage(serverWorld, ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,entity,proj), finalDmg);
+         hit.damage(serverWorld, ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
          
          if(hit instanceof MobEntity mob && mob.isDead()){
             killCount++;

@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFights;
+import net.borisshoes.arcananovum.callbacks.EntityKilledCallback;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
@@ -80,6 +81,12 @@ public abstract class LivingEntityMixin {
    @Shadow protected abstract void playHurtSound(DamageSource source);
    
    @Shadow public abstract void enterCombat();
+   
+   @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;emitGameEvent(Lnet/minecraft/registry/entry/RegistryEntry;)V"))
+   private void arcananovum_onEntityKilledOther(DamageSource damageSource, CallbackInfo ci, @Local Entity attacker, @Local ServerWorld serverWorld){
+      LivingEntity thisEntity = (LivingEntity) (Object) this;
+      EntityKilledCallback.killedEntity(serverWorld,damageSource,attacker,thisEntity);
+   }
    
    @Inject(method="onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getDamageTracker()Lnet/minecraft/entity/damage/DamageTracker;"))
    private void arcananovum_witherOneHit(DamageSource source, CallbackInfo ci){

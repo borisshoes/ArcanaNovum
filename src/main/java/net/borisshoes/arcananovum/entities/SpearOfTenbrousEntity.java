@@ -53,6 +53,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    
    private long chunkTicketExpiryTicks = 0L;
    private float damage;
+   private ArrayList<Vec3d> oldPos = new ArrayList<>();
    
    public SpearOfTenbrousEntity(EntityType<? extends SpearOfTenbrousEntity> entityType, World world) {
       super(entityType, world);
@@ -105,6 +106,21 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       super.tick();
       
       if (this.isAlive()) {
+         if(getWorld() instanceof ServerWorld serverWorld){
+            ParticleEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionParticleEffect(0x001c08,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
+            
+            int trailSize = 3;
+            if(this.age % 3 == 0 && !oldPos.isEmpty()){
+               Vec3d endPos = MiscUtils.randomSpherePoint(oldPos.getLast(),1.25, 0.4);
+               ParticleEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePos, () -> endPos, (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+                     12, 1, 0, 1, true, 5, 5);
+            }
+            oldPos.add(getPos());
+            if(oldPos.size() > trailSize){
+               oldPos.removeFirst();
+            }
+         }
+         
          BlockPos blockPos = BlockPos.ofFloored(this.getPos());
          ChunkPos chunkPos = this.getChunkPos();
          if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != ChunkSectionPos.getSectionCoord(blockPos.getX()) || chunkZ != ChunkSectionPos.getSectionCoord(blockPos.getZ())) && getWorld() instanceof ServerWorld serverWorld) {
@@ -181,14 +197,15 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       DamageSource damageSource = ArcanaDamageTypes.of(getWorld(),ArcanaDamageTypes.ARCANE_LIGHTNING,this,owner == null ? this : owner);
       if (this.getWorld() instanceof ServerWorld serverWorld) {
          baseDamage = EnchantmentHelper.getDamage(serverWorld, this.getWeaponStack(), target, damageSource, baseDamage);
-         int fireAspect = this.getWeaponStack().getEnchantments().getLevel(MiscUtils.getEnchantment(Enchantments.FIRE_ASPECT));
-         if(!target.isFireImmune() && fireAspect > 0){
-            target.setOnFireFor(fireAspect*4.0f);
-         }
-         applyImpactEffects(target, getSurroundingEntities(getWorld(),getPos()));
-         
-         if(target.getType().isIn(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) baseDamage *= 1.25f;
       }
+      
+      int fireAspect = this.getWeaponStack().getEnchantments().getLevel(MiscUtils.getEnchantment(Enchantments.FIRE_ASPECT));
+      if(!target.isFireImmune() && fireAspect > 0){
+         target.setOnFireFor(fireAspect*4.0f);
+      }
+      applyImpactEffects(target, getSurroundingEntities(getWorld(),getPos()));
+      
+      if(target.getType().isIn(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) baseDamage *= 1.25f;
       
       if (target.sidedDamage(damageSource, baseDamage)) {
          if (this.getWorld() instanceof ServerWorld serverWorld) {
