@@ -407,7 +407,7 @@ public class NulMemento extends EnergyItem {
       player.sendMessage(Text.literal("")
             .append(Text.literal("The weight of the ").formatted(Formatting.GRAY,Formatting.ITALIC))
             .append(Text.literal("Nul Memento").formatted(Formatting.BLACK,Formatting.BOLD,Formatting.ITALIC))
-            .append(Text.literal(" becomes too much to bare, perhaps you arent ready...").formatted(Formatting.GRAY,Formatting.ITALIC)), false);
+            .append(Text.literal(" becomes too much to bare, perhaps you aren't ready...").formatted(Formatting.GRAY,Formatting.ITALIC)), false);
       player.clearStatusEffects();
    }
    

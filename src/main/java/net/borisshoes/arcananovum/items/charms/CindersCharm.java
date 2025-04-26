@@ -554,7 +554,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       List<List<Text>> list = new ArrayList<>();
       list.add(List.of(Text.literal(" Charm of Cinders").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nHaving spent much time in the Nether has given me ample opportunity to study the fire dwelling creatures. I believe I can replicate many of their abilities and make them my own.").formatted(Formatting.BLACK)));
       list.add(List.of(Text.literal(" Charm of Cinders").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nThis Charm grants a variety of skills from base fire immunity to a simple flint and steel, to flaming breath and even the precise heat to smelt items as I pick them up.\n\nPunching mimics a flint and steel and can ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal(" Charm of Cinders").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\neven set creatures ablaze.\n\nUsing the Charm sends a cone of flame out in a wide area, igniting creatures.\n\nSneak Using it toggles the auto-smelt ability for gathered items\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Charm of Cinders").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\neven set creatures ablaze.\n\nUsing the Charm sends a cone of flame out in a wide area, igniting creatures.\n\nSneak Using it toggles the auto-smelt ability for gathered items.\n").formatted(Formatting.BLACK)));
       return list;
    }
    

@@ -583,7 +583,9 @@ public class ArcanaAchievements {
                      ArcanaRegistry.PHOTONIC_ARROWS.getNameString(),
                      ArcanaRegistry.SIPHONING_ARROWS.getNameString(),
                      ArcanaRegistry.TETHER_ARROWS.getNameString(),
-                     ArcanaRegistry.SMOKE_ARROWS.getNameString()
+                     ArcanaRegistry.SMOKE_ARROWS.getNameString(),
+                     ArcanaRegistry.TRACKING_ARROWS.getNameString(),
+                     ArcanaRegistry.ENSNAREMENT_ARROWS.getNameString()
                }
          ));
    public static final ArcanaAchievement FINALLY_USEFUL_2 = ArcanaAchievements.register(

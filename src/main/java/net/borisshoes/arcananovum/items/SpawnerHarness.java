@@ -79,7 +79,7 @@ public class SpawnerHarness extends ArcanaItem {
       List<MutableText> lore = new ArrayList<>();
       lore.add(Text.literal("")
             .append(Text.literal("While ").formatted(Formatting.DARK_GREEN))
-            .append(Text.literal("silk touch").formatted(Formatting.LIGHT_PURPLE))
+            .append(Text.literal("Silk Touch").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.literal(" fails to provide adequate finesse to obtain ").formatted(Formatting.DARK_GREEN))
             .append(Text.literal("spawners").formatted(Formatting.DARK_AQUA))
             .append(Text.literal(",").formatted(Formatting.DARK_GREEN)));
@@ -141,7 +141,7 @@ public class SpawnerHarness extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal(" Spawner Harness").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nSpawners have always been one of the few blocks that are beyond the reach of the silk touch enchantment. Perhaps I can enhance the enchant a bit further by giving the magic a Harness to channel").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Spawner Harness").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nSpawners have always been one of the few blocks that are beyond the reach of the Silk Touch enchantment. Perhaps I can enhance the enchant a bit further by giving the magic a Harness to channel").formatted(Formatting.BLACK)));
       list.add(List.of(Text.literal(" Spawner Harness").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nadditional Arcana to. \n\nThe Harness itself has to be incredibly durable to withstand the Arcana driving the enchant into overdrive, however, even with my best efforts, the Harness can break after use.\n").formatted(Formatting.BLACK)));
       list.add(List.of(Text.literal(" Spawner Harness").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nUse the Harness on a spawner to capture the spawner.\n\nThe Harness can then place the spawner elsewhere, with a 15% chance to break after use.\n").formatted(Formatting.BLACK)));
       return list;

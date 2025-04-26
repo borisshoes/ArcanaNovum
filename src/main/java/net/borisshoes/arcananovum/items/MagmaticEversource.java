@@ -176,8 +176,8 @@ public class MagmaticEversource extends EnergyItem {
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
       list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nMy inventory issue expands to lava as well as water. Unfortunately, there isn’t lava in the air I can pull from and condense.\nA different solution is in order: The Nether.\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nA limitless realm of molten rock that I can pull from through a microscopic portal. The only downside is that it takes time to siphon lava through the portal. he Magmatic Eversource functions exactly like the Aquatic  ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nEversource, however it takes time to recharge after creating lava.\n\nUsing the Eversource will generate or drain water.\nSneak Using will switch the mode of the Eversource.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nA limitless realm of molten rock that I can pull from through a microscopic portal. The only downside is that it takes time to siphon lava through the portal. The Magmatic Eversource functions exactly like the Aquatic  ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("      Magmatic\n    Eversource").formatted(Formatting.GOLD,Formatting.BOLD),Text.literal("\nEversource, however it takes time to recharge after creating lava.\n\nUsing the Eversource will generate or drain lava.\nSneak Using will switch the mode of the Eversource.\n").formatted(Formatting.BLACK)));
       return list;
    }
    

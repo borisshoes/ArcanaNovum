@@ -899,7 +899,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment TIMELESS_WISDOM = ArcanaAugments.register(
          new ArcanaAugment("Timeless Wisdom", "timeless_wisdom", ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(), ArcanaRegistry.AEQUALIS_SCIENTIA,
-         new String[]{"Gives the Aequalis Scientia have infinite reallocation uses"},
+         new String[]{"Gives the Aequalis Scientia infinite reallocation uses"},
          new ArcanaRarity[]{DIVINE}
    ));
    public static final ArcanaAugment IMPERMANENT_PERMUTATION = ArcanaAugments.register(

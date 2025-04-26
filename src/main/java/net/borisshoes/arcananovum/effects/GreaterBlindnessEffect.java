@@ -9,12 +9,15 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.PLAYER_MOVEMENT_TRACKER;
 
@@ -22,6 +25,11 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
    
    public GreaterBlindnessEffect(){
       super(StatusEffectCategory.HARMFUL,0x13181a);
+   }
+   
+   @Override
+   public @Nullable StatusEffect getPolymerReplacement(PacketContext context){
+      return StatusEffects.BLINDNESS.value();
    }
    
    @Override

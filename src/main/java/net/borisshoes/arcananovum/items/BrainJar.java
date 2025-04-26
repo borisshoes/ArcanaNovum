@@ -184,7 +184,7 @@ public class BrainJar extends EnergyItem {
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
       list.add(List.of(Text.literal("   Brain in a Jar").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nZombies seem to have a higher level of intelligence compared to other mobs. Their brains also seem capable of storing knowledge over time, similar to you and me.\nIf I can expand their capacity for ").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Brain in a Jar").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nknowledge using the storage capabilities of Ender Chests, it should hold enough XP for practical use.\n\nThere should also be a way to incorporate the use of Mending enchantment to have direct access to the storage.\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Brain in a Jar").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nknowledge using the storage capabilities of Ender Chests, it should hold enough XP for practical use.\n\nThere should also be a way to incorporate the use of the Mending enchantment to have direct access to the storage.\n").formatted(Formatting.BLACK)));
       list.add(List.of(Text.literal("   Brain in a Jar").formatted(Formatting.GREEN,Formatting.BOLD),Text.literal("\nUse the Brain in a Jar to open its internal storage, where you can deposit or withdraw XP.\n \nSneak Use to toggle the Jar’s Mending interaction.\n\nThe Jar can store 1 million XP Points.\n").formatted(Formatting.BLACK)));
       return list;
    }

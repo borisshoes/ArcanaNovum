@@ -279,7 +279,7 @@ public class DragonDialog {
                   .append(Text.literal("Equayus").formatted(Formatting.AQUA,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
             subMessage1.add(Text.literal("")
-                  .append(Text.literal("   It is time for your scarred realm to heal from the wounds left by your and your predecessor.").formatted(Formatting.AQUA,Formatting.ITALIC))
+                  .append(Text.literal("   It is time for your scarred realm to heal from the wounds left by you and your predecessor.").formatted(Formatting.AQUA,Formatting.ITALIC))
                   .append(Text.literal("\n    Players, will you help me reclaim her corrupted crystal towers?").formatted(Formatting.AQUA,Formatting.ITALIC)));
             subMessage1.add(Text.literal(""));
             
@@ -544,7 +544,7 @@ public class DragonDialog {
                   .append(Text.literal("Enderia").formatted(Formatting.DARK_PURPLE,Formatting.BOLD))
                   .append(Text.literal(" ~ ").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD)));
             mainMessage.add(Text.literal("")
-                  .append(Text.literal("   ... huff... Perhaps you arent as feeble as I thought... hmph...").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
+                  .append(Text.literal("   ... huff... Perhaps you aren't as feeble as I thought... hmph...").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             mainMessage.add(Text.literal(""));
             break;
          case ABILITY_CORRUPT_ARCANA:

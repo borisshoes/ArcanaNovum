@@ -125,7 +125,7 @@ public abstract class LivingEntityMixin {
    private void arcananovum_onDeath(DamageSource damageSource, CallbackInfo ci){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       for(TickTimerCallback t : SERVER_TIMER_CALLBACKS){
-         if(t instanceof VengeanceTotemTimerCallback vt && vt.getAttacker().getUuidAsString().equals(livingEntity.getUuidAsString())){
+         if(t instanceof VengeanceTotemTimerCallback vt && vt.getAttacker() != null && vt.getAttacker().getUuidAsString().equals(livingEntity.getUuidAsString())){
             vt.setAvenged();
          }
       }
