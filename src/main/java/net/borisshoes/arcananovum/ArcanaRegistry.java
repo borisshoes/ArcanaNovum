@@ -104,6 +104,7 @@ public class ArcanaRegistry {
    public static final TagKey<Item> ARCANISTS_BELT_SPECIAL_DISALLOWED = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"arcanists_belt_special_disallowed"));
    public static final TagKey<Item> FATE_ANCHOR_ENCHANTABLE = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"fate_anchor_enchantable"));
    public static final TagKey<Item> NEODYMIUM_STEALABLE = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"neodymium_stealable"));
+   public static final TagKey<Item> FLETCHERY_POTION_ITEMS = TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,"fletchery_potion_items"));
    
    public static final TagKey<Block> CEPTYUS_VEIN_MINEABLE = TagKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID,"ceptyus_vein_mineable"));
    

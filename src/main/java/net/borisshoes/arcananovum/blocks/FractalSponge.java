@@ -136,13 +136,13 @@ public class FractalSponge extends ArcanaBlock {
                if(blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(null,world, blockPos2, blockState).isEmpty()){
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Pair(blockPos2, depth + 1));
+                     queue.add(new Pair<>(blockPos2, depth + 1));
                   }
                } else if(blockState.getBlock() instanceof FluidBlock){
                   world.setBlockState(blockPos2, Blocks.AIR.getDefaultState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Pair(blockPos2, depth + 1));
+                     queue.add(new Pair<>(blockPos2, depth + 1));
                   }
                } else if(blockState.isOf(Blocks.KELP) || blockState.isOf(Blocks.KELP_PLANT) || blockState.isOf(Blocks.SEAGRASS) || blockState.isOf(Blocks.TALL_SEAGRASS)){
                   BlockEntity blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockPos2) : null;
@@ -150,20 +150,20 @@ public class FractalSponge extends ArcanaBlock {
                   world.setBlockState(blockPos2, Blocks.AIR.getDefaultState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Pair(blockPos2, depth + 1));
+                     queue.add(new Pair<>(blockPos2, depth + 1));
                   }
                }
             }else if(fluidState.isIn(FluidTags.LAVA)){
                if(blockState.getBlock() instanceof FluidDrainable && !((FluidDrainable)blockState.getBlock()).tryDrainFluid(null,world, blockPos2, blockState).isEmpty()){
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Pair(blockPos2, depth + 1));
+                     queue.add(new Pair<>(blockPos2, depth + 1));
                   }
                } else if(blockState.getBlock() instanceof FluidBlock){
                   world.setBlockState(blockPos2, Blocks.AIR.getDefaultState(), 3);
                   ++blocksAbsorbed;
                   if(depth < maxDepth){
-                     queue.add(new Pair(blockPos2, depth + 1));
+                     queue.add(new Pair<>(blockPos2, depth + 1));
                   }
                }
             }

@@ -27,6 +27,12 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
          }
       });
       
+      getOrCreateTagBuilder(ArcanaRegistry.FLETCHERY_POTION_ITEMS)
+            .add(Items.POTION)
+            .add(Items.LINGERING_POTION)
+            .add(Items.SPLASH_POTION)
+      ;
+      
       getOrCreateTagBuilder(ArcanaRegistry.ARCANISTS_BELT_SPECIAL_ALLOWED)
             .add(Items.ENDER_PEARL)
             .add(Items.FIREWORK_ROCKET)
@@ -204,7 +210,7 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
             .add(ArcanaRegistry.CLEANSING_CHARM.getItem())
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.VILLAGE_ITEMS)
+      getOrCreateTagBuilder(ArcanaRegistry.WORKSHOP_ITEMS)
             .add(ArcanaRegistry.EXOTIC_MATTER.getItem())
             .add(ArcanaRegistry.FEASTING_CHARM.getItem())
             .add(ArcanaRegistry.LIGHT_CHARM.getItem())

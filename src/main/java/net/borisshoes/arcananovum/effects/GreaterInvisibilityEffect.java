@@ -12,6 +12,7 @@ import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -71,7 +72,11 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
             
             Vec3d distVec = playerEntity.getPos().subtract(invisEntity.getPos());
             int viewDist = MathHelper.clamp(playerEntity.getViewDistance(), 2, playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.watchDistance);
-            double maxTrackDist = Math.min(playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId()).getMaxTrackDistance(), viewDist * 16);
+            ServerChunkLoadingManager.EntityTracker tracker = playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId());
+            double maxTrackDist = viewDist * 16;
+            if(tracker != null){
+               maxTrackDist = Math.min(tracker.getMaxTrackDistance(), maxTrackDist);
+            }
             double horizDistSq = distVec.x * distVec.x + distVec.z * distVec.z;
             double maxTrackDistSq = maxTrackDist * maxTrackDist;
             boolean reveal = horizDistSq <= maxTrackDistSq && !invisEntity.isSpectator();

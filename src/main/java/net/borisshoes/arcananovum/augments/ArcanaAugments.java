@@ -446,7 +446,7 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment ENHANCED_INFINITY = ArcanaAugments.register(
          new ArcanaAugment("Enhanced Infinity", "enhanced_infinity", new ItemStack(Items.SPECTRAL_ARROW), ArcanaRegistry.RUNIC_BOW,
-         new String[]{"Applies infinity to tipped and spectral arrows"},
+         new String[]{"Applies infinity to tipped and spectral arrows","The bow must be enchanted with Infinity"},
          new ArcanaRarity[]{EXOTIC}
    ));
    

@@ -91,7 +91,6 @@ public class EnhancedForgingGui extends SimpleGui {
             if(game.hasNextTurn()){
                if(game.getTurn() == 0 && !paid){
                   if(MiscUtils.removeItems(player,ArcanaRegistry.STARDUST,game.getTotalCost())){
-                     blockEntity.addSeedUse();
                      turnMode = false;
                      animated = true;
                      cinematicMode = true;
@@ -330,8 +329,9 @@ public class EnhancedForgingGui extends SimpleGui {
    }
    
    public void onCompletion(){
-      if(!(blockEntity.getWorld()instanceof ServerWorld world)) return;
+      if(!(blockEntity.getWorld() instanceof ServerWorld world)) return;
       completed = true;
+      blockEntity.addSeedUse();
       
       double percentile = EnhancedStatUtils.generatePercentile(game.getStarCount());
       

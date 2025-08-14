@@ -225,7 +225,7 @@ public class MiscUtils {
       box = box.expand(2);
       // Primary hitscan check
       do{
-         entityHit = ProjectileUtil.raycast(entity,startPos,raycast.getPos(),box, e -> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e),100000);
+         entityHit = ProjectileUtil.raycast(entity,startPos,raycast.getPos(),box, e -> e instanceof LivingEntity && !e.isSpectator() && !hits.contains(e),distance*2);
          if(entityHit != null && entityHit.getType() == HitResult.Type.ENTITY){
             hits.add(entityHit.getEntity());
          }

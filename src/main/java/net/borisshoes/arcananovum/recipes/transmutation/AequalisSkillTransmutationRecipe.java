@@ -167,33 +167,35 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
          }
       }
       
-      if(reagent1Entity != null){
-         int reagentCount = 0;
-         if(validStack(re1,reagent1Stack) && !re1.isEmpty()){
-            reagentCount = re1.getCount();
-         }else if(validStack(re2,reagent1Stack) && !re2.isEmpty()){
-            reagentCount = re2.getCount();
-         }
-         if(reagent1Stack.getCount() == reagentCount){
-            reagent1Entity.discard();
-         }else{
-            reagent1Stack.decrement(reagentCount);
-            reagent1Entity.setStack(reagent1Stack);
+      boolean m11 = validStack(re1, reagent1Stack), m22 = validStack(re2, reagent2Stack), m12 = validStack(re1, reagent2Stack), m21 = validStack(re2, reagent1Stack);
+      boolean straight = m11 && m22;
+      boolean cross = !straight && m12 && m21;
+      if (!straight && !cross) return new ArrayList<>(); // should be impossible
+      
+      ItemStack reagent1 = straight ? re1 : re2;
+      ItemStack reagent2 = straight ? re2 : re1;
+      
+      if (reagent1Entity != null) {
+         int take = reagent1.isEmpty() ? 0 : reagent1.getCount();
+         if(take > 0){
+            if(reagent1Stack.getCount() == take){
+               reagent1Entity.discard();
+            }else{
+               reagent1Stack.decrement(take);
+               reagent1Entity.setStack(reagent1Stack);
+            }
          }
       }
       
-      if(reagent2Entity != null){
-         int reagentCount = 0;
-         if(validStack(re1,reagent2Stack) && !re1.isEmpty()){
-            reagentCount = re1.getCount();
-         }else if(validStack(re2,reagent2Stack) && !re2.isEmpty()){
-            reagentCount = re2.getCount();
-         }
-         if(reagent2Stack.getCount() == reagentCount){
-            reagent2Entity.discard();
-         }else{
-            reagent2Stack.decrement(reagentCount);
-            reagent2Entity.setStack(reagent2Stack);
+      if (reagent2Entity != null) {
+         int take = reagent2.isEmpty() ? 0 : reagent2.getCount();
+         if(take > 0){
+            if(reagent2Stack.getCount() == take){
+               reagent2Entity.discard();
+            }else{
+               reagent2Stack.decrement(take);
+               reagent2Entity.setStack(reagent2Stack);
+            }
          }
       }
       
@@ -206,9 +208,9 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       int bargainLvl = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.HASTY_BARGAIN.id);
       ItemStack re1 = getBargainReagent(reagent1,bargainLvl);
       ItemStack re2 = getBargainReagent(reagent2,bargainLvl);
-      boolean reagent1Check = validStack(re1,reagent1Input) || validStack(re1,reagent2Input);
-      boolean reagent2Check = validStack(re2,reagent1Input) || validStack(re2,reagent2Input);
-      if(!reagent1Check || !reagent2Check) return false;
+      boolean reagentCheck1 = validStack(re1, reagent1Input) && validStack(re2, reagent2Input);
+      boolean reagentCheck2 = validStack(re1, reagent2Input) && validStack(re2, reagent1Input);
+      if (!(reagentCheck1 || reagentCheck2)) return false;
       boolean arcanaItemCheck = (ArcanaItemUtils.isArcane(input1) && ArcanaItemUtils.isArcane(input2));
       boolean matrixCheck = !input1.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem()) && !input2.isOf(ArcanaRegistry.CATALYTIC_MATRIX.getItem());
       if(!arcanaItemCheck || !matrixCheck) return false;

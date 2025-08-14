@@ -40,6 +40,7 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -496,6 +497,17 @@ public abstract class LivingEntityMixin {
       return !source.isIn(ArcanaRegistry.ALLOW_TOTEM_USAGE);
    }
    
+   @ModifyExpressionValue(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;"))
+   public ItemStack arcananovum_deathProtectorCooldown(ItemStack original){
+      LivingEntity livingEntity = (LivingEntity) (Object) this;
+      if(livingEntity instanceof ServerPlayerEntity player){
+         if(player.getItemCooldownManager().isCoolingDown(original)){
+            return ItemStack.EMPTY;
+         }
+      }
+      return original;
+   }
+   
    @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setHealth(F)V"), cancellable = true)
    public void arcananovum_vengeanceTrigger(DamageSource source, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0) ItemStack itemStack){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
@@ -523,12 +535,14 @@ public abstract class LivingEntityMixin {
       DeathProtectionComponent deathProtectionComponent = null;
       
       if(livingEntity instanceof ServerPlayerEntity player){
+         ItemCooldownManager cooldowns = player.getItemCooldownManager();
          Inventory inv = player.getInventory();
          for(int i = 0; i < inv.size(); i++){
             ItemStack beltStack = inv.getStack(i);
             if(ArcanaItemUtils.identifyItem(beltStack) instanceof ArcanistsBelt){
                ContainerComponent beltItems = beltStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
                for(ItemStack stack : beltItems.iterateNonEmpty()){
+                  if(cooldowns.isCoolingDown(stack)) continue;
                   deathProtectionComponent = stack.get(DataComponentTypes.DEATH_PROTECTION);
                   if (deathProtectionComponent != null) {
                      itemStack = stack.copy();

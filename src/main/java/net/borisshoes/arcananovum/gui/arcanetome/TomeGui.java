@@ -42,6 +42,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.gen.GeneratorOptions;
 
 import java.text.DecimalFormat;
@@ -602,8 +603,9 @@ public class TomeGui extends SimpleGui {
       }else{
          items = items.stream().filter(entry -> entry instanceof ArcanaItemCompendiumEntry).toList();
       }
-      List<CompendiumEntry> pageItems = MiscUtils.listToPage(items, settings.getPage(),28);
       int numPages = (int) Math.ceil((float)items.size()/28.0);
+      settings.setPage(MathHelper.clamp(settings.getPage(),1,Math.max(1,numPages)));
+      List<CompendiumEntry> pageItems = MiscUtils.listToPage(items, settings.getPage(),28);
       
       MiscUtils.outlineGUI(gui,ArcanaColors.ARCANA_COLOR,Text.empty());
       

@@ -55,8 +55,8 @@ public class ConfigUtils {
             if(!configLine.contains("=")) continue;
             
             int splitIndex = configLine.indexOf('=');
-            String valueName = configLine.substring(0, splitIndex);
-            String valueValue = configLine.substring(splitIndex + 1);
+            String valueName = configLine.substring(0, splitIndex).strip();
+            String valueValue = configLine.substring(splitIndex + 1).strip();
             
             for(IConfigValue value : this.values){
                if(!valueName.equals(value.name)) continue;

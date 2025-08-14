@@ -76,6 +76,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.devPrint;
+import static net.borisshoes.arcananovum.ArcanaNovum.log;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 import static net.borisshoes.arcananovum.utils.SpawnPile.makeSpawnLocations;
 
@@ -143,11 +144,15 @@ public class DragonBossFight {
       
          if(state == States.WAITING_START){ // Set players and dragon name/hp, set keep inventory, make scoreboards, set crystals to be invincible
             if(!prepNotif){
+               if(endWorld.getAliveEnderDragons().isEmpty()){
+                  log(3,"Attempted to start Enderia fight without a dragon, cancelling boss fight");
+                  abortBoss(server);
+               }
                numPlayers = calcPlayers(server,false);
                fightData.putInt("numPlayers",numPlayers);
                gameMaster = gm;
                hasDied = new ArrayList<>();
-               dragon = endWorld.getAliveEnderDragons().get(0);
+               dragon = endWorld.getAliveEnderDragons().getFirst();
                dragon.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(1024);
                dragon.setHealth(1024);
                reclaimStates = new ArrayList<>();

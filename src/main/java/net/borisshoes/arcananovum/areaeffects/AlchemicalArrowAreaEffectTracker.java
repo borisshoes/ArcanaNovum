@@ -90,7 +90,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
             List<Pair<StatusEffectInstance, AlchemicalArrowSource>> effects = entry.getValue();
             int random = (int) (Math.random()*effects.size());
             
-            if(Math.random() < 0.1){
+            if(Math.random() < 0.03){
                ParticleEffect dust = new DustParticleEffect(effects.get(random).getLeft().getEffectType().value().getColor(),1.2f);
                world.spawnParticles(dust,pos.getX(),pos.getY(),pos.getZ(),1,0.5,0.5,0.5,0);
             }
@@ -158,6 +158,10 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
       
       public void applyEffect(ServerWorld world, LivingEntity entity, StatusEffectInstance effect){
          if(!world.getRegistryKey().toString().equals(blockWorld.getRegistryKey().toString())) return;
+         StatusEffectInstance existing = entity.getStatusEffect(effect.getEffectType());
+         if(existing != null && existing.getAmplifier() >= effect.getAmplifier()){
+            return;
+         }
          
          boolean applied = entity.addStatusEffect(new StatusEffectInstance(effect),contributor);
          if(applied && effect.getEffectType() == ArcanaRegistry.DAMAGE_AMP_EFFECT && contributor instanceof LivingEntity applier){
