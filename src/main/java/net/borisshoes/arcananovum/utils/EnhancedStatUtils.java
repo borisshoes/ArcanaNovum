@@ -7,7 +7,6 @@ import net.minecraft.component.type.*;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
@@ -25,7 +24,7 @@ public class EnhancedStatUtils {
    public static String ENHANCED_STAT_TAG = "stardust_enhanced";
    
    public static boolean isItemEnhanceable(ItemStack stack){
-      return (stack.isIn(ItemTags.ARMOR_ENCHANTABLE) && stack.getItem() instanceof ArmorItem) ||
+      return (stack.isIn(ItemTags.ARMOR_ENCHANTABLE)) ||
              (stack.isIn(ItemTags.WEAPON_ENCHANTABLE) || stack.isIn(ItemTags.SWORDS) || stack.isIn(ItemTags.AXES)) ||
              (stack.contains(DataComponentTypes.TOOL)) ||
              (stack.contains(DataComponentTypes.MAX_DAMAGE));
@@ -75,7 +74,7 @@ public class EnhancedStatUtils {
             }
          }
          
-         ToolComponent newComp = new ToolComponent(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock());
+         ToolComponent newComp = new ToolComponent(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock(),comp.canDestroyBlocksInCreative());
          stack.set(DataComponentTypes.TOOL,newComp);
       }
       if(stack.contains(DataComponentTypes.MAX_DAMAGE)){
@@ -84,7 +83,7 @@ public class EnhancedStatUtils {
       }
       
       
-      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,true);
+      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList);
       stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
       
       if(removeTag){
@@ -170,7 +169,7 @@ public class EnhancedStatUtils {
             }
          }
          
-         ToolComponent newComp = new ToolComponent(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock());
+         ToolComponent newComp = new ToolComponent(newRules,comp.defaultMiningSpeed(),comp.damagePerBlock(),comp.canDestroyBlocksInCreative());
          stack.set(DataComponentTypes.TOOL,newComp);
          enhanced = true;
       }
@@ -183,7 +182,7 @@ public class EnhancedStatUtils {
       
       
       if(enhanced){
-         AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,true);
+         AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList);
          stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
          
          ArcanaItem.putProperty(stack,ENHANCED_STAT_TAG,percentile);

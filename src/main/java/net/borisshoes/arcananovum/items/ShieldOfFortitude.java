@@ -5,7 +5,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerShieldItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
@@ -17,16 +17,18 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.component.type.UnbreakableComponent;
+import net.minecraft.component.type.BlocksAttacksComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
@@ -36,9 +38,11 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -53,9 +57,7 @@ public class ShieldOfFortitude extends ArcanaItem {
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.SHIELD;
-      item = new ShieldOfFortitudeItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      ));
+      item = new ShieldOfFortitudeItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_ABSORPTION,ResearchTasks.ADVANCEMENT_DEFLECT_ARROW,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
@@ -166,9 +168,24 @@ public class ShieldOfFortitude extends ArcanaItem {
       
    }
    
-   public class ShieldOfFortitudeItem extends ArcanaPolymerShieldItem {
-      public ShieldOfFortitudeItem(Item.Settings settings){
-         super(getThis(),settings);
+   public class ShieldOfFortitudeItem extends ArcanaPolymerItem {
+      public ShieldOfFortitudeItem(){
+         super(getThis(),
+               getEquipmentArcanaItemComponents()
+                     .equippableUnswappable(EquipmentSlot.OFFHAND)
+                     .component(DataComponentTypes.BLOCKS_ATTACKS,
+                           new BlocksAttacksComponent(
+                                 0.25F,
+                                 1.0F,
+                                 List.of(new BlocksAttacksComponent.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
+                                 new BlocksAttacksComponent.ItemDamage(3.0F, 1.0F, 1.0F),
+                                 Optional.of(DamageTypeTags.BYPASSES_SHIELD),
+                                 Optional.of(SoundEvents.ITEM_SHIELD_BLOCK),
+                                 Optional.of(SoundEvents.ITEM_SHIELD_BREAK)
+                           ))
+                     .component(DataComponentTypes.BREAK_SOUND, SoundEvents.ITEM_SHIELD_BREAK)
+                     .component(DataComponentTypes.BANNER_PATTERNS, BannerPatternsComponent.DEFAULT)
+         );
       }
       
       @Override
@@ -176,6 +193,14 @@ public class ShieldOfFortitude extends ArcanaItem {
          return prefItem;
       }
       
+      @Override
+      public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context){
+         ItemStack stack = super.getPolymerItemStack(itemStack, tooltipType, context);
+         if(stack.contains(DataComponentTypes.BASE_COLOR) && !stack.contains(DataComponentTypes.CUSTOM_NAME)){
+            stack.set(DataComponentTypes.CUSTOM_NAME, TextUtils.removeItalics(this.getName(stack)));
+         }
+         return stack;
+      }
    }
 }
 

@@ -70,6 +70,7 @@ import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -139,6 +140,8 @@ public class ArcanaRegistry {
    }
    
    public static final RegistryKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ASSET_REGISTRY_KEY = RegistryKey.ofRegistry(Identifier.ofVanilla("equipment_asset"));
+   
+   public static final ChunkTicketType ANCHOR_TICKET_TYPE = registerTicketType("arcananovum_anchor", 40L, true, ChunkTicketType.Use.LOADING_AND_SIMULATION);
    
    // Armor Materials
    public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new ArmorMaterial(1024, Util.make(new EnumMap<>(EquipmentType.class), map -> {
@@ -620,6 +623,10 @@ public class ArcanaRegistry {
    private static ArcanaConfig.ConfigSetting<?> registerConfigSetting(ArcanaConfig.ConfigSetting<?> setting){
       Registry.register(CONFIG_SETTINGS,Identifier.of(MOD_ID,setting.getId()),setting);
       return setting;
+   }
+   
+   private static ChunkTicketType registerTicketType(String id, long expiryTicks, boolean persist, ChunkTicketType.Use use) {
+      return Registry.register(Registries.TICKET_TYPE, id, new ChunkTicketType(expiryTicks, persist, use));
    }
    
    private static <T> ComponentType<T> registerEnchantmentEffectComponent(String id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {

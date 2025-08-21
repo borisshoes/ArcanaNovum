@@ -11,7 +11,6 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -35,7 +34,7 @@ public class MundaneCatalyst extends ArcanaItem {
       rarity = ArcanaRarity.MUNDANE;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.QUARTZ;
-      item = new MundaneCatalystItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new MundaneCatalystItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_CATALYTIC_MATRIX,ResearchTasks.OBTAIN_QUARTZ,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
@@ -98,8 +97,8 @@ public class MundaneCatalyst extends ArcanaItem {
    }
    
    public class MundaneCatalystItem extends ArcanaPolymerItem {
-      public MundaneCatalystItem(Item.Settings settings){
-         super(getThis(),settings);
+      public MundaneCatalystItem(){
+         super(getThis());
       }
       
       @Override

@@ -19,7 +19,6 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
@@ -27,7 +26,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -65,9 +63,7 @@ public class RunicBow extends ArcanaItem {
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.BOW;
-      item = new RunicBowItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      ));
+      item = new RunicBowItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.ADVANCEMENT_SNIPER_DUEL,ResearchTasks.ADVANCEMENT_BULLSEYE};
       
@@ -83,7 +79,7 @@ public class RunicBow extends ArcanaItem {
       ItemStack curPrefItem = this.getPrefItem();
       curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
             new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.POWER),7)
-      ).withShowInTooltip(false));
+      ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
@@ -173,8 +169,8 @@ public class RunicBow extends ArcanaItem {
       public static final Predicate<ItemStack> RUNIC_BOW_PROJECTILES = stack -> (stack.isIn(ItemTags.ARROWS) || ArcanaItemUtils.identifyItem(stack) instanceof RunicArrow);
       public static final float[] STABILITY = new float[]{1f, .75f, .5f, 0f};
       
-      public RunicBowItem(Item.Settings settings){
-         super(getThis(),settings);
+      public RunicBowItem(){
+         super(getThis(),getEquipmentArcanaItemComponents());
       }
       
       @Override

@@ -7,19 +7,17 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.EquippableComponent;
-import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.equipment.ArmorMaterials;
@@ -35,7 +33,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -56,10 +53,7 @@ public class WingsOfEnderia extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 1;
       vanillaItem = Items.ELYTRA;
-      item = new WingsOfEnderiaItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-            .component(DataComponentTypes.GLIDER, Unit.INSTANCE)
-      ));
+      item = new WingsOfEnderiaItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_WINGS_OF_ENDERIA};
       
@@ -75,7 +69,7 @@ public class WingsOfEnderia extends EnergyItem {
       ItemStack curPrefItem = this.getPrefItem();
       curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
             new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.PROTECTION),4)
-      ).withShowInTooltip(false));
+      ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
@@ -131,9 +125,12 @@ public class WingsOfEnderia extends EnergyItem {
       return list;
    }
    
-   public class WingsOfEnderiaItem extends ArcanaPolymerArmorItem {
-      public WingsOfEnderiaItem(Item.Settings settings){
-         super(getThis(), ArmorMaterials.NETHERITE, EquipmentType.CHESTPLATE,settings);
+   public class WingsOfEnderiaItem extends ArcanaPolymerItem {
+      public WingsOfEnderiaItem(){
+         super(getThis(),getEquipmentArcanaItemComponents()
+               .armor(ArmorMaterials.NETHERITE, EquipmentType.CHESTPLATE)
+               .component(DataComponentTypes.GLIDER, Unit.INSTANCE)
+         );
       }
       
       @Override
@@ -151,7 +148,7 @@ public class WingsOfEnderia extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          ItemStack item = player.getEquippedStack(EquipmentSlot.CHEST);
          if(ArcanaItemUtils.identifyItem(item) instanceof WingsOfEnderia wings){
@@ -164,7 +161,7 @@ public class WingsOfEnderia extends EnergyItem {
             NbtCompound leftShoulder = player.getShoulderEntityLeft();
             NbtCompound rightShoulder = player.getShoulderEntityRight();
             if(leftShoulder != null && rightShoulder != null && leftShoulder.contains("id") && rightShoulder.contains("id")){
-               if(leftShoulder.getString("id").equals(EntityType.getId(EntityType.PARROT).toString()) && rightShoulder.getString("id").equals(EntityType.getId(EntityType.PARROT).toString())){
+               if(leftShoulder.getString("id", "").equals(EntityType.getId(EntityType.PARROT).toString()) && rightShoulder.getString("id", "").equals(EntityType.getId(EntityType.PARROT).toString())){
                   ArcanaAchievements.grant(player, ArcanaAchievements.CROW_FATHER.id);
                }
             }

@@ -4,14 +4,17 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesOfGaialtusGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.ContainerComponent;
+import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -56,10 +59,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.DIAMOND_LEGGINGS;
-      item = new GreavesOfGaialtusItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-            .component(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT)
-      ));
+      item = new GreavesOfGaialtusItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.AQUA,Formatting.BOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_GREAVES_OF_GAIALTUS};
       attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.texture_by"),Text.literal("tcmEcho")), new Pair<>(Text.translatable("credits_and_attribution.arcananovum.model_by"),Text.literal("tcmEcho"))};
@@ -218,7 +218,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
             }
             
             attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.BLOCK_INTERACTION_RANGE,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,this.id),1.5,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.LEGS));
-            AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,false);
+            AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList);
             stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
          }
       }
@@ -262,11 +262,14 @@ public class GreavesOfGaialtus extends ArcanaItem {
       return returnStack;
    }
    
-   public class GreavesOfGaialtusItem extends ArcanaPolymerArmorItem {
+   public class GreavesOfGaialtusItem extends ArcanaPolymerItem {
       public static final int[] GREAVES_SLOT_COUNT = new int[]{18,27,36,45,54};
       
-      public GreavesOfGaialtusItem(Item.Settings settings){
-         super(getThis(), ArmorMaterials.NETHERITE, EquipmentType.LEGGINGS,settings);
+      public GreavesOfGaialtusItem(){
+         super(getThis(),getEquipmentArcanaItemComponents()
+               .armor(ArmorMaterials.NETHERITE, EquipmentType.LEGGINGS)
+               .component(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT)
+         );
       }
       
       @Override
@@ -284,7 +287,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
@@ -312,7 +315,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                }
             }
             PlayerInventory inv = player.getInventory();
-            player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, stack));
+            player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.getSelectedSlot() : 45, stack));
             player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 7, player.getEquippedStack(EquipmentSlot.LEGS)));
             return ActionResult.SUCCESS_SERVER;
          }

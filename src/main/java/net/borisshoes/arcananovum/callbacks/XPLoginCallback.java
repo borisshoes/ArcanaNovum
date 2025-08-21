@@ -44,7 +44,7 @@ public class XPLoginCallback extends LoginCallback{
    @Override
    public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
-      xp = data.getInt("xp");
+      xp = data.getInt("xp", 0);
    }
    
    @Override

@@ -13,12 +13,9 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
@@ -40,7 +37,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -54,9 +50,7 @@ public class ExpulsionArrows extends RunicArrow {
       rarity = ArcanaRarity.EXOTIC;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new ExpulsionArrowsItem(addArcanaItemComponents(new Item.Settings().maxCount(64)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(889599),new ArrayList<>(),Optional.empty()))
-      ));
+      item = new ExpulsionArrowsItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.KILL_SLIME,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.USE_ENDER_PEARL};
       
@@ -194,8 +188,8 @@ public class ExpulsionArrows extends RunicArrow {
    }
    
    public class ExpulsionArrowsItem extends ArcanaPolymerArrowItem {
-      public ExpulsionArrowsItem(Item.Settings settings){
-         super(getThis(),settings);
+      public ExpulsionArrowsItem(){
+         super(getThis(),getArcanaArrowItemComponents(889599));
       }
       
       @Override

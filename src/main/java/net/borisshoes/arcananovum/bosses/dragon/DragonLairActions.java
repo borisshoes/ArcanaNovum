@@ -4,10 +4,13 @@ import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BlocksAttacksComponent;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.item.ItemStack;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
@@ -165,7 +168,11 @@ public class DragonLairActions {
    
             for(ServerPlayerEntity player : hitPlayers){
                if(player.isBlocking() && player.getPitch() < -60){
-                  player.disableShield(player.getBlockingItem());
+                  ItemStack itemStack = player.getBlockingItem();
+                  BlocksAttacksComponent blocksAttacksComponent = itemStack != null ? itemStack.get(DataComponentTypes.BLOCKS_ATTACKS) : null;
+                  if (blocksAttacksComponent != null) {
+                     blocksAttacksComponent.applyShieldCooldown(endWorld, player, 10, itemStack);
+                  }
                }else{
                   player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),10);
                }

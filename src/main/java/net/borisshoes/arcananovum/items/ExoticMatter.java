@@ -15,7 +15,6 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -44,7 +43,7 @@ public class ExoticMatter extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       initEnergy = 600000;
       vanillaItem = Items.STRUCTURE_BLOCK;
-      item = new ExoticMatterItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new ExoticMatterItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.OBTAIN_CLOCK,ResearchTasks.ADVANCEMENT_SLEEP_IN_BED,ResearchTasks.OBTAIN_END_CRYSTAL};
       
@@ -156,8 +155,8 @@ public class ExoticMatter extends EnergyItem {
    }
    
    public class ExoticMatterItem extends ArcanaPolymerItem {
-      public ExoticMatterItem(Item.Settings settings){
-         super(getThis(),settings);
+      public ExoticMatterItem(){
+         super(getThis());
       }
       
       @Override

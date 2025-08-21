@@ -18,15 +18,11 @@ import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.*;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
@@ -43,7 +39,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -68,7 +63,7 @@ public class ContainmentCirclet extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.HEART_OF_THE_SEA;
-      item = new ContainmentCircletItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new ContainmentCircletItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_TAME_AN_ANIMAL,ResearchTasks.USE_ENDER_CHEST};
       
@@ -220,8 +215,8 @@ public class ContainmentCirclet extends ArcanaItem {
    }
    
    public class ContainmentCircletItem extends ArcanaPolymerItem {
-      public ContainmentCircletItem(Item.Settings settings){
-         super(getThis(),settings);
+      public ContainmentCircletItem(){
+         super(getThis());
       }
       
       @Override
@@ -289,7 +284,7 @@ public class ContainmentCirclet extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          

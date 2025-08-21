@@ -11,7 +11,6 @@ import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.mixins.LivingEntityAccessor;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -205,8 +204,8 @@ public class MiscUtils {
    
    public static void blockWithShield(LivingEntity entity, float damage){
       if(entity.isBlocking()){
-         ((LivingEntityAccessor) entity).invokeDamageShield(damage);
-         SoundUtils.playSound(entity.getWorld(),entity.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS,1f,1f);
+         // TODO Make this better and properly damage shield components
+         //SoundUtils.playSound(entity.getWorld(),entity.getBlockPos(), SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS,1f,1f);
          
          // Activate Shield of Fortitude
          ItemStack activeItem = entity.getActiveItem();
@@ -465,7 +464,7 @@ public class MiscUtils {
       ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
       
       for(EnchantmentLevelEntry entry : entries){
-         builder.add(entry.enchantment,entry.level);
+         builder.add(entry.enchantment(),entry.level());
       }
       
       return builder.build();

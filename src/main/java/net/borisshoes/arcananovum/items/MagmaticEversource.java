@@ -23,12 +23,12 @@ import net.minecraft.block.FluidFillable;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -71,7 +71,7 @@ public class MagmaticEversource extends EnergyItem {
       rarity = ArcanaRarity.EXOTIC;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.LAVA_BUCKET;
-      item = new MagmaticEversourceItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new MagmaticEversourceItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_LAVA_BUCKET,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_AQUATIC_EVERSOURCE};
       
@@ -182,8 +182,8 @@ public class MagmaticEversource extends EnergyItem {
    }
    
    public class MagmaticEversourceItem extends ArcanaPolymerItem {
-      public MagmaticEversourceItem(Item.Settings settings){
-         super(getThis(),settings);
+      public MagmaticEversourceItem(){
+         super(getThis());
       }
       
       @Override
@@ -219,7 +219,7 @@ public class MagmaticEversource extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld)) return;
          if(world.getServer().getTicks() % 20 == 0){
@@ -272,7 +272,7 @@ public class MagmaticEversource extends EnergyItem {
             BlockPos blockPos = blockHitResult.getBlockPos();
             Direction direction = blockHitResult.getSide();
             BlockPos blockPos2 = blockPos.offset(direction);
-            if(!world.canPlayerModifyAt(playerEntity, blockPos) || !playerEntity.canPlaceOn(blockPos2, direction, stack)){
+            if(!world.canEntityModifyAt(playerEntity, blockPos) || !playerEntity.canPlaceOn(blockPos2, direction, stack)){
                return ActionResult.FAIL;
             }
             if(fluid == Fluids.EMPTY){

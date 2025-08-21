@@ -101,17 +101,6 @@ public abstract class LivingEntityMixin {
          }
       }
    }
-  
-   @ModifyReturnValue(method = "disablesShield", at = @At("RETURN"))
-   private boolean arcananovum_disablesShield(boolean original){
-      if(!original){
-         LivingEntity livingEntity = (LivingEntity) (Object) this;
-         if(livingEntity.getWeaponStack().isOf(ArcanaRegistry.GRAVITON_MAUL.getItem())){
-            return true;
-         }
-      }
-      return original;
-   }
    
    @Inject(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("RETURN"))
    private void arcananovum_onStatusEffectAdd(StatusEffectInstance effect, Entity source, CallbackInfoReturnable<Boolean> cir){
@@ -132,22 +121,40 @@ public abstract class LivingEntityMixin {
       }
    }
    
-   // Mixin for Shield of Fortitude giving absorption hearts
-   @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V"))
-   private void arcananovum_shieldAbsorb(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+   @ModifyExpressionValue(method = "getDamageBlockedAmount", at = @At(value = "INVOKE", target = "Lnet/minecraft/component/type/BlocksAttacksComponent;getDamageReductionAmount(Lnet/minecraft/entity/damage/DamageSource;FD)F"))
+   private float arcananovum_whiteDwarfBlock(float original, ServerWorld world, DamageSource source, float damage, @Local ItemStack blockStack){
       LivingEntity entity = (LivingEntity) (Object) this;
-      ItemStack activeItem = entity.getActiveItem();
+      ItemStack mainhand = entity.getMainHandStack();
+      if(!(ArcanaItemUtils.identifyItem(mainhand) instanceof BinaryBlades blades)) return original;
+      int whiteDwarf = ArcanaAugments.getAugmentOnItem(mainhand, ArcanaAugments.WHITE_DWARF_BLADES.id);
+      if(whiteDwarf < 1) return original;
+      int energy = blades.getEnergy(mainhand);
+      float dmgReduction = (float) Math.min(energy / 5.0, original);
+      if(dmgReduction > 0){
+         ArcanaItem.putProperty(mainhand,BinaryBlades.LAST_HIT_TAG,20);
+         blades.addEnergy(mainhand, (int) -dmgReduction * 5);
+         return dmgReduction;
+      }else{
+         return 0;
+      }
+   }
+   
+   
+   // Mixin for Shield of Fortitude giving absorption hearts
+   @Inject(method="getDamageBlockedAmount",at=@At(value = "INVOKE", target = "Lnet/minecraft/component/type/BlocksAttacksComponent;onShieldHit(Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/util/Hand;F)V"))
+   private void arcananovum_shieldAbsorb(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Local ItemStack shieldStack, @Local(ordinal = 0, argsOnly = true) float blocked){
+      LivingEntity entity = (LivingEntity) (Object) this;
       ArcanaItem arcaneItem;
       ItemStack item = null;
       
-      if(ArcanaItemUtils.isArcane(activeItem)){
-         arcaneItem = ArcanaItemUtils.identifyItem(activeItem);
-         item = activeItem;
+      if(ArcanaItemUtils.isArcane(shieldStack)){
+         arcaneItem = ArcanaItemUtils.identifyItem(shieldStack);
+         item = shieldStack;
       }else{
          return;
       }
       if(arcaneItem instanceof ShieldOfFortitude shield){
-         shield.shieldBlock(entity,item,amount);
+         shield.shieldBlock(entity,item,blocked);
       }
    }
    
@@ -243,7 +250,6 @@ public abstract class LivingEntityMixin {
       }
    }
    
-   
    // Mixin for damage modifiers
    @ModifyReturnValue(method = "modifyAppliedDamage", at = @At("RETURN"))
    private float arcananovum_modifyDamage(float original, DamageSource source, float amount){
@@ -313,7 +319,7 @@ public abstract class LivingEntityMixin {
       }
    
       if(entity instanceof ServerPlayerEntity player){
-         List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(player);
+         List<Pair<List<ItemStack>, ItemStack>> allItems = MiscUtils.getAllItems(player);
          boolean procdFelidae = false;
          
          for(int i = 0; i < allItems.size(); i++){
@@ -326,30 +332,31 @@ public abstract class LivingEntityMixin {
                
                boolean isArcane = ArcanaItemUtils.isArcane(item);
                if(!isArcane){
-                  sinv.setStack(j,item);
+                  sinv.setStack(j, item);
                   continue; // Item not arcane, skip
                }
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
                
                if((arcanaItem instanceof FelidaeCharm) && source.isIn(DamageTypeTags.IS_FALL) && !procdFelidae){ // Felidae Charm
-                  int graceLvl = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.FELINE_GRACE.id));
-                  float dmgMod = (float) (0.5 - 0.125*graceLvl);
-                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
+                  int graceLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.FELINE_GRACE.id));
+                  float dmgMod = (float) (0.5 - 0.125 * graceLvl);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1, 1);
                   float oldReturn = newReturn;
                   newReturn = newReturn * dmgMod < 2 ? 0 : newReturn * dmgMod; // Reduce the damage, if the remaining damage is less than a heart, remove all of it.
-                  ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL_CAP),ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL)*(oldReturn-newReturn))); // Add xp
-                  if(oldReturn > player.getHealth() && newReturn < player.getHealth()) ArcanaAchievements.grant(player,ArcanaAchievements.LAND_ON_FEET.id);
+                  ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL_CAP), ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL) * (oldReturn - newReturn))); // Add xp
+                  if(oldReturn > player.getHealth() && newReturn < player.getHealth())
+                     ArcanaAchievements.grant(player, ArcanaAchievements.LAND_ON_FEET.id);
                   procdFelidae = true; // Make it so multiple charms don't stack
                   
                }else if(arcanaItem instanceof PearlOfRecall pearl){ // Cancel all Pearls of Recall
-                  int defenseLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.PHASE_DEFENSE.id));
-                  final double[] defenseChance = {0,.15,.35,.5};
+                  int defenseLvl = Math.max(0, ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.PHASE_DEFENSE.id));
+                  final double[] defenseChance = {0, .15, .35, .5};
                   
                   
                   if(ArcanaItem.getIntProperty(item, PearlOfRecall.HEAT_TAG) > 0){
                      if(Math.random() >= defenseChance[defenseLvl]){
                         player.sendMessage(Text.literal("Your Recall Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
-                        ArcanaItem.putProperty(item,PearlOfRecall.HEAT_TAG,-1);
+                        ArcanaItem.putProperty(item, PearlOfRecall.HEAT_TAG, -1);
                      }else{
                         newReturn = 0;
                      }
@@ -357,10 +364,10 @@ public abstract class LivingEntityMixin {
                }else if(arcanaItem instanceof Planeshifter){ // Cancel all Planeshifters
                   if(ArcanaItem.getIntProperty(item, Planeshifter.HEAT_TAG) > 0){
                      player.sendMessage(Text.literal("Your Plane-Shift Has Been Disrupted!").formatted(Formatting.RED, Formatting.ITALIC), true);
-                     ArcanaItem.putProperty(item,Planeshifter.HEAT_TAG,-1);
+                     ArcanaItem.putProperty(item, Planeshifter.HEAT_TAG, -1);
                   }
                }else if(arcanaItem instanceof CindersCharm cinders && source.isIn(DamageTypeTags.IS_FIRE)){ // Cinders Charm Cremation
-                  boolean cremation = Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CREMATION.id)) >= 1;
+                  boolean cremation = Math.max(0, ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.CREMATION.id)) >= 1;
                   if(cremation){
                      final double energyPerDamage = 15;
                      float oldReturn = newReturn;
@@ -371,14 +378,14 @@ public abstract class LivingEntityMixin {
                      
                      energy = cinders.getEnergy(item);
                      StringBuilder message = new StringBuilder("Cinders: ");
-                     for(int k = 1; k <= cinders.getMaxEnergy(item)/20; k++){
+                     for(int k = 1; k <= cinders.getMaxEnergy(item) / 20; k++){
                         message.append(energy >= k * 20 ? "✦ " : "✧ ");
                      }
                      player.sendMessage(Text.literal(message.toString()).formatted(Formatting.AQUA), true);
                   }
                }
                
-               sinv.setStack(j,item);
+               sinv.setStack(j, item);
             }
             
             if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
@@ -386,24 +393,6 @@ public abstract class LivingEntityMixin {
             }
          }
       }
-      
-      ItemStack mainHandItem = entity.getMainHandStack();
-      if(ArcanaItemUtils.identifyItem(mainHandItem) instanceof BinaryBlades blades){
-         boolean canReduce = !source.isIn(DamageTypeTags.BYPASSES_ARMOR) && !source.isIn(DamageTypeTags.BYPASSES_SHIELD) && source.getAttacker() != null;
-         if(entity.isUsingItem() && entity.getItemUseTime() > 0 && canReduce){
-            int whiteDwarf = ArcanaAugments.getAugmentOnItem(mainHandItem,ArcanaAugments.WHITE_DWARF_BLADES);
-            int energy = blades.getEnergy(mainHandItem);
-            float[] reducePercentages = new float[]{0f,0.5f,0.75f,1.0f};
-            float maxDmgReduction = newReturn * reducePercentages[whiteDwarf];
-            float dmgReduction = (float) Math.min(energy / 5.0, maxDmgReduction);
-            if(dmgReduction > 0){
-               blades.addEnergy(mainHandItem, (int) -dmgReduction * 5);
-               newReturn -= dmgReduction;
-               SoundUtils.playSound(entity.getWorld(),entity.getBlockPos(),SoundEvents.BLOCK_HEAVY_CORE_BREAK, SoundCategory.PLAYERS,0.8f,1.0f);
-            }
-         }
-      }
-      
       
       ItemStack chestItem = entity.getEquippedStack(EquipmentSlot.CHEST);
       if(ArcanaItemUtils.identifyItem(chestItem) instanceof WingsOfEnderia wings){
@@ -464,7 +453,7 @@ public abstract class LivingEntityMixin {
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(entity.getWorld()).getBossFight();
       int numPlayers = 0;
       if(bossFight != null){
-         numPlayers = bossFight.getRight().getInt("numPlayers");
+         numPlayers = bossFight.getRight().getInt("numPlayers", 0);
       }
       if(numPlayers != 0){
          float scale = Math.max(2f/numPlayers, 0.1f);

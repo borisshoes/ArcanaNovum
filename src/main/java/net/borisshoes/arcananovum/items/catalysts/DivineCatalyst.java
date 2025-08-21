@@ -22,7 +22,6 @@ import net.minecraft.block.CarvedPumpkinBlock;
 import net.minecraft.block.pattern.BlockPattern;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
@@ -56,7 +55,7 @@ public class DivineCatalyst extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       itemVersion = 1;
       vanillaItem = Items.AMETHYST_CLUSTER;
-      item = new DivineCatalystItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new DivineCatalystItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOVEREIGN_CATALYST,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
@@ -151,8 +150,8 @@ public class DivineCatalyst extends ArcanaItem {
    }
    
    public class DivineCatalystItem extends ArcanaPolymerItem {
-      public DivineCatalystItem(Item.Settings settings){
-         super(getThis(),settings);
+      public DivineCatalystItem(){
+         super(getThis());
       }
       
       @Override

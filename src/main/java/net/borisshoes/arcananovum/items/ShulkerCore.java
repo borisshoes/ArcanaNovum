@@ -22,11 +22,11 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
@@ -69,7 +69,7 @@ public class ShulkerCore extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
-      item = new ShulkerCoreItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new ShulkerCoreItem();
       displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.SHULKER_CORE_COLOR);
       itemVersion = 1;
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_LEVITATE,ResearchTasks.EFFECT_SLOW_FALLING,ResearchTasks.UNLOCK_STELLAR_CORE};
@@ -293,13 +293,13 @@ public class ShulkerCore extends EnergyItem {
    }
    
    public void setStone(ItemStack stack, ItemStack stone){
-      if(stone == null){
+      if(stone == null || stone.isEmpty()){
          putProperty(stack,STONE_TAG,false);
          putProperty(stack,STONE_DATA_TAG,new NbtCompound());
          setEnergy(stack,0);
       }else{
          putProperty(stack,STONE_TAG,true);
-         putProperty(stack,STONE_DATA_TAG,stone.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,stone.toNbt(ArcanaNovum.SERVER.getRegistryManager()));
          setEnergy(stack,Soulstone.getSouls(stone));
       }
    }
@@ -345,8 +345,8 @@ public class ShulkerCore extends EnergyItem {
    }
    
    public class ShulkerCoreItem extends ArcanaPolymerItem {
-      public ShulkerCoreItem(Item.Settings settings){
-         super(getThis(),settings);
+      public ShulkerCoreItem(){
+         super(getThis());
       }
       
       @Override
@@ -385,7 +385,7 @@ public class ShulkerCore extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          int speedCD = getIntProperty(stack,SPEED_CD_TAG);

@@ -16,4 +16,9 @@ public class ArcanaColors {
    public static final int SHULKER_CORE_COLOR = 0xFFFF99;
    public static final int CONSTRUCT_ABILITY_COLOR = 0x999999;
    public static final int ERROR_COLOR = 0xbf0202;
+   public static final int RED_COLOR = 0xFF0000;
+   public static final int PINK_HIGHLIGHT_COLOR = 0xFF55FF;
+   public static final int CELESTIAL_DAY_COLOR = 0xf7d10f;
+   public static final int CELESTIAL_NIGHT_COLOR = 0x365aad;
+   public static final int STARPATH_COLOR = 0x1a0136;
 }

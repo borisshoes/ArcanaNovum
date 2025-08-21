@@ -15,9 +15,9 @@ import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -52,7 +52,7 @@ public class FelidaeCharm extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.STRING;
-      item = new FelidaeCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new FelidaeCharmItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_CREEPER_HEAD,ResearchTasks.ADVANCEMENT_COMPLETE_CATALOGUE,ResearchTasks.CAT_SCARE,ResearchTasks.FEATHER_FALL,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
@@ -124,8 +124,8 @@ public class FelidaeCharm extends ArcanaItem {
    }
    
    public class FelidaeCharmItem extends ArcanaPolymerItem {
-      public FelidaeCharmItem(Item.Settings settings){
-         super(getThis(),settings);
+      public FelidaeCharmItem(){
+         super(getThis());
       }
       
       @Override
@@ -155,7 +155,7 @@ public class FelidaeCharm extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          if(world.getServer().getTicks() % 20 == 0 && !player.isSpectator()){

@@ -9,7 +9,6 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -33,7 +32,7 @@ public class RunicMatrix extends ArcanaItem {
       rarity = ArcanaRarity.MUNDANE;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.END_CRYSTAL;
-      item = new RunicMatrixItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new RunicMatrixItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_END_CRYSTAL,ResearchTasks.ADVANCEMENT_CRAFTERS_CRAFTING_CRAFTERS,ResearchTasks.OBTAIN_AMETHYST_SHARD};
       
@@ -98,8 +97,8 @@ public class RunicMatrix extends ArcanaItem {
    }
    
    public class RunicMatrixItem extends ArcanaPolymerItem {
-      public RunicMatrixItem(Item.Settings settings){
-         super(getThis(),settings);
+      public RunicMatrixItem(){
+         super(getThis());
       }
       
       @Override

@@ -19,7 +19,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -62,7 +61,7 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.ANVIL;
       block = new TwilightAnvilBlock(AbstractBlock.Settings.create().mapColor(MapColor.IRON_GRAY).requiresTool().strength(5.0f, 1200.0f).sounds(BlockSoundGroup.ANVIL));
-      item = new TwilightAnvilItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new TwilightAnvilItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_ANVIL,ResearchTasks.UNLOCK_STARLIGHT_FORGE, ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING};
       
@@ -147,8 +146,8 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
    }
    
    public class TwilightAnvilItem extends ArcanaPolymerBlockItem {
-      public TwilightAnvilItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public TwilightAnvilItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

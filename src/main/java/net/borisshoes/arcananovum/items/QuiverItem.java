@@ -125,7 +125,7 @@ public abstract class QuiverItem extends ArcanaItem {
    
    public static Pair<String,Integer> getArrowOption(ServerPlayerEntity player, boolean runic, boolean display){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
-      String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString();
+      String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString().orElse("");
       int invSlot = ((NbtInt)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    
       List<Pair<String,Integer>> options = getArrowOptions(player,runic);
@@ -142,7 +142,7 @@ public abstract class QuiverItem extends ArcanaItem {
    
    public static Pair<String,Integer> switchArrowOption(ServerPlayerEntity player, boolean runic, boolean display){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
-      String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString();
+      String invId = profile.getMiscData(runic ? RUNIC_INV_ID_TAG : ARROW_INV_ID_TAG).asString().orElse("");
       int invSlot = ((NbtInt)profile.getMiscData(runic ? RUNIC_INV_SLOT_TAG : ARROW_INV_SLOT_TAG)).intValue();
    
       List<Pair<String,Integer>> options = getArrowOptions(player,runic);

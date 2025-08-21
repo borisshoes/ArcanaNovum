@@ -59,13 +59,13 @@ public class ArcanaIngredient {
       this.itemPredicate = this.itemPredicate.and((stack) -> {
          ItemEnchantmentsComponent enchants = EnchantmentHelper.getEnchantments(stack);
          for(EnchantmentLevelEntry enchantment : enchantments){
-            if(enchants.getLevel(enchantment.enchantment) < enchantment.level) return false;
+            if(enchants.getLevel(enchantment.enchantment()) < enchantment.level()) return false;
          }
          return true;
       });
       
       for(EnchantmentLevelEntry enchantment : enchantments){
-         this.exampleStack.addEnchantment(enchantment.enchantment,enchantment.level);
+         this.exampleStack.addEnchantment(enchantment.enchantment(),enchantment.level());
       }
       
       return this;

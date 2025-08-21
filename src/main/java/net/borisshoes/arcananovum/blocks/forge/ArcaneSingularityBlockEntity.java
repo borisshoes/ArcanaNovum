@@ -366,7 +366,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       if(this.inventory != null){
          NbtList bookList = new NbtList();
          for(ItemStack book : inventory.getHeldStacks()){
-            if(!book.isEmpty()) bookList.add(book.toNbtAllowEmpty(registryLookup));
+            if(!book.isEmpty()) bookList.add(book.toNbt(registryLookup));
          }
          return bookList;
       }else{
@@ -383,31 +383,34 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
    }
    
    @Override
+   public void onBlockReplaced(BlockPos pos, BlockState oldState){}
+   
+   @Override
    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
       if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid");
+         this.uuid = nbt.getString("arcanaUuid", "");
       }
       if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId");
+         this.crafterId = nbt.getString("crafterId", "");
       }
       if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName");
+         this.customName = nbt.getString("customName", "");
       }
       if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic");
+         this.synthetic = nbt.getBoolean("synthetic", false);
       }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompound("arcanaAugments");
+         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
          for(String key : augCompound.getKeys()){
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug,augCompound.getInt(key));
+            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
          }
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
+      if(!this.readLootTable(nbt) && nbt.contains("Items")){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
    }

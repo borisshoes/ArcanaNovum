@@ -225,11 +225,11 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    @Override
    public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
-      mage = nbt.getBoolean("mage");
+      mage = nbt.getBoolean("mage", false);
       
       if(nbt.contains("construct")){
          if(getEntityWorld() instanceof ServerWorld serverWorld){
-            if(serverWorld.getEntity(MiscUtils.getUUID(nbt.getString("construct"))) instanceof NulConstructEntity construct){
+            if(serverWorld.getEntity(MiscUtils.getUUID(nbt.getString("construct", ""))) instanceof NulConstructEntity construct){
                this.construct = construct;
             }
          }

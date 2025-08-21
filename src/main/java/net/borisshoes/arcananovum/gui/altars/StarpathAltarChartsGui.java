@@ -6,6 +6,7 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.Items;
@@ -118,7 +119,7 @@ public class StarpathAltarChartsGui extends SimpleGui {
    }
    
    public void buildGui(){
-      MiscUtils.outlineGUI(this, 0x1a0136,Text.literal("Saved Locations").formatted(Formatting.BLUE));
+      MiscUtils.outlineGUI(this, ArcanaColors.STARPATH_COLOR,Text.literal("Saved Locations").formatted(Formatting.BLUE));
       loadDestinations();
       
       int numPages = (int) Math.ceil((float) destinations.size()/28.0);

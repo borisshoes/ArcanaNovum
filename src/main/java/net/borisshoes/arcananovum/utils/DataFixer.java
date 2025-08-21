@@ -14,8 +14,8 @@ public class DataFixer {
    public static ContainerComponent nbtListToComponent(NbtList list, MinecraftServer server){
       List<ItemStack> stackList = new ArrayList<>();
       for(int i = 0; i < list.size(); i++){
-         NbtCompound arrow = list.getCompound(i);
-         int slot = arrow.getByte("Slot");
+         NbtCompound arrow = list.getCompoundOrEmpty(i);
+         int slot = arrow.getByte("Slot", (byte) 0);
          ItemStack arrowStack = ItemStack.fromNbt(server.getRegistryManager(),arrow).orElse(ItemStack.EMPTY);
          if(arrowStack.getCount() > 0 && !arrowStack.isEmpty())
             stackList.add(arrowStack);

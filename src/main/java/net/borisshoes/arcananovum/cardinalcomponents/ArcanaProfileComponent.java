@@ -58,25 +58,25 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       augments.clear();
       researchedItems.clear();
       researchTasks.clear();
-      tag.getList("crafted", NbtElement.STRING_TYPE).forEach(item -> crafted.add(item.asString()));
-      tag.getList("researchedItems", NbtElement.STRING_TYPE).forEach(item -> researchedItems.add(item.asString()));
-      tag.getList("researchTasks", NbtElement.STRING_TYPE).forEach(item -> researchTasks.add(item.asString()));
-      NbtCompound miscDataTag = tag.getCompound("miscData");
+      tag.getListOrEmpty("crafted").forEach(item -> crafted.add(item.asString().orElse("")));
+      tag.getListOrEmpty("researchedItems").forEach(item -> researchedItems.add(item.asString().orElse("")));
+      tag.getListOrEmpty("researchTasks").forEach(item -> researchTasks.add(item.asString().orElse("")));
+      NbtCompound miscDataTag = tag.getCompoundOrEmpty("miscData");
       Set<String> keys = miscDataTag.getKeys();
       keys.forEach(key ->{
          miscData.put(key,miscDataTag.get(key));
       });
-      level = tag.getInt("level");
-      xp = tag.getInt("xp");
+      level = tag.getInt("level", 0);
+      xp = tag.getInt("xp", 0);
       
-      NbtCompound achievementsTag = tag.getCompound("achievements");
+      NbtCompound achievementsTag = tag.getCompoundOrEmpty("achievements");
       Set<String> achieveItemKeys = achievementsTag.getKeys();
       for(String itemKey : achieveItemKeys){
          List<ArcanaAchievement> itemAchs = new ArrayList<>();
-         NbtCompound itemAchsTag = achievementsTag.getCompound(itemKey);
+         NbtCompound itemAchsTag = achievementsTag.getCompoundOrEmpty(itemKey);
    
          for(String achieveKey : itemAchsTag.getKeys()){
-            NbtCompound achTag = itemAchsTag.getCompound(achieveKey);
+            NbtCompound achTag = itemAchsTag.getCompoundOrEmpty(achieveKey);
             ArcanaAchievement ach = ArcanaAchievements.registry.get(achieveKey);
             if(ach == null) continue;
             itemAchs.add(ach.makeNew().fromNbt(achieveKey,achTag));
@@ -84,10 +84,10 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          achievements.put(itemKey,itemAchs);
       }
       
-      NbtCompound augmentsTag = tag.getCompound("augments");
+      NbtCompound augmentsTag = tag.getCompoundOrEmpty("augments");
       Set<String> augmentKeys = augmentsTag.getKeys();
       for(String augmentKey : augmentKeys){
-         int augmentLvl = augmentsTag.getInt(augmentKey);
+         int augmentLvl = augmentsTag.getInt(augmentKey, 0);
          if(augmentLvl > 0){
             ArcanaAugment aug = ArcanaAugments.registry.get(augmentKey);
             if(aug == null) continue;
@@ -95,7 +95,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          }
       }
       
-      storedOffhand = ItemStack.fromNbtOrEmpty(registryLookup,tag.getCompound("storedOffhand"));
+      storedOffhand = ItemStack.fromNbt(registryLookup, tag.getCompoundOrEmpty("storedOffhand")).orElse(ItemStack.EMPTY);
    }
    
    @Override
@@ -139,7 +139,8 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       }
       tag.put("augments",augmentsTag);
       if(this.storedOffhand == null) storedOffhand = ItemStack.EMPTY;
-      tag.put("storedOffhand",storedOffhand.toNbtAllowEmpty(registryLookup));
+      if(!storedOffhand.isEmpty())
+         tag.put("storedOffhand",storedOffhand.toNbt(registryLookup));
    }
    
    @Override
@@ -347,7 +348,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
                   .append(Text.literal(" has crafted their first ").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC))
                   .append(arcanaItem.getTranslatedName().formatted(Formatting.DARK_PURPLE, Formatting.BOLD, Formatting.ITALIC, Formatting.UNDERLINE))
                   .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
-            server.getPlayerManager().broadcast(newCraftMsg.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)))), false);
+            server.getPlayerManager().broadcast(newCraftMsg.styled(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack))), false);
          }
       }
       addXP(ArcanaRarity.getFirstCraftXp(arcanaItem.getRarity()));

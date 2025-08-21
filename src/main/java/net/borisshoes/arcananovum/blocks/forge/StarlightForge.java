@@ -25,7 +25,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -64,7 +63,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.SMITHING_TABLE;
       block = new StarlightForgeBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
-      item = new StarlightForgeItem(this.block,(new Item.Settings().maxCount(1).fireproof()));
+      item = new StarlightForgeItem(this.block);
       displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_ARCANE_TOME,ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       
@@ -177,8 +176,8 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    }
    
    public class StarlightForgeItem extends ArcanaPolymerBlockItem {
-      public StarlightForgeItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public StarlightForgeItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

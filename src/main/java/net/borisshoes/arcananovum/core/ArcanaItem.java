@@ -31,11 +31,13 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
+import net.minecraft.util.Unit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -146,50 +148,50 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
       if(nbtComponent == null) return new NbtCompound();
       NbtCompound data = nbtComponent.copyNbt();
-      if(data != null && data.contains(ArcanaNovum.MOD_ID,NbtElement.COMPOUND_TYPE)){
-         return data.getCompound(ArcanaNovum.MOD_ID);
+      if(data.contains(ArcanaNovum.MOD_ID)){
+         return data.getCompoundOrEmpty(ArcanaNovum.MOD_ID);
       }
       return new NbtCompound();
    }
    
    public static int getIntProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return  arcanaTag == null || !arcanaTag.contains(key, NbtElement.INT_TYPE) ? 0 : arcanaTag.getInt(key);
+      return !arcanaTag.contains(key) ? 0 : arcanaTag.getInt(key, 0);
    }
    
    public static String getStringProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return  arcanaTag == null || !arcanaTag.contains(key, NbtElement.STRING_TYPE) ? "" : arcanaTag.getString(key);
+      return !arcanaTag.contains(key) ? "" : arcanaTag.getString(key, "");
    }
    
    public static boolean getBooleanProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return arcanaTag == null || !arcanaTag.contains(key, NbtElement.BYTE_TYPE) ? false : arcanaTag.getBoolean(key);
+      return arcanaTag.contains(key) && arcanaTag.getBoolean(key, false);
    }
    
    public static double getDoubleProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return  arcanaTag == null || !arcanaTag.contains(key, NbtElement.DOUBLE_TYPE) ? 0.0 : arcanaTag.getDouble(key);
+      return !arcanaTag.contains(key) ? 0.0 : arcanaTag.getDouble(key, 0.0);
    }
    
    public static float getFloatProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return  arcanaTag == null || !arcanaTag.contains(key, NbtElement.FLOAT_TYPE) ? 0.0f : arcanaTag.getFloat(key);
+      return !arcanaTag.contains(key) ? 0.0f : arcanaTag.getFloat(key, 0.0f);
    }
    
    public static long getLongProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return  arcanaTag == null || !arcanaTag.contains(key, NbtElement.LONG_TYPE) ? 0 : arcanaTag.getLong(key);
+      return !arcanaTag.contains(key) ? 0 : arcanaTag.getLong(key,0L);
    }
    
    public static NbtList getListProperty(ItemStack stack, String key, int listType){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return  arcanaTag == null || !arcanaTag.contains(key, NbtElement.LIST_TYPE) ? new NbtList() : arcanaTag.getList(key,listType);
+      return !arcanaTag.contains(key) ? new NbtList() : arcanaTag.getListOrEmpty(key);
    }
    
    public static NbtCompound getCompoundProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
-      return  arcanaTag == null || !arcanaTag.contains(key, NbtElement.COMPOUND_TYPE) ? new NbtCompound() : arcanaTag.getCompound(key);
+      return !arcanaTag.contains(key) ? new NbtCompound() : arcanaTag.getCompoundOrEmpty(key);
    }
    
    public static void putProperty(ItemStack stack, String key, int property){
@@ -224,11 +226,6 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public static boolean hasProperty(ItemStack stack, String key){
       NbtCompound arcanaTag = getArcanaTag(stack);
       return arcanaTag.contains(key);
-   }
-   
-   public static boolean hasProperty(ItemStack stack, String key, int type){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return arcanaTag.contains(key,type);
    }
    
    public static boolean removeProperty(ItemStack stack, String key){
@@ -358,11 +355,21 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    
    public ItemStack onAugment(ItemStack stack, ArcanaAugment augment, int level){ return stack; }
    
-   public Item.Settings addArcanaItemComponents(Item.Settings settings){
-      return settings
+   public Item.Settings getArcanaItemComponents(){
+      return new Item.Settings().maxCount(1)
             .component(DataComponentTypes.LORE, new LoreComponent(getItemLore(null)))
             .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-            .component(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO));
+            .component(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(ArcanaRegistry.ARCANA_ITEM_IMMUNE_TO))
+            .component(DataComponentTypes.TOOLTIP_DISPLAY,getTooltipDisplayComponent())
+            ;
+   }
+   
+   public Item.Settings getArcanaArrowItemComponents(int color){
+      return getArcanaItemComponents().maxCount(64).component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(color),new ArrayList<>(),Optional.empty()));
+   }
+   
+   public Item.Settings getEquipmentArcanaItemComponents(){
+      return getArcanaItemComponents().maxDamage(8192).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE);
    }
    
    public static String getUUID(ItemStack item){
@@ -557,7 +564,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
             ArcanaAugment augment = ArcanaAugments.registry.get(key);
             MutableText txt = augment.getTranslatedName();
             if(augment.getTiers().length > 1){
-               txt.append(Text.literal(" "+LevelUtils.intToRoman(augmentTag.getInt(key))));
+               txt.append(Text.literal(" "+LevelUtils.intToRoman(augmentTag.getInt(key, 0))));
             }
             loreList.add(TextUtils.removeItalics(txt.formatted(Formatting.BLUE)));
          }
@@ -574,5 +581,19 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    // Override to create a recipe
    protected ArcanaRecipe makeRecipe(){
       return null;
+   }
+   
+   public static TooltipDisplayComponent getTooltipDisplayComponent(){
+      return TooltipDisplayComponent.DEFAULT
+            .with(DataComponentTypes.UNBREAKABLE,true)
+            .with(DataComponentTypes.ENCHANTMENTS,true)
+            .with(DataComponentTypes.BUNDLE_CONTENTS,true)
+            .with(DataComponentTypes.CONTAINER,true)
+            .with(DataComponentTypes.ATTRIBUTE_MODIFIERS,true)
+            .with(DataComponentTypes.FIREWORK_EXPLOSION,true)
+            .with(DataComponentTypes.POTION_CONTENTS,true)
+            .with(DataComponentTypes.BASE_COLOR,true)
+            .with(DataComponentTypes.DYED_COLOR,true)
+            ;
    }
 }

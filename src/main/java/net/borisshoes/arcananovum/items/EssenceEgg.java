@@ -27,7 +27,6 @@ import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
@@ -66,7 +65,7 @@ public class EssenceEgg extends ArcanaItem {
       rarity = ArcanaRarity.EMPOWERED;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.GHAST_SPAWN_EGG;
-      item = new EssenceEggItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new EssenceEggItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.FIND_SPAWNER,ResearchTasks.OBTAIN_EGG};
       
@@ -209,8 +208,8 @@ public class EssenceEgg extends ArcanaItem {
    }
    
    public class EssenceEggItem extends ArcanaPolymerItem {
-      public EssenceEggItem(Item.Settings settings){
-         super(getThis(),settings);
+      public EssenceEggItem(){
+         super(getThis());
       }
       
       @Override
@@ -300,8 +299,8 @@ public class EssenceEgg extends ArcanaItem {
       }
       
       @Override
-      public boolean postHit(ItemStack stack, LivingEntity entity, LivingEntity attacker){
-         if(!(attacker instanceof PlayerEntity playerEntity)) return false;
+      public void postHit(ItemStack stack, LivingEntity entity, LivingEntity attacker){
+         if(!(attacker instanceof PlayerEntity playerEntity)) return;
          
          if(playerEntity.isCreative()){
             String type = getType(stack);
@@ -319,8 +318,6 @@ public class EssenceEgg extends ArcanaItem {
                }
             }
          }
-         
-         return false;
       }
    }
 }

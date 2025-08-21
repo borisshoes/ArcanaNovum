@@ -10,7 +10,6 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -34,7 +33,7 @@ public class TemporalMoment extends ArcanaItem {
       rarity = ArcanaRarity.MUNDANE;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.CLOCK;
-      item = new TemporalMomentItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new TemporalMomentItem();
       displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_CLOCK,ResearchTasks.ADVANCEMENT_SLEEP_IN_BED,ResearchTasks.USE_ENDER_PEARL};
       
@@ -101,8 +100,8 @@ public class TemporalMoment extends ArcanaItem {
    }
    
    public class TemporalMomentItem extends ArcanaPolymerItem {
-      public TemporalMomentItem(Item.Settings settings){
-         super(getThis(),settings);
+      public TemporalMomentItem(){
+         super(getThis());
       }
       
       @Override

@@ -59,10 +59,10 @@ public class AchievementLoginCallback extends LoginCallback{
       this.data = data;
       achievements = new ArrayList<>();
       if(data.contains("achievements")){
-         NbtList achTag = data.getList("achievements", NbtElement.STRING_TYPE);
+         NbtList achTag = data.getListOrEmpty("achievements");
          for(NbtElement e : achTag){
             NbtString nbtS = (NbtString) e;
-            ArcanaAchievement ach = ArcanaAchievements.registry.get(nbtS.asString());
+            ArcanaAchievement ach = ArcanaAchievements.registry.get(nbtS.asString().orElse(""));
             if(ach != null) achievements.add(ach);
          }
       }

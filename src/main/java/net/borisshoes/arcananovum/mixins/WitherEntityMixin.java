@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(WitherEntity.class)
 public class WitherEntityMixin {
    
-   // Todo: no redirect
    @Redirect(method="mobTick",at=@At(value="INVOKE",target="Lnet/minecraft/server/world/ServerWorld;syncGlobalEvent(ILnet/minecraft/util/math/BlockPos;I)V"))
    private void arcananovum_redirectSpawnSound(ServerWorld instance, int eventId, BlockPos pos, int data){
       SoundUtils.playSound(instance,pos, SoundEvents.ENTITY_WITHER_SPAWN, SoundCategory.HOSTILE,1,1);

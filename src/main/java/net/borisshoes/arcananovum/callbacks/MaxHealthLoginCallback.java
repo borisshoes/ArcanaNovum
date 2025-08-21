@@ -33,7 +33,7 @@ public class MaxHealthLoginCallback extends LoginCallback{
    @Override
    public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
-      hp = data.getFloat("hp");
+      hp = data.getFloat("hp", 0.0f);
    }
    
    @Override

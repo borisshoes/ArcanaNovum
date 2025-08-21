@@ -18,10 +18,10 @@ import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -57,7 +57,7 @@ public class CetaceaCharm extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.CHARMS};
       itemVersion = 0;
       vanillaItem = Items.COD;
-      item = new CetaceaCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new CetaceaCharmItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BLUE,Formatting.BOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_CONDUIT, ResearchTasks.CATCH_FISH, ResearchTasks.EFFECT_DOLPHINS_GRACE, ResearchTasks.DROWNING_DAMAGE};
       attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.texture_by"),Text.literal("Rookodzol"))};
@@ -141,8 +141,8 @@ public class CetaceaCharm extends ArcanaItem {
    }
    
    public class CetaceaCharmItem extends ArcanaPolymerItem {
-      public CetaceaCharmItem(Item.Settings settings){
-         super(getThis(),settings);
+      public CetaceaCharmItem(){
+         super(getThis());
       }
       
       @Override
@@ -176,7 +176,7 @@ public class CetaceaCharm extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          

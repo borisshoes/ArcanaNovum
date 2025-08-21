@@ -19,14 +19,12 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -35,7 +33,10 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
@@ -56,10 +57,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.CROSSBOW;
-      item = new AlchemicalArbalestItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-            .component(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE)
-      ));
+      item = new AlchemicalArbalestItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.ADVANCEMENT_OL_BETSY,ResearchTasks.ADVANCEMENT_WHOS_THE_PILLAGER_NOW,ResearchTasks.ADVANCEMENT_ARBALISTIC,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.ADVANCEMENT_DRAGON_BREATH};
       attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.inspired_by"),Text.literal("Sethzilla42"))};
@@ -74,7 +72,7 @@ public class AlchemicalArbalest extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.MULTISHOT),1)).withShowInTooltip(false));
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.MULTISHOT),1)));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
@@ -192,8 +190,8 @@ public class AlchemicalArbalest extends ArcanaItem {
    
    public class AlchemicalArbalestItem extends ArcanaPolymerCrossbowItem {
       
-      public AlchemicalArbalestItem(Item.Settings settings){
-         super(getThis(),settings);
+      public AlchemicalArbalestItem(){
+         super(getThis(),getEquipmentArcanaItemComponents());
       }
       
       @Override

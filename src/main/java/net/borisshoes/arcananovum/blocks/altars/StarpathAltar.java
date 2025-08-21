@@ -21,7 +21,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -70,7 +69,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.SCULK_CATALYST;
       block = new StarpathAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).strength(3.0f,1200.0f).luminance(state -> 6).sounds(BlockSoundGroup.SCULK_CATALYST));
-      item = new StarpathAltarItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new StarpathAltarItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.WHITE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.USE_ENDER_EYE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
@@ -174,8 +173,8 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public class StarpathAltarItem extends ArcanaPolymerBlockItem {
-      public StarpathAltarItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public StarpathAltarItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

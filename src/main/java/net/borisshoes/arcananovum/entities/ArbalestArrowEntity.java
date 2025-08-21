@@ -88,7 +88,7 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public EntityType<?> getPolymerEntityType(PacketContext context){ // TODO: Entity Data Error with tracked data (fixed but keep an eye on it)
+   public EntityType<?> getPolymerEntityType(PacketContext context){
       return this.stack.contains(DataComponentTypes.POTION_CONTENTS) ? EntityType.ARROW : EntityType.SPECTRAL_ARROW;
    }
    
@@ -145,10 +145,10 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
       if(nbt.contains("ampLvl")){
-         lvl = nbt.getInt("ampLvl");
+         lvl = nbt.getInt("ampLvl", 0);
       }
       if(nbt.contains("range")){
-         range = nbt.getDouble("range");
+         range = nbt.getDouble("range", 0.0);
       }
    }
 }

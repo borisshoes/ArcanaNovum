@@ -16,12 +16,14 @@ import net.borisshoes.arcananovum.utils.GenericTimer;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,7 +41,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
    
-   @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getKnockbackAgainst(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;)F"))
+   @Inject(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getAttackKnockbackAgainst(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/damage/DamageSource;)F"))
    private void arcananovum_postDamageEntity(Entity target, CallbackInfo ci, @Local(ordinal = 2) float atkPercentage){
       PlayerEntity player = (PlayerEntity)(Object) this;
       ItemStack handStack = player.getMainHandStack();
@@ -93,8 +95,9 @@ public class PlayerEntityMixin {
    }
    
    // Remove all absorption callbacks when shield gets disabled
-   @Inject(method = "disableShield", at = @At("HEAD"))
-   private void arcananovum_disableFortitudeShield(ItemStack shield, CallbackInfo ci){
+   @Inject(method = "takeShieldHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/component/type/BlocksAttacksComponent;applyShieldCooldown(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;FLnet/minecraft/item/ItemStack;)V"))
+   private void arcananovum_disableFortitudeShield(ServerWorld world, LivingEntity attacker, CallbackInfo ci, @Local ItemStack shield){
+      if(!(shield.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem)) return;
       PlayerEntity player = (PlayerEntity) (Object) this;
       ArrayList<ShieldTimerCallback> toRemove = new ArrayList<>();
       for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){

@@ -15,13 +15,14 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -50,7 +51,7 @@ public class ArcaneTome extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.KNOWLEDGE_BOOK;
-      item = new ArcaneTomeItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new ArcaneTomeItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_EYE_OF_ENDER,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
@@ -186,8 +187,8 @@ public class ArcaneTome extends ArcanaItem {
    }
    
    public class ArcaneTomeItem extends ArcanaPolymerItem {
-      public ArcaneTomeItem(Item.Settings settings){
-         super(getThis(),settings);
+      public ArcaneTomeItem(){
+         super(getThis());
       }
       
       @Override
@@ -202,7 +203,7 @@ public class ArcaneTome extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          
          removeProperty(stack,FORGE_TAG);

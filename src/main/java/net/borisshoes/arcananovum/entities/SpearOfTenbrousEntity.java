@@ -82,7 +82,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    @Override
    public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
-      this.damage = nbt.getFloat("spearDamage");
+      this.damage = nbt.getFloat("spearDamage", 0.0f);
    }
    
    @Override

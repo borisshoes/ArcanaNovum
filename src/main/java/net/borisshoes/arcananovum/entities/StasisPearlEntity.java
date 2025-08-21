@@ -140,7 +140,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
             if(holder.getPos().distanceTo(getPos()) >= 1000){
                ArcanaAchievements.grant(holder, ArcanaAchievements.INSTANT_TRANSMISSION.id);
             }
-            int reconstructLvl = augments.getInt(ArcanaAugments.STASIS_RECONSTRUCTION.id);
+            int reconstructLvl = augments.getInt(ArcanaAugments.STASIS_RECONSTRUCTION.id, 0);
             if(reconstructLvl > 0){
                StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 100, reconstructLvl, false, true, true);
                StatusEffectInstance resist = new StatusEffectInstance(StatusEffects.RESISTANCE, 60, reconstructLvl-1, false, true, true);
@@ -172,11 +172,11 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
       if(nbt.contains("augments")){
-         augments = nbt.getCompound("augments");
+         augments = nbt.getCompoundOrEmpty("augments");
       }
-      inStasis = nbt.getBoolean("inStasis");
-      stasisTime = nbt.getInt("stasisTime");
-      itemStackId = nbt.getString("stackUuid");
-      savedVelocity = new Vec3d(nbt.getDouble("savedDX"),nbt.getDouble("savedDY"),nbt.getDouble("savedDZ"));
+      inStasis = nbt.getBoolean("inStasis", false);
+      stasisTime = nbt.getInt("stasisTime", 0);
+      itemStackId = nbt.getString("stackUuid", "");
+      savedVelocity = new Vec3d(nbt.getDouble("savedDX", 0.0), nbt.getDouble("savedDY", 0.0), nbt.getDouble("savedDZ", 0.0));
    }
 }

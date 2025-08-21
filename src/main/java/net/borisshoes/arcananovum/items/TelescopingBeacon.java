@@ -22,7 +22,10 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -67,7 +70,7 @@ public class TelescopingBeacon extends ArcanaItem {
       rarity = ArcanaRarity.EMPOWERED;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.BEACON;
-      item = new TelescopingBeaconItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new TelescopingBeaconItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_CREATE_FULL_BEACON,ResearchTasks.OBTAIN_PISTON};
       
@@ -115,8 +118,8 @@ public class TelescopingBeacon extends ArcanaItem {
          NbtList blocks = getListProperty(itemStack,BLOCKS_TAG,NbtElement.COMPOUND_TYPE);
          int blockCount = 0;
          for(int i = 0; i < blocks.size(); i++){
-            NbtCompound blockType = blocks.getCompound(i);
-            int count = blockType.getInt("count");
+            NbtCompound blockType = blocks.getCompoundOrEmpty(i);
+            int count = blockType.getInt("count", 0);
             blockCount+=count;
          }
          int tier = blocksToTier(blockCount);
@@ -212,9 +215,9 @@ public class TelescopingBeacon extends ArcanaItem {
          Block blockKey = null;
          
          for(int i = 0; i < blockTypes.size(); i++){
-            NbtCompound blockType = blockTypes.getCompound(i);
-            int count = blockType.getInt("count");
-            String id = blockType.getString("id");
+            NbtCompound blockType = blockTypes.getCompoundOrEmpty(i);
+            int count = blockType.getInt("count", 0);
+            String id = blockType.getString("id", "");
             Block block = Registries.BLOCK.getOptionalValue(Identifier.of(id)).orElse(null);
             if(block == null){
                log(1,"Unknown Block Type Stored In Telescoping Beacon: "+id);
@@ -326,8 +329,8 @@ public class TelescopingBeacon extends ArcanaItem {
    }
    
    public class TelescopingBeaconItem extends ArcanaPolymerItem {
-      public TelescopingBeaconItem(Item.Settings settings){
-         super(getThis(),settings);
+      public TelescopingBeaconItem(){
+         super(getThis());
       }
       
       @Override
@@ -364,8 +367,8 @@ public class TelescopingBeacon extends ArcanaItem {
          if(hasBeacon){ // Place beacon
             int blockCount = 0;
             for(int i = 0; i < blocks.size(); i++){
-               NbtCompound blockType = blocks.getCompound(i);
-               int count = blockType.getInt("count");
+               NbtCompound blockType = blocks.getCompoundOrEmpty(i);
+               int count = blockType.getInt("count", 0);
                blockCount+=count;
             }
             int tier = blocksToTier(blockCount);

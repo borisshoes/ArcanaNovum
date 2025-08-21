@@ -34,10 +34,10 @@ public class AnchorsComponent implements IAnchorsComponent{
    public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       try{
          anchors.clear();
-         NbtList anchorsTag = tag.getList("Anchors", NbtElement.COMPOUND_TYPE);
+         NbtList anchorsTag = tag.getListOrEmpty("Anchors");
          for (NbtElement e : anchorsTag){
             NbtCompound anchorTag = (NbtCompound) e;
-            anchors.add(new BlockPos(anchorTag.getInt("x"),anchorTag.getInt("y"),anchorTag.getInt("z")));
+            anchors.add(new BlockPos(anchorTag.getInt("x", 0), anchorTag.getInt("y", 0), anchorTag.getInt("z", 0)));
          }
       }catch(Exception e){
          e.printStackTrace();

@@ -131,7 +131,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
                
                if(e instanceof HostileEntity mob){
                   mob.setAttacking(false);
-                  mob.setAttacking(null);
+                  mob.setAttacker(null);
                   mobCount++;
                }
                if(contributor instanceof ServerPlayerEntity player && player.getUuid().equals(e.getUuid())) withOwner = true;

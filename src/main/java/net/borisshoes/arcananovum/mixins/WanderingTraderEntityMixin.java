@@ -33,7 +33,6 @@ public class WanderingTraderEntityMixin {
       if(trader.getRandom().nextDouble() < 0.1){
          List<RegistryEntry<Item>> items = new ArrayList<>();
          Registry<Item> itemRegistry = trader.getRegistryManager().getOrThrow(RegistryKeys.ITEM);
-         itemRegistry.iterateEntries(ArcanaRegistry.VILLAGE_ITEMS).forEach(items::add);
          itemRegistry.iterateEntries(ArcanaRegistry.WORKSHOP_ITEMS).forEach(items::add);
          
          List<Pair<ArcanaRarity,Integer>> weights = List.of(new Pair<>(ArcanaRarity.MUNDANE,10),new Pair<>(ArcanaRarity.EMPOWERED,25),new Pair<>(ArcanaRarity.EXOTIC,15),new Pair<>(ArcanaRarity.SOVEREIGN,5),new Pair<>(ArcanaRarity.DIVINE,1));
@@ -50,8 +49,10 @@ public class WanderingTraderEntityMixin {
          ArcanaItem.putProperty(notes, ArcaneNotesItem.UNLOCK_ID_TAG,arcanaId);
          ArcaneNotesItem.buildLore(notes);
          
-         TradeOffer offer = new TradeOffer(new TradedItem(Items.EMERALD, 64), notes.copy(), 1, 1, 0.05f);
-         trader.getOffers().add(offer);
+         TradeOffer offer1 = new TradeOffer(new TradedItem(Items.EMERALD_BLOCK, trader.getRandom().nextBetween(10,16)), notes.copy(), 1, 1, 0.05f);
+         TradeOffer offer2 = new TradeOffer(new TradedItem(ArcanaRegistry.STARDUST, trader.getRandom().nextBetween(3,16)), new ItemStack(Items.EMERALD,trader.getRandom().nextBetween(1,24)), 12, 1, 0.05f);
+         trader.getOffers().add(offer1);
+         trader.getOffers().add(offer2);
       }
    }
 }

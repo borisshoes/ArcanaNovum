@@ -22,7 +22,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -126,15 +125,15 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          String stoneType = Soulstone.getType(soulstone);
          MobSpawnerBlockEntity spawnerEntity = (MobSpawnerBlockEntity) blockEntity;
          NbtCompound spawnerData = spawnerEntity.getLogic().writeNbt(new NbtCompound());
-         NbtCompound spawnData = spawnerData.getCompound("SpawnData");
-         if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompound("entity").contains("id")){
+         NbtCompound spawnData = spawnerData.getCompoundOrEmpty("SpawnData");
+         if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompoundOrEmpty("entity").contains("id")){
             if(prevActive) this.active = false; // Update active status
             world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
             return;
          }
-         NbtCompound spawnEntity = spawnData.getCompound("entity");
+         NbtCompound spawnEntity = spawnData.getCompoundOrEmpty("entity");
          
-         boolean correctType = stoneType.equals(spawnEntity.getString("id"));
+         boolean correctType = stoneType.equals(spawnEntity.getString("id", ""));
          
          if(correctType){
             if(!prevActive) this.active = true; // Update active status
@@ -156,13 +155,13 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       
       newLogic.put("SpawnData",savedLogic.get("SpawnData").copy()); // Copy some default data into new data
       newLogic.put("SpawnPotentials",savedLogic.get("SpawnPotentials").copy());
-      short oldDelay = savedLogic.getShort("Delay");
-      short maxDelay = newLogic.getShort("MaxSpawnDelay");
+      short oldDelay = savedLogic.getShort("Delay", (short) 0);
+      short maxDelay = newLogic.getShort("MaxSpawnDelay", (short) 0);
       newLogic.putShort("Delay", (short) Math.min(oldDelay,maxDelay));
       
       logic.readNbt(world,spawnerPos,newLogic); // Inject new data
       if(world instanceof ServerWorld serverWorld) logic.serverTick(serverWorld, spawnerPos); // Tick with new data
-      short newDelay = logic.writeNbt(new NbtCompound()).getShort("Delay");
+      short newDelay = logic.writeNbt(new NbtCompound()).getShort("Delay", (short) 0);
       savedLogic.putShort("Delay",newDelay); // Extract new delay and put in saved data
       logic.readNbt(world,spawnerPos,savedLogic); // Return saved default data with new delay
    }
@@ -229,48 +228,72 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    }
    
    @Override
+   public void onBlockReplaced(BlockPos pos, BlockState oldState){
+      super.onBlockReplaced(pos, oldState);
+      
+      if(!(this.world instanceof ServerWorld serverWorld)) return;
+      
+      DefaultedList<ItemStack> drops = DefaultedList.of();
+      int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(this.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
+      int points = this.getPoints();
+      if(points > 0){
+         while(points/ratio > 64){
+            ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
+            dropItem.setCount(64);
+            drops.add(dropItem.copy());
+            points -= 64*ratio;
+         }
+         ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
+         dropItem.setCount(points/ratio);
+         drops.add(dropItem.copy());
+      }
+      
+      ItemScatterer.spawn(world, pos, drops);
+   }
+   
+   @Override
    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
       if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid");
+         this.uuid = nbt.getString("arcanaUuid", "");
       }
       if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId");
+         this.crafterId = nbt.getString("crafterId", "");
       }
       if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName");
+         this.customName = nbt.getString("customName", "");
       }
       if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic");
+         this.synthetic = nbt.getBoolean("synthetic", false);
       }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompound("arcanaAugments");
+         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
          for(String key : augCompound.getKeys()){
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug,augCompound.getInt(key));
+            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
          }
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
+      if(!this.readLootTable(nbt) && nbt.contains("Items")){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
       if(nbt.contains("active")){
-         this.active = nbt.getBoolean("active");
+         this.active = nbt.getBoolean("active", false);
       }
       if(nbt.contains("soulstone")){
-         this.soulstone = ItemStack.fromNbt(registryLookup, nbt.getCompound("soulstone")).orElse(ItemStack.EMPTY);
+         this.soulstone = ItemStack.fromNbt(registryLookup, nbt.getCompoundOrEmpty("soulstone")).orElse(ItemStack.EMPTY);
       }
       if(nbt.contains("points")){
-         this.points = nbt.getInt("points");
+         this.points = nbt.getInt("points", 0);
       }
       if(nbt.contains("spentPoints")){
-         this.spentPoints = nbt.getInt("spentPoints");
+         this.spentPoints = nbt.getInt("spentPoints", 0);
       }
       
       if(nbt.contains("spawnerStats")){
-         NbtCompound stats = nbt.getCompound("spawnerStats");
+         NbtCompound stats = nbt.getCompoundOrEmpty("spawnerStats");
          setSpawnerStats(stats);
       }
    }
@@ -304,8 +327,8 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       nbt.putInt("points",this.points);
       nbt.putInt("spentPoints",this.spentPoints);
       nbt.putBoolean("active",this.active);
-      if(this.soulstone != null){
-         nbt.put("soulstone",soulstone.toNbtAllowEmpty(registryLookup));
+      if(this.soulstone != null && !this.soulstone.isEmpty()){
+         nbt.put("soulstone",soulstone.toNbt(registryLookup));
       }
       
       nbt.put("spawnerStats",getSpawnerStats());
@@ -324,22 +347,22 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    
    public void setSpawnerStats(NbtCompound stats){
       if(stats.contains("MinSpawnDelay")){
-         this.minSpawnDelay = stats.getShort("MinSpawnDelay");
+         this.minSpawnDelay = stats.getShort("MinSpawnDelay", (short) 0);
       }
       if(stats.contains("MaxSpawnDelay")){
-         this.maxSpawnDelay = stats.getShort("MaxSpawnDelay");
+         this.maxSpawnDelay = stats.getShort("MaxSpawnDelay", (short) 0);
       }
       if(stats.contains("SpawnCount")){
-         this.spawnCount = stats.getShort("SpawnCount");
+         this.spawnCount = stats.getShort("SpawnCount", (short) 0);
       }
       if(stats.contains("MaxNearbyEntities")){
-         this.maxEntities = stats.getShort("MaxNearbyEntities");
+         this.maxEntities = stats.getShort("MaxNearbyEntities", (short) 0);
       }
       if(stats.contains("RequiredPlayerRange")){
-         this.playerRange = stats.getShort("RequiredPlayerRange");
+         this.playerRange = stats.getShort("RequiredPlayerRange", (short) 0);
       }
       if(stats.contains("SpawnRange")){
-         this.spawnRange = stats.getShort("SpawnRange");
+         this.spawnRange = stats.getShort("SpawnRange", (short) 0);
       }
    }
    

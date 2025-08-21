@@ -22,11 +22,11 @@ import net.minecraft.component.type.FireworksComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
@@ -66,9 +66,7 @@ public class EverlastingRocket extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.FIREWORK_ROCKET;
-      item = new EverlastingRocketItem(addArcanaItemComponents(new Item.Settings().maxCount(1)
-            .component(DataComponentTypes.FIREWORKS, new FireworksComponent(1, List.of()))
-      ));
+      item = new EverlastingRocketItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       initEnergy = 16;
       researchTasks = new RegistryKey[]{ResearchTasks.USE_FIREWORK,ResearchTasks.ACTIVATE_MENDING,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
@@ -201,8 +199,10 @@ public class EverlastingRocket extends EnergyItem {
    
    
    public class EverlastingRocketItem extends ArcanaPolymerItem implements PolymerItem {
-      public EverlastingRocketItem(Item.Settings settings){
-         super(getThis(),settings);
+      public EverlastingRocketItem(){
+         super(getThis(),getArcanaItemComponents()
+               .component(DataComponentTypes.FIREWORKS, new FireworksComponent(1, List.of()))
+         );
       }
       
       @Override
@@ -250,7 +250,7 @@ public class EverlastingRocket extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          

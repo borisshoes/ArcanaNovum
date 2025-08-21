@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
@@ -91,7 +92,7 @@ public class CelestialAltarGui extends SimpleGui {
       int mode = blockEntity.getMode();
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         GuiElementBuilder menuItem = mode == 0 ? GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,0xf7d10f)) : GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,0x365aad));
+         GuiElementBuilder menuItem = mode == 0 ? GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.CELESTIAL_DAY_COLOR)) : GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.CELESTIAL_NIGHT_COLOR));
          setSlot(i,menuItem.setName(Text.literal("Celestial Altar").formatted(mode == 0 ? Formatting.YELLOW : Formatting.AQUA)));
       }
       

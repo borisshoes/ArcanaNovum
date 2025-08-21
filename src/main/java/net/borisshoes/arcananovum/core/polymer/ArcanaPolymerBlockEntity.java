@@ -77,8 +77,8 @@ public abstract class ArcanaPolymerBlockEntity extends BlockWithEntity implement
    }
    
    @Override
-   public Block getPolymerReplacement(PacketContext context){
-      return PolymerBlock.super.getPolymerReplacement(context);
+   public Block getPolymerReplacement(Block block, PacketContext context){
+      return PolymerBlock.super.getPolymerReplacement(block, context);
    }
    
    @Override

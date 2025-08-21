@@ -22,7 +22,6 @@ import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -57,7 +56,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.ENCHANTING_TABLE;
       block = new MidnightEnchanterBlock(AbstractBlock.Settings.create().mapColor(MapColor.RED).strength(5.0f, 1200.0f).requiresTool().luminance(state -> 7));
-      item = new MidnightEnchanterItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new MidnightEnchanterItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.OBTAIN_BOTTLES_OF_ENCHANTING,ResearchTasks.ADVANCEMENT_READ_POWER_OF_CHISELED_BOOKSHELF,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.UNLOCK_STARLIGHT_FORGE};
       
@@ -166,8 +165,8 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
    }
    
    public class MidnightEnchanterItem extends ArcanaPolymerBlockItem {
-      public MidnightEnchanterItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public MidnightEnchanterItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

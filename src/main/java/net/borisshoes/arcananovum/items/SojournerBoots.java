@@ -9,7 +9,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.events.SojournersMaxRunEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -18,7 +18,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -27,7 +30,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.equipment.ArmorMaterials;
@@ -71,13 +73,7 @@ public class SojournerBoots extends EnergyItem {
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.LEATHER_BOOTS;
-      item = new SojournerBootsItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.DYED_COLOR,new DyedColorComponent(0x33A900,false))
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-            .attributeModifiers(new AttributeModifiersComponent(List.of(
-                  new AttributeModifiersComponent.Entry(EntityAttributes.STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
-            ),false))
-      ));
+      item = new SojournerBootsItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_GREEN);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_ADVENTURING_TIME,ResearchTasks.ADVANCEMENT_WALK_ON_POWDER_SNOW_WITH_LEATHER_BOOTS,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.EFFECT_SWIFTNESS,ResearchTasks.EFFECT_JUMP_BOOST,ResearchTasks.UNLOCK_STELLAR_CORE};
       
@@ -173,7 +169,7 @@ public class SojournerBoots extends EnergyItem {
       
       attributeList.add(new AttributeModifiersComponent.Entry(EntityAttributes.MOVEMENT_SPEED,new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID,SPEED_TAG),getEnergy(stack)/100.0,EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),AttributeModifierSlot.FEET));
       
-      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,false);
+      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList);
       stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
    }
    
@@ -233,9 +229,15 @@ public class SojournerBoots extends EnergyItem {
       return new ArcanaRecipe(ingredients,new ForgeRequirement().withCore().withAnvil());
    }
    
-   public class SojournerBootsItem extends ArcanaPolymerArmorItem {
-      public SojournerBootsItem(Item.Settings settings){
-         super(getThis(),ArmorMaterials.NETHERITE,EquipmentType.BOOTS,settings);
+   public class SojournerBootsItem extends ArcanaPolymerItem {
+      public SojournerBootsItem(){
+         super(getThis(),getEquipmentArcanaItemComponents()
+               .armor(ArmorMaterials.NETHERITE, EquipmentType.BOOTS)
+               .component(DataComponentTypes.DYED_COLOR,new DyedColorComponent(0x33A900))
+               .attributeModifiers(new AttributeModifiersComponent(List.of(
+                     new AttributeModifiersComponent.Entry(EntityAttributes.STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
+               )))
+         );
       }
       
       @Override
@@ -270,7 +272,7 @@ public class SojournerBoots extends EnergyItem {
             rebuildAttributes(stack);
             if(user instanceof ServerPlayerEntity player){
                PlayerInventory inv = player.getInventory();
-               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, stack));
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.getSelectedSlot() : 45, stack));
                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 8, player.getEquippedStack(EquipmentSlot.FEET)));
             }
             return ActionResult.SUCCESS_SERVER;
@@ -280,7 +282,7 @@ public class SojournerBoots extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          try{

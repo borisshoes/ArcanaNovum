@@ -23,7 +23,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -43,8 +43,8 @@ import static net.borisshoes.arcananovum.ArcanaNovum.PLAYER_MOVEMENT_TRACKER;
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
    
-   @Inject(method = "method_64127", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;addEnderPearlTicket(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/ChunkPos;)J"))
-   private void arcananovum_readdStasisPearls(NbtElement enderPearlNbt, CallbackInfo ci, @Local Entity entity){
+   @Inject(method = "readEnderPearl", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;addEnderPearlTicket(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/ChunkPos;)J"))
+   private void arcananovum_readStasisPearl(NbtCompound nbt, CallbackInfo ci, @Local Entity entity){
       if(entity instanceof StasisPearlEntity stasisPearl){
          stasisPearl.resyncHolder();
       }

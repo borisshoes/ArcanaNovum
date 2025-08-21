@@ -28,7 +28,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
    }
    
    @Override
-   public @Nullable StatusEffect getPolymerReplacement(PacketContext context){
+   public @Nullable StatusEffect getPolymerReplacement(StatusEffect potion, PacketContext context){
       return StatusEffects.BLINDNESS.value();
    }
    

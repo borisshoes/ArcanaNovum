@@ -134,8 +134,8 @@ public class DragonBossFight {
    
    public static void tick(MinecraftServer server, NbtCompound fightData){
       try{
-         States state = States.fromLabel(fightData.getString("State"));
-         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(fightData.getString("GameMaster")));
+         States state = States.fromLabel(fightData.getString("State", ""));
+         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(fightData.getString("GameMaster", "")));
          List<MutableText> gmNotifs = new ArrayList<>();
          ServerWorld endWorld = server.getWorld(World.END);
          assert endWorld != null;
@@ -192,12 +192,12 @@ public class DragonBossFight {
                MutableText notif = Text.literal("")
                      .append(Text.literal("Dragon Prepped, Awaiting Announcement & Start Commands. ").formatted(Formatting.LIGHT_PURPLE))
                      .append(Text.literal(" [Announce]").styled(s ->
-                           s.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/arcana boss announce 5 Minutes"))
-                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to announce the Fight!")))
+                           s.withClickEvent(new ClickEvent.SuggestCommand("/arcana boss announce 5 Minutes"))
+                                 .withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to announce the Fight!")))
                                  .withColor(Formatting.AQUA).withBold(true)))
                      .append(Text.literal(" [Start]").styled(s ->
-                           s.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/arcana boss begin"))
-                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to begin the Fight!")))
+                           s.withClickEvent(new ClickEvent.SuggestCommand("/arcana boss begin"))
+                                 .withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to begin the Fight!")))
                                  .withColor(Formatting.AQUA).withBold(true)));
                gmNotifs.add(notif);
                prepNotif = true;
@@ -445,7 +445,7 @@ public class DragonBossFight {
             }
          }
          
-         if(fightData.getInt("numPlayers") != numPlayers){
+         if(fightData.getInt("numPlayers", 0) != numPlayers){
             fightData.putInt("numPlayers",numPlayers);
          }
    
@@ -786,28 +786,28 @@ public class DragonBossFight {
       ServerWorld endWorld = player.getServerWorld();
       NbtCompound dragonData = (NbtCompound) (EnderDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, endWorld.getEnderDragonFight().toData()).getOrThrow());
       NbtCompound fightData = new NbtCompound();
-      if(dragonData.getBoolean("DragonKilled")){
+      if(dragonData.getBoolean("DragonKilled", false)){
          player.sendMessage(Text.literal("Dragon is Dead, Commencing Respawn"), false);
-         int[] exitList = dragonData.getIntArray("ExitPortalLocation");
-         BlockPos portalPos = new BlockPos(exitList[0],exitList[1],exitList[2]);
+         int[] exitList = dragonData.getIntArray("ExitPortalLocation").get();
+         BlockPos portalPos = new BlockPos(exitList[0], exitList[1], exitList[2]);
          BlockPos blockPos2 = portalPos.up(1);
-         Iterator<Direction> var4 = net.minecraft.util.math.Direction.Type.HORIZONTAL.iterator();
+         Iterator<Direction> var4 = Direction.Type.HORIZONTAL.iterator();
          while(var4.hasNext()){
             Direction direction = var4.next();
-            EndCrystalEntity crystal = new EndCrystalEntity(EntityType.END_CRYSTAL,endWorld);
+            EndCrystalEntity crystal = new EndCrystalEntity(EntityType.END_CRYSTAL, endWorld);
             crystal.setPosition(Vec3d.ofBottomCenter(blockPos2.offset(direction, 3)));
             endWorld.spawnEntityAndPassengers(crystal);
          }
          endWorld.getEnderDragonFight().respawnDragon();
-         fightData.putString("State", DragonBossFight.States.WAITING_RESPAWN.name());
+         fightData.putString("State", States.WAITING_RESPAWN.name());
          ArcanaNovum.addTickTimerCallback(new DragonRespawnTimerCallback(player.getServer()));
       }else{
          player.sendMessage(Text.literal("Co-opting Dragon"), false);
-         if(endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(new BlockPos(-50,25,-50).toCenterPos(), new BlockPos(50,115,50).toCenterPos()), EndCrystalEntity::shouldShowBottom).size() != 10){
-            player.sendMessage(Text.literal("Tower Anomaly Detected, Resetting").formatted(Formatting.RED,Formatting.ITALIC), false);
+         if(endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(new BlockPos(-50, 25, -50).toCenterPos(), new BlockPos(50, 115, 50).toCenterPos()), EndCrystalEntity::shouldShowBottom).size() != 10){
+            player.sendMessage(Text.literal("Tower Anomaly Detected, Resetting").formatted(Formatting.RED, Formatting.ITALIC), false);
             resetTowers(endWorld);
          }
-         fightData.putString("State", DragonBossFight.States.WAITING_START.name());
+         fightData.putString("State", States.WAITING_START.name());
       }
       fightData.putString("GameMaster", player.getUuidAsString());
       fightData.putInt("numPlayers",0);
@@ -821,8 +821,8 @@ public class DragonBossFight {
    public static int abortBoss(MinecraftServer server){
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
       NbtCompound data = bossFight.getRight();
-      States state = States.valueOf(data.getString("State"));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
+      States state = States.valueOf(data.getString("State", ""));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
       ServerWorld endWorld = server.getWorld(World.END);
       if(gm != null){
          gm.sendMessage(Text.literal("Boss Has Been Aborted :(").formatted(Formatting.RED,Formatting.ITALIC));
@@ -888,8 +888,8 @@ public class DragonBossFight {
    }
    
    public static int beginBoss(MinecraftServer server, NbtCompound data){
-      States state = States.valueOf(data.getString("State"));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
+      States state = States.valueOf(data.getString("State", ""));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
       if(state == States.WAITING_START){
          if(startTimeAnnounced){
             States.updateState(States.WAITING_ONE,server);
@@ -911,13 +911,13 @@ public class DragonBossFight {
    }
    
    public static int announceBoss(MinecraftServer server, NbtCompound data, String time){
-      States state = States.valueOf(data.getString("State"));
+      States state = States.valueOf(data.getString("State", ""));
       if(state == States.WAITING_START){
          DragonDialog.announce(DragonDialog.Announcements.EVENT_PREP,server,time);
          startTimeAnnounced = true;
          return 0;
       }else{
-         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
+         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
          if(gm != null){
             gm.sendMessage(Text.literal("The Event State is incompatible with this command. Have you run /arcana boss start dragon?"));
          }
@@ -956,8 +956,8 @@ public class DragonBossFight {
    public static int bossStatus(MinecraftServer server, ServerCommandSource source){
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
       NbtCompound data = bossFight.getRight();
-      States state = States.valueOf(data.getString("State"));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
+      States state = States.valueOf(data.getString("State", ""));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
       ArrayList<MutableText> msgs = new ArrayList<>();
    
       msgs.add(Text.literal(""));

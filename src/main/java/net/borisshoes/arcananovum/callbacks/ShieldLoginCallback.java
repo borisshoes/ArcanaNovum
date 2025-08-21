@@ -52,7 +52,7 @@ public class ShieldLoginCallback extends LoginCallback{
    public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       //Data tag just has single float for hearts
       this.data = data;
-      hearts = data.getFloat("hearts");
+      hearts = data.getFloat("hearts", 0.0f);
    }
    
    @Override

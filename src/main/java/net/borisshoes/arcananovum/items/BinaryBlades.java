@@ -10,7 +10,7 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerSwordItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.BinaryBladesMaxEnergyEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -20,25 +20,28 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.BlocksAttacksComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.StackReference;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolMaterial;
-import net.minecraft.item.consume.UseAction;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -54,6 +57,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -75,9 +79,7 @@ public class BinaryBlades extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       itemVersion = 0;
       vanillaItem = Items.IRON_SWORD;
-      item = new BinaryBladesItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      ));
+      item = new BinaryBladesItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.YELLOW,Formatting.BOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST, ResearchTasks.INFUSE_ITEM, ResearchTasks.OBTAIN_NETHERITE_SWORD, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE};
       
@@ -171,6 +173,24 @@ public class BinaryBlades extends EnergyItem {
       return newArcanaItem;
    }
    
+   private BlocksAttacksComponent getWhiteDwarfBlock(ItemStack item){
+      if(!(ArcanaItemUtils.identifyItem(item) instanceof BinaryBlades)) return null;
+      int whiteDwarf = ArcanaAugments.getAugmentOnItem(item, ArcanaAugments.WHITE_DWARF_BLADES.id);
+      if(whiteDwarf < 1) return null;
+      float[] reducePercentages = new float[]{0f,0.5f,0.75f,1.0f};
+      
+      BlocksAttacksComponent blockComp = new BlocksAttacksComponent(
+            0.15F,
+            0.5F,
+            List.of(new BlocksAttacksComponent.DamageReduction(60.0F, Optional.empty(), 0.0F, reducePercentages[whiteDwarf])),
+            new BlocksAttacksComponent.ItemDamage(1.0F, 1.0F, 1.0F),
+            Optional.of(DamageTypeTags.BYPASSES_SHIELD),
+            Optional.of(Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_HEAVY_CORE_BREAK)),
+            Optional.of(SoundEvents.ITEM_SHIELD_BREAK)
+      );
+      return blockComp;
+   }
+   
    private ItemStack getFakeItem(ItemStack item){
       if(!(ArcanaItemUtils.identifyItem(item) instanceof BinaryBlades)) return item;
       ItemStack fake = item.copy();
@@ -179,7 +199,7 @@ public class BinaryBlades extends EnergyItem {
       
       boolean white = ArcanaAugments.getAugmentOnItem(fake, ArcanaAugments.WHITE_DWARF_BLADES.id) > 0;
       if(white){
-         fake.set(DataComponentTypes.CONSUMABLE,ConsumableComponent.builder().consumeSeconds(72000).useAction(UseAction.BLOCK).sound(Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME)).build());
+         fake.set(DataComponentTypes.BLOCKS_ATTACKS,getWhiteDwarfBlock(item));
       }
       fake.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
       fake.remove(DataComponentTypes.USE_COOLDOWN);
@@ -212,7 +232,7 @@ public class BinaryBlades extends EnergyItem {
          }
       }
       
-      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList,false);
+      AttributeModifiersComponent newComponent = new AttributeModifiersComponent(attributeList);
       stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS,newComponent);
    }
    
@@ -263,9 +283,11 @@ public class BinaryBlades extends EnergyItem {
       return list;
    }
    
-   public class BinaryBladesItem extends ArcanaPolymerSwordItem {
-      public BinaryBladesItem(Item.Settings settings){
-         super(getThis(), ToolMaterial.NETHERITE, 2,-1.2f,settings);
+   public class BinaryBladesItem extends ArcanaPolymerItem {
+      public BinaryBladesItem(){
+         super(getThis(),getEquipmentArcanaItemComponents()
+               .sword(ToolMaterial.NETHERITE, 2,-1.2f)
+         );
       }
       
       @Override
@@ -294,7 +316,7 @@ public class BinaryBlades extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
@@ -396,8 +418,8 @@ public class BinaryBlades extends EnergyItem {
          
          boolean fake = getBooleanProperty(stack,FAKE_TAG);
          boolean split = getBooleanProperty(stack,SPLIT_TAG);
-         boolean whiteDwarf = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WHITE_DWARF_BLADES) > 0;
-         if(fake && whiteDwarf){
+         BlocksAttacksComponent blocksAttacksComponent = stack.get(DataComponentTypes.BLOCKS_ATTACKS);
+         if(blocksAttacksComponent != null){
             playerEntity.setCurrentHand(hand);
             return ActionResult.CONSUME;
          }else if(fake || !split){
@@ -444,20 +466,6 @@ public class BinaryBlades extends EnergyItem {
             return false;
          }
          return superRet;
-      }
-      
-      @Override
-      public int getMaxUseTime(ItemStack stack, LivingEntity user) {
-         boolean whiteDwarf = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WHITE_DWARF_BLADES) > 0;
-         boolean fake = getBooleanProperty(stack,FAKE_TAG);
-         return whiteDwarf && fake ? 72000 : super.getMaxUseTime(stack,user);
-      }
-      
-      @Override
-      public UseAction getUseAction(ItemStack stack) {
-         boolean whiteDwarf = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.WHITE_DWARF_BLADES) > 0;
-         boolean fake = getBooleanProperty(stack,FAKE_TAG);
-         return whiteDwarf && fake ? UseAction.BLOCK : UseAction.NONE;
       }
       
       @Override

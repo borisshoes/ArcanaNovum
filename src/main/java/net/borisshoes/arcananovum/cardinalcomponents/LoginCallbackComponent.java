@@ -41,14 +41,14 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       try{
          callbacks.clear();
-         NbtList callbacksTag = tag.getList("Callbacks", NbtElement.COMPOUND_TYPE);
+         NbtList callbacksTag = tag.getListOrEmpty("Callbacks");
          for (NbtElement e : callbacksTag){
             NbtCompound callbackTag = (NbtCompound) e;
-            String playerUUID = callbackTag.getString("uuid");
-            String callbackId = callbackTag.getString("id");
+            String playerUUID = callbackTag.getString("uuid", "");
+            String callbackId = callbackTag.getString("id", "");
             LoginCallback callback = LoginCallbacks.createCallback(callbackId);
             if(callback == null) continue;
-            callback.setData(callbackTag.getCompound("data"), registryLookup);
+            callback.setData(callbackTag.getCompoundOrEmpty("data"), registryLookup);
             callback.setPlayer(playerUUID);
             callbacks.add(callback);
          }

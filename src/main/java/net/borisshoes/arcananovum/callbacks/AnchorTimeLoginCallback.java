@@ -44,7 +44,7 @@ public class AnchorTimeLoginCallback extends LoginCallback{
    @Override
    public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
-      seconds = data.getInt("seconds");
+      seconds = data.getInt("seconds", 0);
    }
    
    @Override

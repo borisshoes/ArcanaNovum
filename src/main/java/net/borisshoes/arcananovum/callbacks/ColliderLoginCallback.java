@@ -44,7 +44,7 @@ public class ColliderLoginCallback extends LoginCallback{
    @Override
    public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
-      blocks = data.getInt("blocks");
+      blocks = data.getInt("blocks", 0);
    }
    
    @Override

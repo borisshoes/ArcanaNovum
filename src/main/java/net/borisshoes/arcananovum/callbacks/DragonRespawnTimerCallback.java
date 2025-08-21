@@ -27,8 +27,8 @@ public class DragonRespawnTimerCallback extends TickTimerCallback{
          Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
          if(bossFight != null && bossFight.getLeft() == BossFights.DRAGON){
             NbtCompound data = bossFight.getRight();
-            String state = data.getString("State");
-            ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster")));
+            String state = data.getString("State", "");
+            ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
             if(DragonBossFight.States.valueOf(state) == DragonBossFight.States.WAITING_RESPAWN){
                //Check for alive Dragon
                if(!server.getWorld(World.END).getAliveEnderDragons().isEmpty()){

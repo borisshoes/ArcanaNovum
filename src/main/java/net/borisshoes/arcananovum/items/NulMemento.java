@@ -8,7 +8,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.NulMementoEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -21,7 +21,6 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.EquippableComponent;
-import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -47,7 +46,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -70,9 +68,7 @@ public class NulMemento extends EnergyItem {
       rarity = ArcanaRarity.DIVINE;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
-      item = new NulMementoItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      ));
+      item = new NulMementoItem();
       displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.KILL_CONSTRUCT};
       
@@ -90,7 +86,7 @@ public class NulMemento extends EnergyItem {
       ItemStack curPrefItem = this.getPrefItem();
       curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
             new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.PROTECTION),4)
-      ).withShowInTooltip(false));
+      ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
@@ -736,9 +732,11 @@ public class NulMemento extends EnergyItem {
       return list;
    }
    
-   public class NulMementoItem extends ArcanaPolymerArmorItem {
-      public NulMementoItem(Item.Settings settings){
-         super(getThis(), ArmorMaterials.NETHERITE, EquipmentType.HELMET, settings);
+   public class NulMementoItem extends ArcanaPolymerItem {
+      public NulMementoItem(){
+         super(getThis(), getEquipmentArcanaItemComponents()
+               .armor(ArmorMaterials.NETHERITE, EquipmentType.HELMET)
+         );
       }
       
       @Override
@@ -760,7 +758,7 @@ public class NulMemento extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          

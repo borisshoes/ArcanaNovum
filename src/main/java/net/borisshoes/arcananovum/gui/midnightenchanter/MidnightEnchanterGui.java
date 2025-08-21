@@ -446,7 +446,7 @@ public class MidnightEnchanterGui extends SimpleGui {
                   GuiElementBuilder enchantBook = new GuiElementBuilder(Items.ENCHANTED_BOOK).hideDefaultTooltip();
                   enchantBook.glow(false);
                   enchantBook.setName((Text.literal("")
-                        .append(Enchantment.getName(entry.enchantment,entry.level)).formatted(Formatting.AQUA)));
+                        .append(Enchantment.getName(entry.enchantment(),entry.level())).formatted(Formatting.AQUA)));
                   if(lapisLevel == i+1){
                      enchantBook.glow();
                      enchantBook.addLoreLine(TextUtils.removeItalics((Text.literal("")
@@ -637,7 +637,7 @@ public class MidnightEnchanterGui extends SimpleGui {
       if(enchants.size() == 1){
          disenchantItem();
          for(RegistryEntry<Enchantment> entry : enchants.keySet()){
-            return new Pair<>(entry,enchants.getInt(entry));
+            return new Pair<>(entry, enchants.getInt(entry));
          }
       }
       listener.setUpdating();
@@ -698,7 +698,7 @@ public class MidnightEnchanterGui extends SimpleGui {
    private void setSelectedFromList(List<EnchantmentLevelEntry> entries){
       enchants = new ArrayList<>();
       RegistryWrapper.Impl<Enchantment> impl = player.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
-      entries.forEach(e -> enchants.add(new EnchantEntry(impl.getOrThrow(e.enchantment.getKey().get()), e.level,true)));
+      entries.forEach(e -> enchants.add(new EnchantEntry(impl.getOrThrow(e.enchantment().getKey().get()), e.level(),true)));
    }
    
    public void calculateXPCost(){
@@ -720,7 +720,7 @@ public class MidnightEnchanterGui extends SimpleGui {
          if(entry.isIn(EnchantmentTags.TREASURE)){
             rarityMod *= 2;
          }
-         cost += curEnchants.getInt(entry)*rarityMod;
+         cost += curEnchants.getInt(entry) * rarityMod;
       }
       cost /= 2; // Half cost for existing enchants
       

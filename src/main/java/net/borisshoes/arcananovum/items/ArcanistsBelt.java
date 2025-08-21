@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.inventory.StackReference;
@@ -55,9 +56,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.LEAD;
-      item = new ArcanistsBeltItem(addArcanaItemComponents(new Item.Settings().maxCount(1)
-            .component(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT)
-      ));
+      item = new ArcanistsBeltItem();
       displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BELT_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.CONCENTRATION_DAMAGE,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
@@ -197,8 +196,10 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    }
    
    public class ArcanistsBeltItem extends ArcanaPolymerItem {
-      public ArcanistsBeltItem(Item.Settings settings){
-         super(getThis(),settings);
+      public ArcanistsBeltItem(){
+         super(getThis(),getArcanaItemComponents()
+               .component(DataComponentTypes.CONTAINER, ContainerComponent.DEFAULT)
+         );
       }
       
       public static final int[] BELT_SLOT_COUNT = new int[]{3,4,5,7,9};
@@ -209,13 +210,13 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          
          ContainerComponent beltItems = stack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
          for(ItemStack invStack : beltItems.iterateNonEmpty()){
-            invStack.getItem().inventoryTick(invStack,world,entity,-1,false);
+            invStack.getItem().inventoryTick(invStack,world,entity,null);
          }
          buildItemLore(stack,ArcanaNovum.SERVER);
       }

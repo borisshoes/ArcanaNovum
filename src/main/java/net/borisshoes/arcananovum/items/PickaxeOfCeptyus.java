@@ -8,7 +8,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerPickaxeItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -17,15 +17,14 @@ import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ToolMaterial;
@@ -61,9 +60,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       rarity = ArcanaRarity.DIVINE;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_PICKAXE;
-      item = new PickaxeOfCeptyusItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.UNBREAKABLE,new UnbreakableComponent(false))
-      ));
+      item = new PickaxeOfCeptyusItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_PICKAXE_OF_CEPTYUS};
       
@@ -80,7 +77,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
             new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.FORTUNE),5),
             new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.EFFICIENCY),5)
-      ).withShowInTooltip(false));
+      ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
@@ -204,9 +201,11 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       return list;
    }
    
-   public class PickaxeOfCeptyusItem extends ArcanaPolymerPickaxeItem {
-      public PickaxeOfCeptyusItem(Item.Settings settings){
-         super(getThis(), ToolMaterial.NETHERITE,1,-2.8f,settings);
+   public class PickaxeOfCeptyusItem extends ArcanaPolymerItem {
+      public PickaxeOfCeptyusItem(){
+         super(getThis(),getEquipmentArcanaItemComponents()
+               .pickaxe(ToolMaterial.NETHERITE,1,-2.8f)
+         );
       }
       
       @Override
@@ -215,7 +214,7 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          IArcanaProfileComponent profile = ArcanaNovum.data(player);

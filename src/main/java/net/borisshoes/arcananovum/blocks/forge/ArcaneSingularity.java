@@ -22,7 +22,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -71,7 +70,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.LECTERN;
       block = new ArcaneSingularityBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
-      item = new ArcaneSingularityItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new ArcaneSingularityItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NEBULOUS_ESSENCE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
@@ -187,8 +186,8 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    
    public class ArcaneSingularityItem extends ArcanaPolymerBlockItem {
       
-      public ArcaneSingularityItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public ArcaneSingularityItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

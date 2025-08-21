@@ -22,12 +22,12 @@ import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.consume.ApplyEffectsConsumeEffect;
@@ -60,9 +60,7 @@ public class TotemOfVengeance extends ArcanaItem {
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS,TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.TOTEM_OF_UNDYING;
-      item = new TotemOfVengeanceItem(addArcanaItemComponents(new Item.Settings().maxCount(1)
-            .component(DataComponentTypes.DEATH_PROTECTION, getTotemComponent(0,false))
-      ));
+      item = new TotemOfVengeanceItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_RED);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_TOTEM_OF_UNDYING,ResearchTasks.KILL_EVOKER,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.EFFECT_STRENGTH,ResearchTasks.EFFECT_FIRE_RESISTANCE,ResearchTasks.EFFECT_SWIFTNESS};
       
@@ -205,8 +203,10 @@ public class TotemOfVengeance extends ArcanaItem {
    }
    
    public class TotemOfVengeanceItem extends ArcanaPolymerItem {
-      public TotemOfVengeanceItem(Item.Settings settings){
-         super(getThis(),settings);
+      public TotemOfVengeanceItem(){
+         super(getThis(),getArcanaItemComponents()
+               .component(DataComponentTypes.DEATH_PROTECTION, getTotemComponent(0,false))
+         );
       }
       
       @Override
@@ -215,7 +215,7 @@ public class TotemOfVengeance extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          

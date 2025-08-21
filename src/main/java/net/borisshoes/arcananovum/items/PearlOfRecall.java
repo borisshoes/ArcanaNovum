@@ -17,8 +17,8 @@ import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -61,7 +61,7 @@ public class PearlOfRecall extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       initEnergy = 600;
       vanillaItem = Items.ENDER_EYE;
-      item = new PearlOfRecallItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new PearlOfRecallItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL};
       
@@ -115,10 +115,10 @@ public class PearlOfRecall extends EnergyItem {
                .append(Text.literal("100%").formatted(Formatting.BOLD,Formatting.BLUE)));
       }else{
          NbtCompound locNbt = getCompoundProperty(itemStack,LOCATION_TAG);
-         String dim = locNbt.getString("dim");
-         int x = (int) locNbt.getDouble("x");
-         int y = (int) locNbt.getDouble("y");
-         int z = (int) locNbt.getDouble("z");
+         String dim = locNbt.getString("dim", "");
+         int x = (int) locNbt.getDouble("x", 0.0);
+         int y = (int) locNbt.getDouble("y", 0.0);
+         int z = (int) locNbt.getDouble("z", 0.0);
          Formatting dimColor;
          String dimensionName;
          String location;
@@ -181,12 +181,12 @@ public class PearlOfRecall extends EnergyItem {
    
    private void teleport(ItemStack item, ServerPlayerEntity player){
       NbtCompound locNbt = getCompoundProperty(item,LOCATION_TAG);
-      String dim = locNbt.getString("dim");
-      double x = locNbt.getDouble("x");
-      double y = locNbt.getDouble("y");
-      double z = locNbt.getDouble("z");
-      float yaw = locNbt.getFloat("yaw");
-      float pitch = locNbt.getFloat("pitch");
+      String dim = locNbt.getString("dim", "");
+      double x = locNbt.getDouble("x", 0.0);
+      double y = locNbt.getDouble("y", 0.0);
+      double z = locNbt.getDouble("z", 0.0);
+      float yaw = locNbt.getFloat("yaw", 0.0f);
+      float pitch = locNbt.getFloat("pitch", 0.0f);
       
       ServerWorld to = player.getServerWorld();
       for (ServerWorld w : player.getServer().getWorlds()){
@@ -234,8 +234,8 @@ public class PearlOfRecall extends EnergyItem {
    }
    
    public class PearlOfRecallItem extends ArcanaPolymerItem {
-      public PearlOfRecallItem(Item.Settings settings){
-         super(getThis(),settings);
+      public PearlOfRecallItem(){
+         super(getThis());
       }
       
       @Override
@@ -257,7 +257,7 @@ public class PearlOfRecall extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          
@@ -281,10 +281,10 @@ public class PearlOfRecall extends EnergyItem {
          
          if(ItemStack.areItemsAndComponentsEqual(stack,player.getMainHandStack()) || ItemStack.areItemsAndComponentsEqual(stack,player.getOffHandStack())){
             NbtCompound locNbt = getCompoundProperty(stack,LOCATION_TAG);
-            String dim = locNbt.getString("dim");
-            double x = locNbt.getDouble("x");
-            double y = locNbt.getDouble("y");
-            double z = locNbt.getDouble("z");
+            String dim = locNbt.getString("dim", "");
+            double x = locNbt.getDouble("x", 0.0);
+            double y = locNbt.getDouble("y", 0.0);
+            double z = locNbt.getDouble("z", 0.0);
             Vec3d loc = new Vec3d(x,y,z);
             if(player.getServerWorld().getRegistryKey().getValue().toString().equals(dim) && player.getPos().distanceTo(loc) < 30){
                ParticleEffectUtils.recallLocation(serverWorld,loc,player);
@@ -304,7 +304,7 @@ public class PearlOfRecall extends EnergyItem {
          boolean canClear = ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.CHRONO_TEAR.id) >= 1;
          if(playerEntity instanceof ServerPlayerEntity player){
             NbtCompound locNbt = getCompoundProperty(item,LOCATION_TAG);
-            String dim = locNbt.getString("dim");
+            String dim = locNbt.getString("dim", "");
             
             if(!(canClear && player.isSneaking())){
                if(dim.equals("unattuned")){

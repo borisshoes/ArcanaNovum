@@ -90,9 +90,9 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
             while(iter.hasNext()){
                NbtCompound cata = (NbtCompound) iter.next();
                
-               String aug = cata.getString("augment");
-               int lvl = cata.getInt("level");
-               ArcanaRarity rarity = ArcanaRarity.rarityFromInt(cata.getInt("rarity"));
+               String aug = cata.getString("augment", "");
+               int lvl = cata.getInt("level", 0);
+               ArcanaRarity rarity = ArcanaRarity.rarityFromInt(cata.getInt("rarity", 0));
                
                if(aug.equals(augment.id) && level == lvl){
                   ArcanaItem arcanaCata = ArcanaRarity.getAugmentCatalyst(rarity);

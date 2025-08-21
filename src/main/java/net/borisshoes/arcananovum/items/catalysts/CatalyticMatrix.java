@@ -12,7 +12,6 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -37,7 +36,7 @@ public class CatalyticMatrix extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       itemVersion = 0;
       vanillaItem = Items.NETHER_STAR;
-      item = new CatalyticMatrixItem(addArcanaItemComponents(new Item.Settings().maxCount(4)));
+      item = new CatalyticMatrixItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM};
       
@@ -105,8 +104,8 @@ public class CatalyticMatrix extends ArcanaItem {
    }
    
    public class CatalyticMatrixItem extends ArcanaPolymerItem {
-      public CatalyticMatrixItem(Item.Settings settings){
-         super(getThis(),settings);
+      public CatalyticMatrixItem(){
+         super(getThis(),getArcanaItemComponents().maxCount(4));
       }
       
       @Override

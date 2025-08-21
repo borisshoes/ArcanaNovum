@@ -25,7 +25,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -46,7 +45,6 @@ import java.util.TreeMap;
 
 public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity implements PolymerObject, ArcanaBlockEntity, SidedInventory, InventoryChangedListener {
    private static final double[] anchorEfficiency = {0,.05,.1,.15,.2,.5};
-   public static final int RANGE = 2;
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
@@ -142,7 +140,6 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
       }
       
       if(serverWorld.getServer().getTicks() % 5 == 0){ // Anchor only ticks redstone and load update every quarter second
-         ChunkPos chunkPos = new ChunkPos(pos);
          boolean prevActive = active;
          active = !serverWorld.isReceivingRedstonePower(pos) && fuel > 0;
          
@@ -176,65 +173,64 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
          BlockState blockState = world.getBlockState(pos).with(ContinuumAnchor.ContinuumAnchorBlock.ACTIVE,active).with(ContinuumAnchor.ContinuumAnchorBlock.CHARGES,fuelMarks);
          world.setBlockState(pos, blockState, Block.NOTIFY_ALL);
          
-         // Do the chunk loading thing
          if(prevActive && !active){ // Power Down
             ArcanaNovum.removeActiveAnchor(serverWorld,pos);
-            for(int i = -RANGE; i <= RANGE; i++){
-               for(int j = -RANGE; j <= RANGE; j++){
-                  ContinuumAnchor.removeChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
-               }
-            }
             SoundUtils.playSound(serverWorld,pos,SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.BLOCKS,1,1.5f);
          }else if(!prevActive && active){ // Power Up
             ArcanaNovum.addActiveAnchor(serverWorld,pos);
-            for(int i = -RANGE; i <= RANGE; i++){
-               for(int j = -RANGE; j <= RANGE; j++){
-                  ContinuumAnchor.addChunk(serverWorld,new ChunkPos(chunkPos.x+i,chunkPos.z+j));
-               }
-            }
             SoundUtils.playSound(serverWorld,pos,SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS,1,0.7f);
+            ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(pos));
          }
          
          this.markDirty();
       }
       
       if(serverWorld.getServer().getTicks() % 20 == 0 && this.active){
+         ContinuumAnchor.loadChunks(serverWorld,new ChunkPos(pos));
          ArcanaNovum.addActiveBlock(new Pair<>(this,this));
       }
+   }
+   
+   @Override
+   public void onBlockReplaced(BlockPos pos, BlockState oldState){
+      super.onBlockReplaced(pos, oldState);
+      
+      if(!(this.world instanceof ServerWorld serverWorld)) return;
+      ArcanaNovum.removeActiveAnchor(serverWorld, pos);
    }
    
    @Override
    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
       if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid");
+         this.uuid = nbt.getString("arcanaUuid","");
       }
       if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId");
+         this.crafterId = nbt.getString("crafterId","");
       }
       if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName");
+         this.customName = nbt.getString("customName", "");
       }
       if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic");
+         this.synthetic = nbt.getBoolean("synthetic", false);
       }
       if(nbt.contains("fuel")){
-         this.fuel = nbt.getInt("fuel");
+         this.fuel = nbt.getInt("fuel", 0);
       }
       if(nbt.contains("active")){
-         this.active = nbt.getBoolean("active");
+         this.active = nbt.getBoolean("active", false);
       }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompound("arcanaAugments");
+         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
          for(String key : augCompound.getKeys()){
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug,augCompound.getInt(key));
+            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
          }
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
+      if(!this.readLootTable(nbt) && nbt.contains("Items")){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
    }

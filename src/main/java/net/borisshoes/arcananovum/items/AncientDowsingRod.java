@@ -17,8 +17,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -54,7 +54,7 @@ public class AncientDowsingRod extends EnergyItem {
       rarity = ArcanaRarity.EMPOWERED;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.BLAZE_ROD;
-      item = new AncientDowsingRodItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new AncientDowsingRodItem();
       displayName =  Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_RED);
       researchTasks = new RegistryKey[]{ResearchTasks.RESONATE_BELL,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.ADVANCEMENT_FIND_BASTION};
       initEnergy = 100;
@@ -133,8 +133,8 @@ public class AncientDowsingRod extends EnergyItem {
    }
    
    public class AncientDowsingRodItem extends ArcanaPolymerItem {
-      public AncientDowsingRodItem(Item.Settings settings){
-         super(getThis(),settings);
+      public AncientDowsingRodItem(){
+         super(getThis());
       }
       
       @Override
@@ -156,7 +156,7 @@ public class AncientDowsingRod extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld)) return;
          if(world.getServer().getTicks() % 20 == 0){

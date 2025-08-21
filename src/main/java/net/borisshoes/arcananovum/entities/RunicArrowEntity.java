@@ -24,8 +24,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -122,7 +120,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
             
          }
       }else if(arrowType instanceof ArcaneFlakArrows){
-         int armTime = data.getInt("armTime");
+         int armTime = data.getInt("armTime", 0);
          if(armTime > 0){
             armTime--;
             data.putInt("armTime",armTime);
@@ -143,7 +141,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
             data.putFloat("initYaw",MathHelper.wrapDegrees((float)(MathHelper.atan2(velocityUnit.z, velocityUnit.x) * 57.2957763671875) - 90.0f));
          }
          if(!data.contains("initPos")){
-            data.put("initPos", this.toNbtList(this.getX(), this.getY(), this.getZ()));
+            data.put("initPos", Vec3d.CODEC, this.getPos());
          }
          
          double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE.id))+5;
@@ -172,11 +170,11 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
                Vector2d horizVel = new Vector2d(newVelocity.x, newVelocity.z);
                if(Math.abs(newVelocity.y / horizVel.length()) < 4){
                   float curYaw = MathHelper.wrapDegrees((float)(MathHelper.atan2(newVelocity.z, newVelocity.x) * 57.2957763671875) - 90.0f);
-                  float yawDiff = curYaw-data.getFloat("initYaw");
+                  float yawDiff = curYaw - data.getFloat("initYaw", 0.0f);
                   yawDiff += (yawDiff>180) ? -360 : (yawDiff<-180) ? 360 : 0;
                   Vector2d currentPos = new Vector2d(getX(),getZ());
-                  NbtList posList = data.getList("initPos", NbtElement.DOUBLE_TYPE);
-                  Vector2d initPos = new Vector2d(posList.getDouble(0),posList.getDouble(2));
+                  Vec3d initPos3D = data.get("initPos", Vec3d.CODEC).orElse(Vec3d.ZERO);
+                  Vector2d initPos = new Vector2d(initPos3D.x,initPos3D.z);
                   double distFromInitYawPlane = initPos.sub(currentPos).length() * Math.sin(Math.toRadians(Math.abs(yawDiff)));
                   if(Math.abs(yawDiff) >= 90 && distFromInitYawPlane > 10){
                      ArcanaAchievements.grant(player,ArcanaAchievements.THE_ARROW_KNOWS_WHERE_IT_IS.id);
@@ -263,18 +261,18 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
       super.readCustomDataFromNbt(nbt);
       augments = new TreeMap<>();
       if(nbt.contains("runicAugments")){
-         NbtCompound augCompound = nbt.getCompound("runicAugments");
+         NbtCompound augCompound = nbt.getCompoundOrEmpty("runicAugments");
          for(String key : augCompound.getKeys()){
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug,augCompound.getInt(key));
+            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
          }
       }
       if(nbt.contains("runicArrowType")){
-         ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(nbt.getString("runicArrowType"));
+         ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(nbt.getString("runicArrowType", ""));
          if(arcanaItem instanceof RunicArrow ra) arrowType = ra;
       }
       if(nbt.contains("runicArrowData")){
-         data = nbt.getCompound("runicArrowData");
+         data = nbt.getCompoundOrEmpty("runicArrowData");
       }
    }
 }

@@ -199,7 +199,7 @@ public class ArcanaCommands {
                   .append(arcanaItem.getTranslatedName().formatted(Formatting.AQUA))
                   .append(Text.literal("] ID: ").formatted(Formatting.LIGHT_PURPLE))
                   .append(Text.literal(uuid).formatted(Formatting.DARK_PURPLE));
-            response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid))));
+            response.add(feedback.styled(s -> s.withHoverEvent(new HoverEvent.ShowItem(stack)).withClickEvent(new ClickEvent.CopyToClipboard(uuid))));
             
             if(!uuids.add(uuid) || invItem.getStacks().size() < (invItem.getCount()/ arcanaItem.getPrefItem().getCount())){
                MutableText duplicateWarning = Text.literal("")
@@ -283,7 +283,7 @@ public class ArcanaCommands {
             loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Text[0])));
             BookGui loreGui = new BookGui(player,bookBuilder);
             loreGui.open();
-            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, path))));
+            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
             
             out.close();
          }
@@ -382,7 +382,7 @@ public class ArcanaCommands {
             for(String line : lines){
                out.println(line);
             }
-            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, path))));
+            player.sendMessage(Text.literal("Click to get item data location").styled(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
             
             out.close();
          }else{
@@ -545,7 +545,7 @@ public class ArcanaCommands {
             for(String line : lines){
                out.println(line);
             }
-            player.sendMessage(Text.literal("Click to get recipe data location").styled(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, path))));
+            player.sendMessage(Text.literal("Click to get recipe data location").styled(s -> s.withClickEvent(new ClickEvent.CopyToClipboard(path))));
             
             out.close();
             return 1;
@@ -1148,7 +1148,7 @@ public class ArcanaCommands {
          
          String feedback = TextUtils.textToString(handItem.getName());
          String copyText = feedback;
-         src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyText))), false);
+         src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent.CopyToClipboard(copyText))), false);
          
          return 1;
       }catch(Exception e){
@@ -1207,7 +1207,7 @@ public class ArcanaCommands {
          if(index >= 0 && index < lines.size()){
             String feedback = TextUtils.textToString(lines.get(index));
             String copyText = feedback;
-            src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyText))), false);
+            src.sendFeedback(() -> Text.literal(feedback).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to Copy Data"))).withClickEvent(new ClickEvent.CopyToClipboard(copyText))), false);
          }else{
             return 0;
          }

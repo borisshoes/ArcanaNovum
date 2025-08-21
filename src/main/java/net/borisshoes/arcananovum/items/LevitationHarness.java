@@ -9,7 +9,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.EnergyItem;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArmorItem;
+import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventory;
@@ -25,14 +25,12 @@ import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.component.type.EquippableComponent;
-import net.minecraft.component.type.UnbreakableComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.equipment.EquipmentType;
@@ -83,10 +81,7 @@ public class LevitationHarness extends EnergyItem {
       initEnergy = 3599; // 1 hour of charge (1 soul + 16 glowstone dust = 60 seconds of flight)
       itemVersion = 1;
       vanillaItem = Items.LEATHER_CHESTPLATE;
-      item = new LevitationHarnessItem(addArcanaItemComponents(new Item.Settings().maxCount(1).maxDamage(1024)
-            .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0x966996,false))
-            .component(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(false))
-      ));
+      item = new LevitationHarnessItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SHULKER_CORE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.ADVANCEMENT_ELYTRA,ResearchTasks.UNLOCK_ARCANE_SINGULARITY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
@@ -202,11 +197,11 @@ public class LevitationHarness extends EnergyItem {
    }
    
    public void setStone(ItemStack stack, ItemStack stone){
-      if(stone == null){
+      if(stone == null || stone.isEmpty()){
          putProperty(stack,STONE_DATA_TAG,new NbtCompound());
          putProperty(stack,SOULS_TAG,-1);
       }else{
-         putProperty(stack,STONE_DATA_TAG,stone.toNbtAllowEmpty(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,stone.toNbt(ArcanaNovum.SERVER.getRegistryManager()));
          putProperty(stack,SOULS_TAG,Soulstone.getSouls(stone));
       }
    }
@@ -327,9 +322,12 @@ public class LevitationHarness extends EnergyItem {
       return list;
    }
    
-   public class LevitationHarnessItem extends ArcanaPolymerArmorItem {
-      public LevitationHarnessItem(Item.Settings settings){
-         super(getThis(),ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL, EquipmentType.CHESTPLATE,settings);
+   public class LevitationHarnessItem extends ArcanaPolymerItem {
+      public LevitationHarnessItem(){
+         super(getThis(),getEquipmentArcanaItemComponents()
+               .armor(ArcanaRegistry.NON_PROTECTIVE_ARMOR_MATERIAL, EquipmentType.CHESTPLATE)
+               .component(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0x966996))
+         );
       }
       
       @Override
@@ -347,7 +345,7 @@ public class LevitationHarness extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean chestItem = ItemStack.areItemsAndComponentsEqual(player.getEquippedStack(EquipmentSlot.CHEST),stack);
@@ -414,7 +412,7 @@ public class LevitationHarness extends EnergyItem {
             openGui(playerEntity,item);
             if(playerEntity instanceof ServerPlayerEntity player){
                PlayerInventory inv = player.getInventory();
-               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.selectedSlot : 45, item));
+               player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), hand == Hand.MAIN_HAND ? 36 + inv.getSelectedSlot() : 45, item));
                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 6, player.getEquippedStack(EquipmentSlot.CHEST)));
             }
             return ActionResult.SUCCESS_SERVER;

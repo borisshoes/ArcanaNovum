@@ -38,13 +38,13 @@ public class ItemReturnLoginCallback extends LoginCallback{
    @Override
    public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
-      this.item = ItemStack.fromNbtOrEmpty(registryLookup,data.getCompound("item"));
+      this.item = ItemStack.fromNbt(registryLookup, data.getCompoundOrEmpty("item")).orElse(ItemStack.EMPTY);
    }
    
    @Override
    public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
       NbtCompound data = new NbtCompound();
-      data.put("item",this.item.toNbtAllowEmpty(registryLookup));
+      if(!this.item.isEmpty()) data.put("item",this.item.toNbt(registryLookup));
       this.data = data;
       return this.data;
    }

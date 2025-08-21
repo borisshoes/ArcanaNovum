@@ -22,7 +22,6 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -53,7 +52,7 @@ public class IgneousCollider extends ArcanaBlock {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.LODESTONE;
       block = new IgneousColliderBlock(AbstractBlock.Settings.create().requiresTool().strength(3.5f, 1200.0f).sounds(BlockSoundGroup.LODESTONE));
-      item = new IgneousColliderItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new IgneousColliderItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_PICKAXE,ResearchTasks.BREAK_OBSIDIAN,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.ADVANCEMENT_ENCHANT_ITEM,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE};
       
@@ -130,8 +129,8 @@ public class IgneousCollider extends ArcanaBlock {
    }
    
    public class IgneousColliderItem extends ArcanaPolymerBlockItem {
-      public IgneousColliderItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public IgneousColliderItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

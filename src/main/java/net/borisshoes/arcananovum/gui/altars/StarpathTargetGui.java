@@ -7,6 +7,7 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.item.Items;
@@ -47,7 +48,7 @@ public class StarpathTargetGui extends AnvilInputGui {
          locationItem.setName((Text.literal("Enter a Name").formatted(Formatting.GOLD)));
          setSlot(0,locationItem);
       }
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,0x1a0136)).hideTooltip());
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.STARPATH_COLOR)).hideTooltip());
    }
    
    private BlockPos parseValid(){

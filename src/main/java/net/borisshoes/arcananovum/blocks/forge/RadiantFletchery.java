@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.blocks.forge;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
-import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -24,7 +23,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -34,7 +32,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
@@ -61,7 +58,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.FLETCHING_TABLE;
       block = new RadiantFletcheryBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
-      item = new RadiantFletcheryItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new RadiantFletcheryItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.ADVANCEMENT_OL_BETSY,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.UNLOCK_STARLIGHT_FORGE};
       
@@ -143,8 +140,8 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
    }
    
    public class RadiantFletcheryItem extends ArcanaPolymerBlockItem {
-      public RadiantFletcheryItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public RadiantFletcheryItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override
@@ -203,17 +200,6 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
             }
          }
          return ActionResult.SUCCESS_SERVER;
-      }
-      
-      @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved){
-         if(state.isOf(newState.getBlock())){
-            return;
-         }
-         BlockEntity blockEntity = world.getBlockEntity(pos);
-         if(!(blockEntity instanceof ArcanaBlockEntity mbe)) return;
-         ItemScatterer.onStateReplaced(state, newState, world, pos);
-         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

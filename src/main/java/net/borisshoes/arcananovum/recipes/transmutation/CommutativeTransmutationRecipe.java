@@ -3,12 +3,12 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
@@ -22,22 +22,34 @@ import static net.borisshoes.arcananovum.ArcanaNovum.log;
 
 public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    
-   private final List<ItemStack> communalInputs;
+   private final ArrayList<ItemStack> communalInputs;
+   private ItemStack viewStack = new ItemStack(Items.BARRIER);
    
-   public CommutativeTransmutationRecipe(String name, List<ItemStack> communalInputs, ItemStack reagent1, ItemStack reagent2){
-      super(name,reagent1,reagent2);
-      this.communalInputs = communalInputs;
-   }
-   
-   public CommutativeTransmutationRecipe(String name, Either<TagKey<Item>,TagKey<Block>> tag, ItemStack reagent1, ItemStack reagent2){
+   public CommutativeTransmutationRecipe(String name, ItemStack reagent1, ItemStack reagent2){
       super(name,reagent1,reagent2);
       this.communalInputs = new ArrayList<>();
-      
+   }
+   
+   public CommutativeTransmutationRecipe with(Item... items){
+      for(Item item : items){
+         addItem(item);
+      }
+      return this;
+   }
+   
+   public CommutativeTransmutationRecipe with(ItemStack... items){
+      for(ItemStack item : items){
+         addItemStack(item);
+      }
+      return this;
+   }
+   
+   public CommutativeTransmutationRecipe with(Either<TagKey<Item>,TagKey<Block>> tag){
       if(tag.left().isPresent()){
          for(RegistryEntry<Item> itemEntry : Registries.ITEM.getIndexedEntries()){
             try{
                if(itemEntry.isIn(tag.left().get())){
-                  this.communalInputs.add(new ItemStack(itemEntry.value()));
+                  addItem(itemEntry.value());
                }
             }catch(Exception e){
                log(2,"Error getting tags for "+itemEntry.getIdAsString());
@@ -48,7 +60,7 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
             try{
                if(itemEntry.value() instanceof BlockItem blockItem){
                   if(blockItem.getBlock() != null && blockItem.getBlock().getRegistryEntry().isIn(tag.right().get())){
-                     this.communalInputs.add(new ItemStack(itemEntry.value()));
+                     addItem(itemEntry.value());
                   }
                }
             }catch(Exception e){
@@ -56,7 +68,23 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
             }
          }
       }
-      
+      return this;
+   }
+   
+   public CommutativeTransmutationRecipe withViewStack(ItemStack viewStack){
+      this.viewStack = viewStack;
+      return this;
+   }
+   
+   private void addItem(Item item){
+      addItemStack(new ItemStack(item));
+   }
+   
+   private void addItemStack(ItemStack stack){
+      for(ItemStack communalInput : this.communalInputs){
+         if(ItemStack.areItemsAndComponentsEqual(stack,communalInput)) return;
+      }
+      this.communalInputs.add(stack);
    }
    
    @Override
@@ -129,21 +157,18 @@ public class CommutativeTransmutationRecipe extends TransmutationRecipe{
    }
    
    public boolean validCommunalInput(ItemStack input){
-      for(ItemStack comStack : communalInputs){
-         if(validStack(comStack,input)) return true;
+      for(ItemStack comInput : this.communalInputs){
+         if(validStack(comInput,input)) return true;
       }
       return false;
    }
    
    public List<ItemStack> getCommunalInputs(){
-      return communalInputs;
+      return new ArrayList<>(this.communalInputs);
    }
    
    @Override
    public ItemStack getViewStack(){
-      if(ArcanaItemUtils.isArcane(communalInputs.get(0))){
-         return new ItemStack(communalInputs.get(0).getItem(),1);
-      }
-      return communalInputs.get(0);
+      return viewStack.copy();
    }
 }

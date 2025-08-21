@@ -106,10 +106,10 @@ public class TimedAchievement extends ArcanaAchievement{
    @Override
    public TimedAchievement fromNbt(String id, NbtCompound nbt){
       TimedAchievement ach = (TimedAchievement) ArcanaAchievements.registry.get(id).makeNew();
-      ach.setProgress(nbt.getInt("progress"));
-      ach.setActive(nbt.getBoolean("active"));
-      ach.setAcquired(nbt.getBoolean("acquired"));
-      ach.setData(nbt.getCompound("data"));
+      ach.setProgress(nbt.getInt("progress", 0));
+      ach.setActive(nbt.getBoolean("active", false));
+      ach.setAcquired(nbt.getBoolean("acquired", false));
+      ach.setData(nbt.getCompoundOrEmpty("data"));
       return ach;
    }
    

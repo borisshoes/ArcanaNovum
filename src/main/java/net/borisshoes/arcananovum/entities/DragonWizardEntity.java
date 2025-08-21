@@ -22,7 +22,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
@@ -303,17 +302,17 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    @Override
    public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
-      laserTick = nbt.getInt("laserTick");
-      summonTick = nbt.getInt("summonTick");
-      pulseTick = nbt.getInt("pulseTick");
-      numPlayers = nbt.getInt("numPlayers");
-      if(nbt.contains("crystalId")) crystalId = MiscUtils.getUUID(nbt.getString("crystalId"));
+      laserTick = nbt.getInt("laserTick", 0);
+      summonTick = nbt.getInt("summonTick", 0);
+      pulseTick = nbt.getInt("pulseTick", 0);
+      numPlayers = nbt.getInt("numPlayers", 0);
+      if(nbt.contains("crystalId")) crystalId = MiscUtils.getUUID(nbt.getString("crystalId", ""));
       
       if(getEntityWorld() instanceof ServerWorld serverWorld){
-         NbtList skeleList = nbt.getList("skeletons", NbtElement.STRING_TYPE);
+         NbtList skeleList = nbt.getListOrEmpty("skeletons");
          skeletons = new SkeletonEntity[skeleList.size()];
          for(int i = 0; i < skeletons.length; i++){
-            if(serverWorld.getEntity(MiscUtils.getUUID(skeleList.getString(i))) instanceof SkeletonEntity skele){
+            if(serverWorld.getEntity(MiscUtils.getUUID(skeleList.getString(i, ""))) instanceof SkeletonEntity skele){
                skeletons[i] = skele;
             }
          }

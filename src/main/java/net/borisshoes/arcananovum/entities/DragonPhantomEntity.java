@@ -88,6 +88,6 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    @Override
    public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
-      numPlayers = nbt.getInt("numPlayers");
+      numPlayers = nbt.getInt("numPlayers", 0);
    }
 }

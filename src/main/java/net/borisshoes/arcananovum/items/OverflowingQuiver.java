@@ -16,6 +16,7 @@ import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.inventory.StackReference;
@@ -56,7 +57,7 @@ public class OverflowingQuiver extends QuiverItem{
       color = Formatting.DARK_AQUA;
       vanillaItem = Items.RABBIT_HIDE;
       itemVersion = 1;
-      item = new OverflowingQuiverItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new OverflowingQuiverItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_SHOOT_ARROW,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.OBTAIN_TIPPED_ARROW,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
@@ -184,8 +185,8 @@ public class OverflowingQuiver extends QuiverItem{
    }
    
    public class OverflowingQuiverItem extends ArcanaPolymerItem {
-      public OverflowingQuiverItem(Item.Settings settings){
-         super(getThis(),settings);
+      public OverflowingQuiverItem(){
+         super(getThis());
       }
       
       @Override
@@ -202,7 +203,7 @@ public class OverflowingQuiver extends QuiverItem{
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          if(world.getServer().getTicks() % getRefillMod(stack) == 0) refillArrow(player, stack);

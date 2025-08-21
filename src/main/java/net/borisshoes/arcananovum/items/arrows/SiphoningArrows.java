@@ -8,16 +8,14 @@ import net.borisshoes.arcananovum.callbacks.OverhealTimerCallback;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.mixins.PersistentProjectileEntityAccessor;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
@@ -36,7 +34,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -53,9 +50,7 @@ public class SiphoningArrows extends RunicArrow {
       rarity = ArcanaRarity.EXOTIC;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new SiphoningArrowsItem(addArcanaItemComponents(new Item.Settings().maxCount(64)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(15866018),new ArrayList<>(),Optional.empty()))
-      ));
+      item = new SiphoningArrowsItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_RED);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_BREW_POTION,ResearchTasks.OBTAIN_GLISTERING_MELON};
       
@@ -89,7 +84,7 @@ public class SiphoningArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
-         double damage = MathHelper.ceil(MathHelper.clamp(arrow.getVelocity().length() * arrow.getDamage(), 0.0, 2.147483647E9)) / 5.5;
+         double damage = MathHelper.ceil(MathHelper.clamp(arrow.getVelocity().length() * ((PersistentProjectileEntityAccessor)arrow).getDamage(), 0.0, 2.147483647E9)) / 5.5;
          damage += arrow.isCritical() ? damage/4 : 0;
          
          if(player.getHealth() < 1.5f){
@@ -143,8 +138,8 @@ public class SiphoningArrows extends RunicArrow {
    }
    
    public class SiphoningArrowsItem extends ArcanaPolymerArrowItem {
-      public SiphoningArrowsItem(Item.Settings settings){
-         super(getThis(),settings);
+      public SiphoningArrowsItem(){
+         super(getThis(),getArcanaArrowItemComponents(15866018));
       }
       
       @Override

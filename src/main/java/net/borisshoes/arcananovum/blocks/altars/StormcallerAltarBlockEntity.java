@@ -229,32 +229,32 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
       if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid");
+         this.uuid = nbt.getString("arcanaUuid", "");
       }
       if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId");
+         this.crafterId = nbt.getString("crafterId", "");
       }
       if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName");
+         this.customName = nbt.getString("customName", "");
       }
       if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic");
+         this.synthetic = nbt.getBoolean("synthetic", false);
       }
       if(nbt.contains("cooldown")){
-         this.cooldown = nbt.getInt("cooldown");
+         this.cooldown = nbt.getInt("cooldown", 0);
       }
       if(nbt.contains("mode")){
-         this.mode = nbt.getInt("mode");
+         this.mode = nbt.getInt("mode", 0);
       }
       if(nbt.contains("duration")){
-         this.duration = nbt.getInt("duration");
+         this.duration = nbt.getInt("duration", 0);
       }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompound("arcanaAugments");
+         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
          for(String key : augCompound.getKeys()){
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug,augCompound.getInt(key));
+            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
          }
       }
    }

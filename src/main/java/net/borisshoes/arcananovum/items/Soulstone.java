@@ -19,7 +19,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -58,7 +57,7 @@ public class Soulstone extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.FIRE_CHARGE;
-      item = new SoulstoneItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new SoulstoneItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_RED);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_KILL_A_MOB,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.USE_SOUL_SPEED,ResearchTasks.UNLOCK_STELLAR_CORE};
       
@@ -263,8 +262,8 @@ public class Soulstone extends ArcanaItem {
    }
    
    public class SoulstoneItem extends ArcanaPolymerItem {
-      public SoulstoneItem(Item.Settings settings){
-         super(getThis(),settings);
+      public SoulstoneItem(){
+         super(getThis());
       }
       
       @Override
@@ -285,8 +284,8 @@ public class Soulstone extends ArcanaItem {
       }
       
       @Override
-      public boolean postHit(ItemStack stack, LivingEntity target, LivingEntity attacker){
-         if(!(attacker instanceof PlayerEntity playerEntity)) return false;
+      public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker){
+         if(!(attacker instanceof PlayerEntity playerEntity)) return;
          String type = getStringProperty(stack,TYPE_TAG);
          
          if(type.equals("unattuned") && target instanceof MobEntity attackedEntity && playerEntity instanceof ServerPlayerEntity player){
@@ -302,8 +301,6 @@ public class Soulstone extends ArcanaItem {
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
             }
          }
-         
-         return false;
       }
    }
 }

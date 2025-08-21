@@ -11,7 +11,6 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -35,7 +34,7 @@ public class EmpoweredCatalyst extends ArcanaItem {
       rarity = ArcanaRarity.MUNDANE;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CATALYSTS};
       vanillaItem = Items.EMERALD;
-      item = new EmpoweredCatalystItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new EmpoweredCatalystItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GREEN);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_MUNDANE_CATALYST,ResearchTasks.OBTAIN_EMERALD,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
@@ -98,8 +97,8 @@ public class EmpoweredCatalyst extends ArcanaItem {
    }
    
    public class EmpoweredCatalystItem extends ArcanaPolymerItem {
-      public EmpoweredCatalystItem(Item.Settings settings){
-         super(getThis(),settings);
+      public EmpoweredCatalystItem(){
+         super(getThis());
       }
       
       @Override

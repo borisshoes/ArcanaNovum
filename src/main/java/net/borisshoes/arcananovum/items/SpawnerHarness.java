@@ -24,7 +24,6 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
@@ -63,7 +62,7 @@ public class SpawnerHarness extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS, TomeGui.TomeFilter.BLOCKS};
       itemVersion = 1;
       vanillaItem = Items.SPAWNER;
-      item = new SpawnerHarnessItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new SpawnerHarnessItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_SILK_TOUCH,ResearchTasks.BREAK_SPAWNER,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
@@ -104,10 +103,10 @@ public class SpawnerHarness extends ArcanaItem {
          if(hasSpawner){
             type = "Empty Spawner";
             if(spawnerTag.contains("SpawnData")){
-               NbtCompound spawnData = spawnerTag.getCompound("SpawnData");
-               NbtCompound entity = spawnData.getCompound("entity");
+               NbtCompound spawnData = spawnerTag.getCompoundOrEmpty("SpawnData");
+               NbtCompound entity = spawnData.getCompoundOrEmpty("entity");
                if(!entity.isEmpty()){
-                  String entityTypeId = entity.getString("id");
+                  String entityTypeId = entity.getString("id", "");
                   Optional<EntityType<?>> entityType = EntityType.get(entityTypeId);
                   type = entityType.isPresent() ? entityType.get().getName().getString() : "Unknown";
                }
@@ -166,8 +165,8 @@ public class SpawnerHarness extends ArcanaItem {
    }
    
    public class SpawnerHarnessItem extends ArcanaPolymerItem {
-      public SpawnerHarnessItem(Item.Settings settings){
-         super(getThis(),settings);
+      public SpawnerHarnessItem(){
+         super(getThis());
       }
       
       @Override

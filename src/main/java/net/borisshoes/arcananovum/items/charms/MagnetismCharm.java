@@ -63,7 +63,7 @@ public class MagnetismCharm extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 2;
       vanillaItem = Items.IRON_INGOT;
-      item = new MagnetismCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new MagnetismCharmItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GRAY);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_HEAVY_CORE,ResearchTasks.FISH_ITEM};
       
@@ -218,8 +218,8 @@ public class MagnetismCharm extends ArcanaItem {
       NbtCompound filter = getCompoundProperty(magnet,FILTER_TAG);
       String itemId = Registries.ITEM.getId(filterItem).toString();
       
-      boolean hasWhitelist = filter.getKeys().stream().anyMatch(s -> filter.getInt(s) == 1);
-      int status = filter.getInt(itemId);
+      boolean hasWhitelist = filter.getKeys().stream().anyMatch(s -> filter.getInt(s, 0) == 1);
+      int status = filter.getInt(itemId, 0);
       return (hasWhitelist && status == 1) || (!hasWhitelist && status != 2); // Allow if item is in whitelist, or item isn't blacklisted if no whitelist exist
    }
    
@@ -229,7 +229,7 @@ public class MagnetismCharm extends ArcanaItem {
       
       int itemStatus = 0; // 0 = nothing, 1 = whitelist, 2 = blacklist
       if(filter.contains(itemId)){
-         itemStatus = filter.getInt(itemId);
+         itemStatus = filter.getInt(itemId, 0);
       }
       itemStatus = (itemStatus+1) % 3;
       
@@ -287,8 +287,8 @@ public class MagnetismCharm extends ArcanaItem {
    }
    
    public class MagnetismCharmItem extends ArcanaPolymerItem {
-      public MagnetismCharmItem(Item.Settings settings){
-         super(getThis(),settings);
+      public MagnetismCharmItem(){
+         super(getThis());
       }
       
       @Override
@@ -326,7 +326,7 @@ public class MagnetismCharm extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          int passiveRange = 5 + Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERRITE_CORE.id));

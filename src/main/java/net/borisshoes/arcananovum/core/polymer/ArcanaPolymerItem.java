@@ -28,6 +28,11 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
    protected final ArcanaItem arcanaItem;
+   
+   public ArcanaPolymerItem(ArcanaItem arcanaItem){
+      this(arcanaItem,arcanaItem.getArcanaItemComponents());
+   }
+   
    public ArcanaPolymerItem(ArcanaItem arcanaItem, Settings settings){
       super(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
@@ -63,8 +68,8 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
    }
    
    @Override
-   public Item getPolymerReplacement(PacketContext context){
-      return PolymerItem.super.getPolymerReplacement(context);
+   public Item getPolymerReplacement(Item item, PacketContext context){
+      return PolymerItem.super.getPolymerReplacement(item, context);
    }
    
    @Override

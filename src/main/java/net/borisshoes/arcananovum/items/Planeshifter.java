@@ -20,8 +20,8 @@ import net.minecraft.block.EndPortalBlock;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -69,7 +69,7 @@ public class Planeshifter extends EnergyItem {
       itemVersion = 0;
       initEnergy = 600;
       vanillaItem = Items.RECOVERY_COMPASS;
-      item = new PlaneshifterItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new PlaneshifterItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.DIMENSION_TRAVEL, ResearchTasks.OBTAIN_EYE_OF_ENDER};
       
@@ -284,8 +284,8 @@ public class Planeshifter extends EnergyItem {
    }
    
    public class PlaneshifterItem extends ArcanaPolymerItem {
-      public PlaneshifterItem(Item.Settings settings){
-         super(getThis(),settings);
+      public PlaneshifterItem(){
+         super(getThis());
       }
       
       @Override
@@ -357,7 +357,7 @@ public class Planeshifter extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          int heat = getIntProperty(stack,HEAT_TAG);

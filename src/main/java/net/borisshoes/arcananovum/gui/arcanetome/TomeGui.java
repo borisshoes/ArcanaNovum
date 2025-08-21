@@ -288,7 +288,7 @@ public class TomeGui extends SimpleGui {
                      copyString.append(getIngredStr(ingred).getString()).append("\n");
                   }
                   
-                  player.sendMessage(Text.translatable("text.arcananovum.materials_copy_message").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("text.arcananovum.materials_copy_message"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyString.toString()))));
+                  player.sendMessage(Text.translatable("text.arcananovum.materials_copy_message").styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text.translatable("text.arcananovum.materials_copy_message"))).withClickEvent(new ClickEvent.CopyToClipboard(copyString.toString()))));
                   permaCloseFlag = true;
                   close();
                }
@@ -331,7 +331,7 @@ public class TomeGui extends SimpleGui {
                         copyString.append("\n");
                      }
                      
-                     player.sendMessage(Text.translatable("text.arcananovum.materials_copy_message").styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("text.arcananovum.materials_copy_message"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, copyString.toString()))));
+                     player.sendMessage(Text.translatable("text.arcananovum.materials_copy_message").styled(s -> s.withHoverEvent(new HoverEvent.ShowText(Text.translatable("text.arcananovum.materials_copy_message"))).withClickEvent(new ClickEvent.CopyToClipboard(copyString.toString()))));
                      permaCloseFlag = true;
                      close();
                   }else{

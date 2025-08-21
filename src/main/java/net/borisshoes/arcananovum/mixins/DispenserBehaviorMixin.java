@@ -343,7 +343,7 @@ public interface DispenserBehaviorMixin {
                         NbtCompound contentData = be.createNbtWithId(ArcanaNovum.SERVER.getRegistryManager());
                         ArcanaItem.putProperty(stack,ChestTranslocator.CONTENTS_TAG,contentData);
                         ArcanaItem.putProperty(stack,ChestTranslocator.STATE_TAG, NbtHelper.fromBlockState(state));
-                        Clearable.clear(be);
+                        if(be instanceof Clearable clearable) clearable.clear();
                         world.setBlockState(blockPos,Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
                         SoundUtils.playSound(world,blockPos,SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1,1);
                         this.setSuccess(true);

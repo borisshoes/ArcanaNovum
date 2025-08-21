@@ -110,7 +110,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                }else if(canUseIce && block2 == Blocks.BLUE_ICE){
                   hasWater = pos2;
                }
-            }else if(direction.getId() == 1){ // Check for chest
+            }else if(direction == Direction.UP){ // Check for chest
                if(block2 instanceof InventoryProvider){
                   output = ((InventoryProvider)block2).getInventory(state2, serverWorld, pos2);
                } else if(state2.hasBlockEntity()){
@@ -125,7 +125,7 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
                if(output != null){
                   hasInventory = pos2;
                }
-            }else if(direction.getId() == 0){ // Check for netherite block
+            }else if(direction == Direction.DOWN){ // Check for netherite block
                if(block2 == Blocks.NETHERITE_BLOCK){
                   hasNetherite = pos2;
                }
@@ -224,26 +224,26 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
       if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid");
+         this.uuid = nbt.getString("arcanaUuid",ArcanaNovum.BLANK_UUID);
       }
       if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId");
+         this.crafterId = nbt.getString("crafterId",ArcanaNovum.BLANK_UUID);
       }
       if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName");
+         this.customName = nbt.getString("customName", "");
       }
       if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic");
+         this.synthetic = nbt.getBoolean("synthetic", false);
       }
       if(nbt.contains("cooldown")){
-         this.cooldown = nbt.getInt("cooldown");
+         this.cooldown = nbt.getInt("cooldown", 0);
       }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompound("arcanaAugments");
+         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
          for(String key : augCompound.getKeys()){
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug,augCompound.getInt(key));
+            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
          }
       }
    }

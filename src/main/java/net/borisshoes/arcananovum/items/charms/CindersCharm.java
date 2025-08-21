@@ -18,6 +18,7 @@ import net.minecraft.block.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -26,7 +27,6 @@ import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -86,7 +86,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       itemVersion = 1;
       vanillaItem = Items.BLAZE_POWDER;
-      item = new CindersCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new CindersCharmItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.KILL_BLAZE,ResearchTasks.KILL_MAGMA_CUBE,ResearchTasks.EFFECT_FIRE_RESISTANCE,ResearchTasks.USE_FLINT_AND_STEEL,ResearchTasks.UNLOCK_STELLAR_CORE};
       attributions = new Pair[]{new Pair<>(Text.translatable("credits_and_attribution.arcananovum.inspired_by"),Text.literal("sarhecker"))};
@@ -559,8 +559,8 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
    }
    
    public class CindersCharmItem extends ArcanaPolymerItem {
-      public CindersCharmItem(Item.Settings settings){
-         super(getThis(),settings);
+      public CindersCharmItem(){
+         super(getThis());
       }
       
       @Override
@@ -612,15 +612,15 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
       
       @Override
-      public boolean postHit(ItemStack stack, LivingEntity target, LivingEntity attacker){
-         if(!(attacker instanceof ServerPlayerEntity player)) return false;
+      public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker){
+         if(!(attacker instanceof ServerPlayerEntity player)) return;
          
          boolean cremation = ArcanaAugments.getAugmentOnItem(stack,"cremation") >= 1;
          Formatting color = cremation ? Formatting.AQUA : Formatting.RED;
          
          if(getEnergy(stack) < 5){
             player.sendMessage(Text.literal("The Charm has no Cinders").formatted(color), true);
-            return true;
+            return;
          }
          
          if(target instanceof CreeperEntity creeper){
@@ -638,11 +638,11 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
          }
          player.sendMessage(Text.literal(message.toString()).formatted(color), true);
-         return true;
+         return;
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean cremation = ArcanaAugments.getAugmentOnItem(stack,"cremation") >= 1;

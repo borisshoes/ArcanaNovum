@@ -365,50 +365,50 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    @Override
    public void readCustomDataFromNbt(NbtCompound nbt){
       super.readCustomDataFromNbt(nbt);
-      numPlayers = nbt.getInt("numPlayers");
-      spellCooldown = nbt.getInt("spellCooldown");
-      shouldHaveSummoner = nbt.getBoolean("shouldHaveSummoner");
-      summonerHasDivine = nbt.getBoolean("summonerHasDivine");
-      summonerHasWings = nbt.getBoolean("summonerHasWings");
-      isExalted = nbt.getBoolean("isExalted");
-      prevHP = nbt.getFloat("prevHP");
-      adaptiveResistance = nbt.getFloat("adaptiveResistance");
+      numPlayers = nbt.getInt("numPlayers", 0);
+      spellCooldown = nbt.getInt("spellCooldown", 0);
+      shouldHaveSummoner = nbt.getBoolean("shouldHaveSummoner", false);
+      summonerHasDivine = nbt.getBoolean("summonerHasDivine", false);
+      summonerHasWings = nbt.getBoolean("summonerHasWings", false);
+      isExalted = nbt.getBoolean("isExalted", false);
+      prevHP = nbt.getFloat("prevHP", 0.0f);
+      adaptiveResistance = nbt.getFloat("adaptiveResistance", 0.0f);
       
-      this.setInvulTimer(nbt.getInt("invulnerableTimer"));
+      this.setInvulTimer(nbt.getInt("invulnerableTimer", 0));
       
       if(this.hasCustomName()){
          this.bossBar.setName(this.getDisplayName());
       }
       
       if(nbt.contains("summoner")){
-         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbt.getString("summoner"))) instanceof PlayerEntity player){
+         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbt.getString("summoner", ""))) instanceof PlayerEntity player){
             summoner = player;
          }
       }
       
       spells = new HashMap<>();
-      NbtCompound spellsTag = nbt.getCompound("spells");
+      NbtCompound spellsTag = nbt.getCompoundOrEmpty("spells");
       for(String key : spellsTag.getKeys()){
-         spells.put(ConstructSpellType.fromString(key),ConstructSpell.fromNbt(spellsTag.getCompound(key)));
+         spells.put(ConstructSpellType.fromString(key),ConstructSpell.fromNbt(spellsTag.getCompoundOrEmpty(key)));
       }
       
       adaptations = new HashMap<>();
-      NbtCompound adaptationsTag = nbt.getCompound("adaptations");
+      NbtCompound adaptationsTag = nbt.getCompoundOrEmpty("adaptations");
       for(String key : adaptationsTag.getKeys()){
-         adaptations.put(ConstructAdaptations.fromString(key),adaptationsTag.getBoolean(key));
+         adaptations.put(ConstructAdaptations.fromString(key), adaptationsTag.getBoolean(key, false));
       }
       
       blockDamage = new HashMap<>();
-      NbtCompound blockDamageTag = nbt.getCompound("blockDamage");
+      NbtCompound blockDamageTag = nbt.getCompoundOrEmpty("blockDamage");
       for(String key : blockDamageTag.getKeys()){
-         NbtCompound compound = blockDamageTag.getCompound(key);
-         blockDamage.put(new BlockPos(compound.getInt("x"),compound.getInt("y"),compound.getInt("z")),compound.getInt("damage"));
+         NbtCompound compound = blockDamageTag.getCompoundOrEmpty(key);
+         blockDamage.put(new BlockPos(compound.getInt("x", 0), compound.getInt("y", 0), compound.getInt("z", 0)), compound.getInt("damage", 0));
       }
       
       players = new ArrayList<>();
-      NbtList playersList = nbt.getList("players",NbtElement.STRING_TYPE);
+      NbtList playersList = nbt.getListOrEmpty("players");
       for(NbtElement nbtElement : playersList){
-         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbtElement.asString())) instanceof ServerPlayerEntity player){
+         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbtElement.asString().orElse(""))) instanceof ServerPlayerEntity player){
             players.add(player);
          }
       }
@@ -843,10 +843,10 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          double q = this.getHeadY(jx);
          double r = this.getHeadZ(jx);
          float s = 0.3F * this.getScale();
-         this.getWorld().addParticle(ParticleTypes.SMOKE,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
+         this.getWorld().addParticleClient(ParticleTypes.SMOKE,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
          if(shieldActive && this.getWorld().random.nextInt(4) == 0){
             EntityEffectParticleEffect particle = EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.5F);
-            this.getWorld().addParticle(particle,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
+            this.getWorld().addParticleClient(particle,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
          }
       }
       
@@ -854,7 +854,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          float t = 3.3F * this.getScale();
          for (int u = 0; u < 3; u++){
             EntityEffectParticleEffect particle = EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.9F);
-            this.getWorld().addParticle(particle,this.getX() + this.random.nextGaussian(),this.getY() + (double)(this.random.nextFloat() * t),this.getZ() + this.random.nextGaussian(), 0.0, 0.0, 0.0);
+            this.getWorld().addParticleClient(particle,this.getX() + this.random.nextGaussian(),this.getY() + (double)(this.random.nextFloat() * t),this.getZ() + this.random.nextGaussian(), 0.0, 0.0, 0.0);
          }
       }
    }
@@ -1660,7 +1660,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       }
       
       private static ConstructSpell fromNbt(NbtCompound tag){
-         return new ConstructSpell(ConstructSpellType.fromString(tag.getString("type")), tag.getInt("cooldown"), tag.getInt("weight"), tag.getBoolean("active"), tag.getInt("tick"));
+         return new ConstructSpell(ConstructSpellType.fromString(tag.getString("type", "")), tag.getInt("cooldown", 0), tag.getInt("weight", 0), tag.getBoolean("active", false), tag.getInt("tick", 0));
       }
       
       public void cast(NulConstructEntity construct, int tick){

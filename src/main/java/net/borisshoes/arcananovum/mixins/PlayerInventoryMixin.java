@@ -13,7 +13,6 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Pair;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
@@ -37,32 +36,26 @@ public abstract class PlayerInventoryMixin {
    @Final
    public PlayerEntity player;
    
-   @Shadow
-   @Final
-   private List<DefaultedList<ItemStack>> combinedInventory;
-   
    @Unique
-   private final Map<Pair<Integer,Integer>, ItemStack> anchoredItems = new HashMap<>();
+   private final Map<Integer, ItemStack> anchoredItems = new HashMap<>();
    
    @Inject(method = "dropAll", at = @At("HEAD"))
    private void arcananovum_fateAnchorSave(CallbackInfo ci){
-      int invIndex = 0;
-      for (List<ItemStack> list : this.combinedInventory) {
-         for (int i = 0; i < list.size(); i++) {
-            ItemStack itemStack = (ItemStack)list.get(i);
-            if (!itemStack.isEmpty() && (player.isAlive() || EnchantmentHelper.getLevel(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), itemStack) > 0)) {
-               anchoredItems.put(new Pair<>(invIndex,i),itemStack);
-               list.set(i, ItemStack.EMPTY);
-            }
+      PlayerInventory inv = (PlayerInventory) (Object) this;
+      for (int i = 0; i < inv.size(); i++) {
+         ItemStack itemStack = (ItemStack)inv.getStack(i);
+         if (!itemStack.isEmpty() && (player.isAlive() || EnchantmentHelper.getLevel(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), itemStack) > 0)) {
+            anchoredItems.put(i,itemStack);
+            inv.setStack(i, ItemStack.EMPTY);
          }
-         invIndex++;
       }
    }
    
    @Inject(method = "dropAll", at = @At("RETURN"))
    private void arcananovum_fateAnchorRestore(CallbackInfo ci){
-      for(Map.Entry<Pair<Integer, Integer>, ItemStack> entry : anchoredItems.entrySet()){
-         combinedInventory.get(entry.getKey().getLeft()).set(entry.getKey().getRight(), entry.getValue());
+      PlayerInventory inv = (PlayerInventory) (Object) this;
+      for(Map.Entry<Integer, ItemStack> entry : anchoredItems.entrySet()){
+         inv.setStack(entry.getKey(),entry.getValue());
       }
       anchoredItems.clear();
    }
@@ -127,8 +120,8 @@ public abstract class PlayerInventoryMixin {
             }
          
             if(slot >= 0){
-               inv.main.set(slot, stack.copy());
-               ((ItemStack)inv.main.get(slot)).setBobbingAnimationTime(5);
+               inv.setStack(slot, stack.copy());
+               ((ItemStack)inv.getStack(slot)).setBobbingAnimationTime(5);
                stack.setCount(0);
                return true;
             } else if(inv.player.getAbilities().creativeMode){

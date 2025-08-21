@@ -11,11 +11,11 @@ public class BossFightComponent implements IBossFightComponent{
    @Override
    public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
       try{
-         String id = tag.getString("id");
+         String id = tag.getString("id", "");
          if(id.isEmpty()){
             bossFight = null;
          }else{
-            bossFight = new Pair<>(BossFights.fromLabel(id),tag.getCompound("data"));
+            bossFight = new Pair<>(BossFights.fromLabel(id), tag.getCompoundOrEmpty("data"));
          }
       }catch(Exception e){
          e.printStackTrace();

@@ -59,10 +59,10 @@ public class ConditionalsAchievement extends ArcanaAchievement{
    public ConditionalsAchievement fromNbt(String id, NbtCompound nbt){
       ConditionalsAchievement ach = (ConditionalsAchievement) ArcanaAchievements.registry.get(id).makeNew();
       ach.conditions.clear();
-      ach.setAcquired(nbt.getBoolean("acquired"));
-      NbtCompound condsTag = nbt.getCompound("conditions");
+      ach.setAcquired(nbt.getBoolean("acquired", false));
+      NbtCompound condsTag = nbt.getCompoundOrEmpty("conditions");
       for(String key : condsTag.getKeys()){
-         ach.conditions.put(key,condsTag.getBoolean(key));
+         ach.conditions.put(key, condsTag.getBoolean(key, false));
       }
       return ach;
    }

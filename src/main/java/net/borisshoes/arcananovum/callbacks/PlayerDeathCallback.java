@@ -38,8 +38,8 @@ public class PlayerDeathCallback {
             MutableText deathMsg2 = Text.literal("")
                   .append(Text.literal("Click ").formatted(Formatting.AQUA))
                   .append(Text.literal("[Here]").styled(s ->
-                        s.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/arcana boss teleport"))
-                              .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to Teleport!")))
+                        s.withClickEvent(new ClickEvent.RunCommand("/arcana boss teleport"))
+                              .withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to Teleport!")))
                               .withColor(Formatting.LIGHT_PURPLE).withBold(true)))
                   .append(Text.literal(" to Teleport back to the fight!").formatted(Formatting.AQUA));
             

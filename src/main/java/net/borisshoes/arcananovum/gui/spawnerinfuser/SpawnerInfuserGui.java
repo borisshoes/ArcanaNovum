@@ -151,8 +151,8 @@ public class SpawnerInfuserGui extends SimpleGui {
       }else{
          return true;
       }
-   
-      int curVal = stats.getShort(nbtKey);
+      
+      int curVal = stats.getShort(nbtKey, (short) 0);
       int ind = indexOf(curVal,lvlArr);
       newInd = increase ? Math.min(ind+1,pointArr.length-1) : Math.max(ind-1,0);
       newVal = lvlArr[newInd];
@@ -252,7 +252,7 @@ public class SpawnerInfuserGui extends SimpleGui {
          minedOut.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("You cannot decrease this stat further").formatted(Formatting.DARK_AQUA)))));
          
-         int minSpeed = stats.getShort("MinSpawnDelay");
+         int minSpeed = stats.getShort("MinSpawnDelay", (short) 0);
          int minSpeedInd = indexOf(minSpeed,minSpeedLvls);
          int minSpeedPointC = minSpeedPoints[minSpeedInd];
          ItemStack minSpeedArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.SLOWNESS);
@@ -266,8 +266,8 @@ public class SpawnerInfuserGui extends SimpleGui {
          setSlot(10,minSpeedInd == minSpeedLvls.length-1 ? maxedOut : minSpeedIncArrow);
          setSlot(19,minSpeedItem);
          setSlot(28,minSpeedInd == 0 ? minedOut : minSpeedDecArrow);
-   
-         int maxSpeed = stats.getShort("MaxSpawnDelay");
+         
+         int maxSpeed = stats.getShort("MaxSpawnDelay", (short) 0);
          int maxSpeedInd = indexOf(maxSpeed,maxSpeedLvls);
          int maxSpeedPointC = maxSpeedPoints[maxSpeedInd];
          ItemStack maxSpeedArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.SWIFTNESS);
@@ -281,8 +281,8 @@ public class SpawnerInfuserGui extends SimpleGui {
          setSlot(11,maxSpeedInd == maxSpeedLvls.length-1 ? maxedOut :maxSpeedIncArrow);
          setSlot(20,maxSpeedItem);
          setSlot(29,maxSpeedInd == 0 ? minedOut : maxSpeedDecArrow);
-   
-         int spawnRange = stats.getShort("SpawnRange");
+         
+         int spawnRange = stats.getShort("SpawnRange", (short) 0);
          int spawnRangeInd = indexOf(spawnRange,spawnRangeLvls);
          int spawnRangePointC = spawnRangePoints[spawnRangeInd];
          ItemStack spawnRangeArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.SLOW_FALLING);
@@ -296,8 +296,8 @@ public class SpawnerInfuserGui extends SimpleGui {
          setSlot(12,spawnRangeInd == spawnRangeLvls.length-1 ? maxedOut : spawnRangeIncArrow);
          setSlot(21,spawnRangeItem);
          setSlot(30,spawnRangeInd == 0 ? minedOut : spawnRangeDecArrow);
-   
-         int spawnCount = stats.getShort("SpawnCount");
+         
+         int spawnCount = stats.getShort("SpawnCount", (short) 0);
          int spawnCountInd = indexOf(spawnCount,spawnCountLvls);
          int spawnCountPointC = spawnCountPoints[spawnCountInd];
          ItemStack spawnCountArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.POISON);
@@ -311,8 +311,8 @@ public class SpawnerInfuserGui extends SimpleGui {
          setSlot(14,spawnCountInd == spawnCountLvls.length-1 ? maxedOut : spawnCountIncArrow);
          setSlot(23,spawnCountItem);
          setSlot(32,spawnCountInd == 0 ? minedOut : spawnCountDecArrow);
-   
-         int maxEntities = stats.getShort("MaxNearbyEntities");
+         
+         int maxEntities = stats.getShort("MaxNearbyEntities", (short) 0);
          int maxEntitiesInd = indexOf(maxEntities,maxEntitiesLvls);
          int maxEntitiesPointC = maxEntitiesPoints[maxEntitiesInd];
          ItemStack maxEntitiesArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.WATER_BREATHING);
@@ -326,8 +326,8 @@ public class SpawnerInfuserGui extends SimpleGui {
          setSlot(15,maxEntitiesInd == maxEntitiesLvls.length-1 ? maxedOut : maxEntitiesIncArrow);
          setSlot(24,maxEntitiesItem);
          setSlot(33,maxEntitiesInd == 0 ? minedOut : maxEntitiesDecArrow);
-   
-         int playerRange = stats.getShort("RequiredPlayerRange");
+         
+         int playerRange = stats.getShort("RequiredPlayerRange", (short) 0);
          int playerRangeInd = indexOf(playerRange,playerRangeLvls);
          int playerRangePointC = playerRangePoints[playerRangeInd];
          ItemStack playerRangeArrowStack = PotionContentsComponent.createStack(Items.TIPPED_ARROW, Potions.TURTLE_MASTER);

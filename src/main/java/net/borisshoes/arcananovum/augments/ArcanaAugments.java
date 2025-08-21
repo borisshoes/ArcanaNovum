@@ -945,7 +945,13 @@ public class ArcanaAugments {
    ));
    public static final ArcanaAugment WHITE_DWARF_BLADES = ArcanaAugments.register(
          new ArcanaAugment("White Dwarf Blades", "white_dwarf_blades", new ItemStack(Items.SEA_LANTERN), ArcanaRegistry.BINARY_BLADES,
-         new String[]{"Allows the blades to parry attacks using energy","Hold Right Click to prepare a parry","Damage parried per level: 50%/75%/100%", "Mutually exclusive with all augments"},
+         new String[]{
+               "Allows the blades to parry attacks using energy",
+               "Hold Right Click to prepare a parry",
+               "The parry warms up and cools down quicker than shields,",
+               " but it blocks in a tighter cone than shields",
+               "Damage parried per level: 50%/75%/100%",
+               "Mutually exclusive with all augments"},
          new ArcanaRarity[]{DIVINE,SOVEREIGN,SOVEREIGN}
    ));
    
@@ -1126,7 +1132,7 @@ public class ArcanaAugments {
       
       for(String key : augmentTag.getKeys()){
          if(registry.containsKey(key)){
-            map.put(registry.get(key),augmentTag.getInt(key));
+            map.put(registry.get(key), augmentTag.getInt(key, 0));
          }
       }
       return map;
@@ -1175,16 +1181,16 @@ public class ArcanaAugments {
       if(arcanaItem == null || !registry.containsKey(id)) return -1;
       NbtCompound augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
       if(augmentTag.contains(id)){
-         return augmentTag.getInt(id);
+         return augmentTag.getInt(id, 0);
       }
       return 0;
    }
    
    public static int getAugmentFromCompound(NbtCompound compound, String id){
       if(!registry.containsKey(id)) return -1;
-      NbtCompound augmentTag = compound.getCompound("augments");
+      NbtCompound augmentTag = compound.getCompoundOrEmpty("augments");
       if(augmentTag.contains(id)){
-         return augmentTag.getInt(id);
+         return augmentTag.getInt(id, 0);
       }
       return 0;
    }
@@ -1242,7 +1248,7 @@ public class ArcanaAugments {
          boolean foundCata = false;
          for(NbtElement sourceCata : sourceCatas){
             NbtCompound cata = (NbtCompound) sourceCata;
-            if(cata.getString("augment").equals(sourceAugment) && cata.getInt("level") == lvl){
+            if(cata.getString("augment", "").equals(sourceAugment) && cata.getInt("level", 0) == lvl){
                ArcanaAugments.applyAugment(destinationStack,destinationAugment,lvl,true);
                foundCata = true;
                break;

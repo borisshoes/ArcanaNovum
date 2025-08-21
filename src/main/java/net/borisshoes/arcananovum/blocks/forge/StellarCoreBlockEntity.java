@@ -21,16 +21,18 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.component.type.RepairableComponent;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.recipe.*;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -96,7 +98,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
       }
       
       if(assembled && seenForge){
-         Direction dir = blockState.get(StellarCore.StellarCoreBlock.HORIZONTAL_FACING);
+         Direction dir = blockState.get(HORIZONTAL_FACING);
          ParticleEffectUtils.stellarCoreAnim(serverWorld,pos.add(dir.getVector().multiply(-2)).toCenterPos().add(0,1,0),ticks % 300, dir);
       }
       
@@ -114,57 +116,112 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
       }
    }
    
-   public List<ItemStack> salvageItem(ItemStack stack){
+   private Map<Item,Integer> getCraftingSalvageIngredients(ItemStack stack, MinecraftServer server){
+      Map<Item,Integer> bestRecipe = new HashMap<>();
+      if(stack.contains(DataComponentTypes.REPAIRABLE)){
+         RepairableComponent repairComp = stack.get(DataComponentTypes.REPAIRABLE);
+         List<ItemStack> repairItems = repairComp.items().stream().map(entry -> entry.value().getDefaultStack()).toList();
+         
+         Collection<RecipeEntry<CraftingRecipe>> craftingRecipes = server.getRecipeManager().getAllOfType(RecipeType.CRAFTING);
+         for(RecipeEntry<CraftingRecipe> entry : craftingRecipes){
+            CraftingRecipe recipe = entry.value();
+            List<Ingredient> ingredients = new ArrayList<>();
+            if(recipe instanceof ShapedRecipe shaped && shaped.result.isOf(stack.getItem())){
+               for(Optional<Ingredient> ingredient : shaped.getIngredients()){
+                  if(ingredient.isEmpty() || ingredient.get().isEmpty()) continue;
+                  ingredients.add(ingredient.get());
+               }
+            }else if(recipe instanceof ShapelessRecipe shapeless && shapeless.result.isOf(stack.getItem())){
+               for(Ingredient ingredient : shapeless.ingredients){
+                  if(ingredient.isEmpty()) continue;
+                  ingredients.add(ingredient);
+               }
+            }
+            
+            Map<Item,Integer> ingreds = new HashMap<>();
+            for(Ingredient ingredient : ingredients){
+               ingredBlock: {
+                  for(RegistryEntry<Item> ientry : ingredient.getMatchingItems().toList()){
+                     for(ItemStack repairItem : repairItems){
+                        if(repairItem.isOf(ientry.value())){
+                           ingreds.merge(ientry.value(), 1, Integer::sum);
+                           break ingredBlock;
+                        }
+                     }
+                  }
+               }
+            }
+            
+            if(bestRecipe.isEmpty()){
+               bestRecipe = ingreds;
+            }else{
+               int curCount = bestRecipe.values().stream().mapToInt(Integer::intValue).sum();
+               int newCount = ingreds.values().stream().mapToInt(Integer::intValue).sum();
+               if(newCount > 0 && newCount < curCount){
+                  bestRecipe = ingreds;
+               }
+            }
+         }
+         
+      }
+      return bestRecipe;
+   }
+   
+   public List<ItemStack> salvageItem(ItemStack stack, MinecraftServer server){
       List<ItemStack> salvage = new ArrayList<>();
       double salvageLvl = .25*(1+ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.DYSON_SPHERE.id));
       Item item = stack.getItem();
       if(ArcanaItemUtils.isArcane(stack)) return salvage;
       
-      if(stack.contains(DataComponentTypes.EQUIPPABLE) && stack.contains(DataComponentTypes.REPAIRABLE)){
-         EquippableComponent armorComp = stack.get(DataComponentTypes.EQUIPPABLE);
+      if(stack.contains(DataComponentTypes.REPAIRABLE)){
          RepairableComponent repairComp = stack.get(DataComponentTypes.REPAIRABLE);
-         EquipmentSlot slot = armorComp.slot();
-         int baseAmt = switch(slot){
-            case MAINHAND, OFFHAND -> 1;
-            case FEET -> 4;
-            case LEGS -> 7;
-            case CHEST -> 8;
-            case HEAD -> 5;
-            case BODY -> 6;
-         };
          List<ItemStack> repairItems = repairComp.items().stream().map(entry -> entry.value().getDefaultStack()).toList();
-         if(!repairItems.isEmpty()){
-            if(repairItems.getFirst().isOf(Items.NETHERITE_INGOT)){
-               salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
-            }else{
-               salvage.add(repairItems.getFirst().copyWithCount((int) Math.round(baseAmt*salvageLvl)));
+         
+         Collection<RecipeEntry<CraftingRecipe>> craftingRecipes = server.getRecipeManager().getAllOfType(RecipeType.CRAFTING);
+         Collection<RecipeEntry<SmithingRecipe>> smithingRecipes = server.getRecipeManager().getAllOfType(RecipeType.SMITHING);
+         
+         Item precursor = Items.AIR;
+         Map<Item,Integer> precursorSalvage = new HashMap<>();
+         for(RecipeEntry<SmithingRecipe> entry : smithingRecipes){
+            if(entry.value() instanceof SmithingTransformRecipe smithingRecipe){
+               if(!smithingRecipe.result.itemEntry().equals(stack.getItem())) continue;
+               if(smithingRecipe.template().isEmpty() || !smithingRecipe.template().get().test(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE.getDefaultStack())) continue;
+               if(smithingRecipe.addition().isEmpty() || repairItems.stream().noneMatch(repair -> smithingRecipe.addition().get().test(repair))) continue;
+               
+               for(RegistryEntry<Item> ientry : smithingRecipe.base().getMatchingItems().toList()){
+                  Map<Item,Integer> salv = getCraftingSalvageIngredients(ientry.value().getDefaultStack(),server);
+                  if(precursorSalvage.isEmpty()){
+                     precursorSalvage = salv;
+                     precursor = ientry.value();
+                  }else{
+                     int curCount = precursorSalvage.values().stream().mapToInt(Integer::intValue).sum();
+                     int newCount = salv.values().stream().mapToInt(Integer::intValue).sum();
+                     if(newCount > 0 && newCount < curCount){
+                        precursorSalvage = salv;
+                        precursor = ientry.value();
+                     }
+                  }
+               }
             }
-         }
-      }else if((item instanceof MiningToolItem || item instanceof SwordItem) && stack.contains(DataComponentTypes.REPAIRABLE)){
-         int baseAmt;
-         if(item instanceof PickaxeItem){
-            baseAmt = 3;
-         }else if(item instanceof AxeItem){
-            baseAmt = 3;
-         }else if(item instanceof HoeItem){
-            baseAmt = 2;
-         }else if(item instanceof SwordItem){
-            baseAmt = 2;
-         }else if(item instanceof ShovelItem){
-            baseAmt = 1;
-         }else{
-            baseAmt = 1;
          }
          
-         RepairableComponent repairComp = stack.get(DataComponentTypes.REPAIRABLE);
-         List<ItemStack> repairItems = repairComp.items().stream().map(entry -> entry.value().getDefaultStack()).toList();
-         if(!repairItems.isEmpty()){
-            if(repairItems.getFirst().isOf(Items.NETHERITE_INGOT)){
-               salvage.add(new ItemStack(Items.NETHERITE_SCRAP,(int) Math.round(4*salvageLvl)));
-            }else{
-               salvage.add(repairItems.getFirst().copyWithCount((int) Math.round(baseAmt*salvageLvl)));
-            }
+         
+         Map<Item,Integer> finalSalv;
+         if(precursor != Items.AIR && !precursorSalvage.isEmpty()){
+            precursorSalvage.merge(Items.NETHERITE_SCRAP, 4, Integer::sum);
+            finalSalv = precursorSalvage;
+         }else{
+            finalSalv = getCraftingSalvageIngredients(stack,server);
          }
+         
+         finalSalv.forEach((salvItem, count) -> {
+            double baseCount = Math.round(count*salvageLvl);
+            int salvCount = (int) baseCount;
+            if(this.getWorld().random.nextDouble() < (baseCount - salvCount - 1E-9)){
+               salvCount++;
+            }
+            salvage.add(new ItemStack(salvItem,salvCount));
+         });
       }
       
       int stardust = (int) (MiscUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS.id)));
@@ -236,28 +293,28 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
       super.readNbt(nbt, registryLookup);
       if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid");
+         this.uuid = nbt.getString("arcanaUuid", "");
       }
       if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId");
+         this.crafterId = nbt.getString("crafterId", "");
       }
       if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName");
+         this.customName = nbt.getString("customName", "");
       }
       if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic");
+         this.synthetic = nbt.getBoolean("synthetic", false);
       }
       this.inventory = new SimpleInventory(size());
       this.inventory.addListener(this);
-      if(!this.readLootTable(nbt) && nbt.contains("Items", NbtElement.LIST_TYPE)){
+      if(!this.readLootTable(nbt) && nbt.contains("Items")){
          Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
       }
       augments = new TreeMap<>();
       if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompound("arcanaAugments");
+         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
          for(String key : augCompound.getKeys()){
             ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug,augCompound.getInt(key));
+            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
          }
       }
    }
@@ -343,11 +400,11 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
          }
          boolean moltenCore = ArcanaAugments.getAugmentFromMap(getAugments(),ArcanaAugments.MOLTEN_CORE.id) >= 1;
          BlockState blockState = serverWorld.getBlockState(pos);
-         Direction dir = blockState.get(StellarCore.StellarCoreBlock.HORIZONTAL_FACING);
+         Direction dir = blockState.get(HORIZONTAL_FACING);
          Vec3d itemSpawnPos = pos.add(dir.getVector()).toCenterPos();
          
          ItemStack stack = inv.getStack(0);
-         List<ItemStack> salvage = salvageItem(stack);
+         List<ItemStack> salvage = salvageItem(stack, serverWorld.getServer());
          if(!salvage.isEmpty()){
             salvage = salvage.stream().filter(s -> !s.isEmpty() && s.getCount()>0).toList();
             watchingPlayers.forEach(player -> ArcanaAchievements.progress(player,ArcanaAchievements.RECLAMATION.id, stack.getCount()));

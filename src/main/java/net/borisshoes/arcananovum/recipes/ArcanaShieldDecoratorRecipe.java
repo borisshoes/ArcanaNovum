@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.recipes;
 
 import eu.pb4.polymer.core.api.utils.PolymerObject;
-import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerShieldItem;
+import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.item.BannerItem;
@@ -34,7 +34,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
                itemStack2 = itemStack3;
             }else{
                
-               if(!(itemStack3.getItem() instanceof ArcanaPolymerShieldItem)){
+               if(!(itemStack3.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem)){
                   return false;
                }
                
@@ -66,7 +66,7 @@ public class ArcanaShieldDecoratorRecipe extends ShieldDecorationRecipe {
          if(!itemStack3.isEmpty()){
             if(itemStack3.getItem() instanceof BannerItem){
                itemStack = itemStack3;
-            } else if(itemStack3.getItem() instanceof ArcanaPolymerShieldItem theShieldItem){
+            } else if(itemStack3.getItem() instanceof ShieldOfFortitude.ShieldOfFortitudeItem theShieldItem){
                itemStack2 = itemStack3.copy();
             }
          }

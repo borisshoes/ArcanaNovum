@@ -25,6 +25,7 @@ import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -32,7 +33,6 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.*;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.potion.Potions;
@@ -75,7 +75,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       itemVersion = 0;
       vanillaItem = Items.SPRUCE_BOAT;
-      item = new ChestTranslocatorItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new ChestTranslocatorItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.EFFECT_STRENGTH};
       
@@ -148,12 +148,12 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       }
       
       if(!contents.isEmpty()){
-         NbtList items = contents.getList("Items", NbtElement.COMPOUND_TYPE);
+         NbtList items = contents.getListOrEmpty("Items");
          
          for(int i = 0; i < items.size(); i++){
-            NbtCompound stack = items.getCompound(i);
+            NbtCompound stack = items.getCompoundOrEmpty(i);
             ItemStack itemStack = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stack).orElse(ItemStack.EMPTY);
-            inv.setStack(stack.getByte("Slot"),itemStack);
+            inv.setStack(stack.getByte("Slot", (byte) 0), itemStack);
          }
       }
       
@@ -198,8 +198,8 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
    }
    
    public class ChestTranslocatorItem extends ArcanaPolymerItem {
-      public ChestTranslocatorItem(Item.Settings settings){
-         super(getThis(),settings);
+      public ChestTranslocatorItem(){
+         super(getThis());
       }
       
       @Override
@@ -244,7 +244,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                   NbtCompound contentData = be.createNbtWithId(ArcanaNovum.SERVER.getRegistryManager());
                   putProperty(stack,CONTENTS_TAG,contentData);
                   putProperty(stack,STATE_TAG,NbtHelper.fromBlockState(state));
-                  Clearable.clear(be);
+                  if(be instanceof Clearable clearable) clearable.clear();
                   world.setBlockState(blockPos,Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
                   SoundUtils.playSound(world,blockPos,SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1,1);
                   setEnergy(stack,getMaxEnergy(stack));
@@ -299,7 +299,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);

@@ -11,10 +11,10 @@ import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
@@ -26,7 +26,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class LeadershipCharm extends ArcanaItem {
       rarity = ArcanaRarity.DIVINE;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.CHARMS, TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.AMETHYST_SHARD;
-      item = new LeadershipCharmItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new LeadershipCharmItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_LEADERSHIP_CHARM};
       
@@ -96,8 +95,8 @@ public class LeadershipCharm extends ArcanaItem {
    }
    
    public class LeadershipCharmItem extends ArcanaPolymerItem {
-      public LeadershipCharmItem(Item.Settings settings){
-         super(getThis(),settings);
+      public LeadershipCharmItem(){
+         super(getThis());
       }
       
       @Override
@@ -106,7 +105,7 @@ public class LeadershipCharm extends ArcanaItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          // Give AoE resistance, regen, and strength, and repair gear.

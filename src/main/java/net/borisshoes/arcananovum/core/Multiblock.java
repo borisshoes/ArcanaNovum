@@ -5,6 +5,7 @@ import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -108,9 +109,9 @@ public class Multiblock {
          }
          
          if(result.foundState().isAir()){
-            element.setGlowColorOverride(0xFF55FF);
+            element.setGlowColorOverride(ArcanaColors.PINK_HIGHLIGHT_COLOR);
          }else{
-            element.setGlowColorOverride(0xFF0000);
+            element.setGlowColorOverride(ArcanaColors.RED_COLOR);
          }
          element.setGlowing(true);
          holder.addElement(element);
@@ -241,28 +242,28 @@ public class Multiblock {
          NbtCompound compound = NbtIo.readCompressed(in,NbtSizeTracker.ofUnlimitedBytes());
          if(compound == null) return null;
          
-         NbtList size = compound.getList("size", NbtElement.INT_TYPE);
-         int sizeX = size.getInt(0);
-         int sizeY = size.getInt(1);
-         int sizeZ = size.getInt(2);
+         NbtList size = compound.getListOrEmpty("size");
+         int sizeX = size.getInt(0, 0);
+         int sizeY = size.getInt(1, 0);
+         int sizeZ = size.getInt(2, 0);
          
          int[][][] pattern = new int[sizeX][sizeY][sizeZ];
          for(int i=0;i<sizeX;i++){for(int j=0;j<sizeY;j++){for(int k=0;k<sizeZ;k++){pattern[i][j][k] = -1;}}} // Set all elements to -1 because 0 is used by the palette
          
-         NbtList blocks = compound.getList("blocks",NbtElement.COMPOUND_TYPE);
+         NbtList blocks = compound.getListOrEmpty("blocks");
          for(NbtElement b : blocks){
             NbtCompound block = (NbtCompound) b;
-            NbtList pos = block.getList("pos", NbtElement.INT_TYPE);
-            pattern[pos.getInt(0)][pos.getInt(1)][pos.getInt(2)] = block.getInt("state");
+            NbtList pos = block.getListOrEmpty("pos");
+            pattern[pos.getInt(0, 0)][pos.getInt(1, 0)][pos.getInt(2, 0)] = block.getInt("state", 0);
          }
          
          // Build predicates for checking block states
-         NbtList palette = compound.getList("palette",NbtElement.COMPOUND_TYPE);
+         NbtList palette = compound.getListOrEmpty("palette");
          List<Pair<BlockState,Predicate<BlockState>>> preds = new ArrayList<>();
          for(NbtElement e : palette){
             // Get the actual block
             NbtCompound blockTag = (NbtCompound) e;
-            String blockName = blockTag.getString("Name");
+            String blockName = blockTag.getString("Name", "");
             BlockState rawState = NbtHelper.toBlockState(Registries.BLOCK,blockTag); // Save raw state for display
             Predicate<BlockState> pred;
             Identifier identifier = Identifier.of(blockName);
@@ -276,8 +277,8 @@ public class Multiblock {
             // Block found, build predicate
             Block block = (Block)((RegistryEntry<?>)optional.get()).value();
             HashMap<Property<? extends Comparable<?>>,Comparable<?>> blockProperties = new HashMap<>();
-            if(blockTag.contains("Properties", NbtElement.COMPOUND_TYPE)){
-               NbtCompound properties = blockTag.getCompound("Properties");
+            if(blockTag.contains("Properties")){
+               NbtCompound properties = blockTag.getCompoundOrEmpty("Properties");
                StateManager<Block, BlockState> stateManager = block.getStateManager();
                for (String key : properties.getKeys()){
                   Property<?> p = stateManager.getProperty(key);
@@ -365,9 +366,9 @@ public class Multiblock {
                for(VirtualElement element : getElements()){
                   if(element instanceof BlockDisplayElement elem){
                      if(world.getBlockState(pos).isAir()){
-                        elem.setGlowColorOverride(0xFF55FF);
+                        elem.setGlowColorOverride(ArcanaColors.PINK_HIGHLIGHT_COLOR);
                      }else{
-                        elem.setGlowColorOverride(0xFF0000);
+                        elem.setGlowColorOverride(ArcanaColors.RED_COLOR);
                      }
                   }
                }

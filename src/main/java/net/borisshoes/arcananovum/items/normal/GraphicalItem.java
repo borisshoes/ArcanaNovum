@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -150,7 +151,12 @@ public class GraphicalItem extends NormalPolymerItem {
    ));
    
    public GraphicalItem(String id, Settings settings){
-      super(id, settings);
+      super(id, settings.component(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplayComponent.DEFAULT
+            .with(DataComponentTypes.DYED_COLOR, true)
+            .with(DataComponentTypes.ATTRIBUTE_MODIFIERS, true)
+            .with(DataComponentTypes.BANNER_PATTERNS, true)
+            .with(DataComponentTypes.FIREWORK_EXPLOSION, true)
+      ));
    }
    
    private static HashSet<Item> getAllReplacedItems(){
@@ -261,7 +267,7 @@ public class GraphicalItem extends NormalPolymerItem {
    public static ItemStack withColor(GraphicItems id, int color){
       ItemStack stack = new ItemStack(ArcanaRegistry.GRAPHICAL_ITEM);
       ArcanaItem.putProperty(stack,GRAPHICS_TAG,id.id);
-      stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, false));
+      stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color));
       return stack;
    }
 }

@@ -20,7 +20,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -68,7 +67,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.PEARLESCENT_FROGLIGHT;
       block = new CelestialAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.PINK).strength(.3f,1200.0f).luminance(state -> 15).sounds(BlockSoundGroup.FROGLIGHT));
-      item = new CelestialAltarItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new CelestialAltarItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
@@ -160,8 +159,8 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public class CelestialAltarItem extends ArcanaPolymerBlockItem {
-      public CelestialAltarItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public CelestialAltarItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

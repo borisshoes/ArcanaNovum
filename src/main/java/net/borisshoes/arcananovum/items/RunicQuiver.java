@@ -20,6 +20,7 @@ import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -62,7 +63,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       color = Formatting.LIGHT_PURPLE;
       vanillaItem = Items.LEATHER;
       itemVersion = 1;
-      item = new RunicQuiverItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new RunicQuiverItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_OVERFLOWING_QUIVER,ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.CONCENTRATION_DAMAGE};
       
@@ -221,8 +222,8 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
    }
    
    public class RunicQuiverItem extends ArcanaPolymerItem {
-      public RunicQuiverItem(Item.Settings settings){
-         super(getThis(),settings);
+      public RunicQuiverItem(){
+         super(getThis());
       }
       
       @Override
@@ -239,7 +240,7 @@ public class RunicQuiver extends QuiverItem implements ArcanaItemContainer.Arcan
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          if(world.getServer().getTicks() % getRefillMod(stack) == 0) refillArrow(player, stack);

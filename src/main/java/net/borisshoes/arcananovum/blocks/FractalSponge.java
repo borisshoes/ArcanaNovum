@@ -24,7 +24,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -62,7 +61,7 @@ public class FractalSponge extends ArcanaBlock {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SPONGE;
       block = new FractalSpongeBlock(AbstractBlock.Settings.create().strength(.6f,1200.0f).sounds(BlockSoundGroup.GRASS));
-      item = new FractalSpongeItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new FractalSpongeItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_SPONGE,ResearchTasks.OBTAIN_END_CRYSTAL};
       
@@ -217,8 +216,8 @@ public class FractalSponge extends ArcanaBlock {
    }
    
    public class FractalSpongeItem extends ArcanaPolymerBlockItem {
-      public FractalSpongeItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public FractalSpongeItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override

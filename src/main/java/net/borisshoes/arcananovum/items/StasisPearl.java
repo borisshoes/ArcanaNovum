@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -55,7 +56,7 @@ public class StasisPearl extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       initEnergy = 60;
       vanillaItem = Items.ENDER_PEARL;
-      item = new StasisPearlItem(addArcanaItemComponents(new Item.Settings().maxCount(1)));
+      item = new StasisPearlItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
@@ -171,8 +172,8 @@ public class StasisPearl extends EnergyItem {
    }
    
    public class StasisPearlItem extends ArcanaPolymerItem {
-      public StasisPearlItem(Item.Settings settings){
-         super(getThis(),settings);
+      public StasisPearlItem(){
+         super(getThis());
       }
       
       @Override
@@ -206,7 +207,7 @@ public class StasisPearl extends EnergyItem {
       }
       
       @Override
-      public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected){
+      public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean active = getBooleanProperty(stack,ACTIVE_TAG);

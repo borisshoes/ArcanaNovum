@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.blocks;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
@@ -37,8 +36,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.ItemScatterer;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -64,7 +61,7 @@ public class SpawnerInfuser extends ArcanaBlock {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.BLOCKS};
       vanillaItem = Items.SCULK_SHRIEKER;
       block = new SpawnerInfuserBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).strength(3.0f, 1200.0f).sounds(BlockSoundGroup.SCULK_SHRIEKER));
-      item = new SpawnerInfuserItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new SpawnerInfuserItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_GREEN);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_ARCANE_SINGULARITY,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER,ResearchTasks.UNLOCK_SPAWNER_HARNESS,ResearchTasks.UNLOCK_STELLAR_CORE,ResearchTasks.OBTAIN_NETHERITE_INGOT,ResearchTasks.ADVANCEMENT_KILL_MOB_NEAR_SCULK_CATALYST};
       
@@ -163,11 +160,9 @@ public class SpawnerInfuser extends ArcanaBlock {
    }
    
    public class SpawnerInfuserItem extends ArcanaPolymerBlockItem {
-      public SpawnerInfuserItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public SpawnerInfuserItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
-      
-      
       
       @Override
       public ItemStack getDefaultStack(){
@@ -227,34 +222,6 @@ public class SpawnerInfuser extends ArcanaBlock {
             }
          }
          return ActionResult.SUCCESS_SERVER;
-      }
-      
-      @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved){
-         if(state.isOf(newState.getBlock())){
-            return;
-         }
-         BlockEntity blockEntity = world.getBlockEntity(pos);
-         if(blockEntity instanceof SpawnerInfuserBlockEntity infuser){
-            DefaultedList<ItemStack> drops = DefaultedList.of();
-            int ratio = (int) Math.pow(2,3+ArcanaAugments.getAugmentFromMap(infuser.getAugments(),ArcanaAugments.AUGMENTED_APPARATUS.id));
-            int points = infuser.getPoints();
-            if(points > 0){
-               while(points/ratio > 64){
-                  ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
-                  dropItem.setCount(64);
-                  drops.add(dropItem.copy());
-                  points -= 64*ratio;
-               }
-               ItemStack dropItem = new ItemStack(SpawnerInfuser.POINTS_ITEM);
-               dropItem.setCount(points/ratio);
-               drops.add(dropItem.copy());
-            }
-            
-            ItemScatterer.spawn(world, pos, drops);
-         }
-         ItemScatterer.onStateReplaced(state, newState, world, pos);
-         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

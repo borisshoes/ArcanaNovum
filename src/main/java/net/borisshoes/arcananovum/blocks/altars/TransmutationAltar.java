@@ -24,7 +24,6 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -70,7 +69,7 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.BLOCKS,TomeGui.TomeFilter.ALTARS};
       vanillaItem = Items.DIAMOND_BLOCK;
       block = new TransmutationAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.DIAMOND_BLUE).strength(5.0f,1200.0f).requiresTool().sounds(BlockSoundGroup.AMETHYST_BLOCK));
-      item = new TransmutationAltarItem(this.block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new TransmutationAltarItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.AQUA);
       researchTasks = new RegistryKey[]{ResearchTasks.ADVANCEMENT_TRADE,ResearchTasks.OBTAIN_AMETHYST_SHARD,ResearchTasks.OBTAIN_DIAMOND,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
       
@@ -176,8 +175,8 @@ public class TransmutationAltar extends ArcanaBlock implements MultiblockCore {
    }
    
    public class TransmutationAltarItem extends ArcanaPolymerBlockItem {
-      public TransmutationAltarItem(Block block, Settings settings){
-         super(getThis(),block,settings);
+      public TransmutationAltarItem(Block block){
+         super(getThis(),block,getArcanaItemComponents());
       }
       
       @Override

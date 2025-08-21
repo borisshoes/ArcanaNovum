@@ -106,7 +106,7 @@ public abstract class ArcanaAchievement {
                   .append(Text.literal("=== ").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK))
                   .append(player.getDisplayName())
                   .append(Text.literal(" has mastered all Arcana Achievements and became ").formatted(Formatting.DARK_PURPLE))
-                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
                               Text.literal("")
                                     .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
@@ -125,7 +125,7 @@ public abstract class ArcanaAchievement {
             msgs.add(Text.literal("")
                   .append(player.getDisplayName())
                   .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.DARK_PURPLE))
-                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
                               Text.literal("")
                                     .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
@@ -142,7 +142,7 @@ public abstract class ArcanaAchievement {
             msgs.add(Text.literal("")
                   .append(player.getDisplayName())
                   .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.LIGHT_PURPLE))
-                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
                               Text.literal("")
                                     .append(getTranslatedName().formatted(Formatting.AQUA))
                                     .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))

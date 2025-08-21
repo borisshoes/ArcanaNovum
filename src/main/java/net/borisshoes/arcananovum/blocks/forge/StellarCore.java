@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.blocks.forge;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
-import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -36,7 +35,10 @@ import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -78,7 +80,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
       itemVersion = 0;
       vanillaItem = Items.BLAST_FURNACE;
       block = new StellarCoreBlock(AbstractBlock.Settings.create().requiresTool().strength(3.5f,1200.0f).luminance(StellarCoreBlock::getLightLevel).sounds(BlockSoundGroup.METAL));
-      item = new StellarCoreItem(block,addArcanaItemComponents(new Item.Settings().maxCount(1).fireproof()));
+      item = new StellarCoreItem(block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.GOLD);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TWILIGHT_ANVIL,ResearchTasks.UNLOCK_STARLIGHT_FORGE,ResearchTasks.OBTAIN_BLAST_FURNACE,ResearchTasks.OBTAIN_NETHERITE_INGOT};
       
@@ -168,8 +170,8 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
    }
    
    public class StellarCoreItem extends ArcanaPolymerBlockItem {
-      public StellarCoreItem(Block block, Settings settings){
-         super(getThis(),block, settings);
+      public StellarCoreItem(Block block){
+         super(getThis(),block, getArcanaItemComponents());
       }
       
       @Override
@@ -251,17 +253,6 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
             }
          }
          return ActionResult.SUCCESS_SERVER;
-      }
-      
-      @Override
-      public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved){
-         if(state.isOf(newState.getBlock())){
-            return;
-         }
-         BlockEntity blockEntity = world.getBlockEntity(pos);
-         if(!(blockEntity instanceof ArcanaBlockEntity mbe)) return;
-         ItemScatterer.onStateReplaced(state, newState, world, pos);
-         super.onStateReplaced(state, world, pos, newState, moved);
       }
       
       @Override

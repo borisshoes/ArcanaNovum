@@ -13,15 +13,11 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.TextUtils;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -35,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -49,9 +44,7 @@ public class TrackingArrows extends RunicArrow {
       rarity = ArcanaRarity.SOVEREIGN;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity),TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
-      item = new TrackingArrowsItem(addArcanaItemComponents(new Item.Settings().maxCount(64)
-            .component(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),Optional.of(16777063),new ArrayList<>(),Optional.empty()))
-      ));
+      item = new TrackingArrowsItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.YELLOW);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW,ResearchTasks.USE_ENDER_EYE,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER};
       
@@ -85,8 +78,8 @@ public class TrackingArrows extends RunicArrow {
       }
       NbtCompound arrowData = arrow.getData();
       if(arrow.getOwner() instanceof ServerPlayerEntity player && arrowData.contains("initPos")){
-         NbtList posList = arrowData.getList("initPos", NbtElement.DOUBLE_TYPE);
-         Vec3d initPos = new Vec3d(posList.getDouble(0),posList.getDouble(1),posList.getDouble(2));
+         NbtList posList = arrowData.getListOrEmpty("initPos");
+         Vec3d initPos = new Vec3d(posList.getDouble(0,0.0),posList.getDouble(1,0.0),posList.getDouble(2,0.0));
          double dist = initPos.multiply(1,0,1).distanceTo(arrow.getPos().multiply(1,0,1));
          if(dist >= 250){
             ArcanaAchievements.grant(player,ArcanaAchievements.ACTUAL_AIMBOT.id);
@@ -123,8 +116,8 @@ public class TrackingArrows extends RunicArrow {
    }
    
    public class TrackingArrowsItem extends ArcanaPolymerArrowItem {
-      public TrackingArrowsItem(Item.Settings settings){
-         super(getThis(),settings);
+      public TrackingArrowsItem(){
+         super(getThis(),getArcanaArrowItemComponents(16777063));
       }
       
       @Override
