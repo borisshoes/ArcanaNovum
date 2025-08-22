@@ -210,7 +210,7 @@ public class WildGrowthCharm extends ArcanaItem {
                         block instanceof ChorusFlowerBlock ||
                         block instanceof OxidizableBlock ||
                         block instanceof BuddingAmethystBlock){
-                     state.randomTick(player.getServerWorld(),blockPos,world.getRandom());
+                     state.randomTick(player.getWorld(),blockPos,world.getRandom());
                      world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
                   }else if((block instanceof AbstractPlantStemBlock ||
                         block instanceof CropBlock ||

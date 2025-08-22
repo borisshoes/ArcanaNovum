@@ -115,7 +115,7 @@ public class ContainmentCirclet extends ArcanaItem {
          int hp = (int) getFloatProperty(itemStack,HP_TAG);
          int maxHp = (int) getFloatProperty(itemStack,MAX_HP_TAG);
          
-         Optional<EntityType<?>> entity = EntityType.fromNbt(contents);
+         Optional<EntityType<?>> entity = EntityType.fromData(contents);
          if(!contents.isEmpty() && entity.isPresent()){
             String entityTypeName = entity.get().getName().getString();
             
@@ -173,7 +173,7 @@ public class ContainmentCirclet extends ArcanaItem {
          user.sendMessage(Text.literal("This Circlet cannot capture hostile creatures").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
       }else if(entity instanceof MobEntity){
-         NbtCompound data = entity.writeNbt(new NbtCompound());
+         NbtCompound data = entity.writeData(new NbtCompound());
          data.putString("id", EntityType.getId(entity.getType()).toString());
          putProperty(stack,CONTENTS_TAG,data);
          putProperty(stack,HP_TAG,entity.getHealth());
@@ -254,7 +254,7 @@ public class ContainmentCirclet extends ArcanaItem {
          float hp = getFloatProperty(stack,HP_TAG);
          if(contents.isEmpty()) return ActionResult.PASS;
          
-         Optional<Entity> optional = EntityType.getEntityFromNbt(contents,context.getWorld(), SpawnReason.MOB_SUMMONED);
+         Optional<Entity> optional = EntityType.getEntityFromData(contents,context.getWorld(), SpawnReason.MOB_SUMMONED);
          Vec3d summonPos = context.getHitPos().add(0,0.5,0);
          
          if(optional.isPresent() && context.getWorld() instanceof ServerWorld serverWorld){

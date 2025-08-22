@@ -179,7 +179,7 @@ public class Planeshifter extends EnergyItem {
    }
    
    private void findPortalAndTeleport(ServerPlayerEntity player, ServerWorld destWorld, boolean destIsNether){
-      double scale = DimensionType.getCoordinateScaleFactor(player.getServerWorld().getDimension(), destWorld.getDimension());
+      double scale = DimensionType.getCoordinateScaleFactor(player.getWorld().getDimension(), destWorld.getDimension());
       WorldBorder worldBorder = destWorld.getWorldBorder();
       Vec3d destPos = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
       Optional<BlockPos> portalRect = destWorld.getPortalForcer().getPortalPos(BlockPos.ofFloored(destPos), destIsNether, worldBorder);
@@ -206,7 +206,7 @@ public class Planeshifter extends EnergyItem {
    
    private void teleport(ItemStack stack, ServerPlayerEntity player){
       int mode = getIntProperty(stack,MODE_TAG);
-      ServerWorld world = player.getServerWorld();
+      ServerWorld world = player.getWorld();
       
       boolean inOverworld = world.getRegistryKey().getValue().equals(ServerWorld.OVERWORLD.getValue());
       boolean inEnd = world.getRegistryKey().getValue().equals(ServerWorld.END.getValue());
@@ -228,7 +228,7 @@ public class Planeshifter extends EnergyItem {
       }else if(mode == 1){ // end mode
          EndPortalBlock endPortalBlock = (EndPortalBlock) Blocks.END_PORTAL;
          
-         player.teleportTo(endPortalBlock.createTeleportTarget(player.getServerWorld(),player,player.getBlockPos()));
+         player.teleportTo(endPortalBlock.createTeleportTarget(player.getWorld(),player,player.getBlockPos()));
          if(inEnd){
             ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Overworld",true);
          }else{
@@ -294,17 +294,21 @@ public class Planeshifter extends EnergyItem {
          List<String> stringList = new ArrayList<>();
          
          int mode = getIntProperty(itemStack,MODE_TAG); // 0 nether - 1 end
-         ServerWorld world = context.getPlayer().getServerWorld();
-         String worldString = world.getRegistryKey().getValue().toString();
-         boolean inEnd = worldString.equals("minecraft:the_end");
-         boolean inNether = worldString.equals("minecraft:the_nether");
-         
-         if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
+         if(context.getPlayer() != null){
+            ServerWorld world = context.getPlayer().getWorld();
+            String worldString = world.getRegistryKey().getValue().toString();
+            boolean inEnd = worldString.equals("minecraft:the_end");
+            boolean inNether = worldString.equals("minecraft:the_nether");
+            
+            if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
+               stringList.add("none");
+            }else if(mode == 0){
+               stringList.add(inNether ? "overworld" : "nether");
+            }else if(mode == 1){
+               stringList.add(inEnd ? "overworld" : "end");
+            }
+         }else{
             stringList.add("none");
-         }else if(mode == 0){
-            stringList.add(inNether ? "overworld" : "nether");
-         }else if(mode == 1){
-            stringList.add(inEnd ? "overworld" : "end");
          }
          baseStack.set(DataComponentTypes.CUSTOM_MODEL_DATA,new CustomModelDataComponent(new ArrayList<>(),new ArrayList<>(),stringList,new ArrayList<>()));
          return baseStack;
@@ -362,13 +366,13 @@ public class Planeshifter extends EnergyItem {
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          int heat = getIntProperty(stack,HEAT_TAG);
          
-         if(!getBooleanProperty(stack,NETHER_UNLOCK_TAG) && player.getServerWorld().getRegistryKey().equals(World.NETHER)){
+         if(!getBooleanProperty(stack,NETHER_UNLOCK_TAG) && player.getWorld().getRegistryKey().equals(World.NETHER)){
             putProperty(stack,NETHER_UNLOCK_TAG,true);
             putProperty(stack,MODE_TAG,0);
             player.sendMessage(Text.literal("The Planeshifter has Unlocked The Nether").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
          }
-         if(!getBooleanProperty(stack,END_UNLOCK_TAG) && player.getServerWorld().getRegistryKey().equals(World.END)){
+         if(!getBooleanProperty(stack,END_UNLOCK_TAG) && player.getWorld().getRegistryKey().equals(World.END)){
             putProperty(stack,END_UNLOCK_TAG,true);
             putProperty(stack,MODE_TAG,1);
             player.sendMessage(Text.literal("The Planeshifter has Unlocked The End").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
@@ -384,7 +388,7 @@ public class Planeshifter extends EnergyItem {
          }else if(heat == -1){
             // Teleport was cancelled by damage
             ParticleEffectUtils.recallTeleportCancel(serverWorld,player.getPos());
-            SoundUtils.playSound(player.getServerWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
+            SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
             putProperty(stack,HEAT_TAG,0);
             setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
          }

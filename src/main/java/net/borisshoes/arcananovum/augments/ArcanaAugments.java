@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.augments;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -1258,5 +1261,42 @@ public class ArcanaAugments {
             ArcanaAugments.applyAugment(destinationStack,destinationAugment,lvl,false);
          }
       }
+   }
+   
+   public record AugmentData(TreeMap<ArcanaAugment, Integer> augments) {
+      private static final Comparator<ArcanaAugment> BY_ID = Comparator.comparing(a -> a.id);
+      
+      public AugmentData {
+         if (augments == null) {
+            augments = new TreeMap<>(BY_ID);
+         } else if (augments.comparator() != BY_ID) {
+            TreeMap<ArcanaAugment, Integer> sorted = new TreeMap<>(BY_ID);
+            sorted.putAll(augments);
+            augments = sorted;
+         }
+      }
+      
+      private static DataResult<ArcanaAugment> resolveAugment(String id) {
+         ArcanaAugment a = ArcanaAugments.registry.get(id);
+         return a != null ? DataResult.success(a) : DataResult.error(() -> "Unknown ArcanaAugment id: " + id);
+      }
+      
+      private static String augmentId(ArcanaAugment a) {
+         return a.id;
+      }
+      
+      public static final Codec<ArcanaAugment> AUGMENT_ID_CODEC = Codec.STRING.comapFlatMap(AugmentData::resolveAugment, AugmentData::augmentId);
+      
+      public static final Codec<TreeMap<ArcanaAugment, Integer>> AUGMENT_MAP_CODEC =
+            Codec.unboundedMap(AUGMENT_ID_CODEC, Codec.INT).xmap(map -> {
+               TreeMap<ArcanaAugment, Integer> sorted = new TreeMap<>(BY_ID);
+               sorted.putAll(map);
+               return sorted;
+            }, tm -> tm);
+      
+      public static final Codec<AugmentData> CODEC =
+            RecordCodecBuilder.create(inst -> inst.group(
+                  AUGMENT_MAP_CODEC.fieldOf("augments").forGetter(AugmentData::augments)
+            ).apply(inst, AugmentData::new));
    }
 }

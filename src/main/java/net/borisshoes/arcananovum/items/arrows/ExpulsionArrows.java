@@ -84,7 +84,7 @@ public class ExpulsionArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getWorld() instanceof ServerWorld serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
             double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
@@ -99,7 +99,7 @@ public class ExpulsionArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getWorld() instanceof ServerWorld serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
             double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);

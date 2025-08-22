@@ -63,7 +63,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    public static void removeInvis(MinecraftServer server, LivingEntity invisEntity){
       EntitySpawnS2CPacket addPacket = new EntitySpawnS2CPacket(invisEntity.getId(), invisEntity.getUuid(), invisEntity.getX(), invisEntity.getY(), invisEntity.getZ(), invisEntity.getPitch(), invisEntity.getYaw(), invisEntity.getType(), 0, Vec3d.ZERO, invisEntity.headYaw);
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
-         if(!playerEntity.equals(invisEntity) && invisEntity.getEntityWorld().equals(playerEntity.getEntityWorld())){
+         if(!playerEntity.equals(invisEntity) && invisEntity.getWorld().equals(playerEntity.getWorld())){
             
             AbstractTeam abstractTeam = invisEntity.getScoreboardTeam();
             if(abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()){
@@ -71,7 +71,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
             }
             
             Vec3d distVec = playerEntity.getPos().subtract(invisEntity.getPos());
-            int viewDist = MathHelper.clamp(playerEntity.getViewDistance(), 2, playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.watchDistance);
+            int viewDist = MathHelper.clamp(playerEntity.getViewDistance(), 2, playerEntity.getWorld().getChunkManager().chunkLoadingManager.watchDistance);
             ServerChunkLoadingManager.EntityTracker tracker = playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId());
             double maxTrackDist = viewDist * 16;
             if(tracker != null){

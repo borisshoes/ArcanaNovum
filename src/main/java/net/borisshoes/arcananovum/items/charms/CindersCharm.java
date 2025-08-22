@@ -233,7 +233,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             if(recipeEntry == null) return null;
             AbstractCookingRecipe recipe = recipeEntry.value();
             if(recipe == null) return null;
-            ItemStack recipeOutput = recipe.craft(new SingleStackRecipeInput(stack),player.getWorld().getRegistryManager());
+            ItemStack recipeOutput = recipe.craft(new SingleStackRecipeInput(stack),serverWorld.getRegistryManager());
             if(recipeOutput.isEmpty()) return null;
             PlayerInventory inv = player.getInventory();
             ItemStack result = recipeOutput.copy();
@@ -631,7 +631,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_ENTITY)); // Add xp
          }
          
-         SoundUtils.playSound(player.getServerWorld(),target.getBlockPos(),SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, player.getServerWorld().getRandom().nextFloat() * 0.4F + 0.8F);
+         SoundUtils.playSound(player.getWorld(),target.getBlockPos(),SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, player.getWorld().getRandom().nextFloat() * 0.4F + 0.8F);
          addEnergy(stack, -5);
          String message = "Cinders: ";
          for(int i=1; i<=getMaxEnergy(stack)/20; i++){

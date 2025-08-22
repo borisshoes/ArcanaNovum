@@ -211,7 +211,7 @@ public class MidnightEnchanter extends ArcanaBlock implements MultiblockCore {
          if(enchanter != null){
             if(playerEntity instanceof ServerPlayerEntity player){
                if(enchanter.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.getServerWorld(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.getWorld(),pos) == null){
                      player.sendMessage(Text.literal("The Enchanter must be within the range of an active Starlight Forge"));
                   }else{
                      if(enchanter.hasBooks()){

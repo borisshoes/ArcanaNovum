@@ -256,13 +256,13 @@ public class TelescopingBeacon extends ArcanaItem {
          world.setBlockState(pos,Blocks.BEACON.getDefaultState(),3);
          if(data != null){
             BlockState placeState = world.getBlockState(pos);
-            BlockEntity blockEntity = world.getBlockEntity(pos);
-            if(placeState.isOf(Blocks.BEACON) && (blockEntity instanceof BeaconBlockEntity beaconBlock)){
-               beaconBlock.read(data,player.getServer().getRegistryManager());
+            BlockEntity blockEntity = BlockEntity.createFromNbt(pos,placeState,data,world.getRegistryManager());
+            if(blockEntity != null){
+               world.addBlockEntity(blockEntity);
             }
          }
          if(mining){
-            ArcanaNovum.addTickTimerCallback(player.getServerWorld(),new BeaconMiningLaserCallback(player.getServerWorld(),pos,pos.up()));
+            ArcanaNovum.addTickTimerCallback(player.getWorld(),new BeaconMiningLaserCallback(player.getWorld(),pos,pos.up()));
          }
          
          
@@ -272,7 +272,7 @@ public class TelescopingBeacon extends ArcanaItem {
          
          for(int i = 0; i <= tier; i++){
             int j = i;
-            ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
+            ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
          }
          
          if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){

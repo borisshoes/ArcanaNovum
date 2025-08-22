@@ -18,9 +18,10 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Unit;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -99,7 +100,7 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    
    @Override
    protected void onEntityHit(EntityHitResult entityHitResult){
-      if(getEntityWorld() instanceof ServerWorld world){
+      if(getWorld() instanceof ServerWorld world){
          deployAura(world,getPos());
       }
       super.onEntityHit(entityHitResult);
@@ -113,7 +114,7 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    
    @Override
    protected void onBlockHit(BlockHitResult blockHitResult){
-      if(getEntityWorld() instanceof ServerWorld world){
+      if(getWorld() instanceof ServerWorld world){
          deployAura(world,getPos());
       }
       super.onBlockHit(blockHitResult);
@@ -134,21 +135,18 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
       ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(AlchemicalArrowAreaEffectTracker.source(getOwner(), BlockPos.ofFloored(pos),serverWorld,range,lvl,effects));
    }
    
+   
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
-      nbt.putInt("ampLvl",lvl);
-      nbt.putDouble("range",range);
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
+      view.putInt("ampLvl",lvl);
+      view.putDouble("range",range);
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
-      if(nbt.contains("ampLvl")){
-         lvl = nbt.getInt("ampLvl", 0);
-      }
-      if(nbt.contains("range")){
-         range = nbt.getDouble("range", 0.0);
-      }
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
+      lvl = view.getInt("ampLvl", 0);
+      range = view.getDouble("range", 0.0);
    }
 }

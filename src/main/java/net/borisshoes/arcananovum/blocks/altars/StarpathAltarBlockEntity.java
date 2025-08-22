@@ -25,12 +25,13 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
@@ -292,68 +293,42 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.readNbt(nbt, registryLookup);
-      if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid", "");
+   public void readData(ReadView view){
+      super.readData(view);
+      this.uuid = view.getString("arcanaUuid", "");
+      this.crafterId = view.getString("crafterId", "");
+      this.customName = view.getString("customName", "");
+      this.synthetic = view.getBoolean("synthetic", false);
+      this.cooldown = view.getInt("cooldown", 0);
+      this.targetCoords = getPos();
+      if(view.contains("target")){
+         view.read("target",BlockPos.CODEC).ifPresent(data -> {
+            this.targetCoords = data;
+         });
       }
-      if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId", "");
+      this.augments = new TreeMap<>();
+      if(view.contains("arcanaAugments")){
+         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+            this.augments = data;
+         });
       }
-      if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName", "");
-      }
-      if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic", false);
-      }
-      if(nbt.contains("cooldown")){
-         this.cooldown = nbt.getInt("cooldown", 0);
-      }
-      if(nbt.contains("target")){
-         NbtCompound targetTag = nbt.getCompoundOrEmpty("target");
-         this.targetCoords = new BlockPos(targetTag.getInt("x", 0), targetTag.getInt("y", 0), targetTag.getInt("z", 0));
-      }
-      augments = new TreeMap<>();
-      if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
-         for(String key : augCompound.getKeys()){
-            ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
-         }
-      }
+      
       if(nbt.contains("targets")){
          readTargets(nbt.getListOrEmpty("targets"));
       }
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.writeNbt(nbt, registryLookup);
-      if(augments != null){
-         NbtCompound augsCompound = new NbtCompound();
-         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            augsCompound.putInt(entry.getKey().id,entry.getValue());
-         }
-         nbt.put("arcanaAugments",augsCompound);
-      }
-      if(this.uuid != null){
-         nbt.putString("arcanaUuid",this.uuid);
-      }
-      if(this.crafterId != null){
-         nbt.putString("crafterId",this.crafterId);
-      }
-      if(this.customName != null){
-         nbt.putString("customName",this.customName);
-      }
-      if(this.targetCoords != null){
-         NbtCompound targetTag = new NbtCompound();
-         targetTag.putInt("x",targetCoords.getX());
-         targetTag.putInt("y",targetCoords.getY());
-         targetTag.putInt("z",targetCoords.getZ());
-         nbt.put("target",targetTag);
-      }
-      nbt.putBoolean("synthetic",this.synthetic);
-      nbt.putInt("cooldown",this.cooldown);
+   protected void writeData(WriteView view){
+      super.writeData(view);
+      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
+      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
+      view.putString("customName",this.customName == null ? "" : this.customName);
+      view.putBoolean("synthetic",this.synthetic);
+      view.putInt("cooldown",this.cooldown);
+      view.putNullable("target",BlockPos.CODEC,targetCoords);
+      
       nbt.put("targets",writeTargets());
    }
 }

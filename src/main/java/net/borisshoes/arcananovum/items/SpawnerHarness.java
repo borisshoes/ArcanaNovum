@@ -203,10 +203,10 @@ public class SpawnerHarness extends ArcanaItem {
                Direction side = context.getSide();
                BlockPos placePos = context.getBlockPos().add(side.getVector());
                if(world.getBlockState(placePos).isAir()){
-                  BlockEntity blockEntity;
                   world.setBlockState(placePos,Blocks.SPAWNER.getDefaultState(), Block.NOTIFY_ALL);
-                  if((blockEntity = world.getBlockEntity(placePos)) != null){
-                     blockEntity.read(spawnerTag,context.getWorld().getRegistryManager());
+                  BlockEntity blockEntity = BlockEntity.createFromNbt(placePos,Blocks.SPAWNER.getDefaultState(),spawnerTag,world.getRegistryManager());
+                  if(blockEntity != null){
+                     world.addBlockEntity(blockEntity);
                   }
                   
                   boolean reinforced = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REINFORCED_CHASSIS.id)) > 0;

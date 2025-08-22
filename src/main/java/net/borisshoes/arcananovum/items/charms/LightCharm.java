@@ -174,7 +174,7 @@ public class LightCharm extends ArcanaItem {
    }
    
    private void nova(ServerPlayerEntity player, ItemStack stack){
-      ServerWorld world = player.getServerWorld();
+      ServerWorld world = player.getWorld();
       BlockPos center = player.getBlockPos();
       int range = 32;
       int threshold = 3;

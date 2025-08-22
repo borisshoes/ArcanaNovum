@@ -36,6 +36,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenHandlerType;
@@ -264,7 +265,7 @@ public class LevitationHarness extends EnergyItem {
          if(stoneData == null || stoneData.isEmpty()){
             stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
          }else{
-            stone = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stoneData).orElse(ItemStack.EMPTY);
+            stone = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,stoneData).result().orElse(ItemStack.EMPTY);
          }
          stone = Soulstone.setSouls(stone,souls);
          inv.setStack(0,stone);

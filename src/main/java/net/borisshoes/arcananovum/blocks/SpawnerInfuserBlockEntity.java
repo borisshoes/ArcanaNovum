@@ -22,11 +22,12 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
@@ -37,7 +38,6 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.TreeMap;
 
 public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity implements SidedInventory, PolymerObject, InventoryChangedListener, ArcanaBlockEntity {
@@ -124,7 +124,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          
          String stoneType = Soulstone.getType(soulstone);
          MobSpawnerBlockEntity spawnerEntity = (MobSpawnerBlockEntity) blockEntity;
-         NbtCompound spawnerData = spawnerEntity.getLogic().writeNbt(new NbtCompound());
+         NbtCompound spawnerData = spawnerEntity.getLogic().writeData(new NbtCompound());
          NbtCompound spawnData = spawnerData.getCompoundOrEmpty("SpawnData");
          if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompoundOrEmpty("entity").contains("id")){
             if(prevActive) this.active = false; // Update active status
@@ -150,7 +150,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    
    public void tickInfuser(BlockPos spawnerPos, MobSpawnerBlockEntity spawnerEntity){
       MobSpawnerLogic logic = spawnerEntity.getLogic();
-      NbtCompound savedLogic = logic.writeNbt(new NbtCompound()); // Save default data
+      NbtCompound savedLogic = logic.writeData(new NbtCompound()); // Save default data
       NbtCompound newLogic = getSpawnerStats().copy(); // Get data from infuser
       
       newLogic.put("SpawnData",savedLogic.get("SpawnData").copy()); // Copy some default data into new data
@@ -159,11 +159,11 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       short maxDelay = newLogic.getShort("MaxSpawnDelay", (short) 0);
       newLogic.putShort("Delay", (short) Math.min(oldDelay,maxDelay));
       
-      logic.readNbt(world,spawnerPos,newLogic); // Inject new data
+      logic.readData(world,spawnerPos,newLogic); // Inject new data
       if(world instanceof ServerWorld serverWorld) logic.serverTick(serverWorld, spawnerPos); // Tick with new data
-      short newDelay = logic.writeNbt(new NbtCompound()).getShort("Delay", (short) 0);
+      short newDelay = logic.writeData(new NbtCompound()).getShort("Delay", (short) 0);
       savedLogic.putShort("Delay",newDelay); // Extract new delay and put in saved data
-      logic.readNbt(world,spawnerPos,savedLogic); // Return saved default data with new delay
+      logic.readData(world,spawnerPos,savedLogic); // Return saved default data with new delay
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -252,44 +252,33 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.readNbt(nbt, registryLookup);
-      if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid", "");
+   public void readData(ReadView view){
+      super.readData(view);
+      this.uuid = view.getString("arcanaUuid", "");
+      this.crafterId = view.getString("crafterId", "");
+      this.customName = view.getString("customName", "");
+      this.synthetic = view.getBoolean("synthetic", false);
+      this.active = view.getBoolean("active", false);
+      this.points = view.getInt("points", 0);
+      this.spentPoints = view.getInt("spentPoints", 0);
+      this.soulstone = ItemStack.EMPTY;
+      if(view.contains("soulstone")){
+         view.read("soulstone",ItemStack.VALIDATED_CODEC).ifPresent(stack -> {
+            this.soulstone = stack;
+         });
       }
-      if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId", "");
-      }
-      if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName", "");
-      }
-      if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic", false);
-      }
-      augments = new TreeMap<>();
-      if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
-         for(String key : augCompound.getKeys()){
-            ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
-         }
+      
+      
+      
+      this.augments = new TreeMap<>();
+      if(view.contains("arcanaAugments")){
+         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+            this.augments = data;
+         });
       }
       this.inventory = new SimpleInventory(size());
-      this.inventory.addListener(this);
-      if(!this.readLootTable(nbt) && nbt.contains("Items")){
-         Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
-      }
-      if(nbt.contains("active")){
-         this.active = nbt.getBoolean("active", false);
-      }
-      if(nbt.contains("soulstone")){
-         this.soulstone = ItemStack.fromNbt(registryLookup, nbt.getCompoundOrEmpty("soulstone")).orElse(ItemStack.EMPTY);
-      }
-      if(nbt.contains("points")){
-         this.points = nbt.getInt("points", 0);
-      }
-      if(nbt.contains("spentPoints")){
-         this.spentPoints = nbt.getInt("spentPoints", 0);
+      if (!this.readLootTable(view)) {
+         Inventories.readData(view, this.inventory.getHeldStacks());
       }
       
       if(nbt.contains("spawnerStats")){
@@ -301,34 +290,22 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.writeNbt(nbt, registryLookup);
-      if(augments != null){
-         NbtCompound augsCompound = new NbtCompound();
-         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            augsCompound.putInt(entry.getKey().id,entry.getValue());
-         }
-         nbt.put("arcanaAugments",augsCompound);
-      }
-      if(this.uuid != null){
-         nbt.putString("arcanaUuid",this.uuid);
-      }
-      if(this.crafterId != null){
-         nbt.putString("crafterId",this.crafterId);
-      }
-      if(this.customName != null){
-         nbt.putString("customName",this.customName);
-      }
-      nbt.putBoolean("synthetic",this.synthetic);
-      if(!this.writeLootTable(nbt)){
-         Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
+   protected void writeData(WriteView view){
+      super.writeData(view);
+      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
+      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
+      view.putString("customName",this.customName == null ? "" : this.customName);
+      view.putBoolean("synthetic",this.synthetic);
+      view.putInt("points",this.points);
+      view.putInt("spentPoints",this.spentPoints);
+      view.putBoolean("active",this.active);
+      if (!this.writeLootTable(view)) {
+         Inventories.writeData(view, this.inventory.getHeldStacks());
       }
       
-      nbt.putInt("points",this.points);
-      nbt.putInt("spentPoints",this.spentPoints);
-      nbt.putBoolean("active",this.active);
       if(this.soulstone != null && !this.soulstone.isEmpty()){
-         nbt.put("soulstone",soulstone.toNbt(registryLookup));
+         view.putNullable("soulstone",ItemStack.VALIDATED_CODEC,this.soulstone);
       }
       
       nbt.put("spawnerStats",getSpawnerStats());

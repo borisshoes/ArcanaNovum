@@ -27,6 +27,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
@@ -146,7 +148,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          
          double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE.id))+5;
          double distance = 15;
-         List<LivingEntity> possibleTargets = getEntityWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e ->
+         List<LivingEntity> possibleTargets = getWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e ->
                !e.isSpectator() && MiscUtils.inCone(this.getPos(),velocityUnit,distance,1,viewWidth,e.getPos().add(0,e.getHeight()/2,0)) && !e.isInvisible()
          );
          LivingEntity closestTarget = null;
@@ -182,7 +184,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
                }
             }
             
-            if(getEntityWorld() instanceof ServerWorld serverWorld){
+            if(getWorld() instanceof ServerWorld serverWorld){
                ParticleEffectUtils.spawnLongParticle(serverWorld, ParticleTypes.END_ROD,getX(),getY(),getZ(),0,0,0,0,1);
             }
          }
@@ -239,8 +241,8 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
       if(augments != null){
          NbtCompound augsCompound = new NbtCompound();
          for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
@@ -257,8 +259,8 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
       augments = new TreeMap<>();
       if(nbt.contains("runicAugments")){
          NbtCompound augCompound = nbt.getCompoundOrEmpty("runicAugments");

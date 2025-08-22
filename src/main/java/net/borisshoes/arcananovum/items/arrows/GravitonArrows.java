@@ -88,7 +88,7 @@ public class GravitonArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20);// Measured in quarter seconds
          double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
          gravitonPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
@@ -97,7 +97,7 @@ public class GravitonArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
          double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
          gravitonPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);

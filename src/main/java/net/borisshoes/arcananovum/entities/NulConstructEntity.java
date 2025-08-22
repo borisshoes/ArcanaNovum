@@ -55,9 +55,9 @@ import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.EntityEffectParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.particle.TintedParticleEffect;
 import net.minecraft.predicate.block.BlockStatePredicate;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -67,6 +67,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -319,20 +321,20 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
-      nbt.putInt("numPlayers",numPlayers);
-      nbt.putInt("spellCooldown",spellCooldown);
-      nbt.putBoolean("shouldHaveSummoner",shouldHaveSummoner);
-      nbt.putBoolean("summonerHasDivine", summonerHasDivine);
-      nbt.putBoolean("summonerHasWings",summonerHasWings);
-      nbt.putBoolean("isExalted", isExalted);
-      nbt.putFloat("prevHP",prevHP);
-      nbt.putFloat("adaptiveResistance",adaptiveResistance);
-      nbt.putInt("invulnerableTimer", this.getInvulnerableTimer());
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
+      view.putInt("numPlayers",numPlayers);
+      view.putInt("spellCooldown",spellCooldown);
+      view.putBoolean("shouldHaveSummoner",shouldHaveSummoner);
+      view.putBoolean("summonerHasDivine", summonerHasDivine);
+      view.putBoolean("summonerHasWings",summonerHasWings);
+      view.putBoolean("isExalted", isExalted);
+      view.putFloat("prevHP",prevHP);
+      view.putFloat("adaptiveResistance",adaptiveResistance);
+      view.putInt("invulnerableTimer", this.getInvulnerableTimer());
       
       if(summoner != null){
-         nbt.putString("summoner",summoner.getUuidAsString());
+         view.putString("summoner",summoner.getUuidAsString());
       }
       
       NbtCompound spellsTag = new NbtCompound();
@@ -363,25 +365,25 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
-      numPlayers = nbt.getInt("numPlayers", 0);
-      spellCooldown = nbt.getInt("spellCooldown", 0);
-      shouldHaveSummoner = nbt.getBoolean("shouldHaveSummoner", false);
-      summonerHasDivine = nbt.getBoolean("summonerHasDivine", false);
-      summonerHasWings = nbt.getBoolean("summonerHasWings", false);
-      isExalted = nbt.getBoolean("isExalted", false);
-      prevHP = nbt.getFloat("prevHP", 0.0f);
-      adaptiveResistance = nbt.getFloat("adaptiveResistance", 0.0f);
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
+      numPlayers = view.getInt("numPlayers", 0);
+      spellCooldown = view.getInt("spellCooldown", 0);
+      shouldHaveSummoner = view.getBoolean("shouldHaveSummoner", false);
+      summonerHasDivine = view.getBoolean("summonerHasDivine", false);
+      summonerHasWings = view.getBoolean("summonerHasWings", false);
+      isExalted = view.getBoolean("isExalted", false);
+      prevHP = view.getFloat("prevHP", 0.0f);
+      adaptiveResistance = view.getFloat("adaptiveResistance", 0.0f);
       
-      this.setInvulTimer(nbt.getInt("invulnerableTimer", 0));
+      this.setInvulTimer(view.getInt("invulnerableTimer", 0));
       
       if(this.hasCustomName()){
          this.bossBar.setName(this.getDisplayName());
       }
       
-      if(nbt.contains("summoner")){
-         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbt.getString("summoner", ""))) instanceof PlayerEntity player){
+      if(view.contains("summoner")){
+         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(view.getString("summoner", ""))) instanceof PlayerEntity player){
             summoner = player;
          }
       }
@@ -408,7 +410,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       players = new ArrayList<>();
       NbtList playersList = nbt.getListOrEmpty("players");
       for(NbtElement nbtElement : playersList){
-         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbtElement.asString().orElse(""))) instanceof ServerPlayerEntity player){
+         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbtElement.asString().orElse(""))) instanceof ServerPlayerEntity player){
             players.add(player);
          }
       }
@@ -431,7 +433,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       this.setInvulTimer(220);
       this.bossBar.setPercent(0.0F);
       this.setHealth(this.getMaxHealth() / 3.0F);
-      if(!(getEntityWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(getWorld() instanceof ServerWorld serverWorld)) return;
       this.summoner = summoner;
       this.shouldHaveSummoner = true;
       this.isExalted = mythic;
@@ -845,7 +847,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          float s = 0.3F * this.getScale();
          this.getWorld().addParticleClient(ParticleTypes.SMOKE,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
          if(shieldActive && this.getWorld().random.nextInt(4) == 0){
-            EntityEffectParticleEffect particle = EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.5F);
+            TintedParticleEffect particle = TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.5F);
             this.getWorld().addParticleClient(particle,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
          }
       }
@@ -853,7 +855,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       if(this.getInvulnerableTimer() > 0){
          float t = 3.3F * this.getScale();
          for (int u = 0; u < 3; u++){
-            EntityEffectParticleEffect particle = EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.9F);
+            TintedParticleEffect particle = TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.9F);
             this.getWorld().addParticleClient(particle,this.getX() + this.random.nextGaussian(),this.getY() + (double)(this.random.nextFloat() * t),this.getZ() + this.random.nextGaussian(), 0.0, 0.0, 0.0);
          }
       }
@@ -993,7 +995,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                            }
                         }
                         
-                        hit.damage(serverWorld, ArcanaDamageTypes.of(getEntityWorld(),ArcanaDamageTypes.NUL,this), damage);
+                        hit.damage(serverWorld, ArcanaDamageTypes.of(getWorld(),ArcanaDamageTypes.NUL,this), damage);
                         StatusEffectInstance wither = new StatusEffectInstance(StatusEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
                         StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 40, 25, false, true, true);
                         StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);
@@ -1074,7 +1076,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    private List<LivingEntity> getPrioritizedTargets(){
       if(!(getWorld() instanceof ServerWorld serverWorld)) return new ArrayList<>();
-      List<LivingEntity> targets = new ArrayList<>(getEntityWorld().getEntitiesByClass(LivingEntity.class, this.getHitbox().expand(FIGHT_RANGE), e -> CAN_ATTACK_PREDICATE.test(e,serverWorld)));
+      List<LivingEntity> targets = new ArrayList<>(getWorld().getEntitiesByClass(LivingEntity.class, this.getHitbox().expand(FIGHT_RANGE), e -> CAN_ATTACK_PREDICATE.test(e,serverWorld)));
       HashSet<ServerPlayerEntity> participatingPlayers = getParticipatingPlayers();
       targets.sort(Comparator.comparingDouble(entity -> {
          double distVal = entity.distanceTo(this);
@@ -1193,7 +1195,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    private void tickSpell(ConstructSpell spell){
       int tick = spell.tick();
-      if(!(getEntityWorld() instanceof ServerWorld world)) return;
+      if(!(getWorld() instanceof ServerWorld world)) return;
       Vec3d pos = getPos();
       
       if(spell.getType() == ConstructSpellType.CURSE_OF_DECAY){

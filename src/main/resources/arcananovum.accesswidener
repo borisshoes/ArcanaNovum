@@ -13,8 +13,6 @@ accessible field net/minecraft/server/world/ServerChunkLoadingManager$EntityTrac
 accessible field net/minecraft/entity/damage/DamageTracker recentDamage Ljava/util/List;
 accessible field net/minecraft/item/Item components Lnet/minecraft/component/ComponentMap;
 accessible field net/minecraft/server/network/ServerPlayNetworkHandler floatingTicks I
-accessible field net/minecraft/entity/projectile/ProjectileEntity owner Lnet/minecraft/entity/Entity;
-accessible field net/minecraft/entity/projectile/ProjectileEntity ownerUuid Ljava/util/UUID;
 accessible field net/minecraft/recipe/ShapedRecipe result Lnet/minecraft/item/ItemStack;
 accessible field net/minecraft/recipe/ShapelessRecipe result Lnet/minecraft/item/ItemStack;
 accessible field net/minecraft/recipe/ShapelessRecipe ingredients Ljava/util/List;

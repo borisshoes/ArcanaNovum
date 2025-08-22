@@ -48,8 +48,8 @@ public class PlayerEntityMixin {
       if(ArcanaItemUtils.identifyItem(handStack) instanceof BinaryBlades blades && atkPercentage > 0.85){
          ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,12);
          blades.addEnergy(handStack,10);
-         if(player instanceof ServerPlayerEntity serverPlayer) ArcanaNovum.addTickTimerCallback(serverPlayer.getServerWorld(), new GenericTimer(4, () -> {
-            serverPlayer.getServerWorld().getChunkManager().sendToNearbyPlayers(serverPlayer, new EntityAnimationS2CPacket(serverPlayer, EntityAnimationS2CPacket.SWING_OFF_HAND));
+         if(player instanceof ServerPlayerEntity serverPlayer) ArcanaNovum.addTickTimerCallback(serverPlayer.getWorld(), new GenericTimer(4, () -> {
+            serverPlayer.getWorld().getChunkManager().sendToNearbyPlayers(serverPlayer, new EntityAnimationS2CPacket(serverPlayer, EntityAnimationS2CPacket.SWING_OFF_HAND));
          }));
       }
    }

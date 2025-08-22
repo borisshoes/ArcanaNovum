@@ -95,7 +95,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          }
       }
       
-      storedOffhand = ItemStack.fromNbt(registryLookup, tag.getCompoundOrEmpty("storedOffhand")).orElse(ItemStack.EMPTY);
+      storedOffhand = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,tag.getCompoundOrEmpty("storedOffhand")).result().orElse(ItemStack.EMPTY);
    }
    
    @Override

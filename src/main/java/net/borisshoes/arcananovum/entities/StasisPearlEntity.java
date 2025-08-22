@@ -22,6 +22,8 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -147,7 +149,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
                holder.addStatusEffect(regen);
                holder.addStatusEffect(resist);
                
-               holder.getServerWorld().spawnParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
+               holder.getWorld().spawnParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
             }
          }
       }
@@ -155,8 +157,8 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
       if(augments != null){
          nbt.put("augments",augments);
       }
@@ -169,8 +171,8 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
       if(nbt.contains("augments")){
          augments = nbt.getCompoundOrEmpty("augments");
       }

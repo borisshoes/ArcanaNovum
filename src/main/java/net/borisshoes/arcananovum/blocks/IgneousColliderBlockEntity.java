@@ -24,12 +24,12 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -37,7 +37,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.TreeMap;
 
 public class IgneousColliderBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
@@ -221,53 +220,29 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.readNbt(nbt, registryLookup);
-      if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid",ArcanaNovum.BLANK_UUID);
-      }
-      if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId",ArcanaNovum.BLANK_UUID);
-      }
-      if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName", "");
-      }
-      if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic", false);
-      }
-      if(nbt.contains("cooldown")){
-         this.cooldown = nbt.getInt("cooldown", 0);
-      }
-      augments = new TreeMap<>();
-      if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
-         for(String key : augCompound.getKeys()){
-            ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
-         }
+   public void readData(ReadView view){
+      super.readData(view);
+      this.uuid = view.getString("arcanaUuid", "");
+      this.crafterId = view.getString("crafterId", "");
+      this.customName = view.getString("customName", "");
+      this.synthetic = view.getBoolean("synthetic", false);
+      this.cooldown = view.getInt("cooldown", 0);
+      this.augments = new TreeMap<>();
+      if(view.contains("arcanaAugments")){
+         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+            this.augments = data;
+         });
       }
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.writeNbt(nbt, registryLookup);
-      if(augments != null){
-         NbtCompound augsCompound = new NbtCompound();
-         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            augsCompound.putInt(entry.getKey().id,entry.getValue());
-         }
-         nbt.put("arcanaAugments",augsCompound);
-      }
-      if(this.uuid != null){
-         nbt.putString("arcanaUuid",this.uuid);
-      }
-      if(this.crafterId != null){
-         nbt.putString("crafterId",this.crafterId);
-      }
-      if(this.customName != null){
-         nbt.putString("customName",this.customName);
-      }
-      nbt.putBoolean("synthetic",this.synthetic);
-      nbt.putInt("cooldown",this.cooldown);
+   protected void writeData(WriteView view){
+      super.writeData(view);
+      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
+      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
+      view.putString("customName",this.customName == null ? "" : this.customName);
+      view.putBoolean("synthetic",this.synthetic);
+      view.putInt("cooldown",this.cooldown);
    }
 }

@@ -779,11 +779,11 @@ public class DragonBossFight {
    }
    
    public static int prepBoss(ServerPlayerEntity player){
-      if(player.getEntityWorld().getRegistryKey() != World.END){
+      if(player.getWorld().getRegistryKey() != World.END){
          player.sendMessage(Text.literal("The Dragon boss must take place in The End"), false);
          return -1;
       }
-      ServerWorld endWorld = player.getServerWorld();
+      ServerWorld endWorld = player.getWorld();
       NbtCompound dragonData = (NbtCompound) (EnderDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, endWorld.getEnderDragonFight().toData()).getOrThrow());
       NbtCompound fightData = new NbtCompound();
       if(dragonData.getBoolean("DragonKilled", false)){
@@ -932,7 +932,7 @@ public class DragonBossFight {
       if(!inEnd) return playerList.size();
       for(ServerPlayerEntity player : playerList){
          if(!player.isSpectator() && !player.isCreative()){
-            if(player.getEntityWorld() == server.getWorld(World.END)){
+            if(player.getWorld() == server.getWorld(World.END)){
                count++;
             }
          }

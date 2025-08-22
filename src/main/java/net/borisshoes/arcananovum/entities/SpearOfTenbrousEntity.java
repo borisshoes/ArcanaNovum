@@ -27,7 +27,6 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustColorTransitionParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
@@ -36,6 +35,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.*;
@@ -74,15 +75,15 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
-      nbt.putFloat("spearDamage",damage);
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
+      view.putFloat("spearDamage",damage);
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
-      this.damage = nbt.getFloat("spearDamage", 0.0f);
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
+      this.damage = view.getFloat("spearDamage", 0.0f);
    }
    
    @Override

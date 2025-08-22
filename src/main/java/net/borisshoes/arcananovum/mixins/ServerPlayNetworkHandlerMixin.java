@@ -66,7 +66,7 @@ public class ServerPlayNetworkHandlerMixin {
    private void arcananovum_onPlayerLoad(PlayerLoadedC2SPacket packet, CallbackInfo ci){
       for(UUID uuid : ArcanaNovum.TOTEM_KILL_LIST){
          if(uuid.equals(player.getUuid())){
-            player.damage(player.getServerWorld(), ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,player), player.getMaxHealth()*10);
+            player.damage(player.getWorld(), ArcanaDamageTypes.of(player.getWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,player), player.getMaxHealth()*10);
             break;
          }
       }

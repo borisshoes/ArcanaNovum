@@ -188,7 +188,7 @@ public class PearlOfRecall extends EnergyItem {
       float yaw = locNbt.getFloat("yaw", 0.0f);
       float pitch = locNbt.getFloat("pitch", 0.0f);
       
-      ServerWorld to = player.getServerWorld();
+      ServerWorld to = player.getWorld();
       for (ServerWorld w : player.getServer().getWorlds()){
          if(w.getRegistryKey().getValue().toString().equals(dim)){
             to = w;
@@ -274,7 +274,7 @@ public class PearlOfRecall extends EnergyItem {
          }else if(heat == -1){
             // Teleport was cancelled by damage
             ParticleEffectUtils.recallTeleportCancel(serverWorld,player.getPos());
-            SoundUtils.playSound(player.getServerWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
+            SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
             putProperty(stack,HEAT_TAG, 0);
             setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
          }
@@ -286,7 +286,7 @@ public class PearlOfRecall extends EnergyItem {
             double y = locNbt.getDouble("y", 0.0);
             double z = locNbt.getDouble("z", 0.0);
             Vec3d loc = new Vec3d(x,y,z);
-            if(player.getServerWorld().getRegistryKey().getValue().toString().equals(dim) && player.getPos().distanceTo(loc) < 30){
+            if(player.getWorld().getRegistryKey().getValue().toString().equals(dim) && player.getPos().distanceTo(loc) < 30){
                ParticleEffectUtils.recallLocation(serverWorld,loc,player);
             }
          }
@@ -320,7 +320,7 @@ public class PearlOfRecall extends EnergyItem {
                   int curEnergy = getEnergy(item);
                   if(curEnergy >= getMaxEnergy(item)){
                      putProperty(item,HEAT_TAG, 1); // Starts the heat up process
-                     SoundUtils.playSound(player.getServerWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
+                     SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
                   }else{
                      playerEntity.sendMessage(Text.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").formatted(Formatting.DARK_AQUA), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);

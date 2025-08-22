@@ -88,7 +88,7 @@ public class SiphoningArrows extends RunicArrow {
          damage += arrow.isCritical() ? damage/4 : 0;
          
          if(player.getHealth() < 1.5f){
-            ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2, () -> {
+            ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2, () -> {
                if(entityHitResult.getEntity() instanceof MobEntity mob && mob.isDead()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE.id);
             }));
          }
@@ -104,7 +104,7 @@ public class SiphoningArrows extends RunicArrow {
          }
          
          player.heal((float)damage);
-         player.getServerWorld().spawnParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
+         player.getWorld().spawnParticles(ParticleTypes.HEART,player.getX(),player.getY()+player.getHeight()/2,player.getZ(),(int)Math.ceil(damage), .5,.5,.5,1);
       }
    }
    

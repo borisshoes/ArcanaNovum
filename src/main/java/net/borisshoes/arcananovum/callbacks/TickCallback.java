@@ -82,7 +82,7 @@ public class TickCallback {
                      BundleContentsComponent bundleComp = item.get(DataComponentTypes.BUNDLE_CONTENTS);
                      List<ItemStack> newStacks = new ArrayList<>();
                      for(ItemStack invStack : bundleComp.iterate()){
-                        invStack.getItem().inventoryTick(invStack,player.getServerWorld(),player,null);
+                        invStack.getItem().inventoryTick(invStack,player.getWorld(),player,null);
                         if(!invStack.isEmpty()){
                            newStacks.add(invStack);
                         }

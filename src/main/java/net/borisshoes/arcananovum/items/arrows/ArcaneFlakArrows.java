@@ -97,9 +97,9 @@ public class ArcaneFlakArrows extends RunicArrow {
    }
    
    public static void detonate(PersistentProjectileEntity arrow, double damageRange){
-      if(!(arrow.getEntityWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(arrow.getWorld() instanceof ServerWorld serverWorld)) return;
       int deadPhantomCount = 0;
-      List<Entity> triggerTargets = arrow.getEntityWorld().getOtherEntities(arrow,arrow.getBoundingBox().expand(damageRange*2),
+      List<Entity> triggerTargets = arrow.getWorld().getOtherEntities(arrow,arrow.getBoundingBox().expand(damageRange*2),
             e -> !e.isSpectator() && e.distanceTo(arrow) <= damageRange && e instanceof LivingEntity);
       for(Entity entity : triggerTargets){
          if(entity instanceof LivingEntity e){

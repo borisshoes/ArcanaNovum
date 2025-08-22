@@ -110,14 +110,14 @@ public class StormArrows extends RunicArrow {
    }
    
    private void strike(PersistentProjectileEntity arrow, Vec3d pos, int stableLevel, int shockLvl){
-      World world = arrow.getEntityWorld();
+      World world = arrow.getWorld();
       if(arrow.isCritical() && (world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel])){
-         LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getEntityWorld());
+         LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getWorld());
          lightning.setPosition(pos);
          world.spawnEntity(lightning);
          
          if(arrow.getOwner() instanceof ServerPlayerEntity player){
-            ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2, () -> {
+            ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2, () -> {
                if(lightning.getStruckEntities().anyMatch(e -> e instanceof MooshroomEntity)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY.id);
             }));
          }
@@ -130,7 +130,7 @@ public class StormArrows extends RunicArrow {
    }
    
    private void chainLightning(PersistentProjectileEntity arrow, Entity hitEntity, int lvl){
-      if(!(arrow.getEntityWorld() instanceof ServerWorld world)) return;
+      if(!(arrow.getWorld() instanceof ServerWorld world)) return;
       Vec3d pos = hitEntity.getPos();
       double range = 5;
       

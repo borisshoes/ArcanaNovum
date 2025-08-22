@@ -21,7 +21,6 @@ import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
@@ -30,6 +29,8 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -137,7 +138,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
          setPersistent();
          setAiDisabled(true);
          
-         if(getServer() != null && getServer().getTicks() % 4 == 0 && getEntityWorld() instanceof ServerWorld entityWorld){
+         if(getServer() != null && getServer().getTicks() % 4 == 0 && getWorld() instanceof ServerWorld entityWorld){
             entityWorld.spawnParticles(ParticleTypes.CLOUD,getX(),getY(),getZ(),5,0.25,0.25,0.25,0);
             PlayerEntity nearestPlayer = entityWorld.getClosestPlayer(this,25);
             if(nearestPlayer != null)
@@ -280,13 +281,13 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
-      nbt.putInt("laserTick",laserTick);
-      nbt.putInt("summonTick",summonTick);
-      nbt.putInt("pulseTick",pulseTick);
-      nbt.putInt("numPlayers",numPlayers);
-      if(crystalId != null) nbt.putString("crystalId",crystalId.toString());
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
+      view.putInt("laserTick",laserTick);
+      view.putInt("summonTick",summonTick);
+      view.putInt("pulseTick",pulseTick);
+      view.putInt("numPlayers",numPlayers);
+      if(crystalId != null) view.putString("crystalId",crystalId.toString());
       
       NbtList skeletonTag = new NbtList();
       if(skeletons != null){
@@ -300,15 +301,15 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
-      laserTick = nbt.getInt("laserTick", 0);
-      summonTick = nbt.getInt("summonTick", 0);
-      pulseTick = nbt.getInt("pulseTick", 0);
-      numPlayers = nbt.getInt("numPlayers", 0);
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
+      laserTick = view.getInt("laserTick", 0);
+      summonTick = view.getInt("summonTick", 0);
+      pulseTick = view.getInt("pulseTick", 0);
+      numPlayers = view.getInt("numPlayers", 0);
       if(nbt.contains("crystalId")) crystalId = MiscUtils.getUUID(nbt.getString("crystalId", ""));
       
-      if(getEntityWorld() instanceof ServerWorld serverWorld){
+      if(getWorld() instanceof ServerWorld serverWorld){
          NbtList skeleList = nbt.getListOrEmpty("skeletons");
          skeletons = new SkeletonEntity[skeleList.size()];
          for(int i = 0; i < skeletons.length; i++){

@@ -335,7 +335,7 @@ public class TomeGui extends SimpleGui {
                      permaCloseFlag = true;
                      close();
                   }else{
-                     multicore.getMultiblock().displayStructure(new Multiblock.MultiblockCheck(player.getServerWorld(),player.getBlockPos(),player.getServerWorld().getBlockState(player.getBlockPos()),new BlockPos(multicore.getCheckOffset()),null),player);
+                     multicore.getMultiblock().displayStructure(new Multiblock.MultiblockCheck(player.getWorld(),player.getBlockPos(),player.getWorld().getBlockState(player.getBlockPos()),new BlockPos(multicore.getCheckOffset()),null),player);
                      permaCloseFlag = true;
                      close();
                   }
@@ -482,7 +482,7 @@ public class TomeGui extends SimpleGui {
       setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GameProfile gameProfile = player.getGameProfile();
-      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
       head.setName((Text.literal("").append(Text.literal(player.getNameForScoreboard()+"'s ").formatted(Formatting.AQUA)).append(Text.literal("Arcane Profile").formatted(Formatting.DARK_PURPLE))));
       head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click").formatted(Formatting.YELLOW)).append(Text.literal(" for a brief overview of Arcana Novum!").formatted(Formatting.LIGHT_PURPLE)))));
       setSlot(4,head);
@@ -610,7 +610,7 @@ public class TomeGui extends SimpleGui {
       MiscUtils.outlineGUI(gui,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       GameProfile gameProfile = player.getGameProfile();
-      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
       head.setName((Text.literal("").append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))));
       if(gui instanceof TomeGui){
          head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE)))));
@@ -681,7 +681,7 @@ public class TomeGui extends SimpleGui {
       MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       GameProfile gameProfile = player.getGameProfile();
-      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
       head.setName((Text.literal("").append(Text.literal("Arcana Items").formatted(Formatting.DARK_PURPLE))));
       head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click here").formatted(Formatting.AQUA)).append(Text.literal(" to return to the Profile Page").formatted(Formatting.LIGHT_PURPLE)))));
       head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Right Click here").formatted(Formatting.GREEN)).append(Text.literal(" to go to the Items Page").formatted(Formatting.LIGHT_PURPLE)))));
@@ -794,7 +794,7 @@ public class TomeGui extends SimpleGui {
       MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       GameProfile gameProfile = player.getGameProfile();
-      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.server);
+      GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
       head.setName((Text.literal("").append(Text.literal(player.getNameForScoreboard()).formatted(Formatting.AQUA))));
       head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Arcana Level: ").formatted(Formatting.DARK_PURPLE)).append(Text.literal(""+profile.getLevel()).formatted(Formatting.LIGHT_PURPLE)))));
       if(profile.getLevel() == 100){
@@ -860,7 +860,7 @@ public class TomeGui extends SimpleGui {
                GuiElementBuilder playerItem;
                try{
                   playerGameProf = player.getServer().getUserCache().getByUuid(playerId).orElseThrow();
-                  playerItem = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(playerGameProf,player.server);
+                  playerItem = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(playerGameProf,player.getServer());
                   playerItem.setName(Text.literal(playerGameProf.getName()).formatted(Formatting.LIGHT_PURPLE));
                }catch(Exception e){
                   playerItem = new GuiElementBuilder(Items.BARRIER);

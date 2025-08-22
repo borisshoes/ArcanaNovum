@@ -22,13 +22,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.WitherSkullEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
@@ -216,21 +217,21 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
-      nbt.putBoolean("mage",mage);
-      if(this.construct != null) nbt.putString("construct",this.construct.getUuidAsString());
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
+      view.putBoolean("mage",mage);
+      if(this.construct != null) view.putString("construct",this.construct.getUuidAsString());
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
-      mage = nbt.getBoolean("mage", false);
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
+      mage = view.getBoolean("mage", false);
       
-      if(nbt.contains("construct")){
-         if(getEntityWorld() instanceof ServerWorld serverWorld){
-            if(serverWorld.getEntity(MiscUtils.getUUID(nbt.getString("construct", ""))) instanceof NulConstructEntity construct){
-               this.construct = construct;
+      if(view.contains("construct")){
+         if(getWorld() instanceof ServerWorld serverWorld){
+            if(serverWorld.getEntity(MiscUtils.getUUID(view.getString("construct", ""))) instanceof NulConstructEntity con){
+               this.construct = con;
             }
          }
       }

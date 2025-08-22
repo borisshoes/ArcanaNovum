@@ -9,10 +9,11 @@ import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -55,7 +56,7 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
       try{
          setPersistent();
          
-         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getServer().getTicks() % 2 == 0){
+         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getServer().getTicks() % 2 == 0){
             serverWorld.spawnParticles(new DustParticleEffect(0xFF00D4,3f),getX(),getY(),getZ(),1,1.5,1,1.5,0);
             
             
@@ -80,14 +81,14 @@ public class DragonPhantomEntity extends PhantomEntity implements PolymerEntity 
    }
    
    @Override
-   public void writeCustomDataToNbt(NbtCompound nbt){
-      super.writeCustomDataToNbt(nbt);
-      nbt.putInt("numPlayers",numPlayers);
+   protected void writeCustomData(WriteView view){
+      super.writeCustomData(view);
+      view.putInt("numPlayers",numPlayers);
    }
    
    @Override
-   public void readCustomDataFromNbt(NbtCompound nbt){
-      super.readCustomDataFromNbt(nbt);
-      numPlayers = nbt.getInt("numPlayers", 0);
+   protected void readCustomData(ReadView view){
+      super.readCustomData(view);
+      numPlayers = view.getInt("numPlayers", 0);
    }
 }

@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -38,7 +39,7 @@ public class ItemReturnLoginCallback extends LoginCallback{
    @Override
    public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
       this.data = data;
-      this.item = ItemStack.fromNbt(registryLookup, data.getCompoundOrEmpty("item")).orElse(ItemStack.EMPTY);
+      this.item = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,data.getCompoundOrEmpty("item")).result().orElse(ItemStack.EMPTY);
    }
    
    @Override

@@ -186,7 +186,7 @@ public class RadiantFletchery extends ArcanaBlock implements MultiblockCore {
          if(fletchery != null){
             if(playerEntity instanceof ServerPlayerEntity player){
                if(fletchery.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.getServerWorld(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.getWorld(),pos) == null){
                      player.sendMessage(Text.literal("The Fletchery must be within the range of an active Starlight Forge"));
                   }else{
                      fletchery.openGui(player);

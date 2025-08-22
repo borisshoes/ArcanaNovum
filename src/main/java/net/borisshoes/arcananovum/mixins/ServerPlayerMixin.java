@@ -61,7 +61,7 @@ public class ServerPlayerMixin {
    @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onKilledBy(Lnet/minecraft/entity/LivingEntity;)V"))
    private void arcananovum_onEntityKilledOther(DamageSource damageSource, CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-      EntityKilledCallback.killedEntity(player.getServerWorld(),damageSource, damageSource.getAttacker(),player);
+      EntityKilledCallback.killedEntity(player.getWorld(),damageSource, damageSource.getAttacker(),player);
    }
    
    @Inject(method="onDeath",at=@At("HEAD"))
@@ -78,7 +78,7 @@ public class ServerPlayerMixin {
          int i = Math.round((float)Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) * 100.0F);
          if(i > 0){
             ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_MIGRATION.id, i);
-            LivingEntity entity = player.getServerWorld().getClosestEntity(DolphinEntity.class, TargetPredicate.createNonAttackable().setBaseMaxDistance(10.0).ignoreVisibility(), player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().expand(20.0));
+            LivingEntity entity = player.getWorld().getClosestEntity(DolphinEntity.class, TargetPredicate.createNonAttackable().setBaseMaxDistance(10.0).ignoreVisibility(), player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().expand(20.0));
             if(entity != null) ArcanaAchievements.progress(player, ArcanaAchievements.CEPHALOS_IN_A_POD.id, i);
          }
       }

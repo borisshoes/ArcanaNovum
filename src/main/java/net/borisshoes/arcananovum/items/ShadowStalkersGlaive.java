@@ -226,8 +226,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
             
             String targetID = getStringProperty(stack,TETHER_TARGET_TAG);
             if(targetID != null && !targetID.isEmpty()){
-               Entity target = player.getServerWorld().getEntity(MiscUtils.getUUID(targetID));
-               if(target == null || !target.isAlive() || player.getServerWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
+               Entity target = player.getWorld().getEntity(MiscUtils.getUUID(targetID));
+               if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getWorld().getRegistryKey()){
                   putProperty(stack,TETHER_TIME_TAG,-1);
                   putProperty(stack,TETHER_TARGET_TAG,"");
                }
@@ -273,17 +273,17 @@ public class ShadowStalkersGlaive extends EnergyItem {
          
          if(tetherTarget != null && !tetherTarget.isEmpty() && !player.isSneaking()){
             if(energy >= 80){
-               Entity target = player.getServerWorld().getEntity(MiscUtils.getUUID(tetherTarget));
-               if(target == null || !target.isAlive() || player.getServerWorld().getRegistryKey() != target.getEntityWorld().getRegistryKey()){
+               Entity target = player.getWorld().getEntity(MiscUtils.getUUID(tetherTarget));
+               if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getWorld().getRegistryKey()){
                   player.sendMessage(TextUtils.withColor(Text.literal("The Glaive Has No Target"),ArcanaColors.NUL_COLOR),true);
                }else{
                   Vec3d targetPos = target.getPos();
                   Vec3d targetView = target.getRotationVecClient();
                   Vec3d tpPos = targetPos.add(targetView.multiply(-1.5,0,-1.5));
                   
-                  ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
-                  player.teleportTo(new TeleportTarget(player.getServerWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, target.getYaw(),target.getPitch(), TeleportTarget.NO_OP));
-                  ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
+                  ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+                  player.teleportTo(new TeleportTarget(player.getWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, target.getYaw(),target.getPitch(), TeleportTarget.NO_OP));
+                  ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                   SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
                   addEnergy(stack,-80);
                   String message = "Glaive Charges: ";
@@ -325,8 +325,8 @@ public class ShadowStalkersGlaive extends EnergyItem {
                Vec3d view = player.getRotationVecClient();
                Vec3d tpPos = playerPos.add(view.multiply(teleportLength));
                
-               ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
-               player.teleportTo(new TeleportTarget(player.getServerWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.NO_OP));
+               ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+               player.teleportTo(new TeleportTarget(player.getWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.NO_OP));
                ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
                SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
                addEnergy(stack,-20);

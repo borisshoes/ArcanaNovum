@@ -272,7 +272,7 @@ public interface DispenserBehaviorMixin {
                            );
                      if(!list.isEmpty()) {
                         MobEntity entity = list.getFirst();
-                        NbtCompound data = entity.writeNbt(new NbtCompound());
+                        NbtCompound data = entity.writeData(new NbtCompound());
                         data.putString("id", EntityType.getId(entity.getType()).toString());
                         ArcanaItem.putProperty(stack,ContainmentCirclet.CONTENTS_TAG,data);
                         ArcanaItem.putProperty(stack,ContainmentCirclet.HP_TAG,entity.getHealth());
@@ -287,7 +287,7 @@ public interface DispenserBehaviorMixin {
                   }else{
                      try{
                         float hp = ArcanaItem.getFloatProperty(stack,ContainmentCirclet.HP_TAG);
-                        Optional<Entity> optional = EntityType.getEntityFromNbt(contents,pointer.world(), SpawnReason.DISPENSER);
+                        Optional<Entity> optional = EntityType.getEntityFromData(contents,pointer.world(), SpawnReason.DISPENSER);
                         Vec3d summonPos = Vec3d.ofBottomCenter(pointer.pos().offset(direction));
                         
                         if(optional.isPresent()){
@@ -340,7 +340,7 @@ public interface DispenserBehaviorMixin {
                            this.setSuccess(false);
                            return stack;
                         }
-                        NbtCompound contentData = be.createNbtWithId(ArcanaNovum.SERVER.getRegistryManager());
+                        NbtCompound contentData = be.createNbtWithIdentifyingData(ArcanaNovum.SERVER.getRegistryManager());
                         ArcanaItem.putProperty(stack,ChestTranslocator.CONTENTS_TAG,contentData);
                         ArcanaItem.putProperty(stack,ChestTranslocator.STATE_TAG, NbtHelper.fromBlockState(state));
                         if(be instanceof Clearable clearable) clearable.clear();
@@ -363,9 +363,9 @@ public interface DispenserBehaviorMixin {
                            blockState = blockState.getBlock().getDefaultState().with(Properties.FACING, direction);
                         }
                         world.setBlockState(blockPos,blockState,Block.NOTIFY_ALL);
-                        BlockEntity blockEntity = world.getBlockEntity(blockPos);
+                        BlockEntity blockEntity = BlockEntity.createFromNbt(blockPos,blockState,contents,world.getRegistryManager());
                         if(blockEntity != null){
-                           blockEntity.read(contents,ArcanaNovum.SERVER.getRegistryManager());
+                           world.addBlockEntity(blockEntity);
                         }
                         
                         ArcanaItem.putProperty(stack,ChestTranslocator.CONTENTS_TAG,new NbtCompound());

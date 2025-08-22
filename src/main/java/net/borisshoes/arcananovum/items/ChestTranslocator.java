@@ -35,6 +35,7 @@ import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -152,7 +153,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          
          for(int i = 0; i < items.size(); i++){
             NbtCompound stack = items.getCompoundOrEmpty(i);
-            ItemStack itemStack = ItemStack.fromNbt(ArcanaNovum.SERVER.getRegistryManager(),stack).orElse(ItemStack.EMPTY);
+            ItemStack itemStack = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,stack).result().orElse(ItemStack.EMPTY);
             inv.setStack(stack.getByte("Slot", (byte) 0), itemStack);
          }
       }
@@ -241,7 +242,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                if(cooldown == 0){
                   BlockEntity be = world.getBlockEntity(blockPos);
                   if(be == null) return ActionResult.PASS;
-                  NbtCompound contentData = be.createNbtWithId(ArcanaNovum.SERVER.getRegistryManager());
+                  NbtCompound contentData = be.createNbtWithIdentifyingData(ArcanaNovum.SERVER.getRegistryManager());
                   putProperty(stack,CONTENTS_TAG,contentData);
                   putProperty(stack,STATE_TAG,NbtHelper.fromBlockState(state));
                   if(be instanceof Clearable clearable) clearable.clear();
@@ -269,9 +270,9 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                   blockState = Blocks.BARREL.getPlacementState(ipc);
                }
                world.setBlockState(placePos,blockState,Block.NOTIFY_ALL);
-               BlockEntity blockEntity = world.getBlockEntity(placePos);
+               BlockEntity blockEntity = BlockEntity.createFromNbt(blockPos,blockState,contents,world.getRegistryManager());
                if(blockEntity != null){
-                  blockEntity.read(contents,ArcanaNovum.SERVER.getRegistryManager());
+                  world.addBlockEntity(blockEntity);
                   if(blockEntity instanceof LootableContainerBlockEntity container){
                      int size = container.size();
                      int filled = 0;

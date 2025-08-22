@@ -399,7 +399,7 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayerEntity player = objectCommandContext.getSource().getPlayerOrThrow();
-         ServerWorld world = player.getServerWorld();
+         ServerWorld world = player.getWorld();
          Vec3d vec3d = player.getCameraPosVec(0);
          Vec3d vec3d2 = player.getRotationVec(0);
          double maxDistance = 5;

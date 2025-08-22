@@ -88,8 +88,8 @@ public class BlinkArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d tpPos = entityHitResult.getPos();
          if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
-         player.teleportTo(new TeleportTarget(player.getServerWorld(), tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(), player.getPitch(), TeleportTarget.NO_OP));
-         ParticleEffectUtils.blinkArrowTp(player.getServerWorld(),player.getPos());
+         player.teleportTo(new TeleportTarget(player.getWorld(), tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(), player.getPitch(), TeleportTarget.NO_OP));
+         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
          int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);
@@ -104,8 +104,8 @@ public class BlinkArrows extends RunicArrow {
          Vec3d offset = new Vec3d(blockHitResult.getSide().getUnitVector());
          Vec3d tpPos = blockHitResult.getPos().add(offset);
          if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
-         player.teleportTo(new TeleportTarget(player.getServerWorld(), tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(), player.getPitch(), TeleportTarget.NO_OP));
-         ParticleEffectUtils.blinkArrowTp(player.getServerWorld(),player.getPos());
+         player.teleportTo(new TeleportTarget(player.getWorld(), tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(), player.getPitch(), TeleportTarget.NO_OP));
+         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
          int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);

@@ -187,7 +187,7 @@ public abstract class LivingEntityMixin {
                   harness.setStall(chestItem,15-2*rebootLvl);
                   player.setHealth(player.getHealth()/2);
                   player.sendMessage(Text.literal("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-                  SoundUtils.playSound(player.getServerWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
+                  SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
                   ParticleEffectUtils.harnessStall(player.getServerWorld(),player.getPos().add(0,0.5,0));
                   
                   boolean eProt = Math.max(0,ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.EMERGENCY_PROTOCOL.id)) >= 1;

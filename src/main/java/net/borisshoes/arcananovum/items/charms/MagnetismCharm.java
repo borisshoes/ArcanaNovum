@@ -176,7 +176,7 @@ public class MagnetismCharm extends ArcanaItem {
                for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
                   ItemStack item = entry.getValue();
                   if(item.isIn(ArcanaRegistry.NEODYMIUM_STEALABLE)){
-                     ItemEntity droppedItem = e.dropStack(player.getServerWorld(), item);
+                     ItemEntity droppedItem = e.dropStack(player.getWorld(), item);
                      if(droppedItem != null){
                         double x = playerPos.getX() - droppedItem.getX();
                         double y = playerPos.getY() - droppedItem.getY();

@@ -201,7 +201,7 @@ public class TwilightAnvil extends ArcanaBlock implements MultiblockCore {
          if(anvil != null){
             if(playerEntity instanceof ServerPlayerEntity player){
                if(anvil.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.getServerWorld(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.getWorld(),pos) == null){
                      player.sendMessage(Text.literal("The Anvil must be within the range of an active Starlight Forge"));
                   }else{
                      anvil.openGui(0, player,"");

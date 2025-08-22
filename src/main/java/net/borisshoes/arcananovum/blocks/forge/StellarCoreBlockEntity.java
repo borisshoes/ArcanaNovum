@@ -27,9 +27,7 @@ import net.minecraft.inventory.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.*;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
@@ -37,6 +35,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
@@ -290,57 +290,34 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
    }
    
    @Override
-   public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.readNbt(nbt, registryLookup);
-      if(nbt.contains("arcanaUuid")){
-         this.uuid = nbt.getString("arcanaUuid", "");
-      }
-      if(nbt.contains("crafterId")){
-         this.crafterId = nbt.getString("crafterId", "");
-      }
-      if(nbt.contains("customName")){
-         this.customName = nbt.getString("customName", "");
-      }
-      if(nbt.contains("synthetic")){
-         this.synthetic = nbt.getBoolean("synthetic", false);
-      }
+   public void readData(ReadView view){
+      super.readData(view);
+      this.uuid = view.getString("arcanaUuid", "");
+      this.crafterId = view.getString("crafterId", "");
+      this.customName = view.getString("customName", "");
+      this.synthetic = view.getBoolean("synthetic", false);
       this.inventory = new SimpleInventory(size());
-      this.inventory.addListener(this);
-      if(!this.readLootTable(nbt) && nbt.contains("Items")){
-         Inventories.readNbt(nbt, this.inventory.getHeldStacks(), registryLookup);
+      if (!this.readLootTable(view)) {
+         Inventories.readData(view, this.inventory.getHeldStacks());
       }
-      augments = new TreeMap<>();
-      if(nbt.contains("arcanaAugments")){
-         NbtCompound augCompound = nbt.getCompoundOrEmpty("arcanaAugments");
-         for(String key : augCompound.getKeys()){
-            ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
-         }
+      this.augments = new TreeMap<>();
+      if(view.contains("arcanaAugments")){
+         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+            this.augments = data;
+         });
       }
    }
    
    @Override
-   protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup){
-      super.writeNbt(nbt, registryLookup);
-      if(augments != null){
-         NbtCompound augsCompound = new NbtCompound();
-         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            augsCompound.putInt(entry.getKey().id,entry.getValue());
-         }
-         nbt.put("arcanaAugments",augsCompound);
-      }
-      if(this.uuid != null){
-         nbt.putString("arcanaUuid",this.uuid);
-      }
-      if(this.crafterId != null){
-         nbt.putString("crafterId",this.crafterId);
-      }
-      if(this.customName != null){
-         nbt.putString("customName",this.customName);
-      }
-      nbt.putBoolean("synthetic",this.synthetic);
-      if(!this.writeLootTable(nbt)){
-         Inventories.writeNbt(nbt, this.inventory.getHeldStacks(), false, registryLookup);
+   protected void writeData(WriteView view){
+      super.writeData(view);
+      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
+      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
+      view.putString("customName",this.customName == null ? "" : this.customName);
+      view.putBoolean("synthetic",this.synthetic);
+      if (!this.writeLootTable(view)) {
+         Inventories.writeData(view, this.inventory.getHeldStacks());
       }
    }
    

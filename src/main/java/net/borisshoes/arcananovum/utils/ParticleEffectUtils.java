@@ -86,7 +86,7 @@ public class ParticleEffectUtils {
    }
    
    public static void gravitonMaulMaelstrom(ServerPlayerEntity player, int tick){
-      ServerWorld world = player.getServerWorld();
+      ServerWorld world = player.getWorld();
       Vec3d center = player.getPos().add(0,0.1,0);
       ParticleEffect dust = new DustParticleEffect(0x000ea8,1f);
       ParticleEffect dust2 = new DustParticleEffect(0x000754,1.5f);
@@ -115,7 +115,7 @@ public class ParticleEffectUtils {
       }
       
       if(tick % 80 == 0){
-         SoundUtils.playSound(player.getServerWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS,.5f,1.6f);
+         SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS,.5f,1.6f);
       }
       
       world.spawnParticles(dust,center.x,center.y+0.15,center.z,60,2.5,0.2,2.5,0.01);
@@ -123,7 +123,7 @@ public class ParticleEffectUtils {
    }
    
    public static void arcaneNotesFinish(ServerPlayerEntity player, ArcanaItem arcanaItem){
-      ServerWorld world = player.getServerWorld();
+      ServerWorld world = player.getWorld();
       world.spawnParticles(ParticleTypes.ENCHANT,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),100,0.4,0.8,0.4,0);
       world.spawnParticles(ParticleTypes.WITCH,player.getX(),player.getY()+player.getHeight()/1.5,+player.getZ(),100,0.25,0.6,0.25,0.3);
       
@@ -133,7 +133,7 @@ public class ParticleEffectUtils {
    }
    
    public static void arcaneNotesAnim(ServerPlayerEntity player, ArcanaItem arcanaItem, int usageTick){
-      ServerWorld world = player.getServerWorld();
+      ServerWorld world = player.getWorld();
       world.spawnParticles(ParticleTypes.ENCHANT,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),3,0.25,0.6,0.25,0);
       world.spawnParticles(player,ParticleTypes.ENCHANT,false,true,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),5,0.25,0.6,0.25,1);
       
@@ -460,7 +460,7 @@ public class ParticleEffectUtils {
    
    
    public static void ensnaredEffect(LivingEntity living, int amplifier, int tick){
-      if(!living.isAlive() || living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) == null || !(living.getEntityWorld() instanceof ServerWorld world)){
+      if(!living.isAlive() || living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) == null || !(living.getWorld() instanceof ServerWorld world)){
          return;
       }
       double eHeight = living.getHeight();

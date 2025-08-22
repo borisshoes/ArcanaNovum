@@ -196,7 +196,7 @@ public class NulMemento extends EnergyItem {
          return false;
       }
       
-      if(living.getEntityWorld() instanceof ServerWorld world){
+      if(living.getWorld() instanceof ServerWorld world){
          world.spawnParticles(ParticleTypes.LARGE_SMOKE,living.getX(),living.getY()+living.getHeight()/2,living.getZ(),100,.4,.4,.4,0.07);
       }
       

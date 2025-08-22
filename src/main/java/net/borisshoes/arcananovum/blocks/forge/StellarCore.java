@@ -241,7 +241,7 @@ public class StellarCore extends ArcanaBlock implements MultiblockCore {
          if(core != null){
             if(playerEntity instanceof ServerPlayerEntity player){
                if(core.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.getServerWorld(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.getWorld(),pos) == null){
                      player.sendMessage(Text.literal("The Core must be within the range of an active Starlight Forge"));
                   }else{
                      core.openGui(player);

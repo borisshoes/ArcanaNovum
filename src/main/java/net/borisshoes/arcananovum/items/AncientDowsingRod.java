@@ -238,7 +238,7 @@ public class AncientDowsingRod extends EnergyItem {
                            if(mod == 6/radius)
                               break;
                            Vec3d parPos = playerPos.add(pPos.multiply(1+mod)).add(0,0.7,0);
-                           player.getServerWorld().spawnParticles(ParticleTypes.DRIPPING_LAVA,parPos.x,parPos.y,parPos.z,15,.12,.12,.12,1);
+                           player.getWorld().spawnParticles(ParticleTypes.DRIPPING_LAVA,parPos.x,parPos.y,parPos.z,15,.12,.12,.12,1);
                         }
                         
                      }
@@ -248,7 +248,7 @@ public class AncientDowsingRod extends EnergyItem {
                         Vec3d blockPos = new Vec3d(closest.getX()+.5,closest.getY()+0.5,closest.getZ()+0.5);
                         Vec3d start = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5));
                         Vec3d end = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5+3));
-                        ParticleEffectUtils.dowsingRodArrow(player.getServerWorld(),start,end,1);
+                        ParticleEffectUtils.dowsingRodArrow(player.getWorld(),start,end,1);
                         
                         ArcanaNovum.data(player).addXP(Math.min(ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_CAP),ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
                         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);

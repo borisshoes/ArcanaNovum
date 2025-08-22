@@ -61,7 +61,7 @@ public class SoundUtils {
    
    public static void soulSounds(ServerPlayerEntity player, int count, int duration){
       for(int i = 0; i < duration; i++){
-         ArcanaNovum.addTickTimerCallback(player.getServerWorld(), new GenericTimer(2*(i+1), () -> {
+         ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2*(i+1), () -> {
             for(int j = 0; j < count; j++){
                playSongToPlayer(player, SoundEvents.PARTICLE_SOUL_ESCAPE, 2f, (float)(Math.random()*1.5+.5));
             }

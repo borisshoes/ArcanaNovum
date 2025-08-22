@@ -231,7 +231,7 @@ public class SpawnerInfuser extends ArcanaBlock {
             initializeArcanaBlock(stack,infuser);
             
             if(placer instanceof ServerPlayerEntity player){
-               SoundUtils.soulSounds(player.getServerWorld(),pos,5,30);
+               SoundUtils.soulSounds(player.getWorld(),pos,5,30);
                SoundUtils.playSound(world,pos,SoundEvents.BLOCK_SCULK_SHRIEKER_SHRIEK,SoundCategory.BLOCKS,1,.6f);
                player.sendMessage(Text.literal("The Infuser makes a most unsettling sound...").formatted(Formatting.DARK_GREEN),true);
             }

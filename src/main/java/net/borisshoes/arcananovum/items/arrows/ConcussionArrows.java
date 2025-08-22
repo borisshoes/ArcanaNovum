@@ -86,13 +86,13 @@ public class ConcussionArrows extends RunicArrow {
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
       int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
-      concuss(arrow, arrow.getEntityWorld(),entityHitResult.getPos(), lvl);
+      concuss(arrow, arrow.getWorld(),entityHitResult.getPos(), lvl);
    }
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
       int lvl = arrow.getAugment(ArcanaAugments.SHELLSHOCK.id);
-      concuss(arrow, arrow.getEntityWorld(),blockHitResult.getPos(), lvl);
+      concuss(arrow, arrow.getWorld(),blockHitResult.getPos(), lvl);
    }
    
    private void concuss(PersistentProjectileEntity arrow, World world, Vec3d pos, int levelBoost){

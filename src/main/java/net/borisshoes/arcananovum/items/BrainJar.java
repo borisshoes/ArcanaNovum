@@ -262,7 +262,7 @@ public class BrainJar extends EnergyItem {
                
                if(hasMending){
                   int durability = tool.getDamage();
-                  int repairAmount = (int) Math.ceil((EnchantmentHelper.getRepairWithExperience(player.getServerWorld(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
+                  int repairAmount = (int) Math.ceil((EnchantmentHelper.getRepairWithExperience(player.getWorld(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
                   if(durability <= 0 || !tool.isDamageable())
                      continue;
                   int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);

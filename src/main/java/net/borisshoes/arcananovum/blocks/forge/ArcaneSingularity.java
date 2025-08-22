@@ -241,7 +241,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
          if(singularity != null){
             if(playerEntity instanceof ServerPlayerEntity player){
                if(singularity.isAssembled()){
-                  if(StarlightForge.findActiveForge(player.getServerWorld(),pos) == null){
+                  if(StarlightForge.findActiveForge(player.getWorld(),pos) == null){
                      player.sendMessage(Text.literal("The Enchanter must be within the range of an active Starlight Forge"));
                   }else{
                      singularity.openGui(player);

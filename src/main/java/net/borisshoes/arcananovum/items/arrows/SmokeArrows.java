@@ -74,7 +74,7 @@ public class SmokeArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
          ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),entityHitResult.getEntity(),null,null,range,gasLvl));
@@ -83,7 +83,7 @@ public class SmokeArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getWorld() instanceof ServerWorld serverWorld){
          float range = (float) MathHelper.clamp(arrow.getVelocity().length()*.8,.3,2.5);
          int gasLvl = arrow.getAugment(ArcanaAugments.TEAR_GAS.id);
          ArcanaRegistry.AREA_EFFECTS.get(ArcanaRegistry.SMOKE_ARROW_AREA_EFFECT_TRACKER.getId()).addSource(SmokeArrowAreaEffectTracker.source(arrow.getOwner(),null,blockHitResult.getBlockPos(),serverWorld,range,gasLvl));
