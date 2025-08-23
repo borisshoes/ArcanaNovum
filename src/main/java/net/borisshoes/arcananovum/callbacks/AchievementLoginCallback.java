@@ -8,7 +8,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -55,7 +54,7 @@ public class AchievementLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
+   public void setData(NbtCompound data){
       this.data = data;
       achievements = new ArrayList<>();
       if(data.contains("achievements")){
@@ -69,7 +68,7 @@ public class AchievementLoginCallback extends LoginCallback{
    }
    
    @Override
-   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
+   public NbtCompound getData(){
       NbtCompound data = new NbtCompound();
       NbtList achTag = new NbtList();
       for(ArcanaAchievement achievement : achievements){

@@ -1,11 +1,13 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.borisshoes.arcananovum.utils.CodecUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -21,8 +23,6 @@ import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
@@ -40,7 +40,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import xyz.nucleoid.packettweaker.PacketContext;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DragonWizardEntity extends IllusionerEntity implements PolymerEntity {
@@ -288,16 +290,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       view.putInt("pulseTick",pulseTick);
       view.putInt("numPlayers",numPlayers);
       if(crystalId != null) view.putString("crystalId",crystalId.toString());
-      
-      NbtList skeletonTag = new NbtList();
-      if(skeletons != null){
-         for(SkeletonEntity skeleton : skeletons){
-            if(skeleton != null){
-               skeletonTag.add(NbtString.of(skeleton.getUuidAsString()));
-            }
-         }
-      }
-      nbt.put("skeletons",skeletonTag);
+      if(skeletons != null) view.putNullable("skeletons", CodecUtils.STRING_LIST, Arrays.stream(skeletons).map(Entity::getUuidAsString).toList());
    }
    
    @Override
@@ -307,19 +300,22 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       summonTick = view.getInt("summonTick", 0);
       pulseTick = view.getInt("pulseTick", 0);
       numPlayers = view.getInt("numPlayers", 0);
-      if(nbt.contains("crystalId")) crystalId = MiscUtils.getUUID(nbt.getString("crystalId", ""));
+      crystalId = MiscUtils.getUUID(view.getString("crystalId",""));
       
       if(getWorld() instanceof ServerWorld serverWorld){
-         NbtList skeleList = nbt.getListOrEmpty("skeletons");
-         skeletons = new SkeletonEntity[skeleList.size()];
-         for(int i = 0; i < skeletons.length; i++){
-            if(serverWorld.getEntity(MiscUtils.getUUID(skeleList.getString(i, ""))) instanceof SkeletonEntity skele){
-               skeletons[i] = skele;
+         Optional<List<String>> optional = view.read("skeletons", CodecUtils.STRING_LIST);
+         if(optional.isEmpty()){
+            skeletons = new SkeletonEntity[]{};
+         }else{
+            List<String> ids = optional.get();
+            skeletons = new SkeletonEntity[ids.size()];
+            for(int i = 0; i < skeletons.length; i++){
+               if(serverWorld.getEntity(MiscUtils.getUUID(ids.get(i))) instanceof SkeletonEntity skele){
+                  skeletons[i] = skele;
+               }
             }
          }
       }
-      
-      
    }
 }
 

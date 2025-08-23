@@ -441,7 +441,7 @@ public class TelescopingBeacon extends ArcanaItem {
             putProperty(stack,BEACON_TAG,true);
             
             if(careful){
-               putProperty(stack,DATA_TAG,beaconBlock.createNbt(player.getServer().getRegistryManager()));
+               putProperty(stack,DATA_TAG,beaconBlock.createNbtWithIdentifyingData(player.getServer().getRegistryManager()));
             }else{
                putProperty(stack,DATA_TAG,new NbtCompound());
             }

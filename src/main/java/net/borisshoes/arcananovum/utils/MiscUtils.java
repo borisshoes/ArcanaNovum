@@ -1,6 +1,8 @@
 package net.borisshoes.arcananovum.utils;
 
 import com.google.common.collect.HashMultimap;
+import com.mojang.authlib.GameProfile;
+import com.mojang.logging.LogUtils;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -11,6 +13,7 @@ import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
+import net.borisshoes.arcananovum.mixins.EntityAccessor;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -28,16 +31,20 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
 import net.minecraft.text.Text;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
@@ -54,6 +61,26 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class MiscUtils {
+   
+   public static ServerPlayerEntity getRequestedPlayer(MinecraftServer server, GameProfile requestedProfile){
+      ServerPlayerEntity requestedPlayer = server.getPlayerManager().getPlayer(requestedProfile.getName());
+      
+      if (requestedPlayer == null) {
+         requestedPlayer = new ServerPlayerEntity(server, server.getOverworld(), requestedProfile, SyncedClientOptions.createDefault());
+         Optional<ReadView> readViewOpt = server.getPlayerManager().loadPlayerData(requestedPlayer, new ErrorReporter.Logging(LogUtils.getLogger()));
+         
+         if (readViewOpt.isPresent()) {
+            ReadView readView = readViewOpt.get();
+            Optional<String> dimension = readView.getOptionalString("Dimension");
+            
+            if (dimension.isPresent()) {
+               ServerWorld world = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, Identifier.tryParse(dimension.get())));
+               if(world != null) ((EntityAccessor) requestedPlayer).callSetWorld(world);
+            }
+         }
+      }
+      return requestedPlayer;
+   }
    
    public static boolean removeItemEntities(ServerWorld serverWorld, Box area, Predicate<ItemStack> predicate, int count){
       List<ItemEntity> entities = serverWorld.getEntitiesByClass(ItemEntity.class, area, entity -> predicate.test(entity.getStack()));

@@ -3,21 +3,19 @@ package net.borisshoes.arcananovum.datagen;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 
 import java.util.concurrent.CompletableFuture;
 
-public class BlockTagGenerator extends FabricTagProvider<Block> {
+public class BlockTagGenerator extends FabricTagProvider.BlockTagProvider {
    public BlockTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture){
-      super(output, RegistryKeys.BLOCK, registriesFuture);
+      super(output, registriesFuture);
    }
    
    @Override
    protected void configure(RegistryWrapper.WrapperLookup lookup){
-      getOrCreateTagBuilder(ArcanaRegistry.CEPTYUS_VEIN_MINEABLE)
+      valueLookupBuilder(ArcanaRegistry.CEPTYUS_VEIN_MINEABLE)
             .add(Blocks.COAL_ORE)
             .add(Blocks.DEEPSLATE_COAL_ORE)
             .add(Blocks.IRON_ORE)

@@ -327,7 +327,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                
                ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                player.teleportTo(new TeleportTarget(player.getWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.NO_OP));
-               ParticleEffectUtils.shadowGlaiveTp(player.getServerWorld(),player);
+               ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
                addEnergy(stack,-20);
                String message = "Glaive Charges: ";

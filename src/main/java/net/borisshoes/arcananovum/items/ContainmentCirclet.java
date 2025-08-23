@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.items;
 
+import com.mojang.logging.LogUtils;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -33,9 +34,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.storage.NbtWriteView;
+import net.minecraft.storage.ReadView;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
@@ -115,16 +120,20 @@ public class ContainmentCirclet extends ArcanaItem {
          int hp = (int) getFloatProperty(itemStack,HP_TAG);
          int maxHp = (int) getFloatProperty(itemStack,MAX_HP_TAG);
          
-         Optional<EntityType<?>> entity = EntityType.fromData(contents);
-         if(!contents.isEmpty() && entity.isPresent()){
-            String entityTypeName = entity.get().getName().getString();
-            
-            lore.add(Text.literal("")
-                  .append(Text.literal("Contains").formatted(Formatting.DARK_AQUA))
-                  .append(Text.literal(" - ").formatted(Formatting.AQUA))
-                  .append(Text.literal(entityTypeName+" ("+hp+"/"+maxHp+")").formatted(Formatting.GREEN)));
-            
-            hasCreature = true;
+         if(ArcanaNovum.SERVER != null){
+            try (ErrorReporter.Logging logging = new ErrorReporter.Logging(LogUtils.getLogger())){
+               ReadView readView = NbtReadView.create(logging, ArcanaNovum.SERVER.getRegistryManager(), contents);
+               Optional<EntityType<?>> entity = EntityType.fromData(readView);
+               if(!contents.isEmpty() && entity.isPresent()){
+                  String entityTypeName = entity.get().getName().getString();
+                  
+                  lore.add(Text.literal("")
+                        .append(Text.literal("Contains").formatted(Formatting.DARK_AQUA))
+                        .append(Text.literal(" - ").formatted(Formatting.AQUA))
+                        .append(Text.literal(entityTypeName+" ("+hp+"/"+maxHp+")").formatted(Formatting.GREEN)));
+                  hasCreature = true;
+               }
+            }
          }
       }
       
@@ -173,16 +182,20 @@ public class ContainmentCirclet extends ArcanaItem {
          user.sendMessage(Text.literal("This Circlet cannot capture hostile creatures").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
       }else if(entity instanceof MobEntity){
-         NbtCompound data = entity.writeData(new NbtCompound());
-         data.putString("id", EntityType.getId(entity.getType()).toString());
-         putProperty(stack,CONTENTS_TAG,data);
-         putProperty(stack,HP_TAG,entity.getHealth());
-         putProperty(stack,MAX_HP_TAG,entity.getMaxHealth());
-         entity.discard();
-         user.sendMessage(Text.literal("The Circlet contains the creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
-         SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
-         ArcanaNovum.data(user).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTAINMENT_CIRCLET_USE)); // Add xp
-         buildItemLore(stack,user.getServer());
+         try (ErrorReporter.Logging logging = new ErrorReporter.Logging(entity.getErrorReporterContext(),LogUtils.getLogger())){
+            NbtWriteView writeView = NbtWriteView.create(logging, entity.getWorld().getRegistryManager());
+            entity.writeData(writeView);
+            NbtCompound data = writeView.getNbt();
+            data.putString("id", EntityType.getId(entity.getType()).toString());
+            putProperty(stack,CONTENTS_TAG,data);
+            putProperty(stack,HP_TAG,entity.getHealth());
+            putProperty(stack,MAX_HP_TAG,entity.getMaxHealth());
+            entity.discard();
+            user.sendMessage(Text.literal("The Circlet contains the creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
+            SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
+            ArcanaNovum.data(user).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTAINMENT_CIRCLET_USE)); // Add xp
+            buildItemLore(stack,user.getServer());
+         }
       }
       
       return ActionResult.SUCCESS_SERVER;
@@ -248,36 +261,39 @@ public class ContainmentCirclet extends ArcanaItem {
       @Override
       public ActionResult useOnBlock(ItemUsageContext context){
          ItemStack stack = context.getStack();
-         if(!ArcanaItemUtils.isArcane(stack)) return ActionResult.PASS;
+         if(!ArcanaItemUtils.isArcane(stack) || context.getPlayer() == null) return ActionResult.PASS;
          
          NbtCompound contents = getCompoundProperty(stack,CONTENTS_TAG);
          float hp = getFloatProperty(stack,HP_TAG);
          if(contents.isEmpty()) return ActionResult.PASS;
          
-         Optional<Entity> optional = EntityType.getEntityFromData(contents,context.getWorld(), SpawnReason.MOB_SUMMONED);
-         Vec3d summonPos = context.getHitPos().add(0,0.5,0);
-         
-         if(optional.isPresent() && context.getWorld() instanceof ServerWorld serverWorld){
-            Entity newEntity = optional.get();
-            newEntity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), newEntity.getYaw(), newEntity.getPitch());
+         try (ErrorReporter.Logging logging = new ErrorReporter.Logging(context.getPlayer().getErrorReporterContext(),LogUtils.getLogger())) {
+            ReadView readView = NbtReadView.create(logging, context.getWorld().getRegistryManager(),contents);
+            Optional<Entity> optional = EntityType.getEntityFromData(readView,context.getWorld(), SpawnReason.MOB_SUMMONED);
+            Vec3d summonPos = context.getHitPos().add(0,0.5,0);
             
-            if(newEntity instanceof LivingEntity living){
-               living.setHealth(hp);
-            }
-            
-            serverWorld.spawnEntity(newEntity);
-            putProperty(stack,CONTENTS_TAG,new NbtCompound());
-            
-            if(context.getPlayer() instanceof ServerPlayerEntity player){
-               player.sendMessage(Text.literal("The Circlet releases its captive").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
-               SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
+            if(optional.isPresent() && context.getWorld() instanceof ServerWorld serverWorld){
+               Entity newEntity = optional.get();
+               newEntity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), newEntity.getYaw(), newEntity.getPitch());
                
-               if(newEntity instanceof TameableEntity tameable && tameable.isOwner(player)){
-                  ArcanaAchievements.grant(player,ArcanaAchievements.I_CHOOSE_YOU.id);
+               if(newEntity instanceof LivingEntity living){
+                  living.setHealth(hp);
                }
+               
+               serverWorld.spawnEntity(newEntity);
+               putProperty(stack,CONTENTS_TAG,new NbtCompound());
+               
+               if(context.getPlayer() instanceof ServerPlayerEntity player){
+                  player.sendMessage(Text.literal("The Circlet releases its captive").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
+                  SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
+                  
+                  if(newEntity instanceof TameableEntity tameable && tameable.isOwner(player)){
+                     ArcanaAchievements.grant(player,ArcanaAchievements.I_CHOOSE_YOU.id);
+                  }
+               }
+               buildItemLore(stack,serverWorld.getServer());
+               return ActionResult.SUCCESS_SERVER;
             }
-            buildItemLore(stack,serverWorld.getServer());
-            return ActionResult.SUCCESS_SERVER;
          }
          
          return ActionResult.PASS;

@@ -26,8 +26,12 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
@@ -365,7 +369,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       if(this.inventory != null){
          NbtList bookList = new NbtList();
          for(ItemStack book : inventory.getHeldStacks()){
-            if(!book.isEmpty()) bookList.add(ItemStack.VALIDATED_CODEC.encode(book,NbtOps.INSTANCE,new NbtCompound()).getOrThrow());
+            if(!book.isEmpty()) bookList.add(ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,registryLookup),book).getOrThrow());
          }
          return bookList;
       }else{
@@ -377,7 +381,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       inventory = new SimpleInventory(size());
       inventory.addListener(this);
       for(NbtElement e : bookList){
-         inventory.addStack(ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,e).result().orElse(ItemStack.EMPTY));
+         inventory.addStack(ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,registryLookup),e).result().orElse(ItemStack.EMPTY));
       }
    }
    

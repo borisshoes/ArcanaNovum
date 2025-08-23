@@ -1,5 +1,8 @@
 package net.borisshoes.arcananovum.blocks;
 
+import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -26,9 +29,12 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.storage.NbtWriteView;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
@@ -124,22 +130,26 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          
          String stoneType = Soulstone.getType(soulstone);
          MobSpawnerBlockEntity spawnerEntity = (MobSpawnerBlockEntity) blockEntity;
-         NbtCompound spawnerData = spawnerEntity.getLogic().writeData(new NbtCompound());
-         NbtCompound spawnData = spawnerData.getCompoundOrEmpty("SpawnData");
-         if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompoundOrEmpty("entity").contains("id")){
-            if(prevActive) this.active = false; // Update active status
-            world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
-            return;
-         }
-         NbtCompound spawnEntity = spawnData.getCompoundOrEmpty("entity");
-         
-         boolean correctType = stoneType.equals(spawnEntity.getString("id", ""));
-         
-         if(correctType){
-            if(!prevActive) this.active = true; // Update active status
-            world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
-            ParticleEffectUtils.spawnerInfuser(serverWorld,pos,5);
-            SoundUtils.soulSounds(serverWorld,pos,1,5);
+         try (ErrorReporter.Logging logging = new ErrorReporter.Logging(this.getReporterContext(), LogUtils.getLogger())){
+            NbtWriteView nbtWriteView = NbtWriteView.create(logging, this.getWorld().getRegistryManager());
+            spawnerEntity.getLogic().writeData(nbtWriteView);
+            NbtCompound spawnerData = nbtWriteView.getNbt();
+            NbtCompound spawnData = spawnerData.getCompoundOrEmpty("SpawnData");
+            if(spawnData.isEmpty() || !spawnData.contains("entity") || !spawnData.getCompoundOrEmpty("entity").contains("id")){
+               if(prevActive) this.active = false; // Update active status
+               world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
+               return;
+            }
+            NbtCompound spawnEntity = spawnData.getCompoundOrEmpty("entity");
+            
+            boolean correctType = stoneType.equals(spawnEntity.getString("id", ""));
+            
+            if(correctType){
+               if(!prevActive) this.active = true; // Update active status
+               world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
+               ParticleEffectUtils.spawnerInfuser(serverWorld,pos,5);
+               SoundUtils.soulSounds(serverWorld,pos,1,5);
+            }
          }
       }
       
@@ -150,20 +160,28 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
    
    public void tickInfuser(BlockPos spawnerPos, MobSpawnerBlockEntity spawnerEntity){
       MobSpawnerLogic logic = spawnerEntity.getLogic();
-      NbtCompound savedLogic = logic.writeData(new NbtCompound()); // Save default data
-      NbtCompound newLogic = getSpawnerStats().copy(); // Get data from infuser
-      
-      newLogic.put("SpawnData",savedLogic.get("SpawnData").copy()); // Copy some default data into new data
-      newLogic.put("SpawnPotentials",savedLogic.get("SpawnPotentials").copy());
-      short oldDelay = savedLogic.getShort("Delay", (short) 0);
-      short maxDelay = newLogic.getShort("MaxSpawnDelay", (short) 0);
-      newLogic.putShort("Delay", (short) Math.min(oldDelay,maxDelay));
-      
-      logic.readData(world,spawnerPos,newLogic); // Inject new data
-      if(world instanceof ServerWorld serverWorld) logic.serverTick(serverWorld, spawnerPos); // Tick with new data
-      short newDelay = logic.writeData(new NbtCompound()).getShort("Delay", (short) 0);
-      savedLogic.putShort("Delay",newDelay); // Extract new delay and put in saved data
-      logic.readData(world,spawnerPos,savedLogic); // Return saved default data with new delay
+      try (ErrorReporter.Logging logging = new ErrorReporter.Logging(this.getReporterContext(), LogUtils.getLogger())){
+         NbtWriteView nbtWriteView = NbtWriteView.create(logging, this.getWorld().getRegistryManager());
+         logic.writeData(nbtWriteView);
+         NbtCompound savedLogic = nbtWriteView.getNbt(); // Save default data
+         NbtCompound newLogic = getSpawnerStats().copy(); // Get data from infuser
+         
+         newLogic.put("SpawnData",savedLogic.get("SpawnData").copy()); // Copy some default data into new data
+         newLogic.put("SpawnPotentials",savedLogic.get("SpawnPotentials").copy());
+         short oldDelay = savedLogic.getShort("Delay", (short) 0);
+         short maxDelay = newLogic.getShort("MaxSpawnDelay", (short) 0);
+         newLogic.putShort("Delay", (short) Math.min(oldDelay,maxDelay));
+         
+         ReadView newNbtReadView = NbtReadView.create(logging, this.getWorld().getRegistryManager(),newLogic);
+         logic.readData(world,spawnerPos,newNbtReadView); // Inject new data
+         if(world instanceof ServerWorld serverWorld) logic.serverTick(serverWorld, spawnerPos); // Tick with new data
+         NbtWriteView nbtWriteView2 = NbtWriteView.create(logging, this.getWorld().getRegistryManager());
+         logic.writeData(nbtWriteView2);
+         short newDelay = nbtWriteView2.getNbt().getShort("Delay", (short) 0);
+         savedLogic.putShort("Delay",newDelay); // Extract new delay and put in saved data
+         ReadView savedNbtReadView = NbtReadView.create(logging, this.getWorld().getRegistryManager(),savedLogic);
+         logic.readData(world,spawnerPos,savedNbtReadView); // Return saved default data with new delay
+      }
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -263,7 +281,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       this.spentPoints = view.getInt("spentPoints", 0);
       this.soulstone = ItemStack.EMPTY;
       if(view.contains("soulstone")){
-         view.read("soulstone",ItemStack.VALIDATED_CODEC).ifPresent(stack -> {
+         view.read("soulstone",ItemStack.CODEC).ifPresent(stack -> {
             this.soulstone = stack;
          });
       }
@@ -281,9 +299,10 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          Inventories.readData(view, this.inventory.getHeldStacks());
       }
       
-      if(nbt.contains("spawnerStats")){
-         NbtCompound stats = nbt.getCompoundOrEmpty("spawnerStats");
-         setSpawnerStats(stats);
+      if(view.contains("spawnerStats")){
+         view.read("spawnerStats",SpawnerStats.CODEC).ifPresent(stats -> {
+            setSpawnerStats(stats.toNbt());
+         });
       }
    }
    
@@ -305,10 +324,10 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       }
       
       if(this.soulstone != null && !this.soulstone.isEmpty()){
-         view.putNullable("soulstone",ItemStack.VALIDATED_CODEC,this.soulstone);
+         view.putNullable("soulstone",ItemStack.CODEC,this.soulstone);
       }
       
-      nbt.put("spawnerStats",getSpawnerStats());
+      view.putNullable("spawnerStats",SpawnerStats.CODEC,SpawnerStats.fromNbt(getSpawnerStats()));
    }
    
    public NbtCompound getSpawnerStats(){
@@ -473,6 +492,31 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          refreshGuis();
          
          updating = false;
+      }
+   }
+   
+   public record SpawnerStats(short minSpawnDelay, short maxSpawnDelay, short spawnCount, short maxNearbyEntities, short requiredPlayerRange, short spawnRange) {
+      public static final Codec<SpawnerStats> CODEC = RecordCodecBuilder.create(i -> i.group(Codec.SHORT.fieldOf("MinSpawnDelay").forGetter(s -> s.minSpawnDelay), Codec.SHORT.fieldOf("MaxSpawnDelay").forGetter(s -> s.maxSpawnDelay), Codec.SHORT.fieldOf("SpawnCount").forGetter(s -> s.spawnCount), Codec.SHORT.fieldOf("MaxNearbyEntities").forGetter(s -> s.maxNearbyEntities), Codec.SHORT.fieldOf("RequiredPlayerRange").forGetter(s -> s.requiredPlayerRange), Codec.SHORT.fieldOf("SpawnRange").forGetter(s -> s.spawnRange)).apply(i, SpawnerStats::new));
+      
+      public NbtCompound toNbt(){
+         NbtCompound n = new NbtCompound();
+         n.putShort("MinSpawnDelay", this.minSpawnDelay);
+         n.putShort("MaxSpawnDelay", this.maxSpawnDelay);
+         n.putShort("SpawnCount", this.spawnCount);
+         n.putShort("MaxNearbyEntities", this.maxNearbyEntities);
+         n.putShort("RequiredPlayerRange", this.requiredPlayerRange);
+         n.putShort("SpawnRange", this.spawnRange);
+         return n;
+      }
+      
+      public static SpawnerStats fromNbt(NbtCompound n){
+         return new SpawnerStats(
+               n.getShort("MinSpawnDelay",(short) 0),
+               n.getShort("MaxSpawnDelay",(short) 0),
+               n.getShort("SpawnCount",(short) 0),
+               n.getShort("MaxNearbyEntities",(short) 0),
+               n.getShort("RequiredPlayerRange",(short) 0),
+               n.getShort("SpawnRange",(short) 0));
       }
    }
 }

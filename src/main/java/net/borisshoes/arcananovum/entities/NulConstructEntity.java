@@ -46,9 +46,6 @@ import net.minecraft.entity.projectile.WitherSkullEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
@@ -341,11 +338,11 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       for(Map.Entry<ConstructSpellType, ConstructSpell> entry : spells.entrySet()){
          spellsTag.put(entry.getKey().id,entry.getValue().toNbt());
       }
-      nbt.put("spells",spellsTag);
+      view.put("spells",NbtCompound.CODEC,spellsTag);
       
       NbtCompound adaptationsTag = new NbtCompound();
       adaptations.forEach((adaptation, bool) -> adaptationsTag.putBoolean(adaptation.id,bool));
-      nbt.put("adaptations",adaptationsTag);
+      view.put("adaptations",NbtCompound.CODEC,adaptationsTag);
       
       NbtCompound blockDamageTag = new NbtCompound();
       blockDamage.forEach((block, damage) -> {
@@ -355,13 +352,9 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          blockTag.putInt("z",block.getZ());
          blockTag.putInt("damage",damage);
       });
-      nbt.put("blockDamage",blockDamageTag);
+      view.put("blockDamage",NbtCompound.CODEC,blockDamageTag);
       
-      NbtList playersTag = new NbtList();
-      for(ServerPlayerEntity player : players){
-         playersTag.add(NbtString.of(player.getUuidAsString()));
-      }
-      nbt.put("players",playersTag);
+      view.put("players",CodecUtils.STRING_LIST,players.stream().map(ServerPlayerEntity::getUuidAsString).toList());
    }
    
    @Override
@@ -389,28 +382,27 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       }
       
       spells = new HashMap<>();
-      NbtCompound spellsTag = nbt.getCompoundOrEmpty("spells");
+      NbtCompound spellsTag = view.read("spells",NbtCompound.CODEC).orElse(new NbtCompound());
       for(String key : spellsTag.getKeys()){
          spells.put(ConstructSpellType.fromString(key),ConstructSpell.fromNbt(spellsTag.getCompoundOrEmpty(key)));
       }
       
       adaptations = new HashMap<>();
-      NbtCompound adaptationsTag = nbt.getCompoundOrEmpty("adaptations");
+      NbtCompound adaptationsTag = view.read("adaptations",NbtCompound.CODEC).orElse(new NbtCompound());
       for(String key : adaptationsTag.getKeys()){
          adaptations.put(ConstructAdaptations.fromString(key), adaptationsTag.getBoolean(key, false));
       }
       
       blockDamage = new HashMap<>();
-      NbtCompound blockDamageTag = nbt.getCompoundOrEmpty("blockDamage");
+      NbtCompound blockDamageTag = view.read("blockDamage",NbtCompound.CODEC).orElse(new NbtCompound());
       for(String key : blockDamageTag.getKeys()){
          NbtCompound compound = blockDamageTag.getCompoundOrEmpty(key);
          blockDamage.put(new BlockPos(compound.getInt("x", 0), compound.getInt("y", 0), compound.getInt("z", 0)), compound.getInt("damage", 0));
       }
       
       players = new ArrayList<>();
-      NbtList playersList = nbt.getListOrEmpty("players");
-      for(NbtElement nbtElement : playersList){
-         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(nbtElement.asString().orElse(""))) instanceof ServerPlayerEntity player){
+      for(String id : view.read("players", CodecUtils.STRING_LIST).orElse(new ArrayList<>())){
+         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(id)) instanceof ServerPlayerEntity player){
             players.add(player);
          }
       }
@@ -1045,9 +1037,8 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    @Override
    protected EntityNavigation createNavigation(World world){
       BirdNavigation birdNavigation = new BirdNavigation(this, world);
-      birdNavigation.setCanPathThroughDoors(false);
+      birdNavigation.canControlOpeningDoors();
       birdNavigation.setCanSwim(true);
-      birdNavigation.setCanPathThroughDoors(true);
       return birdNavigation;
    }
    

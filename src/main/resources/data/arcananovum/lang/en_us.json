@@ -468,5 +468,6 @@
   "tag.item.arcananovum.unstackable_arcana_items": "Unstackable Arcana Items",
   "tag.item.arcananovum.village_research_items": "Village Research Items",
   "tag.item.arcananovum.workshop_research_items": "Workshop Research Items",
-  "text.arcananovum.materials_copy_message": "Click to copy the materials list"
+  "text.arcananovum.materials_copy_message": "Click to copy the materials list",
+  "tag.item.arcananovum.fletchery_potion_items": "Radiant Fletchery Potion Items"
 }

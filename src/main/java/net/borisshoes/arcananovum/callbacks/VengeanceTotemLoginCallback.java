@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,12 +29,12 @@ public class VengeanceTotemLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
+   public void setData(NbtCompound data){
       this.data = data;
    }
    
    @Override
-   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
+   public NbtCompound getData(){
       this.data = new NbtCompound();
       return this.data;
    }

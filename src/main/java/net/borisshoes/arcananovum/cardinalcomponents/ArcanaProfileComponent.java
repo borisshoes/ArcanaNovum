@@ -11,19 +11,19 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.BinaryBlades;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtInt;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -51,25 +51,25 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
    }
    
    @Override
-   public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
+   public void readData(ReadView readView){
       crafted.clear();
       miscData.clear();
       achievements.clear();
       augments.clear();
       researchedItems.clear();
       researchTasks.clear();
-      tag.getListOrEmpty("crafted").forEach(item -> crafted.add(item.asString().orElse("")));
-      tag.getListOrEmpty("researchedItems").forEach(item -> researchedItems.add(item.asString().orElse("")));
-      tag.getListOrEmpty("researchTasks").forEach(item -> researchTasks.add(item.asString().orElse("")));
-      NbtCompound miscDataTag = tag.getCompoundOrEmpty("miscData");
+      readView.read("crafted", CodecUtils.STRING_LIST).ifPresent(crafted::addAll);
+      readView.read("researchedItems", CodecUtils.STRING_LIST).ifPresent(researchedItems::addAll);
+      readView.read("researchTasks", CodecUtils.STRING_LIST).ifPresent(researchTasks::addAll);
+      NbtCompound miscDataTag = readView.read("miscData",NbtCompound.CODEC).orElse(new NbtCompound());
       Set<String> keys = miscDataTag.getKeys();
       keys.forEach(key ->{
          miscData.put(key,miscDataTag.get(key));
       });
-      level = tag.getInt("level", 0);
-      xp = tag.getInt("xp", 0);
+      level = readView.getInt("level", 0);
+      xp = readView.getInt("xp", 0);
       
-      NbtCompound achievementsTag = tag.getCompoundOrEmpty("achievements");
+      NbtCompound achievementsTag = readView.read("achievements",NbtCompound.CODEC).orElse(new NbtCompound());
       Set<String> achieveItemKeys = achievementsTag.getKeys();
       for(String itemKey : achieveItemKeys){
          List<ArcanaAchievement> itemAchs = new ArrayList<>();
@@ -84,7 +84,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          achievements.put(itemKey,itemAchs);
       }
       
-      NbtCompound augmentsTag = tag.getCompoundOrEmpty("augments");
+      NbtCompound augmentsTag = readView.read("augments",NbtCompound.CODEC).orElse(new NbtCompound());
       Set<String> augmentKeys = augmentsTag.getKeys();
       for(String augmentKey : augmentKeys){
          int augmentLvl = augmentsTag.getInt(augmentKey, 0);
@@ -95,31 +95,19 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          }
       }
       
-      storedOffhand = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,tag.getCompoundOrEmpty("storedOffhand")).result().orElse(ItemStack.EMPTY);
+      storedOffhand = readView.read("storedOffhand",ItemStack.CODEC).orElse(ItemStack.EMPTY);
    }
    
    @Override
-   public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
-      NbtList craftedTag = new NbtList();
-      NbtList researchedTag = new NbtList();
-      NbtList researchTasksTag = new NbtList();
+   public void writeData(WriteView writeView){
       NbtCompound miscDataTag = new NbtCompound();
-      crafted.forEach(item -> {
-         craftedTag.add(NbtString.of(item));
-      });
-      researchedItems.forEach(item -> {
-         researchedTag.add(NbtString.of(item));
-      });
-      researchTasks.forEach(task -> {
-         researchTasksTag.add(NbtString.of(task));
-      });
       miscData.forEach(miscDataTag::put);
-      tag.put("crafted",craftedTag);
-      tag.put("researchedItems",researchedTag);
-      tag.put("researchTasks",researchTasksTag);
-      tag.put("miscData",miscDataTag);
-      tag.putInt("level",level);
-      tag.putInt("xp",xp);
+      writeView.put("crafted",CodecUtils.STRING_LIST,crafted);
+      writeView.put("researchedItems",CodecUtils.STRING_LIST,researchedItems);
+      writeView.put("researchTasks",CodecUtils.STRING_LIST,researchTasks);
+      writeView.put("miscData",NbtCompound.CODEC,miscDataTag);
+      writeView.putInt("level",level);
+      writeView.putInt("xp",xp);
       
       NbtCompound achievementsTag = new NbtCompound();
       for(Map.Entry<String, List<ArcanaAchievement>> entry : achievements.entrySet()){
@@ -131,16 +119,16 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
          }
          achievementsTag.put(item,itemAchsTag);
       }
-      tag.put("achievements",achievementsTag);
+      writeView.put("achievements",NbtCompound.CODEC,achievementsTag);
    
       NbtCompound augmentsTag = new NbtCompound();
       for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
          augmentsTag.putInt(entry.getKey().id, entry.getValue());
       }
-      tag.put("augments",augmentsTag);
+      writeView.put("augments",NbtCompound.CODEC,augmentsTag);
       if(this.storedOffhand == null) storedOffhand = ItemStack.EMPTY;
       if(!storedOffhand.isEmpty())
-         tag.put("storedOffhand",storedOffhand.toNbt(registryLookup));
+         writeView.put("storedOffhand",ItemStack.CODEC,storedOffhand);
    }
    
    @Override

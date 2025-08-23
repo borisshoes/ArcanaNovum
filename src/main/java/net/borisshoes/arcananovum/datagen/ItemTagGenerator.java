@@ -3,23 +3,23 @@ package net.borisshoes.arcananovum.datagen;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.data.tag.ProvidedTagBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ItemTagGenerator extends FabricTagProvider<Item> {
+public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
    public ItemTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture){
-      super(output, RegistryKeys.ITEM, registriesFuture);
+      super(output, registriesFuture);
    }
    
    @Override
    protected void configure(RegistryWrapper.WrapperLookup lookup){
-      FabricTagProvider<Item>.FabricTagBuilder allItemsBuilder = getOrCreateTagBuilder(ArcanaRegistry.ALL_ARCANA_ITEMS);
-      FabricTagProvider<Item>.FabricTagBuilder unstackableItemsBuilder = getOrCreateTagBuilder(ArcanaRegistry.UNSTACKABLE_ARCANA_ITEMS);
+      ProvidedTagBuilder<Item,Item> allItemsBuilder = valueLookupBuilder(ArcanaRegistry.ALL_ARCANA_ITEMS);
+      ProvidedTagBuilder<Item,Item> unstackableItemsBuilder = valueLookupBuilder(ArcanaRegistry.UNSTACKABLE_ARCANA_ITEMS);
       ArcanaRegistry.ARCANA_ITEMS.forEach(item -> {
          allItemsBuilder.add(item.getItem());
          if(item.getItem().getMaxCount() == 1){
@@ -27,19 +27,19 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
          }
       });
       
-      getOrCreateTagBuilder(ArcanaRegistry.FLETCHERY_POTION_ITEMS)
+      valueLookupBuilder(ArcanaRegistry.FLETCHERY_POTION_ITEMS)
             .add(Items.POTION)
             .add(Items.LINGERING_POTION)
             .add(Items.SPLASH_POTION)
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.ARCANISTS_BELT_SPECIAL_ALLOWED)
+      valueLookupBuilder(ArcanaRegistry.ARCANISTS_BELT_SPECIAL_ALLOWED)
             .add(Items.ENDER_PEARL)
             .add(Items.FIREWORK_ROCKET)
             .add(Items.WIND_CHARGE)
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.ARCANISTS_BELT_SPECIAL_DISALLOWED)
+      valueLookupBuilder(ArcanaRegistry.ARCANISTS_BELT_SPECIAL_DISALLOWED)
             .add(ArcanaRegistry.ARCANISTS_BELT.getItem())
             .add(ArcanaRegistry.SHIELD_OF_FORTITUDE.getItem())
             .add(ArcanaRegistry.OVERFLOWING_QUIVER.getItem())
@@ -49,19 +49,19 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
             .forceAddTag(ItemTags.SHULKER_BOXES)
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.FATE_ANCHOR_ENCHANTABLE)
+      valueLookupBuilder(ArcanaRegistry.FATE_ANCHOR_ENCHANTABLE)
             .forceAddTag(ItemTags.DURABILITY_ENCHANTABLE)
             .forceAddTag(ItemTags.VANISHING_ENCHANTABLE)
             .forceAddTag(ArcanaRegistry.UNSTACKABLE_ARCANA_ITEMS)
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.NONPROTECTIVE_ARMOR_REPAIR)
+      valueLookupBuilder(ArcanaRegistry.NONPROTECTIVE_ARMOR_REPAIR)
             .add(Items.LEATHER)
             .add(Items.RABBIT_HIDE)
             .add(Items.PHANTOM_MEMBRANE)
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.NEODYMIUM_STEALABLE)
+      valueLookupBuilder(ArcanaRegistry.NEODYMIUM_STEALABLE)
             .add(Items.IRON_INGOT)
             .add(Items.IRON_BLOCK)
             .add(Items.IRON_BARS)
@@ -125,7 +125,7 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
             .add(Items.HOPPER)
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.ENDERIA_ITEMS)
+      valueLookupBuilder(ArcanaRegistry.ENDERIA_ITEMS)
             .add(ArcanaRegistry.SOULSTONE.getItem())
             .add(ArcanaRegistry.WINGS_OF_ENDERIA.getItem())
             .add(ArcanaRegistry.LEADERSHIP_CHARM.getItem())
@@ -135,7 +135,7 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
             .add(ArcanaRegistry.SPEAR_OF_TENBROUS.getItem())
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.EQUAYUS_ITEMS)
+      valueLookupBuilder(ArcanaRegistry.EQUAYUS_ITEMS)
             .add(ArcanaRegistry.EXOTIC_MATTER.getItem())
             .add(ArcanaRegistry.LIGHT_CHARM.getItem())
             .add(ArcanaRegistry.BRAIN_JAR.getItem())
@@ -165,7 +165,7 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
             .add(ArcanaRegistry.GREAVES_OF_GAIALTUS.getItem())
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.NUL_ITEMS)
+      valueLookupBuilder(ArcanaRegistry.NUL_ITEMS)
             .add(ArcanaRegistry.EXOTIC_MATTER.getItem())
             .add(ArcanaRegistry.SOULSTONE.getItem())
             .add(ArcanaRegistry.ESSENCE_EGG.getItem())
@@ -187,7 +187,7 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
             .add(ArcanaRegistry.TOTEM_OF_VENGEANCE.getItem())
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.VILLAGE_ITEMS)
+      valueLookupBuilder(ArcanaRegistry.VILLAGE_ITEMS)
             .add(ArcanaRegistry.FEASTING_CHARM.getItem())
             .add(ArcanaRegistry.LIGHT_CHARM.getItem())
             .add(ArcanaRegistry.BRAIN_JAR.getItem())
@@ -210,7 +210,7 @@ public class ItemTagGenerator extends FabricTagProvider<Item> {
             .add(ArcanaRegistry.CLEANSING_CHARM.getItem())
       ;
       
-      getOrCreateTagBuilder(ArcanaRegistry.WORKSHOP_ITEMS)
+      valueLookupBuilder(ArcanaRegistry.WORKSHOP_ITEMS)
             .add(ArcanaRegistry.EXOTIC_MATTER.getItem())
             .add(ArcanaRegistry.FEASTING_CHARM.getItem())
             .add(ArcanaRegistry.LIGHT_CHARM.getItem())

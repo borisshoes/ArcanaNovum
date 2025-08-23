@@ -5,9 +5,8 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.UserCache;
 
@@ -22,19 +21,13 @@ public class ServerStartedCallback {
    }
    
    public static void getPlayerStats(MinecraftServer server){
-      PlayerManager playerManager = server.getPlayerManager();
       UserCache userCache = server.getUserCache();
       List<ServerPlayerEntity> allPlayers = new ArrayList<>();
       List<UserCache.Entry> cacheEntries = userCache.load();
       
       for(UserCache.Entry cacheEntry : cacheEntries){
          GameProfile reqProfile = cacheEntry.getProfile();
-         ServerPlayerEntity reqPlayer = playerManager.getPlayer(reqProfile.getName());
-         
-         if(reqPlayer == null){ // Player Offline
-            reqPlayer = playerManager.createPlayer(reqProfile, SyncedClientOptions.createDefault());
-            server.getPlayerManager().loadPlayerData(reqPlayer);
-         }
+         ServerPlayerEntity reqPlayer = MiscUtils.getRequestedPlayer(server,reqProfile);
          allPlayers.add(reqPlayer);
       }
       

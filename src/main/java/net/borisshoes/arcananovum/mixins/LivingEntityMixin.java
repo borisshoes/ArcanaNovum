@@ -188,7 +188,7 @@ public abstract class LivingEntityMixin {
                   player.setHealth(player.getHealth()/2);
                   player.sendMessage(Text.literal("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                   SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
-                  ParticleEffectUtils.harnessStall(player.getServerWorld(),player.getPos().add(0,0.5,0));
+                  ParticleEffectUtils.harnessStall(player.getWorld(),player.getPos().add(0,0.5,0));
                   
                   boolean eProt = Math.max(0,ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.EMERGENCY_PROTOCOL.id)) >= 1;
                   if(eProt){
@@ -269,7 +269,7 @@ public abstract class LivingEntityMixin {
                entity.addStatusEffect(slow);
                entity.addStatusEffect(dmgAmp);
                sojournerBoots.setEnergy(boots,0);
-               SoundUtils.playSound(player.getServerWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
+               SoundUtils.playSound(player.getWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
             }
          }
          
@@ -306,7 +306,7 @@ public abstract class LivingEntityMixin {
                MiscUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,20f);
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
                player.getItemCooldownManager().set(shieldStack,100);
-               SoundUtils.playSound(player.getServerWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
+               SoundUtils.playSound(player.getWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
             }
          }
       }
@@ -420,7 +420,7 @@ public abstract class LivingEntityMixin {
          // Wing Buffet ability
          int buffetLvl = ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.WING_BUFFET);
          if(entity instanceof ServerPlayerEntity player && buffetLvl > 0){
-            ServerWorld world = player.getServerWorld();
+            ServerWorld world = player.getWorld();
             Vec3d pos = player.getPos().add(0,player.getHeight()/2,0);
             Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
             int range = 3;

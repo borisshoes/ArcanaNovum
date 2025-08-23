@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.mojang.logging.LogUtils;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -29,7 +30,11 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.storage.NbtWriteView;
+import net.minecraft.storage.ReadView;
 import net.minecraft.util.Clearable;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
@@ -272,37 +277,44 @@ public interface DispenserBehaviorMixin {
                            );
                      if(!list.isEmpty()) {
                         MobEntity entity = list.getFirst();
-                        NbtCompound data = entity.writeData(new NbtCompound());
-                        data.putString("id", EntityType.getId(entity.getType()).toString());
-                        ArcanaItem.putProperty(stack,ContainmentCirclet.CONTENTS_TAG,data);
-                        ArcanaItem.putProperty(stack,ContainmentCirclet.HP_TAG,entity.getHealth());
-                        ArcanaItem.putProperty(stack,ContainmentCirclet.MAX_HP_TAG,entity.getMaxHealth());
-                        entity.discard();
-                        circlet.buildItemLore(stack,pointer.world().getServer());
-                        this.setSuccess(true);
+                        try (ErrorReporter.Logging logging = new ErrorReporter.Logging(pointer.blockEntity().getReporterContext(), LogUtils.getLogger())){
+                           NbtWriteView nbtWriteView = NbtWriteView.create(logging, pointer.world().getRegistryManager());
+                           entity.writeData(nbtWriteView);
+                           NbtCompound data = nbtWriteView.getNbt();
+                           data.putString("id", EntityType.getId(entity.getType()).toString());
+                           ArcanaItem.putProperty(stack,ContainmentCirclet.CONTENTS_TAG,data);
+                           ArcanaItem.putProperty(stack,ContainmentCirclet.HP_TAG,entity.getHealth());
+                           ArcanaItem.putProperty(stack,ContainmentCirclet.MAX_HP_TAG,entity.getMaxHealth());
+                           entity.discard();
+                           circlet.buildItemLore(stack,pointer.world().getServer());
+                           this.setSuccess(true);
+                        }
                      } else {
                         this.setSuccess(false);
                      }
                      return stack;
                   }else{
                      try{
-                        float hp = ArcanaItem.getFloatProperty(stack,ContainmentCirclet.HP_TAG);
-                        Optional<Entity> optional = EntityType.getEntityFromData(contents,pointer.world(), SpawnReason.DISPENSER);
-                        Vec3d summonPos = Vec3d.ofBottomCenter(pointer.pos().offset(direction));
-                        
-                        if(optional.isPresent()){
-                           Entity newEntity = optional.get();
-                           newEntity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), newEntity.getYaw(), newEntity.getPitch());
+                        try (ErrorReporter.Logging logging = new ErrorReporter.Logging(pointer.blockEntity().getReporterContext(), LogUtils.getLogger())){
+                           ReadView newNbtReadView = NbtReadView.create(logging, pointer.world().getRegistryManager(),contents);
+                           Optional<Entity> optional = EntityType.getEntityFromData(newNbtReadView,pointer.world(), SpawnReason.DISPENSER);
+                           Vec3d summonPos = Vec3d.ofBottomCenter(pointer.pos().offset(direction));
                            
-                           if(newEntity instanceof LivingEntity living){
-                              living.setHealth(hp);
+                           if(optional.isPresent()){
+                              Entity newEntity = optional.get();
+                              newEntity.refreshPositionAndAngles(summonPos.getX(), summonPos.getY(), summonPos.getZ(), newEntity.getYaw(), newEntity.getPitch());
+                              
+                              if(newEntity instanceof LivingEntity living){
+                                 float hp = ArcanaItem.getFloatProperty(stack,ContainmentCirclet.HP_TAG);
+                                 living.setHealth(hp);
+                              }
+                              
+                              pointer.world().spawnEntity(newEntity);
+                              ArcanaItem.putProperty(stack,ContainmentCirclet.CONTENTS_TAG,new NbtCompound());
+                              circlet.buildItemLore(stack,pointer.world().getServer());
+                              this.setSuccess(true);
+                              return stack;
                            }
-                           
-                           pointer.world().spawnEntity(newEntity);
-                           ArcanaItem.putProperty(stack,ContainmentCirclet.CONTENTS_TAG,new NbtCompound());
-                           circlet.buildItemLore(stack,pointer.world().getServer());
-                           this.setSuccess(true);
-                           return stack;
                         }
                         this.setSuccess(false);
                         return stack;

@@ -2,10 +2,10 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 
 import net.borisshoes.arcananovum.callbacks.LoginCallback;
 import net.borisshoes.arcananovum.callbacks.LoginCallbacks;
+import net.borisshoes.arcananovum.utils.CodecUtils;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,17 +38,16 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    }
    
    @Override
-   public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
+   public void readData(ReadView readView){
       try{
          callbacks.clear();
-         NbtList callbacksTag = tag.getListOrEmpty("Callbacks");
-         for (NbtElement e : callbacksTag){
-            NbtCompound callbackTag = (NbtCompound) e;
+         List<NbtCompound> callbackTags = readView.read("Callbacks", CodecUtils.COMPOUND_LIST).orElse(new ArrayList<>());
+         for (NbtCompound callbackTag : callbackTags){
             String playerUUID = callbackTag.getString("uuid", "");
             String callbackId = callbackTag.getString("id", "");
             LoginCallback callback = LoginCallbacks.createCallback(callbackId);
             if(callback == null) continue;
-            callback.setData(callbackTag.getCompoundOrEmpty("data"), registryLookup);
+            callback.setData(callbackTag.getCompoundOrEmpty("data"));
             callback.setPlayer(playerUUID);
             callbacks.add(callback);
          }
@@ -58,18 +57,18 @@ public class LoginCallbackComponent implements ILoginCallbackComponent{
    }
    
    @Override
-   public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
+   public void writeData(WriteView writeView){
       try{
-         NbtList callbacksTag = new NbtList();
+         ArrayList<NbtCompound> callbackTags = new ArrayList<>();
          for(LoginCallback callback : callbacks){
             NbtCompound callbackTag = new NbtCompound();
-            NbtCompound dataTag = callback.getData(registryLookup);
+            NbtCompound dataTag = callback.getData();
             callbackTag.putString("uuid",callback.getPlayer());
             callbackTag.putString("id",callback.getId());
             callbackTag.put("data",dataTag);
-            callbacksTag.add(callbackTag);
+            callbackTags.add(callbackTag);
          }
-         tag.put("Callbacks",callbacksTag);
+         writeView.put("Callbacks", CodecUtils.COMPOUND_LIST,callbackTags);
       }catch(Exception e){
          e.printStackTrace();
       }

@@ -243,38 +243,26 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    @Override
    protected void writeCustomData(WriteView view){
       super.writeCustomData(view);
-      if(augments != null){
-         NbtCompound augsCompound = new NbtCompound();
-         for(Map.Entry<ArcanaAugment, Integer> entry : augments.entrySet()){
-            augsCompound.putInt(entry.getKey().id,entry.getValue());
-         }
-         nbt.put("runicAugments",augsCompound);
-      }
-      if(arrowType != null){
-         nbt.putString("runicArrowType",arrowType.getId());
-      }
-      if(data != null){
-         nbt.put("runicArrowData",data);
-      }
+      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString("runicArrowType",arrowType.getId());
+      view.putNullable("runicArrowData",NbtCompound.CODEC,data);
    }
    
    @Override
    protected void readCustomData(ReadView view){
       super.readCustomData(view);
-      augments = new TreeMap<>();
-      if(nbt.contains("runicAugments")){
-         NbtCompound augCompound = nbt.getCompoundOrEmpty("runicAugments");
-         for(String key : augCompound.getKeys()){
-            ArcanaAugment aug = ArcanaAugments.registry.get(key);
-            if(aug != null) augments.put(aug, augCompound.getInt(key, 0));
-         }
+      this.augments = new TreeMap<>();
+      if(view.contains("runicAugments")){
+         view.read("runicAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+            this.augments = data;
+         });
       }
-      if(nbt.contains("runicArrowType")){
-         ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(nbt.getString("runicArrowType", ""));
+      if(view.contains("runicArrowType")){
+         ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(view.getString("runicArrowType", ""));
          if(arcanaItem instanceof RunicArrow ra) arrowType = ra;
       }
-      if(nbt.contains("runicArrowData")){
-         data = nbt.getCompoundOrEmpty("runicArrowData");
+      if(view.contains("runicArrowData")){
+         data = view.read("runicArrowData", NbtCompound.CODEC).orElse(new NbtCompound());
       }
    }
 }

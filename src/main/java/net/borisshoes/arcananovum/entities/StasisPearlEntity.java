@@ -160,25 +160,25 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    protected void writeCustomData(WriteView view){
       super.writeCustomData(view);
       if(augments != null){
-         nbt.put("augments",augments);
+         view.put("augments",NbtCompound.CODEC,augments);
       }
-      nbt.putBoolean("inStasis",inStasis);
-      nbt.putInt("stasisTime",stasisTime);
-      nbt.putString("stackUuid",itemStackId);
-      nbt.putDouble("savedDX",savedVelocity.x);
-      nbt.putDouble("savedDY",savedVelocity.y);
-      nbt.putDouble("savedDZ",savedVelocity.z);
+      view.putBoolean("inStasis",inStasis);
+      view.putInt("stasisTime",stasisTime);
+      view.putString("stackUuid",itemStackId);
+      view.putDouble("savedDX",savedVelocity.x);
+      view.putDouble("savedDY",savedVelocity.y);
+      view.putDouble("savedDZ",savedVelocity.z);
    }
    
    @Override
    protected void readCustomData(ReadView view){
       super.readCustomData(view);
-      if(nbt.contains("augments")){
-         augments = nbt.getCompoundOrEmpty("augments");
+      if(view.contains("augments")){
+         augments = view.read("augments",NbtCompound.CODEC).orElse(new NbtCompound());
       }
-      inStasis = nbt.getBoolean("inStasis", false);
-      stasisTime = nbt.getInt("stasisTime", 0);
-      itemStackId = nbt.getString("stackUuid", "");
-      savedVelocity = new Vec3d(nbt.getDouble("savedDX", 0.0), nbt.getDouble("savedDY", 0.0), nbt.getDouble("savedDZ", 0.0));
+      inStasis = view.getBoolean("inStasis", false);
+      stasisTime = view.getInt("stasisTime", 0);
+      itemStackId = view.getString("stackUuid", "");
+      savedVelocity = new Vec3d(view.getDouble("savedDX", 0.0), view.getDouble("savedDY", 0.0), view.getDouble("savedDZ", 0.0));
    }
 }

@@ -4,7 +4,6 @@ import net.borisshoes.arcananovum.items.arrows.SiphoningArrows;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -43,14 +42,14 @@ public class OverhealLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
+   public void setData(NbtCompound data){
       //Data tag just has single float for hearts
       this.data = data;
       hearts = data.getFloat("hearts", 0.0f);
    }
    
    @Override
-   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
+   public NbtCompound getData(){
       NbtCompound data = new NbtCompound();
       data.putFloat("hearts",hearts);
       this.data = data;

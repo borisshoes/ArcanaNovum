@@ -243,19 +243,6 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       }
    }
    
-   @Nullable
-   @Override
-   public Entity getOwner() {
-      if (this.owner != null) {
-         return this.owner;
-      } else if (this.ownerUuid != null) {
-         this.owner = this.getEntity(this.ownerUuid);
-         return this.owner;
-      } else {
-         return null;
-      }
-   }
-   
    @Override
    protected ItemStack getDefaultItemStack(){
       return ArcanaRegistry.SPEAR_OF_TENBROUS.getNewItem();

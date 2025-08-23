@@ -1,9 +1,8 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
+import net.borisshoes.arcananovum.utils.CodecUtils;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -31,31 +30,19 @@ public class AnchorsComponent implements IAnchorsComponent{
    }
    
    @Override
-   public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
+   public void readData(ReadView readView){
       try{
          anchors.clear();
-         NbtList anchorsTag = tag.getListOrEmpty("Anchors");
-         for (NbtElement e : anchorsTag){
-            NbtCompound anchorTag = (NbtCompound) e;
-            anchors.add(new BlockPos(anchorTag.getInt("x", 0), anchorTag.getInt("y", 0), anchorTag.getInt("z", 0)));
-         }
+         readView.read("Anchors", CodecUtils.BLOCKPOS_LIST).ifPresent(anchors::addAll);
       }catch(Exception e){
          e.printStackTrace();
       }
    }
    
    @Override
-   public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
+   public void writeData(WriteView writeView){
       try{
-         NbtList anchorsTag = new NbtList();
-         for(BlockPos anchor : anchors){
-            NbtCompound anchorTag = new NbtCompound();
-            anchorTag.putInt("x",anchor.getX());
-            anchorTag.putInt("y",anchor.getY());
-            anchorTag.putInt("z",anchor.getZ());
-            anchorsTag.add(anchorTag);
-         }
-         tag.put("Anchors",anchorsTag);
+         writeView.put("Anchors",CodecUtils.BLOCKPOS_LIST,anchors);
       }catch(Exception e){
          e.printStackTrace();
       }

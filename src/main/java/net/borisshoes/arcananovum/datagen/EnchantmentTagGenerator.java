@@ -17,7 +17,7 @@ public class EnchantmentTagGenerator extends FabricTagProvider<Enchantment> {
    
    @Override
    protected void configure(RegistryWrapper.WrapperLookup lookup){
-      getOrCreateTagBuilder(ArcanaRegistry.FATE_ANCHOR_EXCLUSIVE_SET)
+      builder(ArcanaRegistry.FATE_ANCHOR_EXCLUSIVE_SET)
             .addOptional(ArcanaRegistry.FATE_ANCHOR)
             .add(Enchantments.VANISHING_CURSE)
             .add(Enchantments.BINDING_CURSE)

@@ -232,7 +232,7 @@ public class SpawnerHarness extends ArcanaItem {
                }
             }else if(world.getBlockState(context.getBlockPos()).getBlock() == Blocks.SPAWNER && world.getBlockEntity(context.getBlockPos()) instanceof MobSpawnerBlockEntity){
                MobSpawnerBlockEntity spawner = (MobSpawnerBlockEntity) world.getBlockEntity(context.getBlockPos());
-               NbtCompound spawnerNbt = spawner.createNbt(world.getRegistryManager());
+               NbtCompound spawnerNbt = spawner.createNbtWithIdentifyingData(world.getRegistryManager());
                Entity renderedEntity = spawner.getLogic().getRenderedEntity(world,context.getBlockPos());
                if(renderedEntity != null){
                   String entityTypeId = EntityType.getId(renderedEntity.getType()).toString();

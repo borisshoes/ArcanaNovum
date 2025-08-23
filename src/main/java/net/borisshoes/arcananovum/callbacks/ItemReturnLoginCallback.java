@@ -4,7 +4,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -37,15 +37,15 @@ public class ItemReturnLoginCallback extends LoginCallback{
    }
    
    @Override
-   public void setData(NbtCompound data, RegistryWrapper.WrapperLookup registryLookup){
+   public void setData(NbtCompound data){
       this.data = data;
-      this.item = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,data.getCompoundOrEmpty("item")).result().orElse(ItemStack.EMPTY);
+      this.item = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),data.getCompoundOrEmpty("item")).result().orElse(ItemStack.EMPTY);
    }
    
    @Override
-   public NbtCompound getData(RegistryWrapper.WrapperLookup registryLookup){
+   public NbtCompound getData(){
       NbtCompound data = new NbtCompound();
-      if(!this.item.isEmpty()) data.put("item",this.item.toNbt(registryLookup));
+      if(!this.item.isEmpty()) data.put("item",ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),this.item).getOrThrow());
       this.data = data;
       return this.data;
    }

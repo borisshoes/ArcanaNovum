@@ -34,6 +34,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.MinecraftServer;
@@ -256,7 +257,7 @@ public class ShulkerCore extends EnergyItem {
          if(stoneData == null || stoneData.isEmpty()){
             stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
          }else{
-            stone = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,stoneData).result().orElse(ItemStack.EMPTY);
+            stone = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,player.getRegistryManager()),stoneData).result().orElse(ItemStack.EMPTY);
          }
          stone = Soulstone.setSouls(stone,getEnergy(stack));
          
@@ -283,7 +284,7 @@ public class ShulkerCore extends EnergyItem {
             if(stoneData == null || stoneData.isEmpty()){
                stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
             }else{
-               stone = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,stoneData).result().orElse(ItemStack.EMPTY);
+               stone = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stoneData).result().orElse(ItemStack.EMPTY);
             }
             stone = Soulstone.setSouls(stone,getEnergy(stack));
             
@@ -300,7 +301,7 @@ public class ShulkerCore extends EnergyItem {
          setEnergy(stack,0);
       }else{
          putProperty(stack,STONE_TAG,true);
-         putProperty(stack,STONE_DATA_TAG,stone.toNbt(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stone).getOrThrow());
          setEnergy(stack,Soulstone.getSouls(stone));
       }
    }

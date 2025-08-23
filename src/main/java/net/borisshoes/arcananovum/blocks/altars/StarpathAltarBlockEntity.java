@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.polymer.core.api.utils.PolymerObject;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -54,7 +56,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    private String customName;
    private int cooldown;
    private BlockPos targetCoords;
-   private HashMap<String,BlockPos> savedTargets;
+   private Map<String,BlockPos> savedTargets;
    private int activeTicks;
    private final Multiblock multiblock;
    
@@ -75,7 +77,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       resetCooldown();
    }
    
-   public HashMap<String,BlockPos> getSavedTargets(){
+   public Map<String,BlockPos> getSavedTargets(){
       return this.savedTargets;
    }
    
@@ -313,8 +315,10 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          });
       }
       
-      if(nbt.contains("targets")){
-         readTargets(nbt.getListOrEmpty("targets"));
+      if(view.contains("targets")){
+         view.read("targets",StarpathTargets.CODEC).ifPresent(targets -> {
+            this.savedTargets = targets.targets();
+         });
       }
    }
    
@@ -328,7 +332,32 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       view.putBoolean("synthetic",this.synthetic);
       view.putInt("cooldown",this.cooldown);
       view.putNullable("target",BlockPos.CODEC,targetCoords);
+      view.putNullable("targets",StarpathTargets.CODEC,new StarpathTargets(this.savedTargets));
+   }
+   
+   public record StarpathTargets(Map<String, BlockPos> targets) {
       
-      nbt.put("targets",writeTargets());
+      public StarpathTargets {
+         if (targets == null) targets = new HashMap<>();
+      }
+      
+      private record TargetEntry(String name, int x, int y, int z) {}
+      private static final Codec<TargetEntry> ENTRY_CODEC = RecordCodecBuilder.create(i -> i.group(
+            Codec.STRING.fieldOf("name").forGetter(TargetEntry::name),
+            Codec.INT.fieldOf("x").forGetter(TargetEntry::x),
+            Codec.INT.fieldOf("y").forGetter(TargetEntry::y),
+            Codec.INT.fieldOf("z").forGetter(TargetEntry::z)
+      ).apply(i, TargetEntry::new));
+      
+      // CODEC encodes/decodes directly as a list of entry objects (no wrapper), matching the NBT list produced/consumed below
+      public static final Codec<StarpathTargets> CODEC = ENTRY_CODEC.listOf().xmap(list -> {
+         Map<String, BlockPos> map = new HashMap<>();
+         for (TargetEntry e : list) map.put(e.name(), new BlockPos(e.x(), e.y(), e.z()));
+         return new StarpathTargets(map);
+      }, sp -> {
+         List<TargetEntry> out = new ArrayList<>(sp.targets.size());
+         sp.targets.forEach((name, pos) -> out.add(new TargetEntry(name, pos.getX(), pos.getY(), pos.getZ())));
+         return out;
+      });
    }
 }

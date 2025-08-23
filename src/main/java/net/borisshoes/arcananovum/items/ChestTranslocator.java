@@ -40,6 +40,7 @@ import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -153,7 +154,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          
          for(int i = 0; i < items.size(); i++){
             NbtCompound stack = items.getCompoundOrEmpty(i);
-            ItemStack itemStack = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,stack).result().orElse(ItemStack.EMPTY);
+            ItemStack itemStack = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stack).result().orElse(ItemStack.EMPTY);
             inv.setStack(stack.getByte("Slot", (byte) 0), itemStack);
          }
       }
@@ -270,7 +271,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                   blockState = Blocks.BARREL.getPlacementState(ipc);
                }
                world.setBlockState(placePos,blockState,Block.NOTIFY_ALL);
-               BlockEntity blockEntity = BlockEntity.createFromNbt(blockPos,blockState,contents,world.getRegistryManager());
+               BlockEntity blockEntity = BlockEntity.createFromNbt(placePos,blockState,contents,world.getRegistryManager());
                if(blockEntity != null){
                   world.addBlockEntity(blockEntity);
                   if(blockEntity instanceof LootableContainerBlockEntity container){

@@ -2,20 +2,21 @@ package net.borisshoes.arcananovum.cardinalcomponents;
 
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Pair;
 
 public class BossFightComponent implements IBossFightComponent{
    public Pair<BossFights,NbtCompound> bossFight;
    
    @Override
-   public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
+   public void readData(ReadView readView){
       try{
-         String id = tag.getString("id", "");
+         String id = readView.getString("id", "");
          if(id.isEmpty()){
             bossFight = null;
          }else{
-            bossFight = new Pair<>(BossFights.fromLabel(id), tag.getCompoundOrEmpty("data"));
+            bossFight = new Pair<>(BossFights.fromLabel(id), readView.read("data",NbtCompound.CODEC).orElse(new NbtCompound()));
          }
       }catch(Exception e){
          e.printStackTrace();
@@ -23,13 +24,13 @@ public class BossFightComponent implements IBossFightComponent{
    }
    
    @Override
-   public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup){
+   public void writeData(WriteView writeView){
       try{
          if(bossFight == null){
-            tag.putString("id","");
+            writeView.putString("id","");
          }else{
-            tag.putString("id",bossFight.getLeft().label);
-            tag.put("data",bossFight.getRight());
+            writeView.putString("id",bossFight.getLeft().label);
+            writeView.put("data",NbtCompound.CODEC,bossFight.getRight());
          }
       }catch(Exception e){
          e.printStackTrace();

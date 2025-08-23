@@ -39,6 +39,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.MinecraftServer;
@@ -202,7 +203,7 @@ public class LevitationHarness extends EnergyItem {
          putProperty(stack,STONE_DATA_TAG,new NbtCompound());
          putProperty(stack,SOULS_TAG,-1);
       }else{
-         putProperty(stack,STONE_DATA_TAG,stone.toNbt(ArcanaNovum.SERVER.getRegistryManager()));
+         putProperty(stack,STONE_DATA_TAG,ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stone).getOrThrow());
          putProperty(stack,SOULS_TAG,Soulstone.getSouls(stone));
       }
    }
@@ -265,7 +266,7 @@ public class LevitationHarness extends EnergyItem {
          if(stoneData == null || stoneData.isEmpty()){
             stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
          }else{
-            stone = ItemStack.VALIDATED_CODEC.parse(NbtOps.INSTANCE,stoneData).result().orElse(ItemStack.EMPTY);
+            stone = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,player.getRegistryManager()),stoneData).result().orElse(ItemStack.EMPTY);
          }
          stone = Soulstone.setSouls(stone,souls);
          inv.setStack(0,stone);

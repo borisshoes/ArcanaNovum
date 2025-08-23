@@ -72,7 +72,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
             
             Vec3d distVec = playerEntity.getPos().subtract(invisEntity.getPos());
             int viewDist = MathHelper.clamp(playerEntity.getViewDistance(), 2, playerEntity.getWorld().getChunkManager().chunkLoadingManager.watchDistance);
-            ServerChunkLoadingManager.EntityTracker tracker = playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId());
+            ServerChunkLoadingManager.EntityTracker tracker = playerEntity.getWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId());
             double maxTrackDist = viewDist * 16;
             if(tracker != null){
                maxTrackDist = Math.min(tracker.getMaxTrackDistance(), maxTrackDist);
@@ -83,7 +83,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
             
             if(reveal){
                List<Packet<? super ClientPlayPacketListener>> list = new ArrayList<>();
-               playerEntity.getServerWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(invisEntity.getId()).entry.sendPackets(playerEntity, list::add);
+               playerEntity.getWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(invisEntity.getId()).entry.sendPackets(playerEntity, list::add);
                playerEntity.networkHandler.sendPacket(new BundleS2CPacket(list));
             }
          }
