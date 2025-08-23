@@ -329,11 +329,9 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       this.synthetic = view.getBoolean("synthetic", false);
       this.cooldown = view.getInt("cooldown", 0);
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
    }
    
    @Override

@@ -173,9 +173,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    @Override
    protected void readCustomData(ReadView view){
       super.readCustomData(view);
-      if(view.contains("augments")){
-         augments = view.read("augments",NbtCompound.CODEC).orElse(new NbtCompound());
-      }
+      augments = view.read("augments",NbtCompound.CODEC).orElse(new NbtCompound());
       inStasis = view.getBoolean("inStasis", false);
       stasisTime = view.getInt("stasisTime", 0);
       itemStackId = view.getString("stackUuid", "");

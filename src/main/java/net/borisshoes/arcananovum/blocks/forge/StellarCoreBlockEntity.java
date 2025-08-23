@@ -301,11 +301,9 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
          Inventories.readData(view, this.inventory.getHeldStacks());
       }
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
    }
    
    @Override

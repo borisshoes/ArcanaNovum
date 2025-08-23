@@ -242,11 +242,9 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.mode = view.getInt("mode", 0);
       this.phase = view.getInt("phase", 0);
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
    }
    
    @Override

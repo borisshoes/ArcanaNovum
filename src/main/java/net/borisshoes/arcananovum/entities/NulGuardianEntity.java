@@ -228,11 +228,9 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
       super.readCustomData(view);
       mage = view.getBoolean("mage", false);
       
-      if(view.contains("construct")){
-         if(getWorld() instanceof ServerWorld serverWorld){
-            if(serverWorld.getEntity(MiscUtils.getUUID(view.getString("construct", ""))) instanceof NulConstructEntity con){
-               this.construct = con;
-            }
+      if(getWorld() instanceof ServerWorld serverWorld){
+         if(serverWorld.getEntity(MiscUtils.getUUID(view.getString("construct", ""))) instanceof NulConstructEntity con){
+            this.construct = con;
          }
       }
    }

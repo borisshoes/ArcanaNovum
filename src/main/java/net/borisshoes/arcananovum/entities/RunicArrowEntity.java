@@ -252,17 +252,11 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    protected void readCustomData(ReadView view){
       super.readCustomData(view);
       this.augments = new TreeMap<>();
-      if(view.contains("runicAugments")){
-         view.read("runicAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
-      if(view.contains("runicArrowType")){
-         ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(view.getString("runicArrowType", ""));
-         if(arcanaItem instanceof RunicArrow ra) arrowType = ra;
-      }
-      if(view.contains("runicArrowData")){
-         data = view.read("runicArrowData", NbtCompound.CODEC).orElse(new NbtCompound());
-      }
+      view.read("runicAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
+      ArcanaItem arcanaItem = ArcanaRegistry.getArcanaItem(view.getString("runicArrowType", ""));
+      if(arcanaItem instanceof RunicArrow ra) arrowType = ra;
+      data = view.read("runicArrowData", NbtCompound.CODEC).orElse(new NbtCompound());
    }
 }

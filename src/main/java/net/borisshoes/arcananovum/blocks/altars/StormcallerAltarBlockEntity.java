@@ -235,11 +235,9 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       this.mode = view.getInt("mode", 0);
       this.duration = view.getInt("duration", 0);
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
    }
    
    @Override

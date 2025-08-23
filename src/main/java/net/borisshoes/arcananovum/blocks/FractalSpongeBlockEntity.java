@@ -86,11 +86,9 @@ public class FractalSpongeBlockEntity extends BlockEntity implements PolymerObje
       this.customName = view.getString("customName", "");
       this.synthetic = view.getBoolean("synthetic", false);
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
    }
    
    @Override

@@ -270,11 +270,9 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
       this.synthetic = view.getBoolean("synthetic", false);
       this.seedUses = view.getInt("seedUses", 0);
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
    }
    
    @Override

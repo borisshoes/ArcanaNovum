@@ -303,23 +303,17 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.synthetic = view.getBoolean("synthetic", false);
       this.cooldown = view.getInt("cooldown", 0);
       this.targetCoords = getPos();
-      if(view.contains("target")){
-         view.read("target",BlockPos.CODEC).ifPresent(data -> {
-            this.targetCoords = data;
-         });
-      }
+      view.read("target",BlockPos.CODEC).ifPresent(data -> {
+         this.targetCoords = data;
+      });
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
       
-      if(view.contains("targets")){
-         view.read("targets",StarpathTargets.CODEC).ifPresent(targets -> {
-            this.savedTargets = targets.targets();
-         });
-      }
+      view.read("targets",StarpathTargets.CODEC).ifPresent(targets -> {
+         this.savedTargets = targets.targets();
+      });
    }
    
    @Override

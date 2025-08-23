@@ -375,10 +375,8 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          this.bossBar.setName(this.getDisplayName());
       }
       
-      if(view.contains("summoner")){
-         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(view.getString("summoner", ""))) instanceof PlayerEntity player){
-            summoner = player;
-         }
+      if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(view.getString("summoner", ""))) instanceof PlayerEntity player){
+         summoner = player;
       }
       
       spells = new HashMap<>();

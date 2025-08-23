@@ -208,11 +208,9 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
       this.fuel = view.getInt("fuel", 0);
       this.active = view.getBoolean("active", false);
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
       this.inventory = new SimpleInventory(size());
       if (!this.readLootTable(view)) {
          Inventories.readData(view, this.inventory.getHeldStacks());

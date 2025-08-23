@@ -280,30 +280,24 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
       this.points = view.getInt("points", 0);
       this.spentPoints = view.getInt("spentPoints", 0);
       this.soulstone = ItemStack.EMPTY;
-      if(view.contains("soulstone")){
-         view.read("soulstone",ItemStack.CODEC).ifPresent(stack -> {
-            this.soulstone = stack;
-         });
-      }
+      view.read("soulstone",ItemStack.CODEC).ifPresent(stack -> {
+         this.soulstone = stack;
+      });
       
       
       
       this.augments = new TreeMap<>();
-      if(view.contains("arcanaAugments")){
-         view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
-            this.augments = data;
-         });
-      }
+      view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
+         this.augments = data;
+      });
       this.inventory = new SimpleInventory(size());
       if (!this.readLootTable(view)) {
          Inventories.readData(view, this.inventory.getHeldStacks());
       }
       
-      if(view.contains("spawnerStats")){
-         view.read("spawnerStats",SpawnerStats.CODEC).ifPresent(stats -> {
-            setSpawnerStats(stats.toNbt());
-         });
-      }
+      view.read("spawnerStats",SpawnerStats.CODEC).ifPresent(stats -> {
+         setSpawnerStats(stats.toNbt());
+      });
    }
    
    
