@@ -1910,7 +1910,6 @@ public class ParticleEffectUtils {
    
    public static List<Pair<Vec3d,Vec3d>> getIcosahedronPairs(List<Vec3d> icosPoints){
       List<Pair<Vec3d,Vec3d>> icosOutlines = new ArrayList<>();
-      
       icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(1)));
       icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(4)));
       icosOutlines.add(new Pair<>(icosPoints.get(0),icosPoints.get(7)));
@@ -1958,7 +1957,6 @@ public class ParticleEffectUtils {
       icosPoints.add(new Vec3d(-PHI,0,-1));
       icosPoints.add(new Vec3d(PHI,0,-1));
       icosPoints.add(new Vec3d(PHI,0,1));
-      
       return icosPoints;
    }
 }

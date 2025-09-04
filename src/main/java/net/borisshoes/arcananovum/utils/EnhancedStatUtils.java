@@ -162,7 +162,7 @@ public class EnhancedStatUtils {
          List<ToolComponent.Rule> newRules = new ArrayList<>();
          for(ToolComponent.Rule rule : comp.rules()){
             if(rule.speed().isPresent()){
-               float newSpeed = (float)((rule.speed().get() + 4*percentile) * speedBuff);
+               float newSpeed = Math.min(Float.MAX_VALUE,(float)((rule.speed().get() + 4*percentile) * speedBuff));
                newRules.add(new ToolComponent.Rule(rule.blocks(), Optional.of(newSpeed), rule.correctForDrops()));
             }else{
                newRules.add(rule);
