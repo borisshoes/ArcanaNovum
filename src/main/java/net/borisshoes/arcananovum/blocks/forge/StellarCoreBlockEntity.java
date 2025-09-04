@@ -184,7 +184,8 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
          Map<Item,Integer> precursorSalvage = new HashMap<>();
          for(RecipeEntry<SmithingRecipe> entry : smithingRecipes){
             if(entry.value() instanceof SmithingTransformRecipe smithingRecipe){
-               if(!smithingRecipe.result.itemEntry().equals(stack.getItem())) continue;
+               if(!stack.isOf(smithingRecipe.result.itemEntry().value())) continue;
+               System.out.println(smithingRecipe.result.itemEntry().getIdAsString());
                if(smithingRecipe.template().isEmpty() || !smithingRecipe.template().get().test(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE.getDefaultStack())) continue;
                if(smithingRecipe.addition().isEmpty() || repairItems.stream().noneMatch(repair -> smithingRecipe.addition().get().test(repair))) continue;
                
@@ -297,6 +298,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
       this.customName = view.getString("customName", "");
       this.synthetic = view.getBoolean("synthetic", false);
       this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
       if (!this.readLootTable(view)) {
          Inventories.readData(view, this.inventory.getHeldStacks());
       }
