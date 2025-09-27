@@ -13,6 +13,7 @@ import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TextUtils;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
@@ -25,12 +26,12 @@ import java.util.List;
 
 public class CacheGui extends SimpleGui {
    private TomeGui.CompendiumSettings settings;
-   private CacheInventory inv;
+   private SimpleInventory inv;
    
    public CacheGui(ServerPlayerEntity player){
       super(ScreenHandlerType.GENERIC_9X6, player, false);
       this.settings = new TomeGui.CompendiumSettings(0,0);
-      this.inv = new CacheInventory();
+      this.inv = new SimpleInventory(28);
    }
    
    @Override

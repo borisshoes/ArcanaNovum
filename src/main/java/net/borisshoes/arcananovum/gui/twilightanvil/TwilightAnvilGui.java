@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.gui.twilightanvil;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
@@ -15,6 +14,7 @@ import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
@@ -22,6 +22,7 @@ import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -37,9 +38,9 @@ import net.minecraft.world.World;
 import java.util.List;
 import java.util.TreeMap;
 
-public class TwilightAnvilGui extends SimpleGui {
+public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
    private final TwilightAnvilBlockEntity blockEntity;
-   private TinkerInventory inv;
+   private SimpleInventory inventory;
    private TinkerInventoryListener listener;
    private final int mode; // 0 - Menu (hopper), 1 - Anvil (9x3), 2 - Augmenting (9x4)
    private final int[][] dynamicSlots = {{},{3},{1,5},{1,3,5},{0,2,4,6},{1,2,3,4,5},{0,1,2,4,5,6},{0,1,2,3,4,5,6}};
@@ -61,10 +62,10 @@ public class TwilightAnvilGui extends SimpleGui {
          }else if(index == 4){
             blockEntity.openGui(1,player,"");
          }
-      }else if(mode == 1 && inv != null){ // Anvil
+      }else if(mode == 1 && inventory != null){ // Anvil
          if(index == 14){
-            ItemStack input1 = inv.getStack(0);
-            ItemStack input2 = inv.getStack(1);
+            ItemStack input1 = inventory.getStack(0);
+            ItemStack input2 = inventory.getStack(1);
             TwilightAnvilBlockEntity.AnvilOutputSet outputSet = blockEntity.calculateOutput(input1,input2);
             if(outputSet.output().isEmpty()) return true;
             
@@ -98,17 +99,17 @@ public class TwilightAnvilGui extends SimpleGui {
             ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.TWILIGHT_ANVIL_CAP),ArcanaConfig.getInt(ArcanaRegistry.TWILIGHT_ANVIL_PER_10)*points/10.0));
             
             listener.setUpdating();
-            inv.setStack(0, ItemStack.EMPTY);
+            inventory.setStack(0, ItemStack.EMPTY);
             if(outputSet.itemRepairUsage() > 0){
-               ItemStack itemStack = inv.getStack(1);
+               ItemStack itemStack = inventory.getStack(1);
                if(!itemStack.isEmpty() && itemStack.getCount() > outputSet.itemRepairUsage()){
                   itemStack.decrement(outputSet.itemRepairUsage());
-                  inv.setStack(1, itemStack);
+                  inventory.setStack(1, itemStack);
                }else{
-                  inv.setStack(1, ItemStack.EMPTY);
+                  inventory.setStack(1, ItemStack.EMPTY);
                }
             }else{
-               inv.setStack(1, ItemStack.EMPTY);
+               inventory.setStack(1, ItemStack.EMPTY);
             }
             setSlot(14,ItemStack.EMPTY);
             GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideDefaultTooltip();
@@ -138,8 +139,8 @@ public class TwilightAnvilGui extends SimpleGui {
             SoundUtils.playSound(player.getWorld(),blockEntity.getPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
             listener.finishUpdate();
          }
-      }else if(mode == 2 && inv != null){ // Augmenting
-         ItemStack item = inv.getStack(0);
+      }else if(mode == 2 && inventory != null){ // Augmenting
+         ItemStack item = inventory.getStack(0);
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          
          if(tinkerSlotType == 1){
@@ -158,23 +159,23 @@ public class TwilightAnvilGui extends SimpleGui {
          }
          
          if(index == 0 && tinkerSlotType != 2){
-            MiscUtils.returnItems(inv,player);
+            MiscUtils.returnItems(inventory,player);
             clearSlot(4);
             tinkerSlotType = 2;
-            redrawGui(inv);
+            redrawGui(inventory);
          }else if(index == 8  && tinkerSlotType != 1){
-            MiscUtils.returnItems(inv,player);
+            MiscUtils.returnItems(inventory,player);
             clearSlot(4);
             tinkerSlotType = 1;
-            redrawGui(inv);
+            redrawGui(inventory);
          }else if(index == 4  && tinkerSlotType != 0){
-            setSlotRedirect(4, new Slot(inv,0,0,0));
+            setSlotRedirect(4, new Slot(inventory,0,0,0));
             tinkerSlotType = 0;
-            redrawGui(inv);
+            redrawGui(inventory);
          }else if(index == 31){
             if(arcanaItem != null){
                if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
-                  MiscUtils.returnItems(inv,player);
+                  MiscUtils.returnItems(inventory,player);
                   blockEntity.openGui(4,player, arcanaItem.getId());
                }else{
                   player.sendMessage(Text.literal("You must research this item first!").formatted(Formatting.RED),false);
@@ -305,11 +306,11 @@ public class TwilightAnvilGui extends SimpleGui {
             .append(Text.literal("XP Cost will be shown here").formatted(Formatting.DARK_GREEN)))));
       setSlot(16,xpItem);
       
-      inv = new TinkerInventory();
+      inventory = new SimpleInventory(2);
       listener = new TinkerInventoryListener(this,2,blockEntity);
-      inv.addListener(listener);
-      setSlotRedirect(10, new Slot(inv,0,0,0));
-      setSlotRedirect(12, new Slot(inv,1,0,0));
+      inventory.addListener(listener);
+      setSlotRedirect(10, new Slot(inventory,0,0,0));
+      setSlotRedirect(12, new Slot(inventory,1,0,0));
       clearSlot(14);
       
       setTitle(Text.literal("Tinker Items"));
@@ -350,10 +351,10 @@ public class TwilightAnvilGui extends SimpleGui {
          setSlot(19+i,augmentPane);
       }
       
-      inv = new TinkerInventory();
+      inventory = new SimpleInventory(2);
       listener = new TinkerInventoryListener(this,0,blockEntity);
-      inv.addListener(listener);
-      setSlotRedirect(4, new Slot(inv,0,0,0));
+      inventory.addListener(listener);
+      setSlotRedirect(4, new Slot(inventory,0,0,0));
       
       setTitle(Text.literal("Augment Arcana Items"));
    }
@@ -379,7 +380,7 @@ public class TwilightAnvilGui extends SimpleGui {
          if(tinkerSlotType == 0){
             if(ArcanaAugments.applyAugment(item,augment.id,level,true)){
                if(!creative) playerInv.removeStack(catalystSlot);
-               inv.setStack(0,item);
+               inventory.setStack(0,item);
                return true;
             }else{
                ArcanaNovum.log(3,"Error applying augment "+augment.id+" to "+ ArcanaItemUtils.identifyItem(item).getId());
@@ -393,13 +394,13 @@ public class TwilightAnvilGui extends SimpleGui {
             TreeMap<ArcanaAugment,Integer> forgeAugments = forge.getAugments();
             forgeAugments.put(augment,level);
             if(!creative) playerInv.removeStack(catalystSlot);
-            redrawGui(inv);
+            redrawGui(inventory);
             return true;
          }else if(tinkerSlotType == 2){
             TreeMap<ArcanaAugment,Integer> anvilAugments = blockEntity.getAugments();
             anvilAugments.put(augment,level);
             if(!creative) playerInv.removeStack(catalystSlot);
-            redrawGui(inv);
+            redrawGui(inventory);
             return true;
          }
       }
@@ -612,7 +613,7 @@ public class TwilightAnvilGui extends SimpleGui {
          tinkerSlotType = 0;
          blockEntity.openGui(2,player,"");
       }
-      MiscUtils.returnItems(inv,player);
+      MiscUtils.returnItems(inventory,player);
    }
    
    @Override

@@ -5,9 +5,13 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
+import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.items.QuiverItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.server.MinecraftServer;
@@ -18,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
 public class PlayerConnectionCallback {
@@ -108,6 +113,19 @@ public class PlayerConnectionCallback {
       ServerPlayerEntity player = handler.player;
       if(player.getMaxHealth() > 20 && player.getHealth() > 20){
          ArcanaNovum.addLoginCallback(new MaxHealthLoginCallback(server,player.getUuidAsString(),player.getHealth()));
+      }
+      
+      VIRTUAL_INVENTORY_GUIS.forEach((virtualInventoryGui, p) -> {
+         if(player.getUuidAsString().equals(p.getUuidAsString())){
+            for(ItemStack itemStack : virtualInventoryGui.getInventory()){
+               if(!itemStack.isEmpty()){
+                  BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(itemStack.copyAndEmpty(),player,0));
+               }
+            }
+         }
+      });
+      for(VirtualInventoryGui<?> inv : new ArrayList<>(VIRTUAL_INVENTORY_GUIS.keySet())){
+         VIRTUAL_INVENTORY_GUIS.remove(inv);
       }
    }
 }

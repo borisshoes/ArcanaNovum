@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.items.QuiverItem;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -20,7 +21,7 @@ public class QuiverGui extends SimpleGui {
    
    private final QuiverItem quiver;
    private final ItemStack item;
-   private QuiverInventory inv;
+   private SimpleInventory inv;
    private final boolean runic;
    
    /**
@@ -37,7 +38,7 @@ public class QuiverGui extends SimpleGui {
    }
    
    public void build(){
-      inv = new QuiverInventory();
+      inv = new SimpleInventory(QuiverItem.size);
       QuiverInventoryListener listener = new QuiverInventoryListener(quiver,this,item);
       inv.addListener(listener);
       listener.setUpdating();

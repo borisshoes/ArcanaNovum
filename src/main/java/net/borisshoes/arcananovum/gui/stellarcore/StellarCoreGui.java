@@ -12,7 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
-public class StellarCoreGui  extends SimpleGui {
+public class StellarCoreGui extends SimpleGui {
    private final StellarCoreBlockEntity blockEntity;
    
    public StellarCoreGui(ServerPlayerEntity player, StellarCoreBlockEntity blockEntity){

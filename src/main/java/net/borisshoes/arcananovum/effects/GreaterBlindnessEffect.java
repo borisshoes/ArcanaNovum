@@ -62,7 +62,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
                   }
                }
 
-               if(lifeTime-- <= 0){
+               if(lifeTime-- <= 0 || player.isDead() || player.isDisconnected()){
                   setAttachment(null);
                   destroy(); // Time expired, remove
                }

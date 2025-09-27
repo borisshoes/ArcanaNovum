@@ -1408,7 +1408,7 @@ public class ResearchTasks {
       ));
       
       ResearchTasks.register(ADVANCEMENT_USE_LODESTONE, new AdvancementResearchTask(
-            ADVANCEMENT_USE_LODESTONE.getValue().getPath(), "nether/use_lodestone",
+            ADVANCEMENT_USE_LODESTONE.getValue().getPath(), "adventure/use_lodestone",
             Text.literal("Discover Geolocation"),
             new Text[]{
                   Text.literal("I wonder if there is any way to bind a compass"),

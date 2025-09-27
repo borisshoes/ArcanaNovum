@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.datagen;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.data.tag.ProvidedTagBuilder;
@@ -20,10 +21,14 @@ public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
    protected void configure(RegistryWrapper.WrapperLookup lookup){
       ProvidedTagBuilder<Item,Item> allItemsBuilder = valueLookupBuilder(ArcanaRegistry.ALL_ARCANA_ITEMS);
       ProvidedTagBuilder<Item,Item> unstackableItemsBuilder = valueLookupBuilder(ArcanaRegistry.UNSTACKABLE_ARCANA_ITEMS);
+      ProvidedTagBuilder<Item,Item> runicArrowsBuilder = valueLookupBuilder(ArcanaRegistry.RUNIC_ARROWS);
       ArcanaRegistry.ARCANA_ITEMS.forEach(item -> {
          allItemsBuilder.add(item.getItem());
          if(item.getItem().getMaxCount() == 1){
             unstackableItemsBuilder.add(item.getItem());
+         }
+         if(item instanceof RunicArrow){
+            runicArrowsBuilder.add(item.getItem());
          }
       });
       
@@ -54,6 +59,8 @@ public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
             .forceAddTag(ItemTags.VANISHING_ENCHANTABLE)
             .forceAddTag(ArcanaRegistry.UNSTACKABLE_ARCANA_ITEMS)
       ;
+      
+      valueLookupBuilder(ArcanaRegistry.FATE_ANCHOR_UNENCHANTABLE);
       
       valueLookupBuilder(ArcanaRegistry.NONPROTECTIVE_ARMOR_REPAIR)
             .add(Items.LEATHER)

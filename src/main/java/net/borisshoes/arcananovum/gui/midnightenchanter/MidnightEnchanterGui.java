@@ -2,7 +2,6 @@ package net.borisshoes.arcananovum.gui.midnightenchanter;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.SimpleGui;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -15,6 +14,7 @@ import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.*;
@@ -45,9 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class MidnightEnchanterGui extends SimpleGui {
+public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    private final MidnightEnchanterBlockEntity blockEntity;
-   private MidnightEnchanterInventory inv;
    private MidnightEnchanterInventoryListener listener;
    private ItemStack stack = ItemStack.EMPTY;
    private int page = 1;
@@ -87,10 +86,10 @@ public class MidnightEnchanterGui extends SimpleGui {
                player.applyEnchantmentCosts(stack,0);
                applyEnchants();
                removeXP(lapisLevel);
-               MiscUtils.returnItems(inv,player);
+               MiscUtils.returnItems(inventory,player);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
                listener.setUpdating();
-               inv.setStack(0,ItemStack.EMPTY);
+               inventory.setStack(0,ItemStack.EMPTY);
                setItem(ItemStack.EMPTY);
                listener.finishUpdate();
             }else{
@@ -104,11 +103,11 @@ public class MidnightEnchanterGui extends SimpleGui {
                   listener.setUpdating();
                   ItemStack newStack = new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER);
                   newStack.setCount(stack.getCount());
-                  inv.setStack(0,newStack);
+                  inventory.setStack(0,newStack);
                   removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-                  MiscUtils.returnItems(inv,player);
-                  inv.setStack(0,ItemStack.EMPTY);
+                  MiscUtils.returnItems(inventory,player);
+                  inventory.setStack(0,ItemStack.EMPTY);
                   setItem(ItemStack.EMPTY);
                   listener.finishUpdate();
                }else{
@@ -127,9 +126,9 @@ public class MidnightEnchanterGui extends SimpleGui {
                   applyEnchants();
                   removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-                  MiscUtils.returnItems(inv,player);
+                  MiscUtils.returnItems(inventory,player);
                   listener.setUpdating();
-                  inv.setStack(0,ItemStack.EMPTY);
+                  inventory.setStack(0,ItemStack.EMPTY);
                   setItem(ItemStack.EMPTY);
                   listener.finishUpdate();
                }else{
@@ -279,13 +278,13 @@ public class MidnightEnchanterGui extends SimpleGui {
       MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       clearSlot(4);
       
-      if(inv == null){
-         inv = new MidnightEnchanterInventory();
+      if(inventory == null){
+         inventory = new SimpleInventory(1);
       }
-      setSlotRedirect(4,new MidnightEnchanterSlot(inv,0,0,0));
+      setSlotRedirect(4,new MidnightEnchanterSlot(inventory,0,0,0));
       if(listener == null){
          listener = new MidnightEnchanterInventoryListener(this,blockEntity);
-         inv.addListener(listener);
+         inventory.addListener(listener);
       }
       
       boolean enchanted = EnchantmentHelper.hasEnchantments(stack);
@@ -610,7 +609,7 @@ public class MidnightEnchanterGui extends SimpleGui {
       }
       
       EnchantmentHelper.set(stack,enchantBuilder.build());
-      inv.setStack(0,stack);
+      inventory.setStack(0,stack);
       listener.finishUpdate();
    }
    
@@ -625,7 +624,7 @@ public class MidnightEnchanterGui extends SimpleGui {
       if(ArcanaItemUtils.isArcane(stack)){
          ArcanaItemUtils.identifyItem(stack).buildItemLore(stack, ArcanaNovum.SERVER);
       }
-      inv.setStack(0,stack);
+      inventory.setStack(0,stack);
       listener.finishUpdate();
    }
    
@@ -681,7 +680,7 @@ public class MidnightEnchanterGui extends SimpleGui {
       enchants.forEach(enchantBuilder::add);
       EnchantmentHelper.set(stack,enchantBuilder.build());
       
-      inv.setStack(0,stack);
+      inventory.setStack(0,stack);
       listener.finishUpdate();
       return new Pair<>(registryEntry,value);
    }
@@ -820,7 +819,7 @@ public class MidnightEnchanterGui extends SimpleGui {
    
    @Override
    public void onClose(){
-      MiscUtils.returnItems(inv,player);
+      MiscUtils.returnItems(inventory,player);
    }
    
    @Override

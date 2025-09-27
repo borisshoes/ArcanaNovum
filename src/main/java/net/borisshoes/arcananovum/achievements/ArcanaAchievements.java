@@ -224,6 +224,10 @@ public class ArcanaAchievements {
          new ProgressAchievement("Frequent Flier", "frequent_flier", new ItemStack(Items.FEATHER), ArcanaRegistry.LEVITATION_HARNESS, 15000, 3,
                new String[]{"Use the Levitation Harness for 24 Hours"}, 86400
          ));
+   public static final ArcanaAchievement AIR_TRAFFIC_CONTROL = ArcanaAchievements.register(
+         new EventAchievement("Air Traffic Control", "air_traffic_control", new ItemStack(Items.SPYGLASS), ArcanaRegistry.LEVITATION_HARNESS, 100000, 5,
+               new String[]{"Fly with the Levitation Harness within 32 blocks of an "," Allay, Bat, Bee, Blaze, Ender Dragon, Ghast, "," Happy Ghast, Parrot, Phantom, Vex and Wither"}
+         ));
    
    // Nul Memento
    public static final ArcanaAchievement DIVINE_FAVOR = ArcanaAchievements.register(

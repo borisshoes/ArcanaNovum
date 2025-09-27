@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
@@ -26,7 +27,7 @@ import java.util.List;
 public class RenameGui extends AnvilInputGui {
    private final TwilightAnvilBlockEntity blockEntity;
    private Text newName;
-   private TinkerInventory inv;
+   private SimpleInventory inv;
    private TinkerInventoryListener listener;
    private ItemStack item;
    
@@ -48,7 +49,7 @@ public class RenameGui extends AnvilInputGui {
       setTitle(Text.literal("Rename Item"));
       setSlot(1, GuiElementBuilder.from(Items.STRUCTURE_VOID.getDefaultStack()).setName(Text.literal("")).hideTooltip());
       
-      inv = new TinkerInventory();
+      inv = new SimpleInventory(2);
       listener = new TinkerInventoryListener(this,1,blockEntity);
       inv.addListener(listener);
       

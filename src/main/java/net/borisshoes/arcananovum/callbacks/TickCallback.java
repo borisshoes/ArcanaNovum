@@ -37,6 +37,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -75,9 +76,16 @@ public class TickCallback {
                
                
                
-               // Version Update Check
                boolean isArcane = ArcanaItemUtils.isArcane(item);
                if(!isArcane){
+                  if(item.isIn(ArcanaRegistry.ALL_ARCANA_ITEMS)){
+                     ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.get(Identifier.of(item.getItem().toString()));
+                     if(arcanaItem != null){
+                        inv.setStack(i,arcanaItem.addCrafter(arcanaItem.getNewItem(),player.getUuidAsString(),true,server));
+                        item = inv.getStack(i);
+                     }
+                  }
+                  
                   if(item.contains(DataComponentTypes.BUNDLE_CONTENTS)){
                      BundleContentsComponent bundleComp = item.get(DataComponentTypes.BUNDLE_CONTENTS);
                      List<ItemStack> newStacks = new ArrayList<>();
@@ -111,8 +119,9 @@ public class TickCallback {
                }
    
                // Reset Nul Memento
+               ItemStack finalItem = item;
                if(arcanaItem instanceof NulMemento nulMemento && nulMemento.isActive(item) &&
-                     (i != 39 || ArcanaNovum.getEventsOfType(NulMementoEvent.class).stream().noneMatch(event -> event.getPlayer().equals(player) && ArcanaItem.getUUID(event.getMemento()).equals(ArcanaItem.getUUID(item))))){
+                     (i != 39 || ArcanaNovum.getEventsOfType(NulMementoEvent.class).stream().noneMatch(event -> event.getPlayer().equals(player) && ArcanaItem.getUUID(event.getMemento()).equals(ArcanaItem.getUUID(finalItem))))){
                   ArcanaItem.putProperty(item, ArcanaItem.ACTIVE_TAG,false);
                }
             }

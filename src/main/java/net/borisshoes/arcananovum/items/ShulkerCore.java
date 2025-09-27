@@ -10,7 +10,6 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
-import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventory;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
@@ -27,6 +26,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
@@ -245,7 +245,7 @@ public class ShulkerCore extends EnergyItem {
       gui.setSlot(3,pane.setName(Text.literal(paneText).formatted(textColor)));
       gui.setSlot(4,pane.setName(Text.literal(paneText).formatted(textColor)));
       
-      ShulkerCoreInventory inv = new ShulkerCoreInventory();
+      SimpleInventory inv = new SimpleInventory(1);
       ShulkerCoreInventoryListener listener = new ShulkerCoreInventoryListener(this,gui,stack);
       inv.addListener(listener);
       listener.setUpdating();

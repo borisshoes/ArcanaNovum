@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.events.ArcanaEvent;
+import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -52,6 +53,7 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    public static final HashMap<ServerPlayerEntity, Pair<Vec3d,Vec3d>> PLAYER_MOVEMENT_TRACKER = new HashMap<>();
    public static final List<ArcanaEvent> RECENT_EVENTS = new ArrayList<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
+   public static final HashMap<VirtualInventoryGui, ServerPlayerEntity> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
    public static final boolean DEV_MODE = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";

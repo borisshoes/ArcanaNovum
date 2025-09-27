@@ -600,9 +600,9 @@ public abstract class LivingEntityMixin {
    }
    
    @ModifyReturnValue(method="getAttackDistanceScalingFactor", at=@At("RETURN"))
-   private double arcananovum_greaterInvisibilityAttackRangeScale(double original, Entity entity){
+   private double arcananovum_greaterInvisibilityAttackRangeScale(double original, Entity attacker){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      if(livingEntity.getType().isIn(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return original;
+      if(attacker.getType().isIn(ArcanaRegistry.IGNORES_GREATER_INVISIBILITY)) return original;
       if(livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
          return original * 0.01;
       }

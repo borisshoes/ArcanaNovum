@@ -3,7 +3,6 @@ package net.borisshoes.arcananovum.gui.starlightforge;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
@@ -11,6 +10,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -22,6 +22,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.utils.*;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -44,10 +45,9 @@ import java.util.*;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.CRAFTING_SLOTS;
 import static net.borisshoes.arcananovum.gui.arcanetome.TomeGui.DYNAMIC_SLOTS;
 
-public class StarlightForgeGui extends SimpleGui {
+public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
    private final StarlightForgeBlockEntity blockEntity;
    private final World world;
-   private StarlightForgeInventory inv;
    private StarlightForgeInventoryListener listener;
    private static final int[] FORGE_SLOTS = new int[]{1,2,3,10,11,12,19,20,21};
    private static final int[] SKILLED_POINTS = new int[]{0,1,2,3,4,5,6,8,10,12,15};
@@ -66,9 +66,9 @@ public class StarlightForgeGui extends SimpleGui {
       }else{
          this.settings = settings;
       }
-      this.inv = new StarlightForgeInventory();
+      this.inventory = new SimpleInventory(25);
       this.listener = new StarlightForgeInventoryListener(this,blockEntity,world,mode);
-      inv.addListener(listener);
+      inventory.addListener(listener);
    }
    
    public int getMode(){
@@ -86,7 +86,7 @@ public class StarlightForgeGui extends SimpleGui {
       }else if(mode == 1){ // Arcana Crafting
          if(index == 7){
             // Go to compendium
-            MiscUtils.returnItems(inv,player);
+            MiscUtils.returnItems(inventory,player);
             blockEntity.openGui(4,player,"",settings);
          }else if(index == 25){
             ItemStack item = this.getSlot(index).getItemStack();
@@ -103,27 +103,27 @@ public class StarlightForgeGui extends SimpleGui {
                if(canApplySkilled){
                   buildSkilledGui(arcanaItem.getId());
                }else{
-                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv, blockEntity),player.getUuidAsString(),false,player.getServer());
+                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),false,player.getServer());
                   forgeItem(arcanaItem, newArcanaItem, recipe, null,type == ClickType.MOUSE_LEFT_SHIFT);
                }
             }
          }
       }else if(mode == 2){ // Equipment Forging
          if(index == 15){
-            ItemStack stack = listener.getEnhancedStack(inv);
+            ItemStack stack = listener.getEnhancedStack(inventory);
             if(!stack.isEmpty()){
                listener.setUpdating();
-               DefaultedList<ItemStack> remainders = listener.getRemainders(inv);
+               DefaultedList<ItemStack> remainders = listener.getRemainders(inventory);
                DefaultedList<ItemStack> ingredients = DefaultedList.of();
-               for(int i = 0; i < inv.size(); i++){
+               for(int i = 0; i < inventory.size(); i++){
                   if(i < 9){
-                     ingredients.add(inv.removeStack(i,1)); // Remove 1 from ingredients
+                     ingredients.add(inventory.removeStack(i,1)); // Remove 1 from ingredients
                   }else{
-                     inv.setStack(i,ItemStack.EMPTY); // Clear other slots
+                     inventory.setStack(i,ItemStack.EMPTY); // Clear other slots
                   }
                }
                
-               MiscUtils.returnItems(inv,player);
+               MiscUtils.returnItems(inventory,player);
                
                EnhancedForgingGui efg = new EnhancedForgingGui(player,this.blockEntity,stack,ingredients,remainders);
                efg.buildGui();
@@ -134,7 +134,7 @@ public class StarlightForgeGui extends SimpleGui {
             BookElementBuilder bookBuilder = getGuideBook();
             LoreGui loreGui = new LoreGui(player,bookBuilder,null,null,null);
             loreGui.open();
-            MiscUtils.returnItems(inv,player);
+            MiscUtils.returnItems(inventory,player);
          }
       }else if(mode == 3){ // Recipe
          ItemStack item = this.getSlot(25).getItemStack();
@@ -232,13 +232,13 @@ public class StarlightForgeGui extends SimpleGui {
                }
                
                ArcanaRecipe recipe = arcanaItem.getRecipe();
-               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv, blockEntity),player.getUuidAsString(),false,player.getServer());
+               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),false,player.getServer());
                forgeItem(arcanaItem, newArcanaItem, recipe, new Pair<>(augment,applicableLevel), type == ClickType.MOUSE_LEFT_SHIFT);
                close();
             }
          }else if(index == 40 && arcanaItem != null){
             ArcanaRecipe recipe = arcanaItem.getRecipe();
-            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inv, blockEntity),player.getUuidAsString(),false,player.getServer());
+            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),false,player.getServer());
             forgeItem(arcanaItem, newArcanaItem, recipe, null, type == ClickType.MOUSE_LEFT_SHIFT);
          }
       }
@@ -255,12 +255,12 @@ public class StarlightForgeGui extends SimpleGui {
       arcanaItem.buildItemLore(newArcanaItem,player.getServer());
       
       ItemStack[][] ingredients = new ItemStack[5][5];
-      for(int i = 0; i < inv.size(); i++){
-         ingredients[i/5][i%5] = inv.getStack(i);
+      for(int i = 0; i < inventory.size(); i++){
+         ingredients[i/5][i%5] = inventory.getStack(i);
       }
       ItemStack[][] remainders = recipe.getRemainders(ingredients, blockEntity, settings.resourceLvl);
-      for(int i = 0; i < inv.size(); i++){
-         inv.setStack(i,remainders[i/5][i%5]);
+      for(int i = 0; i < inventory.size(); i++){
+         inventory.setStack(i,remainders[i/5][i%5]);
       }
       
       ParticleEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0,fastAnim ? 1.75 : 1);
@@ -350,7 +350,7 @@ public class StarlightForgeGui extends SimpleGui {
       }
       
       for(int i = 0; i< FORGE_SLOTS.length; i++){
-         setSlotRedirect(FORGE_SLOTS[i], new Slot(inv,i,0,0));
+         setSlotRedirect(FORGE_SLOTS[i], new Slot(inventory,i,0,0));
       }
       
       setTitle(Text.literal("Forge Equipment"));
@@ -418,7 +418,7 @@ public class StarlightForgeGui extends SimpleGui {
       boolean collect = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.MYSTIC_COLLECTION.id) >= 1;
       ArrayList<Inventory> inventories = collect ? blockEntity.getIngredientInventories() : new ArrayList<>();
       for(int i = 0; i<25;i++){
-         setSlotRedirect(CRAFTING_SLOTS[i], new Slot(inv,i,0,0));
+         setSlotRedirect(CRAFTING_SLOTS[i], new Slot(inventory,i,0,0));
       }
       
       if(itemId != null && !itemId.isEmpty()){
@@ -490,7 +490,7 @@ public class StarlightForgeGui extends SimpleGui {
                      totalStack.increment(removed.getCount());
                   }
                }
-               inv.setStack(i,totalStack);
+               inventory.setStack(i,totalStack);
             }
          }
          
@@ -776,7 +776,7 @@ public class StarlightForgeGui extends SimpleGui {
          blockEntity.openGui(1,player,"",settings);
       }
       
-      MiscUtils.returnItems(inv,player);
+      MiscUtils.returnItems(inventory,player);
    }
    
    @Override

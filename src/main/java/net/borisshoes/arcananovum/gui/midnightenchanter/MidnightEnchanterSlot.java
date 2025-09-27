@@ -14,8 +14,13 @@ public class MidnightEnchanterSlot extends Slot {
    
    @Override
    public boolean canInsert(ItemStack stack){
-      boolean sizeLimit = stack.getCount() <= 1 && (!ItemStack.areItemsAndComponentsEqual(this.getStack(), stack) || stack.getCount() + this.getStack().getCount() <= 1);
-      return ((EnchantmentHelper.canHaveEnchantments(stack) || EnchantmentHelper.hasEnchantments(stack)) && (sizeLimit) || stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER));
+      boolean isPaper = stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
+      boolean enchantableOrEnchanted = EnchantmentHelper.canHaveEnchantments(stack) || EnchantmentHelper.hasEnchantments(stack);
+      boolean atMostOneIncoming = stack.getCount() <= 1;
+      boolean sameItemAndComponents = ItemStack.areItemsAndComponentsEqual(this.getStack(), stack);
+      boolean notMergingOrSlotEndsAtOne = !sameItemAndComponents || stack.getCount() + this.getStack().getCount() <= 1;
+      boolean sizeLimit = atMostOneIncoming && notMergingOrSlotEndsAtOne;
+      return (enchantableOrEnchanted && sizeLimit) || isPaper;
    }
    
    @Override

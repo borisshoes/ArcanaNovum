@@ -12,7 +12,6 @@ import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
-import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventory;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
 import net.borisshoes.arcananovum.items.normal.GraphicItems;
 import net.borisshoes.arcananovum.items.normal.GraphicalItem;
@@ -31,6 +30,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.equipment.EquipmentType;
@@ -253,7 +253,7 @@ public class LevitationHarness extends EnergyItem {
       
       buildGui(stack, gui);
       
-      LevitationHarnessInventory inv = new LevitationHarnessInventory();
+      SimpleInventory inv = new SimpleInventory(2);
       LevitationHarnessInventoryListener listener = new LevitationHarnessInventoryListener(this,gui,stack);
       inv.addListener(listener);
       listener.setUpdating();
@@ -351,10 +351,11 @@ public class LevitationHarness extends EnergyItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          boolean chestItem = ItemStack.areItemsAndComponentsEqual(player.getEquippedStack(EquipmentSlot.CHEST),stack);
+         boolean riding = player.hasVehicle();
          boolean survival = !(player.isCreative() || player.isSpectator());
          boolean flying = VanillaAbilities.ALLOW_FLYING.getTracker(player).isEnabled() &&
                VanillaAbilities.ALLOW_FLYING.getTracker(player).isGrantedBy(LEVITATION_HARNESS_ABILITY) &&
-               VanillaAbilities.FLYING.isEnabledFor(player);
+               VanillaAbilities.FLYING.isEnabledFor(player) && !riding;
          boolean wasFlying = getBooleanProperty(stack,WAS_FLYING_TAG);
          
          int efficiency = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HARNESS_RECYCLER.id));
@@ -372,6 +373,38 @@ public class LevitationHarness extends EnergyItem {
                
                ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER.id,1);
                if(player.getY() >= 1000) ArcanaAchievements.grant(player,ArcanaAchievements.TO_THE_MOON.id);
+               
+               boolean hasAllay = false, hasBlaze = false, hasBee = false, hasDragon = false, hasPhantom = false,
+                     hasGhast = false, hasHappyGhast = false, hasWither = false, hasParrot = false, hasVex = false, hasBat = false;
+               for(Entity other : world.getOtherEntities(entity, entity.getBoundingBox().expand(32.0))){
+                  EntityType<?> type = other.getType();
+                  if(type == EntityType.ALLAY){
+                     hasAllay = true;
+                  }else if(type == EntityType.BLAZE){
+                     hasBlaze = true;
+                  }else if(type == EntityType.BEE){
+                     hasBee = true;
+                  }else if(type == EntityType.ENDER_DRAGON){
+                     hasDragon = true;
+                  }else if(type == EntityType.PHANTOM){
+                     hasPhantom = true;
+                  }else if(type == EntityType.GHAST){
+                     hasGhast = true;
+                  }else if(type == EntityType.HAPPY_GHAST){
+                     hasHappyGhast = true;
+                  }else if(type == EntityType.WITHER){
+                     hasWither = true;
+                  }else if(type == EntityType.PARROT){
+                     hasParrot = true;
+                  }else if(type == EntityType.VEX){
+                     hasVex = true;
+                  }else if(type == EntityType.BAT){
+                     hasBat = true;
+                  }
+               }
+               if(hasAllay && hasBlaze && hasBee && hasDragon && hasPhantom && hasGhast && hasHappyGhast && hasWither && hasParrot && hasVex && hasBat){
+                  ArcanaAchievements.grant(player,ArcanaAchievements.AIR_TRAFFIC_CONTROL.id);
+               }
                
                ParticleEffectUtils.harnessFly(serverWorld,player,10);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LEVITATION_HARNESS_PER_SECOND));

@@ -462,6 +462,7 @@
   "tag.item.arcananovum.enderia_research_items": "Enderia Research Items",
   "tag.item.arcananovum.equayus_research_items": "Equayus Research Items",
   "tag.item.arcananovum.fate_anchor_enchantable": "Fate Anchor Enchantable Items",
+  "tag.item.arcananovum.fate_anchor_unenchantable": "Fate Anchor Un-Enchantable Items",
   "tag.item.arcananovum.neodymium_stealable": "Neodymium Stealable Items",
   "tag.item.arcananovum.nonprotective_armor_repair": "Nonprotective Armor Repair Items",
   "tag.item.arcananovum.nul_research_items": "Nul Research Items",
@@ -469,5 +470,7 @@
   "tag.item.arcananovum.village_research_items": "Village Research Items",
   "tag.item.arcananovum.workshop_research_items": "Workshop Research Items",
   "text.arcananovum.materials_copy_message": "Click to copy the materials list",
-  "tag.item.arcananovum.fletchery_potion_items": "Radiant Fletchery Potion Items"
+  "tag.item.arcananovum.fletchery_potion_items": "Radiant Fletchery Potion Items",
+  "tag.item.arcananovum.runic_arrows": "Runic Arrows",
+  "achievement.arcananovum.name.air_traffic_control": "Air Traffic Control"
 }

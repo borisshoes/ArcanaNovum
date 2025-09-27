@@ -26,17 +26,23 @@ public class EnchantmentMixin {
    
    @Inject(method="isAcceptableItem",at=@At("HEAD"), cancellable = true)
    private void arcananovum_makeUnenchantable1(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
-      if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())){
-         Enchantment enchant = (Enchantment) (Object) this;
-         cir.setReturnValue(enchant.description().toString().contains(Util.createTranslationKey("enchantment", ArcanaRegistry.FATE_ANCHOR.getValue())));
+      Enchantment enchant = (Enchantment) (Object) this;
+      boolean isFateAnchor = enchant.description().toString().contains(Util.createTranslationKey("enchantment", ArcanaRegistry.FATE_ANCHOR.getValue()));
+      if(isFateAnchor && !stack.isIn(ArcanaRegistry.FATE_ANCHOR_UNENCHANTABLE)){
+         cir.setReturnValue(true);
+      }else if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())){
+         cir.setReturnValue(false);
       }
    }
    
    @Inject(method="isSupportedItem",at=@At("HEAD"), cancellable = true)
    private void arcananovum_makeUnenchantable2(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
-      if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())){
-         Enchantment enchant = (Enchantment) (Object) this;
-         cir.setReturnValue(enchant.description().toString().contains(Util.createTranslationKey("enchantment", ArcanaRegistry.FATE_ANCHOR.getValue())));
+      Enchantment enchant = (Enchantment) (Object) this;
+      boolean isFateAnchor = enchant.description().toString().contains(Util.createTranslationKey("enchantment", ArcanaRegistry.FATE_ANCHOR.getValue()));
+      if(isFateAnchor && !stack.isIn(ArcanaRegistry.FATE_ANCHOR_UNENCHANTABLE)){
+         cir.setReturnValue(true);
+      }else if(stack.isOf(ArcanaRegistry.LEVITATION_HARNESS.getItem())){
+         cir.setReturnValue(false);
       }
    }
    

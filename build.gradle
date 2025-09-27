@@ -54,6 +54,8 @@ dependencies {
     include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.6")))
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modImplementation include("com.github.borisshoes:borislib:${project.borislib_version}")
 	
 	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
 
