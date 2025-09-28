@@ -7,18 +7,24 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.events.NulMementoEvent;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.events.Event;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
@@ -69,7 +75,7 @@ public class NulMemento extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.WITHER_SKELETON_SKULL;
       item = new NulMementoItem();
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_DIVINE_CATALYST,ResearchTasks.KILL_CONSTRUCT};
       
       ItemStack stack = new ItemStack(item);
@@ -84,8 +90,8 @@ public class NulMemento extends EnergyItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
-            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.PROTECTION),4)
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
+            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.PROTECTION),4)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
@@ -269,19 +275,19 @@ public class NulMemento extends EnergyItem {
                   .append(Text.literal("As the crushing weight of ").formatted(Formatting.DARK_GRAY))
                   .append(Text.literal("concentration").formatted(Formatting.RED))
                   .append(Text.literal(" takes your mind you hear the ").formatted(Formatting.DARK_GRAY))
-                  .append(TextUtils.withColor(Text.literal("Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR))
+                  .append(Text.literal("Nul Memento").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR))
                   .append(Text.literal(" whisper...")).formatted(Formatting.DARK_GRAY)
       )),new ArrayList<>(Arrays.asList(new Dialog.DialogSound(SoundEvents.ENTITY_WITHER_AMBIENT,0.3f,0.7f))),new int[]{},1,1,-1),false);
-      ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
+      Event.addEvent(new NulMementoEvent(increments,player,stack));
       
-      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*1, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments*1, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
+               Event.addEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
@@ -292,14 +298,14 @@ public class NulMemento extends EnergyItem {
             }
          }
       }));
-      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*2, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments*2, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
+               Event.addEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal("You feel as though your ").formatted(Formatting.DARK_GRAY))
@@ -313,14 +319,14 @@ public class NulMemento extends EnergyItem {
             }
          }
       }));
-      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*3, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments*3, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
+               Event.addEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
@@ -331,14 +337,14 @@ public class NulMemento extends EnergyItem {
             }
          }
       }));
-      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*4, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments*4, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
+               Event.addEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
@@ -349,14 +355,14 @@ public class NulMemento extends EnergyItem {
             }
          }
       }));
-      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*5, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments*5, () -> {
          if(cont[0]){
             ItemStack headStack = player.getEquippedStack(EquipmentSlot.HEAD);
             if(!(ArcanaItemUtils.identifyItem(headStack) instanceof NulMemento) || !(ArcanaItemUtils.getUsedConcentration(player) > maxConc)){
                cont[0] = false;
                processHalted(player);
             }else{
-               ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
+               Event.addEvent(new NulMementoEvent(increments,player,stack));
                dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                      Text.literal("\n\n\n\n")
                            .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
@@ -380,9 +386,9 @@ public class NulMemento extends EnergyItem {
             }
          }
       }));
-      ArcanaNovum.addTickTimerCallback(new GenericTimer(increments*6, () -> {
+      BorisLib.addTickTimerCallback(new GenericTimer(increments*6, () -> {
          if(cont[0]){
-            ArcanaNovum.addArcanaEvent(new NulMementoEvent(increments,player,stack));
+            Event.addEvent(new NulMementoEvent(increments,player,stack));
             dialogHelper.sendDialog(List.of(player),new Dialog(new ArrayList<>(Arrays.asList(
                   Text.literal("\n\n\n\n")
                         .append(Text.literal("All of your Skill Points have been deallocated.").formatted(Formatting.AQUA))
@@ -676,7 +682,7 @@ public class NulMemento extends EnergyItem {
    
    @Override
 	protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
+      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
             .withName(Text.literal("In World Recipe").formatted(Formatting.BLUE,Formatting.BOLD))
             .withLore(List.of(Text.literal("Build this in the World").formatted(Formatting.DARK_PURPLE)));
       ExplainIngredient s = new ExplainIngredient(Items.SOUL_SAND,1,"Soul Sand or Soil")
@@ -723,12 +729,12 @@ public class NulMemento extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis entity of Death that I have acquired a passing familiarity with is most intriguing. He wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded. I was gifted this strange ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nskull, and was informed that I have become one of his ‘chosen’.\nI’m not sure what to think of this. What machinations could a Deity of Death be planning such that he needs help from me? The Memento whispers to me every so often.").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nI have come to learn the entity calls himself Nul, the God of Death and Knowledge. He speaks of Arcana, and secrets that I have yet to learn. He warns that one mind can only hold so much knowledge at one time. ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nHowever, he offers his aid in circumventing this limitation. \nThis Memento reacts to an overburdened mind when worn and will make me forget all of the skills I have learned. ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nAs long as I use those skills before forgetting them, I should be able to take advantage of new knowledge with a new limit to what I can learn.\nThe Memento also offers incredible protection, as if it ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("    Nul Memento").formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR),Text.literal("\nwere made of enchanted Netherite!\n\nNul himself stated that by wearing his Memento, he may be willing to spare me from death every now and again.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Nul Memento").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis entity of Death that I have acquired a passing familiarity with is most intriguing. He wanted me to prove my fighting prowess by dueling his creation, and I believe I succeeded. I was gifted this strange ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Nul Memento").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nskull, and was informed that I have become one of his ‘chosen’.\nI’m not sure what to think of this. What machinations could a Deity of Death be planning such that he needs help from me? The Memento whispers to me every so often.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Nul Memento").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nI have come to learn the entity calls himself Nul, the God of Death and Knowledge. He speaks of Arcana, and secrets that I have yet to learn. He warns that one mind can only hold so much knowledge at one time. ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Nul Memento").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nHowever, he offers his aid in circumventing this limitation. \nThis Memento reacts to an overburdened mind when worn and will make me forget all of the skills I have learned. ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Nul Memento").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nAs long as I use those skills before forgetting them, I should be able to take advantage of new knowledge with a new limit to what I can learn.\nThe Memento also offers incredible protection, as if it ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Nul Memento").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nwere made of enchanted Netherite!\n\nNul himself stated that by wearing his Memento, he may be willing to spare me from death every now and again.").formatted(Formatting.BLACK)));
       return list;
    }
    

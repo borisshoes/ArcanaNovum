@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;

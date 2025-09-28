@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -13,7 +14,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalBlock;
@@ -239,7 +243,7 @@ public class Planeshifter extends EnergyItem {
       ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PLANESHIFTER_USE)); // Add xp
       setEnergy(stack,0);
       SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_PORTAL_TRAVEL,1,2f);
-      ParticleEffectUtils.recallTeleport(world,player.getPos());
+      ArcanaEffectUtils.recallTeleport(world,player.getPos());
    }
    
    private RegistryKey<World> getTargetWorld(RegistryKey<World> currentWorld, int mode){
@@ -384,10 +388,10 @@ public class Planeshifter extends EnergyItem {
             putProperty(stack,HEAT_TAG,0);
          }else if(heat > 0){
             putProperty(stack,HEAT_TAG,heat+1);
-            ParticleEffectUtils.recallTeleportCharge(serverWorld,player.getPos());
+            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.getPos());
          }else if(heat == -1){
             // Teleport was cancelled by damage
-            ParticleEffectUtils.recallTeleportCancel(serverWorld,player.getPos());
+            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.getPos());
             SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
             putProperty(stack,HEAT_TAG,0);
             setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));

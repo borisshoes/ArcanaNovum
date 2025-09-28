@@ -7,14 +7,15 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.AnchorTimeLoginCallback;
 import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
+import net.borisshoes.arcananovum.callbacks.login.AnchorTimeLoginCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ExoticMatter;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -158,10 +159,10 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
             }
             
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(crafterId));
+               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player == null){
-                  ArcanaNovum.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
-                  if(serverWorld.getServer().getTicks() % 1200 == 0) ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE)));
+                  BorisLib.addLoginCallback(new AnchorTimeLoginCallback(serverWorld.getServer(),crafterId,1));
+                  if(serverWorld.getServer().getTicks() % 1200 == 0) BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE)));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.TIMEY_WIMEY.id, 1);
                   if(serverWorld.getServer().getTicks() % 1200 == 0) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTINUUM_ANCHOR_PER_MINUTE));

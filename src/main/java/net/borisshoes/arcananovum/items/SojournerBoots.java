@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.achievements.TimedAchievement;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.events.SojournersMaxRunEvent;
@@ -16,7 +17,11 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.events.Event;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -297,8 +302,8 @@ public class SojournerBoots extends EnergyItem {
                         player.sendMessage(Text.literal("Sojourner Boots Energy: "+newEnergy).formatted(Formatting.DARK_GREEN),true);
                      if(world.getServer().getTicks() % 20 == 0) ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SOJOURNERS_BOOTS_RUN_PER_SECOND)); // Add xp
                      if(newEnergy >= getMaxEnergy(stack)){
-                        ArcanaNovum.addArcanaEvent(new SojournersMaxRunEvent(player));
-                        if(ArcanaNovum.getEventsOfType(SojournersMaxRunEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count() >= ((TimedAchievement) ArcanaAchievements.RUNNING).getGoal()){
+                        Event.addEvent(new SojournersMaxRunEvent(player));
+                        if(Event.getEventsOfType(SojournersMaxRunEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count() >= ((TimedAchievement) ArcanaAchievements.RUNNING).getGoal()){
                            ArcanaAchievements.grant(player,ArcanaAchievements.RUNNING);
                         }
                      }

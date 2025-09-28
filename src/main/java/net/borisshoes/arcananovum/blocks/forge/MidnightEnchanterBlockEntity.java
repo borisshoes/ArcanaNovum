@@ -10,7 +10,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.midnightenchanter.MidnightEnchanterGui;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -75,7 +75,7 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       }
       
       if(assembled && seenForge && hasBooks){
-         ParticleEffectUtils.midnightEnchanterAnim(serverWorld,pos.toCenterPos(),ticks % 300);
+         ArcanaEffectUtils.midnightEnchanterAnim(serverWorld,pos.toCenterPos(),ticks % 300);
       }
       
       if(serverWorld.getServer().getTicks() % 20 == 0 && this.assembled && this.seenForge){

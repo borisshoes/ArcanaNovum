@@ -1,6 +1,6 @@
 package net.borisshoes.arcananovum.cardinalcomponents;
 
-import net.borisshoes.arcananovum.utils.CodecUtils;
+import net.borisshoes.borislib.utils.CodecUtils;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;

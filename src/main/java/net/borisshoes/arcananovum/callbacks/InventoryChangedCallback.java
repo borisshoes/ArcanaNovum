@@ -4,7 +4,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.research.ObtainResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerInventory;
@@ -28,7 +28,7 @@ public class InventoryChangedCallback {
          }
       }
       
-      if(EnchantmentHelper.getLevel(MiscUtils.getEnchantment(Enchantments.SILK_TOUCH),stack) > 0){
+      if(EnchantmentHelper.getLevel(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),stack) > 0){
          ArcanaNovum.data(player).setResearchTask(ResearchTasks.OBTAIN_SILK_TOUCH, true);
       }
    }

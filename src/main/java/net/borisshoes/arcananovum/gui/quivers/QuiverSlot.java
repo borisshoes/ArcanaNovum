@@ -1,9 +1,6 @@
 package net.borisshoes.arcananovum.gui.quivers;
 
-import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.ItemTags;
@@ -24,7 +21,6 @@ public class QuiverSlot extends Slot {
    }
    
    public static boolean isValidItem(ItemStack stack, boolean isRunic){
-      if(EnchantmentHelper.getLevel(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), stack) > 0) return false;
       if(isRunic){
          return stack.isIn(ItemTags.ARROWS) || ArcanaItemUtils.isRunicArrow(stack);
       }else{

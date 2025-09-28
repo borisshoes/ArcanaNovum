@@ -6,7 +6,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;

@@ -7,11 +7,11 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -68,7 +68,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       
       List<Pair<ItemStack,String>> outputs = new ArrayList<>();
       int consumedCatas = 0;
-      NbtList catas = ArcanaItem.getListProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG,NbtElement.COMPOUND_TYPE);
+      NbtList catas = ArcanaItem.getListProperty(arcanaItemStack, ArcanaItem.CATALYSTS_TAG);
       
       TreeMap<ArcanaAugment, Integer> curAugments = ArcanaAugments.getAugmentsOnItem(arcanaItemStack);
       if(curAugments == null) return new ArrayList<>();
@@ -195,7 +195,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
       try{
          boolean hasAugment = ArcanaAugments.getAugmentOnItem(aequalisInput,ArcanaAugments.EQUIVALENT_EXCHANGE.id) > 0;
          if(!hasAugment) return false;
-         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(as.getCrafter(aequalisInput)));
+         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(as.getCrafter(aequalisInput)));
          if(player != null){
             return ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
          }else{

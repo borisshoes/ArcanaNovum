@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.effects;
 
 import eu.pb4.polymer.core.api.other.PolymerStatusEffect;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
@@ -14,7 +14,7 @@ public class EnsnarementEffect extends StatusEffect implements PolymerStatusEffe
    @Override
    public void onApplied(LivingEntity entity, int amplifier){
       super.onApplied(entity, amplifier);
-      ParticleEffectUtils.ensnaredEffect(entity,amplifier,0);
+      ArcanaEffectUtils.ensnaredEffect(entity,amplifier,0);
    }
    
    @Override

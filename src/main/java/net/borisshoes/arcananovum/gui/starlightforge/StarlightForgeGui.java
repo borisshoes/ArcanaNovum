@@ -10,17 +10,25 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -86,7 +94,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
       }else if(mode == 1){ // Arcana Crafting
          if(index == 7){
             // Go to compendium
-            MiscUtils.returnItems(inventory,player);
+            MinecraftUtils.returnItems(inventory,player);
             blockEntity.openGui(4,player,"",settings);
          }else if(index == 25){
             ItemStack item = this.getSlot(index).getItemStack();
@@ -123,7 +131,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
                   }
                }
                
-               MiscUtils.returnItems(inventory,player);
+               MinecraftUtils.returnItems(inventory,player);
                
                EnhancedForgingGui efg = new EnhancedForgingGui(player,this.blockEntity,stack,ingredients,remainders);
                efg.buildGui();
@@ -134,7 +142,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
             BookElementBuilder bookBuilder = getGuideBook();
             LoreGui loreGui = new LoreGui(player,bookBuilder,null,null,null);
             loreGui.open();
-            MiscUtils.returnItems(inventory,player);
+            MinecraftUtils.returnItems(inventory,player);
          }
       }else if(mode == 3){ // Recipe
          ItemStack item = this.getSlot(25).getItemStack();
@@ -263,9 +271,9 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
          inventory.setStack(i,remainders[i/5][i%5]);
       }
       
-      ParticleEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0,fastAnim ? 1.75 : 1);
+      ArcanaEffectUtils.arcanaCraftingAnim(world,blockEntity.getPos(),newArcanaItem,0,fastAnim ? 1.75 : 1);
       
-      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
+      BorisLib.addTickTimerCallback(world, new GenericTimer(fastAnim ? (int) (350 / 1.75) : 350, () -> {
          if(!ArcanaNovum.data(player).addCrafted(newArcanaItem) && !(arcanaItem instanceof ArcaneTome)){
             ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
          }
@@ -320,11 +328,11 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          if(i % 9 < 4){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Place Recipe Here >").formatted(Formatting.DARK_PURPLE)));
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Place Recipe Here >").formatted(Formatting.DARK_PURPLE)));
          }else if(i % 9 == 4){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("< Place Recipe Here").formatted(Formatting.DARK_PURPLE)));
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("< Place Recipe Here").formatted(Formatting.DARK_PURPLE)));
          }else{
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.DARK_COLOR)).setName(Text.empty()).hideTooltip());
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.DARK_COLOR)).setName(Text.empty()).hideTooltip());
          }
       }
       
@@ -359,7 +367,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Starlight Forge").formatted(Formatting.DARK_PURPLE)));
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Starlight Forge").formatted(Formatting.DARK_PURPLE)));
       }
       
       GuiElementBuilder equipmentItem = new GuiElementBuilder(Items.DIAMOND_CHESTPLATE).hideDefaultTooltip();
@@ -378,19 +386,19 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
    public void buildCraftingGui(String itemId){
       for(int i = 0; i < getSize(); i++){
          if(i%9 == 0 || i%9 == 6){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 8){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 7){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }
       }
-      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GuiElementBuilder book = new GuiElementBuilder(Items.CRAFTING_TABLE).hideDefaultTooltip();
       book.setName(Text.literal("Forge Item").formatted(Formatting.DARK_PURPLE));
@@ -535,19 +543,19 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
       
       for(int i = 0; i < getSize(); i++){
          if(i%9 == 0 || i%9 == 6){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 8){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 7){
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }
       }
-      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GuiElementBuilder returnBook = new GuiElementBuilder(Items.KNOWLEDGE_BOOK);
       returnBook.setName((Text.literal("")
@@ -674,12 +682,12 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          if(i >= 19 && i <= 25){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.LIGHT_COLOR)).setName(Text.literal("")).hideTooltip());
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.LIGHT_COLOR)).setName(Text.literal("")).hideTooltip());
          }else{
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Select an Augment to apply it").formatted(Formatting.DARK_PURPLE)));
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).setName(Text.literal("Select an Augment to apply it").formatted(Formatting.DARK_PURPLE)));
          }
       }
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       setSlot(4,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
       
@@ -728,7 +736,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
          setSlot(19+augmentSlots[i], augmentItem1);
       }
       
-      GuiElementBuilder cancel = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL)).hideDefaultTooltip();
+      GuiElementBuilder cancel = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).hideDefaultTooltip();
       cancel.setName((Text.literal("")
             .append(Text.literal("Forgo Augmentation").formatted(Formatting.RED))));
       cancel.addLoreLine(TextUtils.removeItalics((Text.literal("")
@@ -776,7 +784,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
          blockEntity.openGui(1,player,"",settings);
       }
       
-      MiscUtils.returnItems(inventory,player);
+      MinecraftUtils.returnItems(inventory,player);
    }
    
    @Override

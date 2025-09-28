@@ -1,12 +1,13 @@
 package net.borisshoes.arcananovum.callbacks;
 
+import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.WORLD_TIMER_CALLBACKS;
+import static net.borisshoes.borislib.BorisLib.WORLD_TIMER_CALLBACKS;
 
 public class WorldTickCallback {
    

@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.utils;
 
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;

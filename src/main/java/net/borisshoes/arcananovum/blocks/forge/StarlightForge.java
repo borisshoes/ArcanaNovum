@@ -2,20 +2,19 @@ package net.borisshoes.arcananovum.blocks.forge;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -64,7 +63,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
       vanillaItem = Items.SMITHING_TABLE;
       block = new StarlightForgeBlock(AbstractBlock.Settings.create().strength(2.5f,1200.0f).sounds(BlockSoundGroup.WOOD));
       item = new StarlightForgeItem(this.block);
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_ARCANE_TOME,ResearchTasks.OBTAIN_ENCHANTED_GOLDEN_APPLE};
       
       ItemStack stack = new ItemStack(item);
@@ -140,7 +139,7 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    
    @Override
 	protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
+      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
             .withName(Text.literal("In World Recipe").formatted(Formatting.BLUE))
             .withLore(List.of(Text.literal("Do this in the World").formatted(Formatting.DARK_PURPLE)));
       ExplainIngredient s = new ExplainIngredient(Items.SMITHING_TABLE,1,"Smithing Table")
@@ -168,10 +167,10 @@ public class StarlightForge extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nEnchanted Golden Apples are a unique arcane artifact that I have discovered. Modern replicants do not seem to hold the same caliber of properties. My latest theories of Arcana suggest that the magic ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nof this land is far more versatile than the old scholars believed. I just need something to kickstart my new field of research. It is possible that I can use some energy from starlight to transfer the ancient enchantment of a ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nGolden Apple. If I am to be successful in my research, I will need a forge…\n\nThe Starlight Forge allows the creation of infused weapons, tools, and armor.\n\nIt creates a 17x11x17 workspace that can ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Starlight Forge").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\ninteract with additions to the forge that can be crafted as I advance my research.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nEnchanted Golden Apples are a unique arcane artifact that I have discovered. Modern replicants do not seem to hold the same caliber of properties. My latest theories of Arcana suggest that the magic ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nof this land is far more versatile than the old scholars believed. I just need something to kickstart my new field of research. It is possible that I can use some energy from starlight to transfer the ancient enchantment of a ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nGolden Apple. If I am to be successful in my research, I will need a forge…\n\nThe Starlight Forge allows the creation of infused weapons, tools, and armor.\n\nIt creates a 17x11x17 workspace that can ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Starlight Forge").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\ninteract with additions to the forge that can be crafted as I advance my research.").formatted(Formatting.BLACK)));
       return list;
    }
    

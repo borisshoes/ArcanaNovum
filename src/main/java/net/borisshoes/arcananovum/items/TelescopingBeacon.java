@@ -7,13 +7,18 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.BeaconMiningLaserCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -28,7 +33,6 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -115,7 +119,7 @@ public class TelescopingBeacon extends ArcanaItem {
             .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
       lore.add(Text.literal(""));
       if(itemStack != null && getBooleanProperty(itemStack,BEACON_TAG)){
-         NbtList blocks = getListProperty(itemStack,BLOCKS_TAG,NbtElement.COMPOUND_TYPE);
+         NbtList blocks = getListProperty(itemStack,BLOCKS_TAG);
          int blockCount = 0;
          for(int i = 0; i < blocks.size(); i++){
             NbtCompound blockType = blocks.getCompoundOrEmpty(i);
@@ -141,7 +145,7 @@ public class TelescopingBeacon extends ArcanaItem {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtList blocksNbt = getListProperty(stack,BLOCKS_TAG,NbtElement.COMPOUND_TYPE).copy();
+      NbtList blocksNbt = getListProperty(stack,BLOCKS_TAG).copy();
       boolean ready = getBooleanProperty(stack,BEACON_TAG);
       NbtCompound data = getCompoundProperty(stack,DATA_TAG).copy();
       ItemStack newStack = super.updateItem(stack,server);
@@ -262,7 +266,7 @@ public class TelescopingBeacon extends ArcanaItem {
             }
          }
          if(mining){
-            ArcanaNovum.addTickTimerCallback(player.getWorld(),new BeaconMiningLaserCallback(player.getWorld(),pos,pos.up()));
+            BorisLib.addTickTimerCallback(player.getWorld(),new BeaconMiningLaserCallback(player.getWorld(),pos,pos.up()));
          }
          
          
@@ -272,7 +276,7 @@ public class TelescopingBeacon extends ArcanaItem {
          
          for(int i = 0; i <= tier; i++){
             int j = i;
-            ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
+            BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
          }
          
          if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){
@@ -357,7 +361,7 @@ public class TelescopingBeacon extends ArcanaItem {
          Hand hand = context.getHand();
          World world = context.getWorld();
          ItemStack stack = context.getStack();
-         NbtList blocks = getListProperty(stack,BLOCKS_TAG, NbtElement.COMPOUND_TYPE);
+         NbtList blocks = getListProperty(stack,BLOCKS_TAG);
          boolean hasBeacon = getBooleanProperty(stack,BEACON_TAG);
          if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.SUCCESS_SERVER;
          
@@ -453,7 +457,7 @@ public class TelescopingBeacon extends ArcanaItem {
                for(int i = 0; i <= tier; i++){
                   int j = i;
                   BlockPos finalPlacePos = placePos;
-                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world, finalPlacePos,SoundEvents.ENTITY_IRON_GOLEM_DAMAGE, SoundCategory.PLAYERS,1,2f-(.3f*j))));
+                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world, finalPlacePos,SoundEvents.ENTITY_IRON_GOLEM_DAMAGE, SoundCategory.PLAYERS,1,2f-(.3f*j))));
                }
             }
             

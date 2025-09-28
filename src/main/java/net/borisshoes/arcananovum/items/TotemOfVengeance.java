@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -17,8 +18,8 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.entity.Entity;
@@ -146,7 +147,7 @@ public class TotemOfVengeance extends ArcanaItem {
          Entity attacker = source.getAttacker() != null ? source.getAttacker() : player.getPrimeAdversary() != null ? player.getPrimeAdversary() : null;
          boolean byPlayer = attacker instanceof PlayerEntity;
          stack.set(DataComponentTypes.DEATH_PROTECTION, getTotemComponent(furyLvl, byPlayer));
-         ArcanaNovum.addTickTimerCallback(new VengeanceTotemTimerCallback(byPlayer ? 300*(furyLvl+1) / 2 : 300*(furyLvl+1),stack,player,attacker));
+         BorisLib.addTickTimerCallback(new VengeanceTotemTimerCallback(byPlayer ? 300*(furyLvl+1) / 2 : 300*(furyLvl+1),stack,player,attacker));
          player.getWorld().spawnParticles(ParticleTypes.ANGRY_VILLAGER,player.getPos().x,player.getPos().y+player.getHeight()/2,player.getPos().z,25,.5,.6,.5,0.05);
          
          if(source.isOf(ArcanaDamageTypes.VENGEANCE_TOTEM)){

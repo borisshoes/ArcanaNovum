@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.blocks;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -9,9 +10,8 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -96,7 +96,7 @@ public class IgneousCollider extends ArcanaBlock {
             .append(Text.literal(" is below the ").formatted(Formatting.LIGHT_PURPLE))
             .append(Text.literal("Collider").formatted(Formatting.DARK_PURPLE))
             .append(Text.literal(", ").formatted(Formatting.LIGHT_PURPLE))
-            .append(TextUtils.withColor(Text.literal("crying obsidian"),0x660066))
+            .append(Text.literal("crying obsidian").withColor(0x660066))
             .append(Text.literal(" will be made.").formatted(Formatting.LIGHT_PURPLE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }
@@ -108,7 +108,7 @@ public class IgneousCollider extends ArcanaBlock {
       ArcanaIngredient g = new ArcanaIngredient(Items.MAGMA_BLOCK,32);
       ArcanaIngredient h = new ArcanaIngredient(Items.CAULDRON,24);
       ArcanaIngredient i = new ArcanaIngredient(Items.BLUE_ICE,32);
-      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_PICKAXE,1, true).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.EFFICIENCY),5), new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.UNBREAKING),3));
+      ArcanaIngredient l = new ArcanaIngredient(Items.NETHERITE_PICKAXE,1, true).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.EFFICIENCY),5), new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),3));
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       
       ArcanaIngredient[][] ingredients = {

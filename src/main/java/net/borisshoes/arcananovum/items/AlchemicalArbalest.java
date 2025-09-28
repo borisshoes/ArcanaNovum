@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerCrossbowItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -12,9 +13,8 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
@@ -72,7 +72,7 @@ public class AlchemicalArbalest extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.MULTISHOT),1)));
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.MULTISHOT),1)));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
    
@@ -152,7 +152,7 @@ public class AlchemicalArbalest extends ArcanaItem {
          });
          EnchantmentHelper.set(newArcanaItem,enchantBuilder.build());
       }
-      newArcanaItem.addEnchantment(MiscUtils.getEnchantment(Enchantments.MULTISHOT),1);
+      newArcanaItem.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT),1);
       return newArcanaItem;
    }
    
@@ -162,7 +162,7 @@ public class AlchemicalArbalest extends ArcanaItem {
       ArcanaIngredient b = new ArcanaIngredient(Items.NETHER_WART,16);
       ArcanaIngredient c = new ArcanaIngredient(Items.DRAGON_BREATH,32);
       ArcanaIngredient d = new ArcanaIngredient(Items.BLAZE_POWDER,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.MULTISHOT),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT),1));
       ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,2);
       ArcanaIngredient k = new ArcanaIngredient(Items.FERMENTED_SPIDER_EYE,32);
       ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,4);
@@ -244,7 +244,7 @@ public class AlchemicalArbalest extends ArcanaItem {
             verifyEnchantments(stack);
          }
          if(hasScatter && !hasMulti){ // Re-add multishot
-            stack.addEnchantment(MiscUtils.getEnchantment(Enchantments.MULTISHOT),1);
+            stack.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.MULTISHOT),1);
             verifyEnchantments(stack);
          }
       }

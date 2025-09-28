@@ -226,7 +226,7 @@ public class ArcanaAchievements {
          ));
    public static final ArcanaAchievement AIR_TRAFFIC_CONTROL = ArcanaAchievements.register(
          new EventAchievement("Air Traffic Control", "air_traffic_control", new ItemStack(Items.SPYGLASS), ArcanaRegistry.LEVITATION_HARNESS, 100000, 5,
-               new String[]{"Fly with the Levitation Harness within 32 blocks of an "," Allay, Bat, Bee, Blaze, Ender Dragon, Ghast, "," Happy Ghast, Parrot, Phantom, Vex and Wither"}
+               new String[]{"Fly with the Levitation Harness within 32 blocks of an "," Allay, Bat, Bee, Blaze, Breeze, Ender Dragon, Ghast, "," Happy Ghast, Parrot, Phantom, Vex and Wither"}
          ));
    
    // Nul Memento

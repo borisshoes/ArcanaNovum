@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -12,7 +13,12 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
@@ -184,8 +190,8 @@ public class AncientDowsingRod extends EnergyItem {
                if(world instanceof ServerWorld serverWorld){
                   if(!debris.isEmpty()) ArcanaAchievements.progress(player,ArcanaAchievements.ARCHEOLOGIST.id,debris.size());
                   
-                  ArcanaNovum.addTickTimerCallback(new GenericTimer(30, () -> SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f)));
-                  ArcanaNovum.addTickTimerCallback(new GenericTimer(140, () -> {
+                  BorisLib.addTickTimerCallback(new GenericTimer(30, () -> SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1f, .5f)));
+                  BorisLib.addTickTimerCallback(new GenericTimer(140, () -> {
                      int[] locations = new int[8]; // N, NE, E, SE, S, SW, W, NW
                      final double t1 = Math.tan(Math.toRadians(45*3.0/2));
                      final double t2 = Math.tan(Math.toRadians(45/2.0));
@@ -217,7 +223,7 @@ public class AncientDowsingRod extends EnergyItem {
                         locations[ind]++;
                         
                         if(count < 12)
-                           ParticleEffectUtils.dowsingRodEmitter(serverWorld,new Vec3d(b.getX(),b.getY(),b.getZ()),1,100 + 33*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.HARMONIC_FEEDBACK.id)));
+                           ArcanaEffectUtils.dowsingRodEmitter(serverWorld,new Vec3d(b.getX(),b.getY(),b.getZ()),1,100 + 33*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.HARMONIC_FEEDBACK.id)));
                         count++;
                      }
                      double radius = 1.5;
@@ -248,7 +254,7 @@ public class AncientDowsingRod extends EnergyItem {
                         Vec3d blockPos = new Vec3d(closest.getX()+.5,closest.getY()+0.5,closest.getZ()+0.5);
                         Vec3d start = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5));
                         Vec3d end = eyePos.add(blockPos.subtract(eyePos).normalize().multiply(1.5+3));
-                        ParticleEffectUtils.dowsingRodArrow(player.getWorld(),start,end,1);
+                        ArcanaEffectUtils.dowsingRodArrow(player.getWorld(),start,end,1);
                         
                         ArcanaNovum.data(player).addXP(Math.min(ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_CAP),ArcanaConfig.getInt(ArcanaRegistry.ANCIENT_DOWSING_ROD_PER_DEBRIS)*debris.size())); // Add xp
                         SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 1f, .5f);

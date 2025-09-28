@@ -1,9 +1,10 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.utils.CodecUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.CodecUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.enchantment.Enchantments;
@@ -192,7 +193,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
                player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this,this),1.25f);
             }
             if(laserTick % 2 == 0){ // Particles every other tick
-               ParticleEffectUtils.line(endWorld,null,this.getPos(),player.getPos(), ParticleTypes.WITCH,(int)(dist*1.75),1,0.2,0);
+               ArcanaEffectUtils.line(endWorld,null,this.getPos(),player.getPos(), ParticleTypes.WITCH,(int)(dist*1.75),1,0.2,0);
             }
          }
       }
@@ -226,7 +227,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    
    private void castPulse(){
       if(getWorld() instanceof ServerWorld endWorld){
-         ParticleEffectUtils.dragonBossWizardPulse(endWorld,getPos().add(0,-2.5,0),pulseTick);
+         ArcanaEffectUtils.dragonBossWizardPulse(endWorld,getPos().add(0,-2.5,0),pulseTick);
          if(pulseTick == 10){ // Actual pulse halfway thru animation
             List<ServerPlayerEntity> inRangePlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(getX()+.5,getY()-2,getZ()+.5)) <= 5.5*5.5);
             for(ServerPlayerEntity player : inRangePlayers){
@@ -251,17 +252,17 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       skeleton.setHealth(skeletonHP);
       skeleton.setPersistent();
       ItemStack bow = new ItemStack(Items.BOW);
-      bow.addEnchantment(MiscUtils.getEnchantment(Enchantments.PUNCH),2);
-      bow.addEnchantment(MiscUtils.getEnchantment(Enchantments.POWER),1);
+      bow.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.PUNCH),2);
+      bow.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.POWER),1);
       ItemStack helm = new ItemStack(Items.IRON_HELMET);
       ItemStack chest = new ItemStack(Items.IRON_CHESTPLATE);
       ItemStack legs = new ItemStack(Items.IRON_LEGGINGS);
       ItemStack boots = new ItemStack(Items.IRON_BOOTS);
-      helm.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
-      chest.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
-      legs.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
-      boots.addEnchantment(MiscUtils.getEnchantment(Enchantments.PROTECTION),1);
-      boots.addEnchantment(MiscUtils.getEnchantment(Enchantments.FEATHER_FALLING),4);
+      helm.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),1);
+      chest.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),1);
+      legs.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),1);
+      boots.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),1);
+      boots.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING),4);
       skeleton.equipStack(EquipmentSlot.MAINHAND, bow);
       skeleton.equipStack(EquipmentSlot.HEAD, helm);
       skeleton.equipStack(EquipmentSlot.CHEST, chest);
@@ -300,7 +301,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       summonTick = view.getInt("summonTick", 0);
       pulseTick = view.getInt("pulseTick", 0);
       numPlayers = view.getInt("numPlayers", 0);
-      crystalId = MiscUtils.getUUID(view.getString("crystalId",""));
+      crystalId = AlgoUtils.getUUID(view.getString("crystalId",""));
       
       if(getWorld() instanceof ServerWorld serverWorld){
          Optional<List<String>> optional = view.read("skeletons", CodecUtils.STRING_LIST);
@@ -310,7 +311,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
             List<String> ids = optional.get();
             skeletons = new SkeletonEntity[ids.size()];
             for(int i = 0; i < skeletons.length; i++){
-               if(serverWorld.getEntity(MiscUtils.getUUID(ids.get(i))) instanceof SkeletonEntity skele){
+               if(serverWorld.getEntity(AlgoUtils.getUUID(ids.get(i))) instanceof SkeletonEntity skele){
                   skeletons[i] = skele;
                }
             }

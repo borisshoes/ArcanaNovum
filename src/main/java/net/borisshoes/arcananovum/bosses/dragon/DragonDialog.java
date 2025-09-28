@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.MutableText;
@@ -71,8 +71,8 @@ public class DragonDialog {
                   .append(Text.literal("   I have been waiting for this moment for eons! No longer will Enderia be allowed to hide away in her realm!").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage2.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
             break;
          case EVENT_START:
             mainMessage.add(Text.literal("")
@@ -98,7 +98,7 @@ public class DragonDialog {
                   .append(Text.literal("   So you pitiful Players think you can usurp ME? Behold the Empress of The End, for I will be the last thing you see.").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             subMessage1.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
             
             break;
          case PHASE_ONE_START:
@@ -152,10 +152,10 @@ public class DragonDialog {
                   .append(Text.literal("   By all means... prove to me you aren't an indolent waste as you've led me to believe.").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage4.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(360, () ->{ announceHelper(server,subMessage3); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(480, () ->{ announceHelper(server,subMessage4); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(360, () ->{ announceHelper(server,subMessage3); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(480, () ->{ announceHelper(server,subMessage4); }));
             break;
          case PHANTOM_DEATH:
             mainMessage.add(Text.literal(""));
@@ -212,8 +212,8 @@ public class DragonDialog {
                   .append(Text.literal(" of what it was like then, child!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             subMessage2.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage1); }));
             break;
          case CRYSTAL_DESTROYED:
             mainMessage.add(Text.literal(""));
@@ -258,8 +258,8 @@ public class DragonDialog {
                   .append(Text.literal("   You CHOSE to be a warrior! I've always had to fight just to SURVIVE! And now you've led these BLOODTHIRSTY MONSTERS TO MY HOME!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             subMessage2.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage1); }));
             break;
          case PHASE_THREE_START:
             mainMessage.add(Text.literal("")
@@ -291,8 +291,8 @@ public class DragonDialog {
                   .append(Text.literal("   You have no right to equate our actions! You know what Tenbrous did to me! I just want to live in PEACE!").formatted(Formatting.LIGHT_PURPLE,Formatting.ITALIC)));
             subMessage2.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage2); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage2); }));
             break;
          case DRAGON_HALF_HP:
             
@@ -341,10 +341,10 @@ public class DragonDialog {
                   .append(Text.literal("   NO! This is what you deserve for your actions. Peace does not require subjugation and enslavement!").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage3.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(360, () ->{ announceHelper(server,subMessage3); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(480, () ->{ announceHelper(server,subMessage4); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(360, () ->{ announceHelper(server,subMessage3); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(480, () ->{ announceHelper(server,subMessage4); }));
             break;
          case DRAGON_QUARTER_HP:
             
@@ -419,11 +419,11 @@ public class DragonDialog {
                   .append(Text.literal("   You cowered in your realm, and became just like them!").formatted(Formatting.GRAY,Formatting.ITALIC)));
             subMessage5.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(150, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage2); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(450, () ->{ announceHelper(server,subMessage3); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(700, () ->{ announceHelper(server,subMessage4); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(750, () ->{ announceHelper(server,subMessage5); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(150, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(300, () ->{ announceHelper(server,subMessage2); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(450, () ->{ announceHelper(server,subMessage3); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(700, () ->{ announceHelper(server,subMessage4); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(750, () ->{ announceHelper(server,subMessage5); }));
             break;
          case DRAGON_DEATH:
             mainMessage.add(Text.literal(""));
@@ -453,8 +453,8 @@ public class DragonDialog {
                   .append(Text.literal("   Once you are ready to heal, and if the Players wish to give you a second chance, I will always be here to help you.").formatted(Formatting.AQUA,Formatting.ITALIC)));
             subMessage2.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(120, () ->{ announceHelper(server,subMessage1); }));
+            BorisLib.addTickTimerCallback(new GenericTimer(240, () ->{ announceHelper(server,subMessage2); }));
             break;
          case EVENT_END:
             mainMessage.add(Text.literal(""));
@@ -503,8 +503,8 @@ public class DragonDialog {
                   .append(Text.literal(" and let them guide you to new heights!").formatted(Formatting.AQUA,Formatting.ITALIC)));
             subMessage2.add(Text.literal(""));
             
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(240, () -> announceHelper(server,subMessage1)));
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(360, () -> announceHelper(server,subMessage2)));
+            BorisLib.addTickTimerCallback(new GenericTimer(240, () -> announceHelper(server,subMessage1)));
+            BorisLib.addTickTimerCallback(new GenericTimer(360, () -> announceHelper(server,subMessage2)));
             
             break;
          case PHASE_ONE_GOONS:

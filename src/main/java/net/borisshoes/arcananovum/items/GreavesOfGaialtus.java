@@ -4,12 +4,17 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesOfGaialtusGui;
 import net.borisshoes.arcananovum.gui.greaves.GreavesSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -250,7 +255,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
    
    public ItemStack getStackOf(ItemStack greaves, ItemStack refillStack){
       if(!(ArcanaItemUtils.identifyItem(greaves) instanceof GreavesOfGaialtus)) return ItemStack.EMPTY;
-      List<ItemStack> stacks = MiscUtils.getMatchingItemsFromContainerComp(greaves,refillStack.getItem());
+      List<ItemStack> stacks = MinecraftUtils.getMatchingItemsFromContainerComp(greaves,refillStack.getItem());
       ItemStack returnStack = ItemStack.EMPTY;
       for(ItemStack stack : stacks){
          if(ItemStack.areItemsAndComponentsEqual(refillStack,stack)){
@@ -337,7 +342,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                }else{
                   int size = GREAVES_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.PLANETARY_POCKETS))];
                   int count = otherStack.getCount();
-                  Pair<ContainerComponent,ItemStack> addPair = MiscUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
+                  Pair<ContainerComponent,ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
                   if(count == addPair.getRight().getCount()){
                      SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
                   }else{

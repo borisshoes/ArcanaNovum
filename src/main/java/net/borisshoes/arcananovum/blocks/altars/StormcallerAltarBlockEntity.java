@@ -12,10 +12,11 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StormcallerAltarGui;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -94,7 +95,7 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
    public boolean startWeatherChange(@Nullable ServerPlayerEntity player){
       if(this.getCooldown() > 0 || !(this.getWorld() instanceof ServerWorld serverWorld)) return false;
       if(player == null && getCrafterId() != null){
-         PlayerEntity crafter = serverWorld.getPlayerByUuid(MiscUtils.getUUID(getCrafterId()));
+         PlayerEntity crafter = serverWorld.getPlayerByUuid(AlgoUtils.getUUID(getCrafterId()));
          if(crafter instanceof ServerPlayerEntity){
             player = (ServerPlayerEntity) crafter;
          }
@@ -103,8 +104,8 @@ public class StormcallerAltarBlockEntity extends BlockEntity implements PolymerO
       
       this.resetCooldown();
       this.setActive(true);
-      ParticleEffectUtils.stormcallerAltarAnim(serverWorld,this.getPos().toCenterPos(), 0);
-      ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
+      ArcanaEffectUtils.stormcallerAltarAnim(serverWorld,this.getPos().toCenterPos(), 0);
+      BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
          changeWeather(finalPlayer);
          if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.STORMCALLER_ALTAR_ACTIVATE));
       }));

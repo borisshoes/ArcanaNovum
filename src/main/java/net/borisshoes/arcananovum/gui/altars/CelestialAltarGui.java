@@ -6,12 +6,11 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.CelestialAltarBlockEntity;
 import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.item.ItemStack;
@@ -57,7 +56,7 @@ public class CelestialAltarGui extends SimpleGui {
             blockEntity.setMode((mode+1) % 2);
          }else{
             if(blockEntity.getCooldown() <= 0 && blockEntity.getWorld() instanceof ServerWorld serverWorld){
-               if(MiscUtils.removeItems(player, COST.getLeft(),COST.getRight())){
+               if(MinecraftUtils.removeItems(player, COST.getLeft(),COST.getRight())){
                   blockEntity.startStarChange(player);
                   close();
                }else{
@@ -92,7 +91,7 @@ public class CelestialAltarGui extends SimpleGui {
       int mode = blockEntity.getMode();
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         GuiElementBuilder menuItem = mode == 0 ? GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.CELESTIAL_DAY_COLOR)) : GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.CELESTIAL_NIGHT_COLOR));
+         GuiElementBuilder menuItem = mode == 0 ? GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.CELESTIAL_DAY_COLOR)) : GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.CELESTIAL_NIGHT_COLOR));
          setSlot(i,menuItem.setName(Text.literal("Celestial Altar").formatted(mode == 0 ? Formatting.YELLOW : Formatting.AQUA)));
       }
       

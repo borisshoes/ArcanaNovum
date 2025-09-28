@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.login.MaxHealthLoginCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
@@ -23,24 +24,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.VIRTUAL_INVENTORY_GUIS;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
 public class PlayerConnectionCallback {
    public static void onPlayerJoin(ServerPlayNetworkHandler netHandler, PacketSender sender, MinecraftServer server){
       ServerPlayerEntity player = netHandler.player;
       //log(player.getEntityName()+" has joined the game");
-      
-      ArrayList<LoginCallback> toBeRemoved = new ArrayList<>();
-      for(LoginCallback callback : LOGIN_CALLBACK_LIST.get(server.getOverworld()).getCallbacks()){
-         if(callback.getPlayer().equals(player.getUuidAsString())){
-            //log("Running login callback for "+player.getEntityName()+". ID: "+callback.getId());
-            callback.onLogin(netHandler,server);
-            toBeRemoved.add(callback);
-         }
-      }
-      for(LoginCallback callback :toBeRemoved){
-         LOGIN_CALLBACK_LIST.get(server.getOverworld()).removeCallback(callback);
-      }
    
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       if(profile.getLevel() == 0){ // Profile needs initialization
@@ -112,7 +100,7 @@ public class PlayerConnectionCallback {
    public static void onPlayerLeave(ServerPlayNetworkHandler handler, MinecraftServer server){
       ServerPlayerEntity player = handler.player;
       if(player.getMaxHealth() > 20 && player.getHealth() > 20){
-         ArcanaNovum.addLoginCallback(new MaxHealthLoginCallback(server,player.getUuidAsString(),player.getHealth()));
+         BorisLib.addLoginCallback(new MaxHealthLoginCallback(server,player.getUuidAsString(),player.getHealth()));
       }
       
       VIRTUAL_INVENTORY_GUIS.forEach((virtualInventoryGui, p) -> {

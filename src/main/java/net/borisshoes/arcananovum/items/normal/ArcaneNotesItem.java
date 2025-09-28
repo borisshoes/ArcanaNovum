@@ -3,8 +3,13 @@ package net.borisshoes.arcananovum.items.normal;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.LivingEntity;
@@ -65,7 +70,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
       String id = ArcanaItem.getStringProperty(stack,UNLOCK_ID_TAG);
       ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(id);
       if(arcanaItem != null && user instanceof ServerPlayerEntity player){
-         ParticleEffectUtils.arcaneNotesAnim(player,arcanaItem,remainingUseTicks);
+         ArcanaEffectUtils.arcaneNotesAnim(player,arcanaItem,remainingUseTicks);
          int maxUseTime = getMaxUseTime(stack,user);
          boolean alreadyUnlocked = ArcanaNovum.data(player).hasResearched(arcanaItem);
          
@@ -122,12 +127,12 @@ public class ArcaneNotesItem extends NormalPolymerItem {
                paper.setCount(player.getRandom().nextBetween(5,24));
                ArcanaNovum.data(player).addXP(ArcanaRarity.getCraftXp(arcanaItem.getRarity()));
             }
-            MiscUtils.returnItems(new SimpleInventory(paper),player);
+            MinecraftUtils.returnItems(new SimpleInventory(paper),player);
          }else{
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 2, 0.8f);
             ArcanaNovum.data(player).addResearchedItem(arcanaItem.getId());
          }
-         ParticleEffectUtils.arcaneNotesFinish(player,arcanaItem);
+         ArcanaEffectUtils.arcaneNotesFinish(player,arcanaItem);
       }
       if(!user.isInCreativeMode()) stack.decrement(1);
       return stack;

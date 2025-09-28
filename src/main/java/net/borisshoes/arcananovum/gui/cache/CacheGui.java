@@ -8,11 +8,11 @@ import net.borisshoes.arcananovum.gui.arcanetome.ArcanaItemCompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.CompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandlerType;
@@ -80,12 +80,12 @@ public class CacheGui extends SimpleGui {
    public void buildCompendiumGui(){
       List<CompendiumEntry> items = TomeGui.sortedFilteredEntryList(settings, player);
       items = items.stream().filter(entry -> entry instanceof ArcanaItemCompendiumEntry || entry instanceof IngredientCompendiumEntry).toList();
-      List<CompendiumEntry> pageItems = MiscUtils.listToPage(items, settings.getPage(),28);
+      List<CompendiumEntry> pageItems = AlgoUtils.listToPage(items, settings.getPage(),28);
       int numPages = (int) Math.ceil((float)items.size()/28.0);
       
-      MiscUtils.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.empty());
       
-      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.FILTER)).hideDefaultTooltip();
       filterBuilt.setName(Text.literal("Filter Arcana Items").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -94,7 +94,7 @@ public class CacheGui extends SimpleGui {
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(TomeGui.TomeFilter.getColoredLabel(settings.getFilterType()))));
       setSlot(8,filterBuilt);
       
-      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
       sortBuilt.setName(Text.literal("Sort Arcana Items").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -103,14 +103,14 @@ public class CacheGui extends SimpleGui {
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Sorting By: ").formatted(Formatting.AQUA)).append(TomeGui.TomeSort.getColoredLabel(settings.getSortType()))));
       setSlot(0,sortBuilt);
       
-      GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+      GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
       nextPage.setName(Text.literal("Next Page ("+settings.getPage()+"/"+numPages+")").formatted(Formatting.DARK_PURPLE));
       nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
             .append(Text.literal("Click").formatted(Formatting.AQUA))
             .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
       setSlot(53,nextPage);
       
-      GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+      GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
       prevPage.setName(Text.literal("Previous Page ("+settings.getPage()+"/"+numPages+")").formatted(Formatting.DARK_PURPLE));
       prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
             .append(Text.literal("Click").formatted(Formatting.AQUA))

@@ -2,10 +2,14 @@ package net.borisshoes.arcananovum.events;
 
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
+import net.borisshoes.borislib.events.Event;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
-public class BinaryBladesMaxEnergyEvent extends ArcanaEvent{
-   public static final String ID = "binary_blades_max_energy_event";
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
+public class BinaryBladesMaxEnergyEvent extends Event {
+   public static final Identifier ID = Identifier.of(MOD_ID,"binary_blades_max_energy_event");
    
    private final ServerPlayerEntity player;
    

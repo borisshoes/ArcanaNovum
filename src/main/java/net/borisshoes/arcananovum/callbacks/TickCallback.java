@@ -13,14 +13,21 @@ import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.events.ArcanaEvent;
 import net.borisshoes.arcananovum.events.NulMementoEvent;
 import net.borisshoes.arcananovum.items.LevitationHarness;
 import net.borisshoes.arcananovum.items.NulMemento;
 import net.borisshoes.arcananovum.items.QuiverItem;
 import net.borisshoes.arcananovum.items.ShulkerCore;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.Dialog;
+import net.borisshoes.arcananovum.utils.DialogHelper;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.events.Event;
+import net.borisshoes.borislib.timers.TickTimerCallback;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BundleContentsComponent;
@@ -39,12 +46,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.*;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.*;
+import static net.borisshoes.arcananovum.ArcanaNovum.ACTIVE_ARCANA_BLOCKS;
 import static net.borisshoes.arcananovum.ArcanaRegistry.DRAGON_TOWER_ABILITY;
 import static net.borisshoes.arcananovum.ArcanaRegistry.LEVITATION_HARNESS_ABILITY;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
@@ -53,7 +59,6 @@ public class TickCallback {
    public static void onTick(MinecraftServer server){
       try{
          bossTickCheck(server);
-         updateMovementTrackers(server);
          
          ArrayList<Pair<BlockEntity, ArcanaBlockEntity>> toRemoveBlocks = new ArrayList<>();
          for(Map.Entry<Pair<BlockEntity, ArcanaBlockEntity>, Integer> pair : ACTIVE_ARCANA_BLOCKS.entrySet()){
@@ -121,7 +126,7 @@ public class TickCallback {
                // Reset Nul Memento
                ItemStack finalItem = item;
                if(arcanaItem instanceof NulMemento nulMemento && nulMemento.isActive(item) &&
-                     (i != 39 || ArcanaNovum.getEventsOfType(NulMementoEvent.class).stream().noneMatch(event -> event.getPlayer().equals(player) && ArcanaItem.getUUID(event.getMemento()).equals(ArcanaItem.getUUID(finalItem))))){
+                     (i != 39 || Event.getEventsOfType(NulMementoEvent.class).stream().noneMatch(event -> event.getPlayer().equals(player) && ArcanaItem.getUUID(event.getMemento()).equals(ArcanaItem.getUUID(finalItem))))){
                   ArcanaItem.putProperty(item, ArcanaItem.ACTIVE_TAG,false);
                }
             }
@@ -144,50 +149,21 @@ public class TickCallback {
             }
          }
          
-         // Tick Timer Callbacks
-         ArrayList<TickTimerCallback> toRemove = new ArrayList<>();
          HashMap<ServerPlayerEntity,Float> shieldTotals = new HashMap<>();
-         for(int i = 0; i < SERVER_TIMER_CALLBACKS.size(); i++){
-            TickTimerCallback t = SERVER_TIMER_CALLBACKS.get(i);
-            if(t.decreaseTimer() == 0){
-               t.onTimer();
-               toRemove.add(t);
-               continue;
-            }
-            if(t instanceof ShieldTimerCallback st){
-               if(shieldTotals.containsKey(st.player)){
-                  shieldTotals.put(st.player,shieldTotals.get(st.player)+st.getHearts());
-                  if(shieldTotals.get(st.player) >= 200 && st.player.getAbsorptionAmount() >= 200) ArcanaAchievements.grant(st.player,ArcanaAchievements.BUILT_LIKE_TANK.id);
+         for(TickTimerCallback callback : BorisLib.SERVER_TIMER_CALLBACKS){
+            if(callback instanceof ShieldTimerCallback st){
+               if(shieldTotals.containsKey(st.getPlayer())){
+                  shieldTotals.put(st.getPlayer(),shieldTotals.get(st.getPlayer())+st.getHearts());
+                  if(shieldTotals.get(st.getPlayer()) >= 200 && st.getPlayer().getAbsorptionAmount() >= 200) ArcanaAchievements.grant(st.getPlayer(),ArcanaAchievements.BUILT_LIKE_TANK.id);
                }else{
-                  shieldTotals.put(st.player,st.getHearts());
+                  shieldTotals.put(st.getPlayer(),st.getHearts());
                }
             }
          }
-         SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains);
-         
-         
-         // Tick events
-         for(ArcanaEvent event : RECENT_EVENTS){
-            event.tick();
-         }
-         RECENT_EVENTS.removeIf(ArcanaEvent::isExpired);
          
          ContinuumAnchor.updateLoadedChunks(server);
       }catch(Exception e){
          e.printStackTrace();
-      }
-   }
-   
-   private static void updateMovementTrackers(MinecraftServer server){
-      for(ServerPlayerEntity player : server.getPlayerManager().getPlayerList()){
-         if(PLAYER_MOVEMENT_TRACKER.containsKey(player)){
-            Pair<Vec3d,Vec3d> tracker = PLAYER_MOVEMENT_TRACKER.get(player);
-            Vec3d oldPos = tracker.getLeft();
-            Vec3d newPos = player.getPos();
-            PLAYER_MOVEMENT_TRACKER.put(player,new Pair<>(newPos, newPos.subtract(oldPos)));
-         }else{
-            PLAYER_MOVEMENT_TRACKER.put(player,new Pair<>(player.getPos(), new Vec3d(0,0,0)));
-         }
       }
    }
    

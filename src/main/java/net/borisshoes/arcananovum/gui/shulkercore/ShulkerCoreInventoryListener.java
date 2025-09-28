@@ -3,11 +3,10 @@ package net.borisshoes.arcananovum.gui.shulkercore;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.borisshoes.arcananovum.items.ShulkerCore;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
 import net.minecraft.entity.EntityType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
@@ -35,7 +34,7 @@ public class ShulkerCoreInventoryListener implements InventoryChangedListener {
          //Check Soulstone, and update item
          boolean hasStone = validSoulstone(inv);
          
-         GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
+         GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
          String paneText = hasStone ? LevelUtils.readableInt(core.getEnergy(item)) + " Shulker Souls" : "No Soulstone Inserted";
          Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
    

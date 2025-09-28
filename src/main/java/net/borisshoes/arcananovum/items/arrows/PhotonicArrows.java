@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items.arrows;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
@@ -11,10 +12,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -83,7 +84,7 @@ public class PhotonicArrows extends RunicArrow {
    
    public void shoot(World world, LivingEntity entity, ProjectileEntity proj, int alignmentLvl){
       if(!(world instanceof ServerWorld serverWorld)) return;
-      MiscUtils.LasercastResult lasercast = MiscUtils.lasercast(world, entity.getEyePos(), entity.getRotationVecClient(), 100, true, entity);
+      MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, entity.getEyePos(), entity.getRotationVecClient(), 100, true, entity);
       
       float damage = (float)MathHelper.clamp(proj.getVelocity().length()*5,1,20);
       if(alignmentLvl == 5) damage += (float) (4 + damage*0.2);
@@ -95,7 +96,7 @@ public class PhotonicArrows extends RunicArrow {
          if(hit instanceof ServerPlayerEntity hitPlayer && hitPlayer.isBlocking()){
             double dp = hitPlayer.getRotationVecClient().normalize().dotProduct(lasercast.direction().normalize());
             if(dp < -0.6){
-               MiscUtils.blockWithShield(hitPlayer,finalDmg);
+               ArcanaUtils.blockWithShield(hitPlayer,finalDmg);
                continue;
             }
          }
@@ -113,7 +114,7 @@ public class PhotonicArrows extends RunicArrow {
          runicArrowEntity.incArrowForEveryFoe(player);
       }
       
-      ParticleEffectUtils.photonArrowShot(serverWorld,entity.getEyePos().subtract(0,entity.getHeight()/4,0),lasercast.endPos(), MathHelper.clamp(damage/15,.4f,1f),0);
+      ArcanaEffectUtils.photonArrowShot(serverWorld,entity.getEyePos().subtract(0,entity.getHeight()/4,0),lasercast.endPos(), MathHelper.clamp(damage/15,.4f,1f),0);
    }
    
    @Override

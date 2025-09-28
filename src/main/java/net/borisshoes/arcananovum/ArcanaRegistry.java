@@ -15,6 +15,8 @@ import net.borisshoes.arcananovum.areaeffects.SmokeArrowAreaEffectTracker;
 import net.borisshoes.arcananovum.blocks.*;
 import net.borisshoes.arcananovum.blocks.altars.*;
 import net.borisshoes.arcananovum.blocks.forge.*;
+import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
+import net.borisshoes.arcananovum.callbacks.login.*;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.MultiblockCore;
@@ -38,8 +40,11 @@ import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipes;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.world.structures.FabricStructurePoolRegistry;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.callbacks.LoginCallback;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.Block;
@@ -192,6 +197,21 @@ public class ArcanaRegistry {
    public static final AreaEffectTracker AFTERSHOCK_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AftershockAreaEffectTracker());
    public static final AreaEffectTracker ALCHEMICAL_ARROW_AREA_EFFECT_TRACKER = registerAreaEffectTracker(new AlchemicalArrowAreaEffectTracker());
    
+   // Graphics Items
+   public static final GraphicalItem.GraphicElement TRANSMUTATION_BOOK = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "transmutation_book"), Items.KNOWLEDGE_BOOK, false));
+   public static final GraphicalItem.GraphicElement CASINO_CHIP = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "casino_chip"), Items.DIAMOND, true));
+   public static final GraphicalItem.GraphicElement STAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "star"), Items.NETHER_STAR, false));
+   public static final GraphicalItem.GraphicElement GAS = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "gas"), Items.GRAY_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement PLASMA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "plasma"), Items.ORANGE_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement BLACK_HOLE = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "black_hole"), Items.ENDER_PEARL, false));
+   public static final GraphicalItem.GraphicElement NOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "nova"), Items.BLAZE_POWDER, false));
+   public static final GraphicalItem.GraphicElement SUPERNOVA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "supernova"), Items.MAGMA_CREAM, false));
+   public static final GraphicalItem.GraphicElement QUASAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "quasar"), Items.ENDER_EYE, false));
+   public static final GraphicalItem.GraphicElement PULSAR = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "pulsar"), Items.END_CRYSTAL, false));
+   public static final GraphicalItem.GraphicElement NEBULA = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "nebula"), Items.PURPLE_STAINED_GLASS_PANE, false));
+   public static final GraphicalItem.GraphicElement PLANET = BorisLib.registerGraphicItem(new GraphicalItem.GraphicElement(Identifier.of(MOD_ID, "planet"), Items.HEAVY_CORE, false));
+   
+   
    // Normal Items
    public static final Item NEBULOUS_ESSENCE = registerItem("nebulous_essence", new NebulousEssenceItem("nebulous_essence", new Item.Settings().maxCount(64).fireproof().rarity(Rarity.RARE)
          .component(DataComponentTypes.LORE, NebulousEssenceItem.getDefaultLore())
@@ -220,7 +240,6 @@ public class ArcanaRegistry {
          .component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
          .component(DataComponentTypes.DAMAGE_RESISTANT, new DamageResistantComponent(ARCANA_ITEM_IMMUNE_TO)))
    );
-   public static final Item GRAPHICAL_ITEM = registerItem("graphical_item", new GraphicalItem("graphical_item", new Item.Settings().maxCount(64)));
    
    // 1.0 Items
    public static final ArcanaItem LEADERSHIP_CHARM = ArcanaRegistry.register(new LeadershipCharm());
@@ -338,6 +357,15 @@ public class ArcanaRegistry {
    // PlayerAbilityLib Identifiers
    public static final AbilitySource LEVITATION_HARNESS_ABILITY = Pal.getAbilitySource(Identifier.of(MOD_ID, LEVITATION_HARNESS.getId()), AbilitySource.CONSUMABLE);
    public static final AbilitySource DRAGON_TOWER_ABILITY = Pal.getAbilitySource(Identifier.of(MOD_ID, "dragon_tower"), AbilitySource.FREE);
+   
+   // Login Callbacks
+   public static final LoginCallback SHIELD_LOGIN = registerCallback(new ShieldLoginCallback());
+   public static final LoginCallback ANCHOR_LOGIN = registerCallback(new AnchorTimeLoginCallback());
+   public static final LoginCallback COLLIDER_LOGIN = registerCallback(new ColliderLoginCallback());
+   public static final LoginCallback XP_LOGIN = registerCallback(new XPLoginCallback());
+   public static final LoginCallback ACHIEVEMENT_LOGIN = registerCallback(new AchievementLoginCallback());
+   public static final LoginCallback MAX_HP_LOGIN = registerCallback(new MaxHealthLoginCallback());
+   public static final LoginCallback VENGEANCE_LOGIN = registerCallback(new VengeanceTotemLoginCallback());
    
    // Config Settings
    public static final ArcanaConfig.ConfigSetting<?> DO_CONCENTRATION_DAMAGE = registerConfigSetting(new ArcanaConfig.NormalConfigSetting<>(new ConfigUtils.BooleanConfigValue("doConcentrationDamage", true, "Whether players are damaged for going over their concentration limit",
@@ -562,7 +590,7 @@ public class ArcanaRegistry {
             }
          });
       }).build();
-      final ItemGroup ARCANA_INGREDIENTS_GROUP = PolymerItemGroupUtils.builder().displayName(Text.translatable("itemGroup.arcana_ingredients")).icon(() -> MiscUtils.removeLore(new ItemStack(SOVEREIGN_ARCANE_PAPER))).entries((displayContext, entries) -> {
+      final ItemGroup ARCANA_INGREDIENTS_GROUP = PolymerItemGroupUtils.builder().displayName(Text.translatable("itemGroup.arcana_ingredients")).icon(() -> MinecraftUtils.removeLore(new ItemStack(SOVEREIGN_ARCANE_PAPER))).entries((displayContext, entries) -> {
          RECOMMENDED_LIST.forEach(entry -> {
             if(entry instanceof IngredientCompendiumEntry ingredientEntry){
                entries.add(new ItemStack(ingredientEntry.getDisplayStack().getItem()));
@@ -627,6 +655,10 @@ public class ArcanaRegistry {
       return setting;
    }
    
+   private static LoginCallback registerCallback(LoginCallback callback){
+      return Registry.register(BorisLib.LOGIN_CALLBACKS,callback.getId(),callback);
+   }
+   
    private static ChunkTicketType registerTicketType(String id, long expiryTicks, boolean persist, ChunkTicketType.Use use) {
       return Registry.register(Registries.TICKET_TYPE, id, new ChunkTicketType(expiryTicks, persist, use));
    }
@@ -644,10 +676,10 @@ public class ArcanaRegistry {
    }
    
    private static IngredientCompendiumEntry getCryingObsidianEntry(){
-      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
+      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
             .withName(Text.literal("Water").formatted(Formatting.BLUE))
             .withLore(List.of(Text.literal("Throw the ingredients into water").formatted(Formatting.AQUA)));
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
+      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
             .withName(Text.literal("In World Recipe").formatted(Formatting.GRAY,Formatting.BOLD))
             .withLore(List.of(Text.literal("Do this in the World").formatted(Formatting.DARK_PURPLE)));
       ExplainIngredient o = new ExplainIngredient(Items.OBSIDIAN,1,"Obsidian")

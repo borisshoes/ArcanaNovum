@@ -9,7 +9,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.AquaticEversource;
 import net.borisshoes.arcananovum.items.MagmaticEversource;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.block.cauldron.CauldronBehavior;

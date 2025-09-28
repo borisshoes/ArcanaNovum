@@ -5,10 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.items.normal.ArcaneNotesItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
@@ -66,7 +66,7 @@ public class ArcaneNotesLootFunction extends ConditionalLootFunction {
       if(!stack.isOf(ArcanaRegistry.ARCANE_NOTES)) return stack;
       
       List<Pair<ArcanaRarity,Integer>> weights = List.of(new Pair<>(ArcanaRarity.MUNDANE,mundaneWeight),new Pair<>(ArcanaRarity.EMPOWERED,empoweredWeight),new Pair<>(ArcanaRarity.EXOTIC,exoticWeight),new Pair<>(ArcanaRarity.SOVEREIGN,sovereignWeight),new Pair<>(ArcanaRarity.DIVINE,divineWeight));
-      ArcanaRarity rarity = MiscUtils.getWeightedOption(weights,random.nextLong());
+      ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights,random.nextLong());
       List<RegistryEntry<Item>> items = this.itemTag.stream().filter(entry -> {
          ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(entry.getIdAsString());
          return arcanaItem != null && arcanaItem.getRarity() == rarity;

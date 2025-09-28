@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
-import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
+import net.borisshoes.borislib.utils.MathUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
@@ -423,7 +423,7 @@ public class DragonLairActions {
                BlockState state = endWorld.getBlockState(blockPos);
                if(!state.isAir()) continue;
                
-               double dist = MiscUtils.distToLine(new Vec3d(blockPos.getX(),blockPos.getY(), blockPos.getZ()),start,segEnd);
+               double dist = MathUtils.distToLine(new Vec3d(blockPos.getX(),blockPos.getY(), blockPos.getZ()),start,segEnd);
                if(dist <= segR){
                   BlockPos copy = new BlockPos(blockPos.getX(),blockPos.getY(),blockPos.getZ());
                   blocks.add(copy);

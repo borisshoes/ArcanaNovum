@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -12,7 +12,12 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -55,7 +60,7 @@ public class GravitonArrows extends RunicArrow {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ARROWS};
       vanillaItem = Items.TIPPED_ARROW;
       item = new GravitonArrowsItem();
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_RUNIC_MATRIX,ResearchTasks.UNLOCK_RADIANT_FLETCHERY,ResearchTasks.OBTAIN_SPECTRAL_ARROW, ResearchTasks.ADVANCEMENT_DRAGON_BREATH,ResearchTasks.EFFECT_SLOWNESS};
       
       ItemStack stack = new ItemStack(item);
@@ -68,7 +73,7 @@ public class GravitonArrows extends RunicArrow {
    public List<Text> getItemLore(@Nullable ItemStack itemStack){
       List<MutableText> lore = new ArrayList<>();
       addRunicArrowLore(lore);
-      lore.add(TextUtils.withColor(Text.literal("Graviton Arrows:").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE));
+      lore.add(Text.literal("Graviton Arrows:").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE));
       lore.add(Text.literal("")
             .append(Text.literal("These ").formatted(Formatting.BLUE))
             .append(Text.literal("Runic Arrows").formatted(Formatting.LIGHT_PURPLE))
@@ -130,13 +135,13 @@ public class GravitonArrows extends RunicArrow {
       }
       if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.BRING_TOGETHER.id);
       
-      ParticleEffectUtils.gravitonArrowEmit(world,pos,entities);
+      ArcanaEffectUtils.gravitonArrowEmit(world,pos,entities);
       if(calls % 10 == 1){
          SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS,.5f,1.6f);
       }
       
       if(calls < duration){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(5, () -> gravitonPulse(arrow, world, pos, entity,duration,range,calls + 1)));
+         BorisLib.addTickTimerCallback(world, new GenericTimer(5, () -> gravitonPulse(arrow, world, pos, entity,duration,range,calls + 1)));
       }
    }
    
@@ -160,7 +165,7 @@ public class GravitonArrows extends RunicArrow {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal(" Graviton Arrows").formatted(Formatting.BOLD),ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Graviton Arrows").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Runic Matrix amplifies gravity at a single point, drawing in everything nearby. Once at the center, things have a hard time leaving. Great for setting up a combo shot.").formatted(Formatting.BLACK)));
       return list;
    }
    

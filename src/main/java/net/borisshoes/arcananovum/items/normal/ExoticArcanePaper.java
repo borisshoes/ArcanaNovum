@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.borislib.gui.GraphicalItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -27,7 +28,7 @@ public class ExoticArcanePaper extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
+      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LAPIS_COLOR),1,"",false)
             .withName(Text.literal("In Midnight Enchanter").formatted(Formatting.DARK_AQUA));
       ExplainIngredient m = new ExplainIngredient(ArcanaRegistry.MIDNIGHT_ENCHANTER.getItem(),1,"",false)
             .withName(Text.literal("Midnight Enchanter").formatted(Formatting.DARK_AQUA, Formatting.BOLD))

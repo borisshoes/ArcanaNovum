@@ -5,11 +5,10 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StormcallerAltarBlockEntity;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.item.ItemStack;
@@ -48,7 +47,7 @@ public class StormcallerAltarGui  extends SimpleGui {
             blockEntity.setMode((mode+1) % 3);
          }else{
             if(blockEntity.getCooldown() <= 0){
-               if(MiscUtils.removeItems(player, COST.getLeft(),COST.getRight())){
+               if(MinecraftUtils.removeItems(player, COST.getLeft(),COST.getRight())){
                   blockEntity.startWeatherChange(player);
                   close();
                }else{
@@ -84,9 +83,9 @@ public class StormcallerAltarGui  extends SimpleGui {
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          GuiElementBuilder menuItem = switch(mode){
-            case 1 -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,0x8895b3));
-            case 2 -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,0x525261));
-            default -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,0x1cffff));
+            case 1 -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,0x8895b3));
+            case 2 -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,0x525261));
+            default -> GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,0x1cffff));
          };
          setSlot(i,menuItem.setName(Text.literal("Altar of the Stormcaller").formatted(Formatting.DARK_GRAY)));
       }

@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -11,10 +12,9 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -113,7 +113,7 @@ public class ArcaneFlakArrows extends RunicArrow {
       }
       if(arrow.getOwner() instanceof ServerPlayerEntity player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,ArcanaAchievements.AA_ARTILLERY.id);
       
-      ParticleEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getPos(),damageRange,0);
+      ArcanaEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getPos(),damageRange,0);
       SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS,1f,1f);
       SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,1f,1f);
       arrow.discard();

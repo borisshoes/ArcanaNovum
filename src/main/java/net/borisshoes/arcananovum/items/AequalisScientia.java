@@ -6,17 +6,21 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarRecipeGui;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
@@ -537,10 +541,10 @@ public class AequalisScientia extends ArcanaItem {
    
    @Override
 	protected ArcanaRecipe makeRecipe(){
-      ExplainIngredient b = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
+      ExplainIngredient b = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR),1,"",false)
             .withName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD))
             .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
-      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.LIGHT_COLOR),1,"",false)
+      ExplainIngredient w = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.LIGHT_COLOR),1,"",false)
             .withName(Text.literal("Transmutation Recipe").formatted(Formatting.AQUA,Formatting.BOLD))
             .withLore(List.of(Text.literal("Use a Transmutation Altar").formatted(Formatting.DARK_AQUA)));
       ExplainIngredient a = new ExplainIngredient(Items.AMETHYST_BLOCK,64,"Amethyst Blocks")
@@ -634,14 +638,14 @@ public class AequalisScientia extends ArcanaItem {
                      }
                      ItemStack reagent1 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                      if(reagent1 == null){
-                        MiscUtils.returnItems(new SimpleInventory(input),player);
+                        MinecraftUtils.returnItems(new SimpleInventory(input),player);
                         player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
                         return ActionResult.SUCCESS_SERVER;
                      }
                      ItemStack reagent2 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                      if(reagent2 == null){
-                        MiscUtils.returnItems(new SimpleInventory(input),player);
-                        MiscUtils.returnItems(new SimpleInventory(reagent1),player);
+                        MinecraftUtils.returnItems(new SimpleInventory(input),player);
+                        MinecraftUtils.returnItems(new SimpleInventory(reagent1),player);
                         player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent2()).getName()),false);
                         return ActionResult.SUCCESS_SERVER;
                      }
@@ -662,14 +666,14 @@ public class AequalisScientia extends ArcanaItem {
                   }
                   ItemStack reagent1 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
-                     MiscUtils.returnItems(new SimpleInventory(input),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(input),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
                      return ActionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent2 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
-                     MiscUtils.returnItems(new SimpleInventory(input),player);
-                     MiscUtils.returnItems(new SimpleInventory(reagent1),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(input),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(reagent1),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent2()).getName()),false);
                      return ActionResult.SUCCESS_SERVER;
                   }
@@ -684,14 +688,14 @@ public class AequalisScientia extends ArcanaItem {
                   }
                   ItemStack reagent1 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
-                     MiscUtils.returnItems(new SimpleInventory(input),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(input),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
                      return ActionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent2 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
-                     MiscUtils.returnItems(new SimpleInventory(input),player);
-                     MiscUtils.returnItems(new SimpleInventory(reagent1),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(input),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(reagent1),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent2()).getName()),false);
                      return ActionResult.SUCCESS_SERVER;
                   }
@@ -707,14 +711,14 @@ public class AequalisScientia extends ArcanaItem {
                   }
                   ItemStack reagent1 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent1()),player,false);
                   if(reagent1 == null){
-                     MiscUtils.returnItems(new SimpleInventory(input),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(input),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent1()).getName()),false);
                      return ActionResult.SUCCESS_SERVER;
                   }
                   ItemStack reagent2 = getAndSplitValidStack(stack,recipe.getAequalisReagent(recipe.getReagent2()),player,false);
                   if(reagent2 == null){
-                     MiscUtils.returnItems(new SimpleInventory(input),player);
-                     MiscUtils.returnItems(new SimpleInventory(reagent1),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(input),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(reagent1),player);
                      player.sendMessage(Text.literal("").formatted(Formatting.RED,Formatting.ITALIC).append(Text.literal("You do not have enough ")).append(recipe.getAequalisReagent(recipe.getReagent2()).getName()),false);
                      return ActionResult.SUCCESS_SERVER;
                   }
@@ -728,9 +732,9 @@ public class AequalisScientia extends ArcanaItem {
                if(items != null && results != null){
                   playerEntity.getInventory().removeOne(stack);
                   Vec3d center = player.getPos().add(player.getRotationVector().multiply(3,0,3)).add(0,2,0);
-                  ParticleEffectUtils.aequalisTransmuteAnim(player.getWorld(),center,0,player.getRotationClient(),1,items.get(0),items.get(1),items.get(2),items.get(3),items.get(4));
+                  ArcanaEffectUtils.aequalisTransmuteAnim(player.getWorld(),center,0,player.getRotationClient(),1,items.get(0),items.get(1),items.get(2),items.get(3),items.get(4));
                   
-                  ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(500, () -> {
+                  BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(500, () -> {
                      for(ItemStack result : results){
                         if(result.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())){
                            ArcanaNovum.data(player).addCraftedSilent(result);

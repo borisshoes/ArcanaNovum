@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
@@ -18,7 +19,14 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.events.Event;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -384,7 +392,7 @@ public class BinaryBlades extends EnergyItem {
                      living.setOnFireFor(3);
                   }
                }
-               ParticleEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.2,0), ParticleTypes.FLAME,0.5,8,2,0.1,0.05);
+               ArcanaEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.2,0), ParticleTypes.FLAME,0.5,8,2,0.1,0.05);
             }
             
             int lastHitTime = getIntProperty(stack, LAST_HIT_TAG);
@@ -398,8 +406,8 @@ public class BinaryBlades extends EnergyItem {
          }
          
          if(energy >= getMaxEnergy(stack)){
-            ArcanaNovum.addArcanaEvent(new BinaryBladesMaxEnergyEvent(player));
-            long count = ArcanaNovum.getEventsOfType(BinaryBladesMaxEnergyEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count();
+            Event.addEvent(new BinaryBladesMaxEnergyEvent(player));
+            long count = Event.getEventsOfType(BinaryBladesMaxEnergyEvent.class).stream().filter(event -> event.getPlayer().equals(player)).count();
             if(count >= ((TimedAchievement) ArcanaAchievements.STARBURST_STREAM).getGoal()){
                ArcanaAchievements.grant(player,ArcanaAchievements.STARBURST_STREAM);
             }
@@ -432,13 +440,13 @@ public class BinaryBlades extends EnergyItem {
          int energyGain = 0;
          
          if(pulsar > 0 && energy > energyCost){
-            MiscUtils.LasercastResult lasercast = MiscUtils.lasercast(world, player.getEyePos(), player.getRotationVecClient(), 25, true, player);
+            MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(world, player.getEyePos(), player.getRotationVecClient(), 25, true, player);
             float damage = pulsar * 7;
             for(Entity hit : lasercast.sortedHits()){
                if(hit instanceof ServerPlayerEntity hitPlayer && hitPlayer.isBlocking()){
                   double dp = hitPlayer.getRotationVecClient().normalize().dotProduct(lasercast.direction().normalize());
                   if(dp < -0.6){
-                     MiscUtils.blockWithShield(hitPlayer,damage);
+                     ArcanaUtils.blockWithShield(hitPlayer,damage);
                      continue;
                   }
                }
@@ -446,7 +454,7 @@ public class BinaryBlades extends EnergyItem {
                ArcanaItem.putProperty(stack,BinaryBlades.LAST_HIT_TAG,20);
                energyGain += 10;
             }
-            ParticleEffectUtils.pulsarBladeShoot(player.getWorld(),player.getEyePos().subtract(0,player.getHeight()/4,0),lasercast.endPos(),0);
+            ArcanaEffectUtils.pulsarBladeShoot(player.getWorld(),player.getEyePos().subtract(0,player.getHeight()/4,0),lasercast.endPos(),0);
             SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS,1.0f,2.0f);
             addEnergy(stack, energyGain-energyCost);
             player.getItemCooldownManager().set(stack,10);

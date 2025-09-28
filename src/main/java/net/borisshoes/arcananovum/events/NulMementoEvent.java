@@ -1,10 +1,14 @@
 package net.borisshoes.arcananovum.events;
 
+import net.borisshoes.borislib.events.Event;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
-public class NulMementoEvent extends ArcanaEvent{
-   public static final String ID = "nul_memento_event";
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
+public class NulMementoEvent extends Event {
+   public static final Identifier ID = Identifier.of(MOD_ID,"nul_memento_event");
    
    private final ServerPlayerEntity player;
    private final ItemStack memento;

@@ -5,7 +5,8 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -143,7 +144,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(output) && altar.getWorld() instanceof ServerWorld serverWorld){
          ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
          ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(output);
-         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
+         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
          return player == null || ArcanaNovum.data(player).hasResearched(arcanaOutputItem);
       }
       
@@ -153,9 +154,9 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
    @Override
    public ItemStack getViewStack(){
       if(ArcanaItemUtils.isArcane(output)){
-         return MiscUtils.removeLore(output.copyWithCount(1));
+         return MinecraftUtils.removeLore(output.copyWithCount(1));
       }
-      return MiscUtils.removeLore(output.copy());
+      return MinecraftUtils.removeLore(output.copy());
    }
    
    public ItemStack getInput(){

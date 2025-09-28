@@ -13,8 +13,8 @@ import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.gui.spawnerinfuser.SpawnerInfuserGui;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -147,7 +147,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
             if(correctType){
                if(!prevActive) this.active = true; // Update active status
                world.setBlockState(pos,world.getBlockState(pos).with(SpawnerInfuser.SpawnerInfuserBlock.ACTIVE,active));
-               ParticleEffectUtils.spawnerInfuser(serverWorld,pos,5);
+               ArcanaEffectUtils.spawnerInfuser(serverWorld,pos,5);
                SoundUtils.soulSounds(serverWorld,pos,1,5);
             }
          }

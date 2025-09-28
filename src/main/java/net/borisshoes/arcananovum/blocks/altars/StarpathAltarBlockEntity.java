@@ -14,7 +14,12 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.StarpathAltarGui;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.SpawnPile;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -116,7 +121,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          LivingEntity target = targets.get(i);
          BlockPos location = locations.get(i);
          target.teleportTo(new TeleportTarget(serverWorld, location.toCenterPos(), Vec3d.ZERO, target.getYaw(), target.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
-         ParticleEffectUtils.recallTeleport(serverWorld,target.getPos());
+         ArcanaEffectUtils.recallTeleport(serverWorld,target.getPos());
          
          if(target instanceof ServerPlayerEntity p && Math.sqrt(this.getPos().getSquaredDistance(this.getTargetCoords())) >= 100000){
             ArcanaAchievements.grant(p,ArcanaAchievements.FAR_FROM_HOME.id);
@@ -131,7 +136,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    public boolean startTeleport(@Nullable ServerPlayerEntity player){
       if(this.getCooldown() > 0 || !(this.getWorld() instanceof ServerWorld serverWorld)) return false;
       if(player == null && getCrafterId() != null){
-         PlayerEntity crafter = serverWorld.getPlayerByUuid(MiscUtils.getUUID(getCrafterId()));
+         PlayerEntity crafter = serverWorld.getPlayerByUuid(AlgoUtils.getUUID(getCrafterId()));
          if(crafter instanceof ServerPlayerEntity){
             player = (ServerPlayerEntity) crafter;
          }
@@ -140,8 +145,8 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       
       this.setActiveTicks(500);
       this.resetCooldown();
-      ParticleEffectUtils.starpathAltarAnim(serverWorld,this.getPos().toCenterPos());
-      ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(500, () -> {
+      ArcanaEffectUtils.starpathAltarAnim(serverWorld,this.getPos().toCenterPos());
+      BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(500, () -> {
          teleport(finalPlayer);
          if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARPATH_ALTAR_ACTIVATE));
       }));

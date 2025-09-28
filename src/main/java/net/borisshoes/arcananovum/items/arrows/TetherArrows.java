@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -11,7 +11,12 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
@@ -83,7 +88,7 @@ public class TetherArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player && entityHitResult.getEntity() instanceof LivingEntity entity){
          Vec3d hitPos = entityHitResult.getPos();
          
-         ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(1, () -> {
+         BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(1, () -> {
             Vec3d motion = player.getPos().subtract(hitPos);
             Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
             motion = motion.add(horizBoost);
@@ -92,7 +97,7 @@ public class TetherArrows extends RunicArrow {
             entity.setVelocity(velocity);
             if(entity instanceof ServerPlayerEntity targetPlayer) targetPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(targetPlayer));
             
-            ParticleEffectUtils.tetherArrowEntity(player.getWorld(),entity,player);
+            ArcanaEffectUtils.tetherArrowEntity(player.getWorld(),entity,player);
             SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
          }));
       }
@@ -109,7 +114,7 @@ public class TetherArrows extends RunicArrow {
          Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
          player.setVelocity(velocity);
          player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-         ParticleEffectUtils.tetherArrowGrapple(player.getWorld(),player,blockHitResult.getPos());
+         ArcanaEffectUtils.tetherArrowGrapple(player.getWorld(),player,blockHitResult.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_2, SoundCategory.PLAYERS,.8f,.6f);
          
          if(motion.y >= 12) ArcanaAchievements.progress(player,ArcanaAchievements.SPIDERMAN.id,1);
@@ -156,7 +161,7 @@ public class TetherArrows extends RunicArrow {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = ArcanaIngredient.EMPTY;
       ArcanaIngredient c = new ArcanaIngredient(Items.STRING,32);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.RIPTIDE),3));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.RIPTIDE),3));
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
       ArcanaIngredient i = new ArcanaIngredient(Items.POTION,1).withPotions(Potions.STRONG_LEAPING);
       GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);

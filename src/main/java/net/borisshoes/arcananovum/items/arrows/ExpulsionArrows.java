@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -12,7 +12,11 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -88,7 +92,7 @@ public class ExpulsionArrows extends RunicArrow {
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
             double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
-            ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,entityHitResult.getPos(),range)));
+            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,entityHitResult.getPos(),range)));
          }else{
             int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
             double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
@@ -103,7 +107,7 @@ public class ExpulsionArrows extends RunicArrow {
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
             double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
-            ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,blockHitResult.getPos(),range)));
+            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(1, () -> evictionPulse(arrow, serverWorld,blockHitResult.getPos(),range)));
          }else{
             int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
             double range = 4 + 1.5*arrow.getAugment(ArcanaAugments.REPULSION.id);
@@ -127,7 +131,7 @@ public class ExpulsionArrows extends RunicArrow {
          }
       }
       
-      ParticleEffectUtils.expulsionArrowEmit(world,pos,range,0);
+      ArcanaEffectUtils.expulsionArrowEmit(world,pos,range,0);
       SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.PLAYERS,.5f,.5f);
    }
    
@@ -150,7 +154,7 @@ public class ExpulsionArrows extends RunicArrow {
       }
       
       if(calls % 5 == 0){
-         ParticleEffectUtils.expulsionArrowEmit(world,pos,range,0);
+         ArcanaEffectUtils.expulsionArrowEmit(world,pos,range,0);
          SoundUtils.playSound(world,BlockPos.ofFloored(pos), SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.PLAYERS,.5f,.5f);
       }
       if(calls % 10 == 1){
@@ -158,7 +162,7 @@ public class ExpulsionArrows extends RunicArrow {
       }
       
       if(calls < duration){
-         ArcanaNovum.addTickTimerCallback(world, new GenericTimer(5, () -> expulsionPulse(arrow, world, pos, entity,duration,range,calls + 1)));
+         BorisLib.addTickTimerCallback(world, new GenericTimer(5, () -> expulsionPulse(arrow, world, pos, entity,duration,range,calls + 1)));
       }
    }
    

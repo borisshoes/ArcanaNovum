@@ -5,16 +5,17 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.component.type.BlocksAttacksComponent;
@@ -130,10 +131,10 @@ public class ShieldOfFortitude extends ArcanaItem {
       float addedAbs = (float) Math.min(maxAbs,amount*.5);
       int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(item,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
       if(entity instanceof ServerPlayerEntity player){
-         ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
+         BorisLib.addTickTimerCallback(new ShieldTimerCallback(duration,item,player,addedAbs));
          SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
       }
-      MiscUtils.addMaxAbsorption(entity, EFFECT_ID,addedAbs);
+      MinecraftUtils.addMaxAbsorption(entity, EFFECT_ID,addedAbs);
       entity.setAbsorptionAmount((curAbs + addedAbs));
    }
    
@@ -150,13 +151,13 @@ public class ShieldOfFortitude extends ArcanaItem {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.FIRE_PROTECTION),4));
+      ArcanaIngredient r = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.FIRE_PROTECTION),4));
       ArcanaIngredient c = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       ArcanaIngredient g = new ArcanaIngredient(Items.GOLDEN_APPLE,16);
-      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.BLAST_PROTECTION),4));
-      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.PROTECTION),4));
+      ArcanaIngredient h = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.BLAST_PROTECTION),4));
+      ArcanaIngredient l = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.PROTECTION),4));
       ArcanaIngredient m = new ArcanaIngredient(Items.SHIELD,1, true);
-      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.PROJECTILE_PROTECTION),4));
+      ArcanaIngredient n = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.PROJECTILE_PROTECTION),4));
       
       ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},

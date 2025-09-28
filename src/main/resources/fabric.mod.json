@@ -31,7 +31,7 @@
     ]
   },
   "custom": {
-    "cardinal-components": ["arcananovum:profile","arcananovum:login_callbacks","arcananovum:bossfight","arcananovum:active_anchors"]
+    "cardinal-components": ["arcananovum:profile","arcananovum:bossfight","arcananovum:active_anchors"]
   },
   "mixins": [
     "arcananovum.mixins.json"

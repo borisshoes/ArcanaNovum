@@ -5,11 +5,10 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.AnvilInputGui;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -48,7 +47,7 @@ public class StarpathTargetGui extends AnvilInputGui {
          locationItem.setName((Text.literal("Enter a Name").formatted(Formatting.GOLD)));
          setSlot(0,locationItem);
       }
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.STARPATH_COLOR)).hideTooltip());
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.STARPATH_COLOR)).hideTooltip());
    }
    
    private BlockPos parseValid(){
@@ -89,7 +88,7 @@ public class StarpathTargetGui extends AnvilInputGui {
          }
       }
       
-      //ArcanaNovum.addTickTimerCallback(new GenericTimer(1, ()-> GuiHelpers.sendSlotUpdate(player, this.syncId, 2, getSlot(2).getItemStack())));
+      //BorisLib.addTickTimerCallback(new GenericTimer(1, ()-> GuiHelpers.sendSlotUpdate(player, this.syncId, 2, getSlot(2).getItemStack())));
       return true;
    }
    
@@ -101,16 +100,16 @@ public class StarpathTargetGui extends AnvilInputGui {
       if(targetMode){
          BlockPos parsed = parseValid();
          if(parsed == null){
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL)).setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA)));
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Text.literal("Invalid Location").formatted(Formatting.DARK_AQUA)));
          }else{
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CONFIRM)).hideDefaultTooltip().setName(Text.literal("Valid Location: "+parsed.toShortString()).formatted(Formatting.DARK_AQUA)));
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip().setName(Text.literal("Valid Location: "+parsed.toShortString()).formatted(Formatting.DARK_AQUA)));
          }
       }else{
          String trimmedName = text.trim();
          if(trimmedName.isBlank() || trimmedName.length() > 50){
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL)).setName(Text.literal("Invalid Name").formatted(Formatting.DARK_AQUA)));
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Text.literal("Invalid Name").formatted(Formatting.DARK_AQUA)));
          }else{
-            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CONFIRM)).setName(Text.literal("Valid Name: "+trimmedName).formatted(Formatting.DARK_AQUA)));
+            setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).setName(Text.literal("Valid Name: "+trimmedName).formatted(Formatting.DARK_AQUA)));
          }
       }
    }

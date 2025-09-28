@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.arcanistsbelt.ArcanistsBeltGui;
@@ -12,7 +13,12 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.DataFixer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.Entity;
@@ -23,7 +29,6 @@ import net.minecraft.inventory.StackReference;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.slot.Slot;
@@ -57,7 +62,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       itemVersion = 1;
       vanillaItem = Items.LEAD;
       item = new ArcanistsBeltItem();
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BELT_COLOR);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.USE_ENDER_CHEST,ResearchTasks.CONCENTRATION_DAMAGE,ResearchTasks.UNLOCK_TWILIGHT_ANVIL};
       
       ItemStack stack = new ItemStack(item);
@@ -90,7 +95,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
       lore.add(Text.literal("")
             .append(Text.literal("Right Click").formatted(Formatting.DARK_AQUA))
             .append(Text.literal(" to access the ").formatted(Formatting.YELLOW))
-            .append(TextUtils.withColor(Text.literal("Belt's"),ArcanaColors.BELT_COLOR))
+            .append(Text.literal("Belt's").withColor(ArcanaColors.BELT_COLOR))
             .append(Text.literal(" slots").formatted(Formatting.YELLOW))
             .append(Text.literal(".").formatted(Formatting.YELLOW)));
       
@@ -105,11 +110,11 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          if(inv.isEmpty()){
             lore.add(Text.literal(""));
             lore.add(Text.literal("")
-                  .append(TextUtils.withColor(Text.literal("Contents: "),ArcanaColors.BELT_COLOR))
+                  .append(Text.literal("Contents: ").withColor(ArcanaColors.BELT_COLOR))
                   .append(Text.literal("Empty").formatted(Formatting.YELLOW)));
          }else{
             lore.add(Text.literal(""));
-            lore.add(Text.literal("").append(TextUtils.withColor(Text.literal("Contents:"),ArcanaColors.BELT_COLOR)));
+            lore.add(Text.literal("").append(Text.literal("Contents:").withColor(ArcanaColors.BELT_COLOR)));
             for(int i = 0; i < inv.size(); i++){
                ItemStack stack = inv.getStack(i);
                if(stack.isEmpty()) continue;
@@ -142,7 +147,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       if(getIntProperty(stack,VERSION_TAG) <= 12){ // Migrate from ITEMS_TAG to ContainerComponent
-         NbtList beltItems = getListProperty(stack,ITEMS_TAG,NbtElement.COMPOUND_TYPE).copy();
+         NbtList beltItems = getListProperty(stack,ITEMS_TAG).copy();
          stack.set(DataComponentTypes.CONTAINER, DataFixer.nbtListToComponent(beltItems,server));
          removeProperty(stack,ITEMS_TAG);
       }
@@ -152,7 +157,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    
    public static boolean checkBeltAndHasItem(ItemStack beltStack, Item searchItem){
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(beltStack);
-      return (arcanaItem instanceof ArcanistsBelt && !MiscUtils.getMatchingItemsFromContainerComp(beltStack,searchItem).isEmpty());
+      return (arcanaItem instanceof ArcanistsBelt && !MinecraftUtils.getMatchingItemsFromContainerComp(beltStack,searchItem).isEmpty());
    }
    
    @Override
@@ -189,9 +194,9 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD),ArcanaColors.BELT_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nWith my collection of Arcana items rapidly increasing, my inventory has become cluttered with trinkets. Some Arcana items are passive, so perhaps I can stuff them away in a mini Ender Chest of sorts and only ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD),ArcanaColors.BELT_COLOR),Text.literal("\nchannel enough Arcana to keep their passive abilities active.\n\nThe Belt should be able to accommodate unstackable items as well, as long as they aren’t too big. The Belt’s pouches can \n").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD),ArcanaColors.BELT_COLOR),Text.literal("\nalso be accessed similar to a Bundle in my inventory.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nWith my collection of Arcana items rapidly increasing, my inventory has become cluttered with trinkets. Some Arcana items are passive, so perhaps I can stuff them away in a mini Ender Chest of sorts and only ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR),Text.literal("\nchannel enough Arcana to keep their passive abilities active.\n\nThe Belt should be able to accommodate unstackable items as well, as long as they aren’t too big. The Belt’s pouches can \n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Arcanist's Belt").formatted(Formatting.BOLD).withColor(ArcanaColors.BELT_COLOR),Text.literal("\nalso be accessed similar to a Bundle in my inventory.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -248,7 +253,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
                }else{
                   int size = BELT_SLOT_COUNT[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.POUCHES))];
                   int count = otherStack.getCount();
-                  Pair<ContainerComponent,ItemStack> addPair = MiscUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
+                  Pair<ContainerComponent,ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
                   if(count == addPair.getRight().getCount()){
                      SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
                   }else{

@@ -13,8 +13,8 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.arcanesingularity.ArcaneSingularityGui;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
@@ -104,7 +104,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
          Direction dir = serverWorld.getBlockState(pos).get(ArcaneSingularity.ArcaneSingularityBlock.HORIZONTAL_FACING);
          Vec3d center = pos.add(dir.getVector().multiply(-1)).toCenterPos().add(0,2.5,0);
          double fillPercent = (0.75+0.05*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.SUPERMASSIVE.id)) * ((double) getNumBooks() / getCapacity());
-         ParticleEffectUtils.arcaneSingularityAnim(serverWorld,center,ticks % 300,dir,fillPercent);
+         ArcanaEffectUtils.arcaneSingularityAnim(serverWorld,center,ticks % 300,dir,fillPercent);
          
          if(Math.random() < 0.001){
             SoundUtils.playSound(serverWorld,BlockPos.ofFloored(center), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.BLOCKS,0.3f,1+(float)Math.random());

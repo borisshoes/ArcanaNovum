@@ -10,7 +10,7 @@ import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PhantomEntity;
 import net.minecraft.entity.passive.CatEntity;

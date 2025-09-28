@@ -1,10 +1,10 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.areaeffects.AftershockAreaEffectTracker;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
@@ -14,7 +14,12 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -117,7 +122,7 @@ public class StormArrows extends RunicArrow {
          world.spawnEntity(lightning);
          
          if(arrow.getOwner() instanceof ServerPlayerEntity player){
-            ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2, () -> {
+            BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(2, () -> {
                if(lightning.getStruckEntities().anyMatch(e -> e instanceof MooshroomEntity)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY.id);
             }));
          }
@@ -147,7 +152,7 @@ public class StormArrows extends RunicArrow {
                   double dist = lastHit.getPos().distanceTo(e.getPos());
                   
                   if(world instanceof ServerWorld serverWorld)
-                     ParticleEffectUtils.line(serverWorld,null,lastHit.getPos().add(0,lastHit.getHeight()/2,0),e.getPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
+                     ArcanaEffectUtils.line(serverWorld,null,lastHit.getPos().add(0,lastHit.getHeight()/2,0),e.getPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
                }
                
                DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow,arrow.getOwner());
@@ -164,7 +169,7 @@ public class StormArrows extends RunicArrow {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = ArcanaIngredient.EMPTY;
       ArcanaIngredient c = new ArcanaIngredient(Items.LIGHTNING_ROD,24);
-      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.CHANNELING),1));
+      ArcanaIngredient g = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.CHANNELING),1));
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,16);
       GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);
       

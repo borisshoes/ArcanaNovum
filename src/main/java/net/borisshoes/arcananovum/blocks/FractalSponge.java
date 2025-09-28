@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -14,10 +15,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -267,9 +268,9 @@ public class FractalSponge extends ArcanaBlock {
                
                boolean cantor = Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CANTOR.id)) >= 1;
                if(cantor && absorbed > 0){
-                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(50, () -> absorbHelper(placer,world,stack,pos,true)));
-                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> absorbHelper(placer,world,stack,pos,true)));
-                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(150, () -> absorbHelper(placer,world,stack,pos,true)));
+                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(50, () -> absorbHelper(placer,world,stack,pos,true)));
+                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> absorbHelper(placer,world,stack,pos,true)));
+                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(150, () -> absorbHelper(placer,world,stack,pos,true)));
                }
             }catch(Exception e){
                e.printStackTrace();

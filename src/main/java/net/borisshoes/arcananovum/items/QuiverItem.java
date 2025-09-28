@@ -10,7 +10,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.DataFixer;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -19,7 +19,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
@@ -54,7 +53,7 @@ public abstract class QuiverItem extends ArcanaItem {
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       if(getIntProperty(stack,VERSION_TAG) <= 12){ // Migrate from ARROWS_TAG to ContainerComponent
-         NbtList arrowsList = getListProperty(stack,ARROWS_TAG,NbtElement.COMPOUND_TYPE).copy();
+         NbtList arrowsList = getListProperty(stack,ARROWS_TAG).copy();
          stack.set(DataComponentTypes.CONTAINER, DataFixer.nbtListToComponent(arrowsList,server));
          removeProperty(stack,ARROWS_TAG);
       }
@@ -74,7 +73,7 @@ public abstract class QuiverItem extends ArcanaItem {
       ContainerComponent arrows = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
       ArrayList<ItemStack> eligible = new ArrayList<>();
       for(ItemStack stack : arrows.iterateNonEmpty()){
-         if(stack.getCount() < stack.getMaxCount()){
+         if(stack.getCount() < stack.getMaxCount() && !EnchantmentHelper.hasEnchantments(stack)){
             eligible.add(stack);
          }
       }
@@ -102,7 +101,7 @@ public abstract class QuiverItem extends ArcanaItem {
       if(stack.isEmpty()) return false;
       int count = stack.getCount();
       
-      if(EnchantmentHelper.getLevel(MiscUtils.getEnchantment(Enchantments.INFINITY), bow) > 0 && item.isOf(Items.ARROW)) return true;
+      if(EnchantmentHelper.getLevel(MinecraftUtils.getEnchantment(Enchantments.INFINITY), bow) > 0 && item.isOf(Items.ARROW)) return true;
       if(Math.random() >= getEfficiencyMod(item)) count--;
       
       if(count == 0){

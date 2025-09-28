@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -14,9 +15,8 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -73,7 +73,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       vanillaItem = Items.RESPAWN_ANCHOR;
       block = new ContinuumAnchorBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).requiresTool().strength(50.0f, 1200.0f).luminance(state -> ContinuumAnchorBlock.getLightLevel(state, 15)));
       item = new ContinuumAnchorItem(block);
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.UNLOCK_EXOTIC_MATTER,ResearchTasks.ADVANCEMENT_CHARGE_RESPAWN_ANCHOR,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
@@ -87,7 +87,7 @@ public class ContinuumAnchor extends ArcanaBlock {
       List<MutableText> lore = new ArrayList<>();
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-            .append(TextUtils.withColor(Text.literal("continuum anchor"), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("continuum anchor").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal(" has the extraordinary ability to manipulate ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("spacetime").formatted(Formatting.DARK_PURPLE))
             .append(Text.literal(".").formatted(Formatting.DARK_GRAY)));
@@ -99,7 +99,7 @@ public class ContinuumAnchor extends ArcanaBlock {
             .append(Text.literal("...").formatted(Formatting.DARK_GRAY)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.DARK_GRAY))
-            .append(TextUtils.withColor(Text.literal("continuum anchor"), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("continuum anchor").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal(" consumes ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("exotic matter").formatted(Formatting.BLUE))
             .append(Text.literal(" to ").formatted(Formatting.DARK_GRAY))
@@ -169,10 +169,10 @@ public class ContinuumAnchor extends ArcanaBlock {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing study casing that can channel Arcana, I have made additional efforts to reinforce").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nthis chassis against dimensional shear. By combining all known techniques of manipulating dimensional energy, I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nWhen fed with Exotic Matter, the Anchor chunk loads a 5x5 chunk area and produces lazy chunks in the 7x7 ring around it. \nIt is able to stimulate mobs such that they despawn slower when a player isn’t nearby,").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nwhile also inducing new spawns and activating spawners.\nThe Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. Additional fuel may also be added while still in use.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nExotic Matter has given useful insight into warping spacetime. On top of being more practiced in constructing study casing that can channel Arcana, I have made additional efforts to reinforce").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nthis chassis against dimensional shear. By combining all known techniques of manipulating dimensional energy, I believe I can cause a section of space to be locked in time so that the world cannot be unloaded.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nWhen fed with Exotic Matter, the Anchor chunk loads a 5x5 chunk area and produces lazy chunks in the 7x7 ring around it. \nIt is able to stimulate mobs such that they despawn slower when a player isn’t nearby,").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Continuum Anchor").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nwhile also inducing new spawns and activating spawners.\nThe Anchor can be turned off with a redstone signal and its fuel can be removed by an empty hand. Additional fuel may also be added while still in use.").formatted(Formatting.BLACK)));
       return list;
    }
    

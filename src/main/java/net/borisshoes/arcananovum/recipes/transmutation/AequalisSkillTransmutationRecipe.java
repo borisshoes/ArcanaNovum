@@ -11,7 +11,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -75,7 +75,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       ArcanaItem aequalis = ArcanaItemUtils.identifyItem(aequalisStack);
       
       try{
-         ServerPlayerEntity asPlayer = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(aequalis.getCrafter(aequalisStack)));
+         ServerPlayerEntity asPlayer = altar.getWorld().getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(aequalis.getCrafter(aequalisStack)));
          if(asPlayer == null) return new ArrayList<>();
          
          IArcanaProfileComponent profile = ArcanaNovum.data(asPlayer);
@@ -216,7 +216,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
       if(!arcanaItemCheck || !matrixCheck) return false;
       if(!(ArcanaItemUtils.identifyItem(aequalisInput) instanceof AequalisScientia as)) return false;
       try{
-         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(as.getCrafter(aequalisInput)));
+         ServerPlayerEntity player = altar.getWorld().getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(as.getCrafter(aequalisInput)));
          if(player != null){
             return ArcanaNovum.data(player).hasResearched(ArcanaRegistry.AEQUALIS_SCIENTIA);
          }else{

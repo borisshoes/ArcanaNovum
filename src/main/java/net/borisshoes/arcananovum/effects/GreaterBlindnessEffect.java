@@ -5,6 +5,8 @@ import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.VirtualElement;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.tracker.PlayerMovementEntry;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
@@ -13,13 +15,10 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
-
-import static net.borisshoes.arcananovum.ArcanaNovum.PLAYER_MOVEMENT_TRACKER;
 
 public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatusEffect {
    
@@ -50,8 +49,8 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
                super.onTick();
                
                if(lifeTime % 5 == 0){
-                  Pair<Vec3d,Vec3d> tracker = PLAYER_MOVEMENT_TRACKER.get(player);
-                  Vec3d vel = tracker == null ? new Vec3d(0,0,0) : tracker.getRight();
+                  PlayerMovementEntry tracker = BorisLib.PLAYER_MOVEMENT_TRACKER.get(player);
+                  Vec3d vel = tracker == null ? new Vec3d(0,0,0) : tracker.velocity();
                   for(VirtualElement e : getElements()){
                      if(e instanceof BlockDisplayElement element){
                         element.setTranslation(vel.toVector3f().mul(1));

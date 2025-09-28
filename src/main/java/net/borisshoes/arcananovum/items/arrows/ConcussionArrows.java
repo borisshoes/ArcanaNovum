@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.NulConstructEntity;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
@@ -13,7 +13,11 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
@@ -121,7 +125,7 @@ public class ConcussionArrows extends RunicArrow {
             if(world instanceof ServerWorld serverWorld){
                if(e instanceof MobEntity mob){
                   mob.setAiDisabled(true);
-                  ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
+                  BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(100, () -> {
                      if(mob.isAlive()){
                         mob.setAiDisabled(false);
                      }
@@ -133,7 +137,7 @@ public class ConcussionArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player && mobsHit >= 10) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_AWE.id);
       if(world instanceof ServerWorld serverWorld){
          SoundUtils.playSound(world, BlockPos.ofFloored(pos), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1, .8f);
-         ParticleEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);
+         ArcanaEffectUtils.concussionArrowShot(serverWorld, pos, range, 0);
       }
    }
    

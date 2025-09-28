@@ -8,19 +8,24 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessGui;
 import net.borisshoes.arcananovum.gui.levitationharness.LevitationHarnessInventoryListener;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.ShulkerCoreIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.component.type.EquippableComponent;
@@ -228,9 +233,9 @@ public class LevitationHarness extends EnergyItem {
       String soulText = souls > -1 ? LevelUtils.readableInt(souls) + " Shulker Souls" : "No Soulstone Inserted";
       String durationText = energy > 0 ? "Flight Time Remaining: "+getDuration(stack) : "No Fuel!";
       String glowText = glow > 0 ? LevelUtils.readableInt(glow) + " Glowstone Left" : "No Glowstone Remaining";
-      GuiElementBuilder soulPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,souls > -1 ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
-      GuiElementBuilder durationPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,energy > 0 ? ArcanaColors.LIGHT_COLOR : 0x880000));
-      GuiElementBuilder glowPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,glow > 0 ? 0xffdd00 : ArcanaColors.DARK_COLOR));
+      GuiElementBuilder soulPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,souls > -1 ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
+      GuiElementBuilder durationPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,energy > 0 ? ArcanaColors.LIGHT_COLOR : 0x880000));
+      GuiElementBuilder glowPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,glow > 0 ? 0xffdd00 : ArcanaColors.DARK_COLOR));
       Formatting soulTextColor = souls > -1 ? Formatting.LIGHT_PURPLE : Formatting.RED;
       Formatting durationTextColor = energy > 0 ? Formatting.GRAY : Formatting.RED;
       Formatting glowTextColor = glow > 0 ? Formatting.GOLD : Formatting.RED;
@@ -374,7 +379,7 @@ public class LevitationHarness extends EnergyItem {
                ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER.id,1);
                if(player.getY() >= 1000) ArcanaAchievements.grant(player,ArcanaAchievements.TO_THE_MOON.id);
                
-               boolean hasAllay = false, hasBlaze = false, hasBee = false, hasDragon = false, hasPhantom = false,
+               boolean hasAllay = false, hasBlaze = false, hasBreeze = false, hasBee = false, hasDragon = false, hasPhantom = false,
                      hasGhast = false, hasHappyGhast = false, hasWither = false, hasParrot = false, hasVex = false, hasBat = false;
                for(Entity other : world.getOtherEntities(entity, entity.getBoundingBox().expand(32.0))){
                   EntityType<?> type = other.getType();
@@ -382,6 +387,8 @@ public class LevitationHarness extends EnergyItem {
                      hasAllay = true;
                   }else if(type == EntityType.BLAZE){
                      hasBlaze = true;
+                  }else if(type == EntityType.BREEZE){
+                     hasBreeze = true;
                   }else if(type == EntityType.BEE){
                      hasBee = true;
                   }else if(type == EntityType.ENDER_DRAGON){
@@ -402,11 +409,11 @@ public class LevitationHarness extends EnergyItem {
                      hasBat = true;
                   }
                }
-               if(hasAllay && hasBlaze && hasBee && hasDragon && hasPhantom && hasGhast && hasHappyGhast && hasWither && hasParrot && hasVex && hasBat){
+               if(hasAllay && hasBlaze && hasBreeze && hasBee && hasDragon && hasPhantom && hasGhast && hasHappyGhast && hasWither && hasParrot && hasVex && hasBat){
                   ArcanaAchievements.grant(player,ArcanaAchievements.AIR_TRAFFIC_CONTROL.id);
                }
                
-               ParticleEffectUtils.harnessFly(serverWorld,player,10);
+               ArcanaEffectUtils.harnessFly(serverWorld,player,10);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.LEVITATION_HARNESS_PER_SECOND));
                
                if(world.getServer().getTicks() % 120 == 0){

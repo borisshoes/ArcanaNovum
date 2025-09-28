@@ -9,11 +9,15 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.BinaryBlades;
 import net.borisshoes.arcananovum.items.Soulstone;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -99,7 +103,7 @@ public class ItemEntityMixin {
          if(!state.isOf(Blocks.SMITHING_TABLE)) proceed = false;
          ArcanaItem forgeItem = ArcanaRegistry.STARLIGHT_FORGE;
          String playerId = forgeItem.getCrafter(stack);
-         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(playerId));
+         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(playerId));
          
          if(player != null && !ArcanaNovum.data(player).hasResearched(forgeItem)){
             proceed = false;
@@ -132,7 +136,7 @@ public class ItemEntityMixin {
             }else{
                ArcanaItem.putProperty(stack,ArcaneTome.FORGE_TAG,craftTick);
             }
-            ParticleEffectUtils.craftForge(serverWorld,smithPos,craftTick);
+            ArcanaEffectUtils.craftForge(serverWorld,smithPos,craftTick);
          }else{
             ArcanaItem.removeProperty(stack,ArcaneTome.FORGE_TAG);
          }
@@ -211,7 +215,7 @@ public class ItemEntityMixin {
             }else{
                ArcanaItem.putProperty(stack,ArcaneTome.TOME_TAG,craftTick);
             }
-            ParticleEffectUtils.craftTome(serverWorld,enchantPos,craftTick);
+            ArcanaEffectUtils.craftTome(serverWorld,enchantPos,craftTick);
          }else{
             ArcanaItem.removeProperty(stack,ArcaneTome.TOME_TAG);
          }

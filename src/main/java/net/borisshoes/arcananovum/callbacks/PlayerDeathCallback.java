@@ -1,11 +1,11 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -28,7 +28,7 @@ public class PlayerDeathCallback {
       if(bossFight == null) return;
       if(bossFight.getLeft() == BossFights.DRAGON){
          DragonBossFight.playerDied(newPlayer);
-         ArcanaNovum.addTickTimerCallback(new GenericTimer(20, () -> {
+         BorisLib.addTickTimerCallback(new GenericTimer(20, () -> {
             // Give teleport option
             
             MutableText deathMsg1 = Text.literal("")
@@ -54,7 +54,7 @@ public class PlayerDeathCallback {
          for (int i = 0; i < oldPlayer.getInventory().size(); i++) {
             ItemStack oldStack = oldPlayer.getInventory().getStack(i);
             ItemStack newStack = newPlayer.getInventory().getStack(i);
-            if (EnchantmentHelper.getLevel(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), oldStack) > 0 && !ItemStack.areEqual(oldStack, newStack)) {
+            if (EnchantmentHelper.getLevel(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), oldStack) > 0 && !ItemStack.areEqual(oldStack, newStack)) {
                if (newStack.isEmpty()) {
                   newPlayer.getInventory().setStack(i, oldStack);
                } else {

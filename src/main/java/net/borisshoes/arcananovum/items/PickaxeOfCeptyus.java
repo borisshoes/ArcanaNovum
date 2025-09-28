@@ -8,13 +8,13 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
@@ -74,9 +74,9 @@ public class PickaxeOfCeptyus extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
-            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.FORTUNE),5),
-            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.EFFICIENCY),5)
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
+            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.FORTUNE),5),
+            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.EFFICIENCY),5)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
@@ -156,8 +156,8 @@ public class PickaxeOfCeptyus extends ArcanaItem {
       
       List<ItemStack> drops = new ArrayList<>();
       ItemStack veinPick = new ItemStack(Items.NETHERITE_PICKAXE);
-      veinPick.addEnchantment(MiscUtils.getEnchantment(Enchantments.FORTUNE),5 + greed[greedLvl]);
-      veinPick.addEnchantment(MiscUtils.getEnchantment(Enchantments.UNBREAKING),5);
+      veinPick.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.FORTUNE),5 + greed[greedLvl]);
+      veinPick.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.UNBREAKING),5);
       
       for(BlockPos blockPos : toMine){
          drops.addAll(Block.getDroppedStacks(world.getBlockState(blockPos), serverWorld, blockPos, null, player, veinPick));

@@ -14,11 +14,18 @@ import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -159,12 +166,12 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
          }
          
          if(index == 0 && tinkerSlotType != 2){
-            MiscUtils.returnItems(inventory,player);
+            MinecraftUtils.returnItems(inventory,player);
             clearSlot(4);
             tinkerSlotType = 2;
             redrawGui(inventory);
          }else if(index == 8  && tinkerSlotType != 1){
-            MiscUtils.returnItems(inventory,player);
+            MinecraftUtils.returnItems(inventory,player);
             clearSlot(4);
             tinkerSlotType = 1;
             redrawGui(inventory);
@@ -175,7 +182,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
          }else if(index == 31){
             if(arcanaItem != null){
                if(ArcanaNovum.data(player).hasResearched(arcanaItem)){
-                  MiscUtils.returnItems(inventory,player);
+                  MinecraftUtils.returnItems(inventory,player);
                   blockEntity.openGui(4,player, arcanaItem.getId());
                }else{
                   player.sendMessage(Text.literal("You must research this item first!").formatted(Formatting.RED),false);
@@ -263,7 +270,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.LAPIS_COLOR)).setName(Text.literal("Twilight Anvil").formatted(Formatting.DARK_PURPLE)));
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.LAPIS_COLOR)).setName(Text.literal("Twilight Anvil").formatted(Formatting.DARK_PURPLE)));
       }
       
       GuiElementBuilder equipmentItem = new GuiElementBuilder(Items.NAME_TAG).hideDefaultTooltip();
@@ -285,18 +292,18 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
    }
    
    public void buildAnvilGui(){
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
-      GuiElementBuilder itemsPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL, ArcanaColors.LAPIS_COLOR)).hideDefaultTooltip();
+      GuiElementBuilder itemsPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL, ArcanaColors.LAPIS_COLOR)).hideDefaultTooltip();
       itemsPane.setName((Text.literal("")
             .append(Text.literal("<- Place Items Here ->").formatted(Formatting.LIGHT_PURPLE))));
       setSlot(11,itemsPane);
-      setSlot(13,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(4,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(22,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(24,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(13,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(4,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(22,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(24,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       
       GuiElementBuilder xpItem = new GuiElementBuilder(Items.EXPERIENCE_BOTTLE).hideDefaultTooltip();
@@ -318,7 +325,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
    
    public void buildTinkerGui(){
       tinkerSlotType = 0;
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.literal("Insert an Arcana Item to Augment it").formatted(Formatting.DARK_PURPLE));
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.literal("Insert an Arcana Item to Augment it").formatted(Formatting.DARK_PURPLE));
       
       GuiElementBuilder itemPage = new GuiElementBuilder(Items.ANVIL).hideDefaultTooltip();
       itemPage.setName(Text.literal("Item Page").formatted(Formatting.DARK_PURPLE));
@@ -328,7 +335,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
       setSlot(31,itemPage);
       
       
-      GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
+      GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
       augmentPane.setName(Text.literal("Augments:").formatted(Formatting.DARK_PURPLE));
       augmentPane.addLoreLine(TextUtils.removeItalics(Text.literal("Unlocked augments can be applied to enhance Arcana Items!").formatted(Formatting.LIGHT_PURPLE)));
       
@@ -428,7 +435,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
             setSlot(4,GuiElementBuilder.from(item));
          }
          
-         GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, arcanaItem == null ? ArcanaColors.DARK_COLOR : ArcanaColors.LIGHT_COLOR)).hideDefaultTooltip();
+         GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, arcanaItem == null ? ArcanaColors.DARK_COLOR : ArcanaColors.LIGHT_COLOR)).hideDefaultTooltip();
          augmentPane.setName((Text.literal("")
                .append(Text.literal("Unlocked augments can be applied to enhance Arcana Items!").formatted(Formatting.LIGHT_PURPLE))));
          
@@ -442,7 +449,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
             
             boolean unlockedItem = profile.hasResearched(arcanaItem);
             if(!unlockedItem){
-               GuiElementBuilder lockedPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.ERROR_COLOR)).hideDefaultTooltip();
+               GuiElementBuilder lockedPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.ERROR_COLOR)).hideDefaultTooltip();
                lockedPane.setName((Text.literal("")
                      .append(Text.literal("You must first research this Arcana Item!").formatted(Formatting.RED))));
                
@@ -613,7 +620,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
          tinkerSlotType = 0;
          blockEntity.openGui(2,player,"");
       }
-      MiscUtils.returnItems(inventory,player);
+      MinecraftUtils.returnItems(inventory,player);
    }
    
    @Override

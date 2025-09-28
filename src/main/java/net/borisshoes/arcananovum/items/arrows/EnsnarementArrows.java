@@ -1,9 +1,9 @@
 package net.borisshoes.arcananovum.items.arrows;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -12,9 +12,9 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.RepeatTimer;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.RepeatTimer;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
@@ -94,7 +94,7 @@ public class EnsnarementArrows extends RunicArrow {
             
             if(!ArcanaAchievements.isTimerActive(player, ArcanaAchievements.SHACKLED.id)){
                ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
-               ArcanaNovum.addTickTimerCallback(new RepeatTimer(10,120, ()->{
+               BorisLib.addTickTimerCallback(new RepeatTimer(10,120, ()->{
                   if(living.isAlive() && living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
                      ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
                   }else{

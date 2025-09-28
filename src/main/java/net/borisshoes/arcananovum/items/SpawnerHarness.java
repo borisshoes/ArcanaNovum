@@ -6,13 +6,17 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -134,7 +138,7 @@ public class SpawnerHarness extends ArcanaItem {
       int reduction = ArcanaConfig.getInt(ArcanaRegistry.INGREDIENT_REDUCTION);
       int scrapCost = (int) Math.ceil(4.0 / reduction);
       stack.setCount(scrapCost/2);
-      MiscUtils.giveStacks(player,stack);
+      MinecraftUtils.giveStacks(player,stack);
    }
    
    @Override
@@ -150,7 +154,7 @@ public class SpawnerHarness extends ArcanaItem {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.SILK_TOUCH),1));
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.SILK_TOUCH),1));
       ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
       ArcanaIngredient h = new ArcanaIngredient(Items.IRON_BARS,16);
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);

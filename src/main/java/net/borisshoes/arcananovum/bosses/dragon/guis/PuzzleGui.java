@@ -4,11 +4,10 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
@@ -46,7 +45,7 @@ public class PuzzleGui extends SimpleGui {
       ArrayList<Item> puzzleItems = curPuzzle.getPuzzleItems();
       Item targetItem = curPuzzle.getTargetItem();
       
-      MiscUtils.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.literal("Tower Reclamation").formatted(Formatting.LIGHT_PURPLE));
+      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.literal("Tower Reclamation").formatted(Formatting.LIGHT_PURPLE));
       
       GuiElementBuilder targetGuiItem = new GuiElementBuilder(targetItem).hideDefaultTooltip();
       targetGuiItem.setName((Text.literal("")
@@ -57,7 +56,7 @@ public class PuzzleGui extends SimpleGui {
       
       for(int i = 46; i < 53; i++){
          int lvl = i-45;
-         GuiElementBuilder progressGuiItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,lvl <= level ? ArcanaColors.EQUAYUS_COLOR : ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
+         GuiElementBuilder progressGuiItem = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,lvl <= level ? ArcanaColors.EQUAYUS_COLOR : ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
          progressGuiItem.setName((Text.literal("("+level+"/7)").formatted(Formatting.AQUA,Formatting.BOLD)));
          setSlot(i,progressGuiItem);
       }

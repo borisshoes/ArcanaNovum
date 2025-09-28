@@ -7,7 +7,8 @@ import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -133,7 +134,7 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
       
       if(ArcanaItemUtils.isArcane(inputStack) && altar.getWorld() instanceof ServerWorld serverWorld){
          ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
-         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
+         ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(arcanaInputItem.getCrafter(inputStack)));
          return player == null || (ArcanaNovum.data(player).hasResearched(arcanaInputItem) && ArcanaNovum.data(player).getAugmentLevel(ArcanaAugments.IMPERMANENT_PERMUTATION.id) > 0);
       }
       
@@ -142,6 +143,6 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
    
    @Override
    public ItemStack getViewStack(){
-      return MiscUtils.removeLore(ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore().copyWithCount(1));
+      return MinecraftUtils.removeLore(ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore().copyWithCount(1));
    }
 }

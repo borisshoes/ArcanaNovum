@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.areaeffects;
 
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;

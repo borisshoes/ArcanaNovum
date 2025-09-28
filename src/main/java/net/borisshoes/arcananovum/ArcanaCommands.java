@@ -13,17 +13,22 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.arcananovum.cardinalcomponents.ArcanaProfileComponent;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.gui.arcanetome.LoreGui;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.cache.CacheGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -451,7 +456,7 @@ public class ArcanaCommands {
                      
                      ArrayList<String> enchStrs = new ArrayList<>();
                      for(RegistryEntry<Enchantment> entry : enchantComp.getEnchantments()){
-                        enchStrs.add("new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments."+entry.getKey().get().getValue().getPath().toUpperCase(Locale.ROOT)+"),"+enchantComp.getLevel(entry)+")");
+                        enchStrs.add("new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments."+entry.getKey().get().getValue().getPath().toUpperCase(Locale.ROOT)+"),"+enchantComp.getLevel(entry)+")");
                         ingred = ingred.withEnchantments(new EnchantmentLevelEntry(entry, enchantComp.getLevel(entry)));
                      }
                      
@@ -920,7 +925,7 @@ public class ArcanaCommands {
             }else{
                String uuid = ArcanaItem.getUUID(item);
                source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
-               ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(item,target));
+               BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(item,target,0));
             }
          }
          return 1;
@@ -945,7 +950,7 @@ public class ArcanaCommands {
          }else{
             String uuid = ArcanaItem.getUUID(item);
             source.sendMessage((Text.literal("Generated New: ").append(arcanaItem.getTranslatedName()).append(Text.literal(" with UUID "+uuid))).formatted(Formatting.GREEN));
-            ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(item,source.getPlayerOrThrow()));
+            BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(item,source.getPlayerOrThrow(),0));
             return 1;
          }
       }catch(Exception e){

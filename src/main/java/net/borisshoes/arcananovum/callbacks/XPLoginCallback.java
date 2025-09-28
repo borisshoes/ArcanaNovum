@@ -1,22 +1,26 @@
 package net.borisshoes.arcananovum.callbacks;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.borislib.callbacks.LoginCallback;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 
-public class XPLoginCallback extends LoginCallback{
+import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+
+public class XPLoginCallback extends LoginCallback {
    
    private int xp;
    
    public XPLoginCallback(){
-      this.id = "xp_login_callback";
+      super(Identifier.of(MOD_ID,"xp_login_callback"));
    }
    
    public XPLoginCallback(MinecraftServer server, String player, int xp){
-      this.id = "xp_login_callback";
+      this();
       this.world = server.getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player;
       this.xp = xp;
@@ -29,6 +33,11 @@ public class XPLoginCallback extends LoginCallback{
          return true;
       }
       return false;
+   }
+   
+   @Override
+   public boolean canCombine(LoginCallback loginCallback){
+      return true;
    }
    
    @Override

@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items.catalysts;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -10,8 +11,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -99,7 +99,7 @@ public class CatalyticMatrix extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("  Catalytic Matrix").formatted(Formatting.BOLD), ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe full power of a Runic Matrix shouldn’t be necessary to further unlock abilities within the items I’ve made. Breaking one into self-contained fragments should be more efficient.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Catalytic Matrix").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe full power of a Runic Matrix shouldn’t be necessary to further unlock abilities within the items I’ve made. Breaking one into self-contained fragments should be more efficient.").formatted(Formatting.BLACK)));
       return list;
    }
    

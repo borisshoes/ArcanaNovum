@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.LeftClickItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
@@ -13,7 +14,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
@@ -417,8 +421,8 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          ArcanaAchievements.grant(player,ArcanaAchievements.PYROMANIAC.id);
       }
       
-      ParticleEffectUtils.pyroblastExplosion(serverWorld,particleType,center,explosionRange,0);
-      ParticleEffectUtils.line(serverWorld,null,startPos.subtract(0,.3,0),center,particleType,(int)(center.distanceTo(startPos)*4),1,0,0);
+      ArcanaEffectUtils.pyroblastExplosion(serverWorld,particleType,center,explosionRange,0);
+      ArcanaEffectUtils.line(serverWorld,null,startPos.subtract(0,.3,0),center,particleType,(int)(center.distanceTo(startPos)*4),1,0,0);
       serverWorld.spawnParticles(particleType,center.getX(),center.getY(),center.getZ(),100,0.1,0.1,0.1,0.4);
       
       return ActionResult.SUCCESS_SERVER;
@@ -471,7 +475,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
          ArcanaAchievements.grant(player,ArcanaAchievements.PYROMANIAC.id);
       }
       
-      ParticleEffectUtils.webOfFireCast(serverWorld,particleType,player,hits,effectRange,0);
+      ArcanaEffectUtils.webOfFireCast(serverWorld,particleType,player,hits,effectRange,0);
       
       addEnergy(itemStack,-energy);
       

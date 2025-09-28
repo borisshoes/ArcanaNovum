@@ -6,10 +6,14 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.mixins.LivingEntityAccessor;
 import net.borisshoes.arcananovum.mixins.WitherEntityAccessor;
 import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.*;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -354,7 +358,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       });
       view.put("blockDamage",NbtCompound.CODEC,blockDamageTag);
       
-      view.put("players",CodecUtils.STRING_LIST,players.stream().map(ServerPlayerEntity::getUuidAsString).toList());
+      view.put("players", CodecUtils.STRING_LIST,players.stream().map(ServerPlayerEntity::getUuidAsString).toList());
    }
    
    @Override
@@ -375,7 +379,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          this.bossBar.setName(this.getDisplayName());
       }
       
-      if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(view.getString("summoner", ""))) instanceof PlayerEntity player){
+      if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(AlgoUtils.getUUID(view.getString("summoner", ""))) instanceof PlayerEntity player){
          summoner = player;
       }
       
@@ -400,7 +404,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       
       players = new ArrayList<>();
       for(String id : view.read("players", CodecUtils.STRING_LIST).orElse(new ArrayList<>())){
-         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(MiscUtils.getUUID(id)) instanceof ServerPlayerEntity player){
+         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(AlgoUtils.getUUID(id)) instanceof ServerPlayerEntity player){
             players.add(player);
          }
       }
@@ -442,7 +446,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
                .append(Text.literal("▓").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.OBFUSCATED))
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD));
-         ParticleEffectUtils.exaltedConstructSummon(serverWorld,getPos().add(0,0,0),0);
+         ArcanaEffectUtils.exaltedConstructSummon(serverWorld,getPos().add(0,0,0),0);
          
          EntityAttributeInstance entityAttributeInstance = getAttributeInstance(EntityAttributes.ATTACK_DAMAGE);
          EntityAttributeModifier entityAttributeModifier = new EntityAttributeModifier(Identifier.of(MOD_ID,"exalted"), 15.0f, EntityAttributeModifier.Operation.ADD_VALUE);
@@ -458,7 +462,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
                .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
                .append(Text.literal("-").formatted(Formatting.DARK_GRAY));
-         ParticleEffectUtils.nulConstructSummon(serverWorld,getPos().add(0,0,0),0);
+         ArcanaEffectUtils.nulConstructSummon(serverWorld,getPos().add(0,0,0),0);
       }
       
       setCustomName(witherName);
@@ -479,7 +483,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       
       NulConstructDialog.announce(summoner.getServer(),summoner,this, Announcements.SUMMON_TEXT);
       NulConstructEntity construct = this;
-      ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), () -> {
+      BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), () -> {
          NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
          setHealth(getMaxHealth());
       }));
@@ -971,7 +975,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                LivingEntity livingEntity = (LivingEntity)serverWorld.getEntityById(id);
                if(livingEntity != null && this.canTarget(livingEntity) && (this.squaredDistanceTo(livingEntity) < (RAY_RANGE*RAY_RANGE))){
                   Vec3d headPos = new Vec3d(getHeadX(i),getHeadY(i),getHeadZ(i));
-                  MiscUtils.LasercastResult lasercast = MiscUtils.lasercast(serverWorld, headPos, livingEntity.getPos().subtract(headPos).normalize(), RAY_RANGE, true, this);
+                  MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.getPos().subtract(headPos).normalize(), RAY_RANGE, true, this);
                   if(this.age % 10 == 0){
                      float damage = this.isExalted ? 2f : 4f;
                      
@@ -980,7 +984,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                         if(hit instanceof ServerPlayerEntity hitPlayer && hitPlayer.isBlocking()){
                            double dp = hitPlayer.getRotationVecClient().normalize().dotProduct(lasercast.direction().normalize());
                            if(dp < -0.6){
-                              MiscUtils.blockWithShield(hitPlayer,damage);
+                              ArcanaUtils.blockWithShield(hitPlayer,damage);
                               continue;
                            }
                         }
@@ -1003,7 +1007,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                   if(this.age % 3 == 0){
                      ParticleEffect dust = new DustParticleEffect(ArcanaColors.NUL_COLOR,1.5f);
                      int intervals = (int)(lasercast.startPos().subtract(lasercast.endPos()).length() * 4);
-                     ParticleEffectUtils.line(serverWorld,null,lasercast.startPos(),lasercast.endPos(),dust,intervals,1,0.08,0);
+                     ArcanaEffectUtils.line(serverWorld,null,lasercast.startPos(),lasercast.endPos(),dust,intervals,1,0.08,0);
                   }
                   
                   if(this.age % 5 == 0){
@@ -1206,15 +1210,15 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                living.addStatusEffect(weak);
                living.addStatusEffect(fatigue);
                
-               ParticleEffectUtils.nulConstructCurseOfDecay(world,entity1.getPos());
+               ArcanaEffectUtils.nulConstructCurseOfDecay(world,entity1.getPos());
             }
          }
       }else if(spell.getType() == ConstructSpellType.WITHERING_RAY){
          // Handled in AI method
       }else if(spell.getType() == ConstructSpellType.NECROTIC_CONVERSION){
-         ParticleEffectUtils.nulConstructNecroticConversion(world,getPos());
+         ArcanaEffectUtils.nulConstructNecroticConversion(world,getPos());
       }else if(spell.getType() == ConstructSpellType.REFLECTIVE_ARMOR){
-         ParticleEffectUtils.nulConstructReflectiveArmor(world,getPos());
+         ArcanaEffectUtils.nulConstructReflectiveArmor(world,getPos());
       }else if(spell.getType() == ConstructSpellType.RELENTLESS_ONSLAUGHT){
          if(tick % 15 == 0){
             List<Entity> entities = world.getOtherEntities(this,getBoundingBox().expand(DECAY_RANGE*2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
@@ -1231,7 +1235,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
             }
             SoundUtils.playSound(getWorld(),getBlockPos(),SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,SoundCategory.HOSTILE,0.75f,(float)(this.random.nextFloat()*0.5 + 0.75));
          }
-         ParticleEffectUtils.nulConstructChargeAttack(world,getPos(),getYaw());
+         ArcanaEffectUtils.nulConstructChargeAttack(world,getPos(),getYaw());
       }
    }
    
@@ -1245,9 +1249,9 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       float durationMod = 1f;
       if(spell.spellType == ConstructSpellType.SHADOW_SHROUD){ // Teleport
          Vec3d tpPos = findConstructTpPos(new Vec3d(0,1,0));
-         ParticleEffectUtils.nulConstructNecroticShroud(world, getPos());
+         ArcanaEffectUtils.nulConstructNecroticShroud(world, getPos());
          requestTeleport(tpPos.getX(),tpPos.getY(),tpPos.getZ());
-         ParticleEffectUtils.nulConstructNecroticShroud(world, tpPos);
+         ArcanaEffectUtils.nulConstructNecroticShroud(world, tpPos);
          
          if(this.isExalted){
             List<PlayerEntity> players = getWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(FIGHT_RANGE),(e) -> true);
@@ -1269,7 +1273,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
             int damage = (int) (10 - 15*Math.pow((blockPos.getSquaredDistance(this.getBlockPos()) / (BLAST_RANGE*BLAST_RANGE)),0.25));
             damageBlock(blockPos,damage);
          }
-         ParticleEffectUtils.nulConstructReflexiveBlast(world,getPos(),0);
+         ArcanaEffectUtils.nulConstructReflexiveBlast(world,getPos(),0);
       }else if(spell.spellType == ConstructSpellType.CURSE_OF_DECAY){ // AoE Damage
          // Nothing special at cast time
       }else if(spell.spellType == ConstructSpellType.FORGOTTEN_ARMY){ // Summon Skeletons
@@ -1432,7 +1436,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       
       biasDirection = biasDirection.normalize();
       while(tries < 1000){
-         Vec3d randomPoint = MiscUtils.randomSpherePoint(Vec3d.ZERO, 1).normalize();
+         Vec3d randomPoint = MathUtils.randomSpherePoint(Vec3d.ZERO, 1).normalize();
          Vec3d dir = randomPoint.add(biasDirection).normalize().multiply(this.random.nextFloat() * (NulConstructEntity.TELEPORT_RANGE - 4.0) + 4.0);
          Vec3d inWorld = sourcePos.add(dir);
          
@@ -1446,52 +1450,52 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    private enum ConstructSpellType {
       CURSE_OF_DECAY("Curse of Decay","curse_of_decay",115,550,new Text[]{
-            TextUtils.withColor(Text.literal("The decay takes hold...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("You feel your soul being siphoned away...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("A curse permeates your soul...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The decay takes hold...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("You feel your soul being siphoned away...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("A curse permeates your soul...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
       REFLEXIVE_BLAST("Reflexive Blast","reflexive_blast",0,200,new Text[]{
-            TextUtils.withColor(Text.literal("The construct surges!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("A blast knocks you!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("A shockwave emanates from the construct!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct surges!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("A blast knocks you!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("A shockwave emanates from the construct!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
       WITHERING_RAY("Withering Ray","withering_ray",150,275,new Text[]{
-            TextUtils.withColor(Text.literal("A necrotic ray bursts forth!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("The construct emits a withering ray!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("A withering beam emanates from the construct!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("A necrotic ray bursts forth!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct emits a withering ray!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("A withering beam emanates from the construct!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
       NECROTIC_CONVERSION("Necrotic Conversion","necrotic_conversion",300,475,new Text[]{
-            TextUtils.withColor(Text.literal("The construct mends...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("The construct's bones heal...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("The construct regenerates...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct mends...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct's bones heal...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct regenerates...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
       SHADOW_SHROUD("Shadow Shroud","shadow_shroud",0,200,new Text[]{
-            TextUtils.withColor(Text.literal("The construct shifts...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("The construct vanishes...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct shifts...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct vanishes...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Don't lose your mark.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Don't lose your mark.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       FORGOTTEN_ARMY("Forgotten Army","forgotten_army",0,625,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   The forgotten army rises again!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   The forgotten army rises again!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   My brethren live as long as I remain.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   My brethren live as long as I remain.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   The ancient warriors march forth!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   The ancient warriors march forth!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   You're outnumbered now...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   You're outnumbered now...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Don't get surrounded.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Don't get surrounded.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       REFLECTIVE_ARMOR("Reflective Armor","reflective_armor",200,325,new Text[]{
-            TextUtils.withColor(Text.literal("The construct shimmers...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("A shining field embraces the construct.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("The construct becomes reflective.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct shimmers...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("A shining field embraces the construct.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct becomes reflective.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
       RELENTLESS_ONSLAUGHT("Relentless Onslaught","relentless_onslaught",160,450,new Text[]{
-            TextUtils.withColor(Text.literal("The construct pursues you!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("The construct charges you!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
-            TextUtils.withColor(Text.literal("The construct approaches aggressively!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct pursues you!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct charges you!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+            Text.literal("The construct approaches aggressively!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       });
       
       public final String name;
@@ -1521,80 +1525,80 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    public enum ConstructAdaptations{
       USED_TOTEM("used_totem",false,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Is that an attempt at mockery? Try that again!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Is that an attempt at mockery? Try that again!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   I permit you one extra chance. No more, no less.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   I permit you one extra chance. No more, no less.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Cheating death will only get you so far. Don't become reliant on it.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Cheating death will only get you so far. Don't become reliant on it.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       USED_MEMENTO("used_memento",true,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Now, now my champion, you have done this before. My ward is not to be used in this manner.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Now, now my champion, you have done this before. My ward is not to be used in this manner.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Using my gift like this is such a waste, I shall lessen it's benefit.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Using my gift like this is such a waste, I shall lessen it's benefit.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   You are making me question my faith in you. Don't rely on my power as a crutch.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   You are making me question my faith in you. Don't rely on my power as a crutch.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       USED_VENGEANCE_TOTEM("used_vengeance_totem",false,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   An interesting gambit! But will it pay off?").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   An interesting gambit! But will it pay off?").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   I like your spirit! But conviction is only half the battle.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   I like your spirit! But conviction is only half the battle.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   A curious trinket. Be wary, such soul magic is a dangerous game.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   A curious trinket. Be wary, such soul magic is a dangerous game.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       DAMAGED_BY_MACE("damaged_by_mace",false,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   A gravitic weapon? My construct will adapt accordingly.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   A gravitic weapon? My construct will adapt accordingly.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   A creative approach, unfortunately you won't be able to land a solid hit.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   A creative approach, unfortunately you won't be able to land a solid hit.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   An intriguing weapon, but gravity won't be your ally in this fight.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   An intriguing weapon, but gravity won't be your ally in this fight.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       MASSIVE_BLOW("massive_blow",true,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   A solid hit! However, my construct will adapt.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   A solid hit! However, my construct will adapt.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   A good blow! Let's make this harder...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
-            TextUtils.withColor(Text.literal("The construct grows more resilient...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR),
+                  .append(Text.literal("\n   A good blow! Let's make this harder...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+            Text.literal("The construct grows more resilient...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR),
       }),
       TRUE_INVISIBILITY("true_invisibility",false,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Can you fight without seeing your opponent? My construct can!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Can you fight without seeing your opponent? My construct can!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Cheap tricks will get you nowhere!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Cheap tricks will get you nowhere!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Hiding is a coward's game!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Hiding is a coward's game!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       ADDITIONAL_PLAYERS("additional_players",false,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   You brought friends! Friends have a habit of dying on you.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   You brought friends! Friends have a habit of dying on you.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   You think allies will make this easier? Don't trip over each other.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   You think allies will make this easier? Don't trip over each other.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Regardless of aid, my challenge remains. My construct will ensure an adequate test.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Regardless of aid, my challenge remains. My construct will ensure an adequate test.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   More swords aren't always better. Are these reinforcements worthy fighters?").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   More swords aren't always better. Are these reinforcements worthy fighters?").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   So another soul wishes to get in on the action? What is one more life to wither away?").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   So another soul wishes to get in on the action? What is one more life to wither away?").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   If you think you can make up for your lack of skill with numbers, you are mistaken...").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   If you think you can make up for your lack of skill with numbers, you are mistaken...").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   Another foe into the fray! Another soul to wither away!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   Another foe into the fray! Another soul to wither away!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   If you wish to bring reinforcements, so be it. My construct only grows stronger.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   If you wish to bring reinforcements, so be it. My construct only grows stronger.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   My construct adapts to any situation, multiple opponents included.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   My construct adapts to any situation, multiple opponents included.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   If you wish to attempt my challenge together, at least try to not kill each other.").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   If you wish to attempt my challenge together, at least try to not kill each other.").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       }),
       SPAWNED_CONSTRUCT_FINDS_PLAYER("spawned_construct_finds_player",false,new Text[]{
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   I yearn for a player to test! Are you up to the challenge?").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   I yearn for a player to test! Are you up to the challenge?").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   You may not have summoned me, but you will do. Fight!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   You may not have summoned me, but you will do. Fight!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
             Text.literal("").append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD)).append(Text.literal("Nul").formatted(Formatting.DARK_GRAY,Formatting.BOLD)).append(Text.literal(" ~ ").formatted(Formatting.BLACK,Formatting.BOLD))
-                  .append(TextUtils.withColor(Text.literal("\n   I challenge you! Defend yourself!").formatted(Formatting.ITALIC),ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
+                  .append(Text.literal("\n   I challenge you! Defend yourself!").formatted(Formatting.ITALIC).withColor(ArcanaColors.CONSTRUCT_ABILITY_COLOR)),
       });
       
       public final String id;

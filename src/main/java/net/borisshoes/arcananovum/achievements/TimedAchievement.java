@@ -3,7 +3,8 @@ package net.borisshoes.arcananovum.achievements;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.utils.GenericTimer;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -67,7 +68,7 @@ public class TimedAchievement extends ArcanaAchievement{
       if(!had && this.progress == 0 && !active){
          // Start the timer
          active = true;
-         ArcanaNovum.addTickTimerCallback(new GenericTimer(timeFrame, this::reset));
+         BorisLib.addTickTimerCallback(new GenericTimer(timeFrame, this::reset));
       }
       
       if(active){

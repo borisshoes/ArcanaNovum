@@ -3,7 +3,8 @@ package net.borisshoes.arcananovum.callbacks;
 import net.borisshoes.arcananovum.bosses.BossFight;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.DragonBossFight;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.timers.TickTimerCallback;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,7 +14,7 @@ import net.minecraft.world.World;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
-public class DragonRespawnTimerCallback extends TickTimerCallback{
+public class DragonRespawnTimerCallback extends TickTimerCallback {
    private MinecraftServer server;
    
    public DragonRespawnTimerCallback(MinecraftServer server){
@@ -28,7 +29,7 @@ public class DragonRespawnTimerCallback extends TickTimerCallback{
          if(bossFight != null && bossFight.getLeft() == BossFights.DRAGON){
             NbtCompound data = bossFight.getRight();
             String state = data.getString("State", "");
-            ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
+            ServerPlayerEntity gm = server.getPlayerManager().getPlayer(AlgoUtils.getUUID(data.getString("GameMaster", "")));
             if(DragonBossFight.States.valueOf(state) == DragonBossFight.States.WAITING_RESPAWN){
                //Check for alive Dragon
                if(!server.getWorld(World.END).getAliveEnderDragons().isEmpty()){

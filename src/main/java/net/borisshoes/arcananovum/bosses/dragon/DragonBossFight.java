@@ -15,13 +15,16 @@ import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.bosses.dragon.guis.PuzzleGui;
 import net.borisshoes.arcananovum.bosses.dragon.guis.TowerGui;
 import net.borisshoes.arcananovum.callbacks.DragonRespawnTimerCallback;
-import net.borisshoes.arcananovum.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.entities.DragonPhantomEntity;
 import net.borisshoes.arcananovum.entities.DragonWizardEntity;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MathUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -135,7 +138,7 @@ public class DragonBossFight {
    public static void tick(MinecraftServer server, NbtCompound fightData){
       try{
          States state = States.fromLabel(fightData.getString("State", ""));
-         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(fightData.getString("GameMaster", "")));
+         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(AlgoUtils.getUUID(fightData.getString("GameMaster", "")));
          List<MutableText> gmNotifs = new ArrayList<>();
          ServerWorld endWorld = server.getWorld(World.END);
          assert endWorld != null;
@@ -207,7 +210,7 @@ public class DragonBossFight {
                numPlayers = calcPlayers(server,false);
                fightData.putInt("numPlayers",numPlayers);
                DragonDialog.announce(DragonDialog.Announcements.EVENT_START,server,null);
-               ArcanaNovum.addTickTimerCallback(endWorld, new GenericTimer(100, () -> {
+               BorisLib.addTickTimerCallback(endWorld, new GenericTimer(100, () -> {
                      List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
                      for(ServerPlayerEntity player : players){
                         if(!player.isCreative() && !player.isSpectator()){
@@ -312,7 +315,7 @@ public class DragonBossFight {
                               Entity entity = endWorld.getEntity(wizards[i].getCrystalId());
                               if(entity instanceof EndCrystalEntity crystal){
                                  Vec3d crystalPos = crystal.getPos().add(0,-1,0);
-                                 ParticleEffectUtils.dragonBossTowerCircleInvuln(endWorld,crystalPos,6000,0);
+                                 ArcanaEffectUtils.dragonBossTowerCircleInvuln(endWorld,crystalPos,6000,0);
                               }
                            }
                         }
@@ -440,7 +443,7 @@ public class DragonBossFight {
                for(DragonBossFight.ReclaimState reclaimState : reclaimStates){
                   reclaimState.fightEnd();
                }
-               ArcanaNovum.addTickTimerCallback(endWorld, new GenericTimer(100, () -> endFight(server,endWorld)));
+               BorisLib.addTickTimerCallback(endWorld, new GenericTimer(100, () -> endFight(server,endWorld)));
                endNotif = true;
             }
          }
@@ -560,10 +563,10 @@ public class DragonBossFight {
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
             ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
-            wings.addEnchantment(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR),1);
+            wings.addEnchantment(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR),1);
             ArcanaNovum.data(player).addCraftedSilent(wings);
-            ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(wings,player));
-            ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(new ItemStack(Items.DRAGON_EGG,1),player));
+            BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(wings,player,0));
+            BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(new ItemStack(Items.DRAGON_EGG,1),player,0));
             
             player.addExperience(5500);
          }
@@ -619,7 +622,7 @@ public class DragonBossFight {
          message.add(Text.literal("")
                .append(Text.literal("-----------------------------------").formatted(Formatting.DARK_AQUA,Formatting.BOLD)));
       
-         ArcanaNovum.addTickTimerCallback(endWorld, new GenericTimer(400, () -> {
+         BorisLib.addTickTimerCallback(endWorld, new GenericTimer(400, () -> {
             for(MutableText msg : message){
                endWorld.getServer().getPlayerManager().broadcast(msg, false);
             }
@@ -646,7 +649,7 @@ public class DragonBossFight {
       if(phase == 1){ // Knockback shield, Both particle effects
          if(age % 260 == 0){
             
-            ParticleEffectUtils.dragonBossTowerCirclePush(endWorld,pos,12000,0);
+            ArcanaEffectUtils.dragonBossTowerCirclePush(endWorld,pos,12000,0);
          }
    
          //Actual Knockback
@@ -800,7 +803,7 @@ public class DragonBossFight {
          }
          endWorld.getEnderDragonFight().respawnDragon();
          fightData.putString("State", States.WAITING_RESPAWN.name());
-         ArcanaNovum.addTickTimerCallback(new DragonRespawnTimerCallback(player.getServer()));
+         BorisLib.addTickTimerCallback(new DragonRespawnTimerCallback(player.getServer()));
       }else{
          player.sendMessage(Text.literal("Co-opting Dragon"), false);
          if(endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(new BlockPos(-50, 25, -50).toCenterPos(), new BlockPos(50, 115, 50).toCenterPos()), EndCrystalEntity::shouldShowBottom).size() != 10){
@@ -822,7 +825,7 @@ public class DragonBossFight {
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
       NbtCompound data = bossFight.getRight();
       States state = States.valueOf(data.getString("State", ""));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(AlgoUtils.getUUID(data.getString("GameMaster", "")));
       ServerWorld endWorld = server.getWorld(World.END);
       if(gm != null){
          gm.sendMessage(Text.literal("Boss Has Been Aborted :(").formatted(Formatting.RED,Formatting.ITALIC));
@@ -889,7 +892,7 @@ public class DragonBossFight {
    
    public static int beginBoss(MinecraftServer server, NbtCompound data){
       States state = States.valueOf(data.getString("State", ""));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(AlgoUtils.getUUID(data.getString("GameMaster", "")));
       if(state == States.WAITING_START){
          if(startTimeAnnounced){
             States.updateState(States.WAITING_ONE,server);
@@ -917,7 +920,7 @@ public class DragonBossFight {
          startTimeAnnounced = true;
          return 0;
       }else{
-         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
+         ServerPlayerEntity gm = server.getPlayerManager().getPlayer(AlgoUtils.getUUID(data.getString("GameMaster", "")));
          if(gm != null){
             gm.sendMessage(Text.literal("The Event State is incompatible with this command. Have you run /arcana boss start dragon?"));
          }
@@ -957,7 +960,7 @@ public class DragonBossFight {
       Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(server.getWorld(World.END)).getBossFight();
       NbtCompound data = bossFight.getRight();
       States state = States.valueOf(data.getString("State", ""));
-      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(MiscUtils.getUUID(data.getString("GameMaster", "")));
+      ServerPlayerEntity gm = server.getPlayerManager().getPlayer(AlgoUtils.getUUID(data.getString("GameMaster", "")));
       ArrayList<MutableText> msgs = new ArrayList<>();
    
       msgs.add(Text.literal(""));
@@ -1206,7 +1209,7 @@ public class DragonBossFight {
                   endWorld.spawnParticles(ParticleTypes.CLOUD,player.getX(),player.getY(),player.getZ(),5,0.25,0.25,0.25,0);
                }
                if(animTicks % 150 == 0){
-                  ParticleEffectUtils.dragonReclaimTowerCircle(endWorld,pos.add(0,-1,0),8000,1);
+                  ArcanaEffectUtils.dragonReclaimTowerCircle(endWorld,pos.add(0,-1,0),8000,1);
                }
             }
             if(shieldPos != null && shieldTicks > 0){
@@ -1245,7 +1248,7 @@ public class DragonBossFight {
          towerGui.buildGui();
          towerGui.open();
          animTicks = 0;
-         ParticleEffectUtils.dragonReclaimTowerCircle(endWorld,pos.add(0,-1,0),8000,1);
+         ArcanaEffectUtils.dragonReclaimTowerCircle(endWorld,pos.add(0,-1,0),8000,1);
       }
       
       public void playerExits(){
@@ -1302,14 +1305,14 @@ public class DragonBossFight {
          BlockHitResult result = endWorld.raycast(new RaycastContext(player.getEyePos(),end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE,player));
          shieldPos = result.getPos();
          shieldTicks = 300;
-         ParticleEffectUtils.dragonReclaimTowerShield(endWorld,shieldPos,0);
+         ArcanaEffectUtils.dragonReclaimTowerShield(endWorld,shieldPos,0);
       }
       
       public void castLaser(){ // TODO: Update all this
          Vec3d end = player.getEyePos().add(player.getRotationVector().normalize().multiply(75));
          BlockHitResult result = endWorld.raycast(new RaycastContext(player.getEyePos(),end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE,player));
          Vec3d hit = result.getPos();
-         ParticleEffectUtils.longDistLine(endWorld,player.getPos().add(0,.7,0),hit, ParticleTypes.GLOW,(int)(2*hit.length()),1,0.1,0);
+         ArcanaEffectUtils.longDistLine(endWorld,player.getPos().add(0,.7,0),hit, ParticleTypes.GLOW,(int)(2*hit.length()),1,0.1,0);
          List<Entity> entities = endWorld.getOtherEntities(player,new Box(hit.x+2,hit.y+2,hit.z+2,hit.x-2,hit.y-2,hit.z-2),e -> (e instanceof LivingEntity && !(e instanceof ServerPlayerEntity)));
    
          Scoreboard scoreboard = endWorld.getServer().getScoreboard();
@@ -1322,7 +1325,7 @@ public class DragonBossFight {
                living.damage(endWorld, endWorld.getDamageSources().playerAttack(player),5f);
             }
          }
-         if(MiscUtils.distToLine(dragon.getPos(),player.getPos(),hit) < 10){
+         if(MathUtils.distToLine(dragon.getPos(),player.getPos(),hit) < 10){
             float damage = Math.min(100,15+numPlayers*3);
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));

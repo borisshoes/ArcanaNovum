@@ -5,11 +5,10 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.BrainJar;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.LevelUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -68,18 +67,18 @@ public class BrainJarGui extends SimpleGui {
             .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))));
       setSlot(4,bottle);
       
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
-      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
+      setSlot(3,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.XP_COLOR)).setName(Text.literal(LevelUtils.readableInt(jar.getEnergy(stack))+" XP Stored").formatted(Formatting.GREEN)));
       
       if(!active){
-         GuiElementBuilder notmending = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL));
+         GuiElementBuilder notmending = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL));
          notmending.setName(Text.literal("Not Mending Items").formatted(Formatting.DARK_AQUA));
          notmending.addLoreLine(TextUtils.removeItalics(Text.literal("Currently Not Mending Items").formatted(Formatting.RED)));
          notmending.addLoreLine(TextUtils.removeItalics(Text.literal("")));
          notmending.addLoreLine(TextUtils.removeItalics(Text.literal("Click to toggle ON").formatted(Formatting.GREEN)));
          setSlot(2,notmending);
       }else{
-         GuiElementBuilder mending = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CONFIRM));
+         GuiElementBuilder mending = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM));
          mending.setName(Text.literal("Mending Items").formatted(Formatting.DARK_AQUA));
          mending.addLoreLine(TextUtils.removeItalics(Text.literal("Currently Mending Items").formatted(Formatting.GREEN)));
          mending.addLoreLine(TextUtils.removeItalics(Text.literal("")));

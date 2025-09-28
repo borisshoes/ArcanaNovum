@@ -2,8 +2,8 @@ package net.borisshoes.arcananovum.areaeffects;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -44,7 +44,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
          }
          
          for(BlockPos block : affectedBlocks){
-            ParticleEffectUtils.smokeArrowEmit(world,block.toCenterPos());
+            ArcanaEffectUtils.smokeArrowEmit(world,block.toCenterPos());
          }
       }
       

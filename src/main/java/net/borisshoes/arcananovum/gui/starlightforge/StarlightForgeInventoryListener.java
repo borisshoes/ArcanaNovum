@@ -6,8 +6,8 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.item.ItemStack;
@@ -124,7 +124,7 @@ public class StarlightForgeInventoryListener implements InventoryChangedListener
             gui.setSlot(25, GuiElementBuilder.from(matchedItem.getPrefItem()).addLoreLine(Text.literal("")).addLoreLine(TextUtils.removeItalics(Text.literal("Click to Forge!").formatted(Formatting.AQUA, Formatting.BOLD))).glow());
          }
       }else if(gui.getMode() == 2 && world != null){
-         ItemStack output = MiscUtils.removeLore(getEnhancedStack(inv).copy());
+         ItemStack output = MinecraftUtils.removeLore(getEnhancedStack(inv).copy());
          
          if(!output.isEmpty()){
             GuiElementBuilder craftingItem = GuiElementBuilder.from(output).hideDefaultTooltip();

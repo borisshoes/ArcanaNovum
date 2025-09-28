@@ -5,12 +5,14 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.ItemReturnTimerCallback;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.mixins.TridentEntityAccessor;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.callbacks.ItemReturnTimerCallback;
+import net.borisshoes.borislib.utils.MathUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -108,12 +110,12 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       
       if (this.isAlive()) {
          if(getWorld() instanceof ServerWorld serverWorld){
-            ParticleEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionParticleEffect(0x001c08,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
+            ArcanaEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionParticleEffect(0x001c08,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
             
             int trailSize = 3;
             if(this.age % 3 == 0 && !oldPos.isEmpty()){
-               Vec3d endPos = MiscUtils.randomSpherePoint(oldPos.getLast(),1.25, 0.4);
-               ParticleEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePos, () -> endPos, (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+               Vec3d endPos = MathUtils.randomSpherePoint(oldPos.getLast(),1.25, 0.4);
+               ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePos, () -> endPos, (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
                      12, 1, 0, 1, true, 5, 5);
             }
             oldPos.add(getPos());
@@ -159,12 +161,12 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
          ParticleEffect dust = new DustColorTransitionParticleEffect(0x001c08,0x000000,2f);
          serverWorld.spawnParticles(dust,getX(),getY(),getZ(),150,1,1,1,0.02);
          for(int i = 0; i < 18; i++){
-            ParticleEffectUtils.animatedLightningBolt(serverWorld, getEyePos(), MiscUtils.randomSpherePoint(getEyePos(),5,2), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePos(), MathUtils.randomSpherePoint(getEyePos(),5,2), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
                   8, 1, 0, 1, false, 0, 5);
          }
          
          for(LivingEntity affectedEntity : affectedEntities){ // Void Storm
-            ParticleEffectUtils.animatedLightningBolt(serverWorld, getEyePos(), affectedEntity.getEyePos(), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
+            ArcanaEffectUtils.animatedLightningBolt(serverWorld, getEyePos(), affectedEntity.getEyePos(), (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
                   8, 1, 0, 1, false, 4, 5);
             DamageSource source = ArcanaDamageTypes.of(serverWorld,ArcanaDamageTypes.ARCANE_LIGHTNING,this,getOwner() == null ? this : getOwner());
             float damage = 6.0f;
@@ -200,7 +202,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
          baseDamage = EnchantmentHelper.getDamage(serverWorld, this.getWeaponStack(), target, damageSource, baseDamage);
       }
       
-      int fireAspect = this.getWeaponStack().getEnchantments().getLevel(MiscUtils.getEnchantment(Enchantments.FIRE_ASPECT));
+      int fireAspect = this.getWeaponStack().getEnchantments().getLevel(MinecraftUtils.getEnchantment(Enchantments.FIRE_ASPECT));
       if(!target.isFireImmune() && fireAspect > 0){
          target.setOnFireFor(fireAspect*4.0f);
       }
@@ -232,7 +234,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       super.remove(reason);
       if(this.getOwner() != null && this.getOwner() instanceof ServerPlayerEntity player && getWorld() instanceof ServerWorld serverWorld){
          int cooldownTime = 20 * (9 - 2*Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.UNENDING_HATRED)));
-         if(!player.isInCreativeMode()) ArcanaNovum.addTickTimerCallback(new ItemReturnTimerCallback(stack,player));
+         if(!player.isInCreativeMode()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(stack,player,0)); // TODO, pref slot
          player.getItemCooldownManager().set(stack,cooldownTime);
          
          this.playSound(SoundEvents.ENTITY_PLAYER_TELEPORT, 1.0F, 1.0F);

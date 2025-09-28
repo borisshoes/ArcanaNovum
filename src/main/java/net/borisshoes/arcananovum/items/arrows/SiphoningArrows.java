@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.OverhealTimerCallback;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -14,7 +15,11 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -88,7 +93,7 @@ public class SiphoningArrows extends RunicArrow {
          damage += arrow.isCritical() ? damage/4 : 0;
          
          if(player.getHealth() < 1.5f){
-            ArcanaNovum.addTickTimerCallback(player.getWorld(), new GenericTimer(2, () -> {
+            BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(2, () -> {
                if(entityHitResult.getEntity() instanceof MobEntity mob && mob.isDead()) ArcanaAchievements.grant(player,ArcanaAchievements.CIRCLE_OF_LIFE.id);
             }));
          }
@@ -97,9 +102,9 @@ public class SiphoningArrows extends RunicArrow {
          float overheal = (float) MathHelper.clamp((damage+player.getHealth()) - player.getMaxHealth(),0,overhealCap[overhealLvl]);
          if(overheal > 0){
             float curAbs = player.getAbsorptionAmount();
-            ArcanaNovum.addTickTimerCallback(new OverhealTimerCallback(100,player,overheal));
+            BorisLib.addTickTimerCallback(new OverhealTimerCallback(100,player,overheal));
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1, 1.8f);
-            MiscUtils.addMaxAbsorption(player, SiphoningArrows.EFFECT_ID,overheal);
+            MinecraftUtils.addMaxAbsorption(player, SiphoningArrows.EFFECT_ID,overheal);
             player.setAbsorptionAmount((curAbs + overheal));
          }
          

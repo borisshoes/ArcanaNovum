@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.entity.attribute.EntityAttribute;

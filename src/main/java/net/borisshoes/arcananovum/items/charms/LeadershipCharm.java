@@ -3,13 +3,13 @@ package net.borisshoes.arcananovum.items.charms;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -149,8 +149,8 @@ public class LeadershipCharm extends ArcanaItem {
          // Particle effects
          if(serverWorld.getServer().getTicks() % 10 == 0){
             double theta = Math.PI/(80)*(serverWorld.getServer().getTicks()%160); // 8 second duration
-            ParticleEffectUtils.sphere(serverWorld,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0,theta);
-            ParticleEffectUtils.circle(serverWorld,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0);
+            ArcanaEffectUtils.sphere(serverWorld,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0,theta);
+            ArcanaEffectUtils.circle(serverWorld,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0);
             for(ServerPlayerEntity plyr : inRangePlayers){
                if(plyr.equals(player))
                   continue;

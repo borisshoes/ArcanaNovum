@@ -7,13 +7,14 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.timers.TickTimerCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
+import static net.borisshoes.borislib.BorisLib.SERVER_TIMER_CALLBACKS;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
@@ -48,7 +49,7 @@ public class PlayerEntityMixin {
       if(ArcanaItemUtils.identifyItem(handStack) instanceof BinaryBlades blades && atkPercentage > 0.85){
          ArcanaItem.putProperty(handStack,BinaryBlades.LAST_HIT_TAG,12);
          blades.addEnergy(handStack,10);
-         if(player instanceof ServerPlayerEntity serverPlayer) ArcanaNovum.addTickTimerCallback(serverPlayer.getWorld(), new GenericTimer(4, () -> {
+         if(player instanceof ServerPlayerEntity serverPlayer) BorisLib.addTickTimerCallback(serverPlayer.getWorld(), new GenericTimer(4, () -> {
             serverPlayer.getWorld().getChunkManager().sendToNearbyPlayers(serverPlayer, new EntityAnimationS2CPacket(serverPlayer, EntityAnimationS2CPacket.SWING_OFF_HAND));
          }));
       }
@@ -69,7 +70,7 @@ public class PlayerEntityMixin {
    @ModifyExpressionValue(method = "getBlockBreakingSpeed", at = @At(value = "CONSTANT", args = "floatValue=5.0"))
    private float arcananovum_offGroundBlockBreakingSpeed(float constant){
       PlayerEntity player = (PlayerEntity) (Object) this; // This part of the augment currently works even if the player is not in water, not sure if I will leave it like this
-      List<ItemStack> stacks = MiscUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
+      List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
       int level = 0;
       for(ItemStack stack : stacks){
          boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);
@@ -83,7 +84,7 @@ public class PlayerEntityMixin {
    @ModifyExpressionValue(method = "getBlockBreakingSpeed", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/attribute/EntityAttributeInstance;getValue()D"))
    private double arcananovum_underwaterBlockBreakingSpeed(double original){
       PlayerEntity player = (PlayerEntity) (Object) this;
-      List<ItemStack> stacks = MiscUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
+      List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
       int level = 0;
       for(ItemStack stack : stacks){
          boolean isActive = ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG);

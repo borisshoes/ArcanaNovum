@@ -5,12 +5,11 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
@@ -49,7 +48,7 @@ public class StarpathAltarGui extends SimpleGui {
          }
       }else if(index == 4){
          if(blockEntity.getCooldown() <= 0){
-            if(MiscUtils.removeItems(player,COST,blockEntity.calculateCost())){
+            if(MinecraftUtils.removeItems(player,COST,blockEntity.calculateCost())){
                blockEntity.startTeleport(player);
                close();
             }else{
@@ -82,7 +81,7 @@ public class StarpathAltarGui extends SimpleGui {
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
          
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.STARPATH_COLOR)).setName(Text.literal("Starpath Altar").formatted(Formatting.DARK_PURPLE)));
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.STARPATH_COLOR)).setName(Text.literal("Starpath Altar").formatted(Formatting.DARK_PURPLE)));
       }
       
       GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();

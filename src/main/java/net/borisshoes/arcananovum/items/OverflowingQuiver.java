@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.items;
 
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.quivers.QuiverGui;
@@ -10,7 +11,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
@@ -159,7 +163,7 @@ public class OverflowingQuiver extends QuiverItem{
    @Override
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,1);
-      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.INFINITY),1));
+      ArcanaIngredient b = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.INFINITY),1));
       ArcanaIngredient c = new ArcanaIngredient(Items.RABBIT_HIDE,12);
       ArcanaIngredient h = new ArcanaIngredient(Items.SPECTRAL_ARROW,32);
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
@@ -236,7 +240,7 @@ public class OverflowingQuiver extends QuiverItem{
                }else{
                   int size = 9;
                   int count = otherStack.getCount();
-                  Pair<ContainerComponent,ItemStack> addPair = MiscUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
+                  Pair<ContainerComponent,ItemStack> addPair = MinecraftUtils.tryAddStackToContainerComp(beltItems,size,otherStack);
                   if(count == addPair.getRight().getCount()){
                      SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
                   }else{

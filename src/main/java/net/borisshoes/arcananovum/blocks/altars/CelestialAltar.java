@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.blocks.altars;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -11,9 +12,8 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -252,7 +252,7 @@ public class CelestialAltar extends ArcanaBlock implements MultiblockCore {
       private void tryActivate(BlockState state, World world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof CelestialAltarBlockEntity altar && world instanceof ServerWorld serverWorld){
-            boolean paid = MiscUtils.removeItemEntities(serverWorld,new Box(pos.up()),(itemStack) -> itemStack.isOf(COST.getLeft()),COST.getRight());
+            boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new Box(pos.up()),(itemStack) -> itemStack.isOf(COST.getLeft()),COST.getRight());
             if(paid) altar.startStarChange(null);
          }
       }

@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.borisshoes.arcananovum.callbacks.*;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
-import net.borisshoes.arcananovum.events.ArcanaEvent;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
 import net.borisshoes.arcananovum.utils.ConfigUtils;
+import net.borisshoes.borislib.utils.ItemModDataHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -27,7 +27,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,26 +38,22 @@ import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.PlayerComponentInitializer.PLAYER_DATA;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.ACTIVE_ANCHORS;
-import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.LOGIN_CALLBACK_LIST;
 
 public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    
    private static final Logger LOGGER = LogManager.getLogger("Arcana Novum");
-   public static final ArrayList<TickTimerCallback> SERVER_TIMER_CALLBACKS = new ArrayList<>();
-   public static final ArrayList<Pair<ServerWorld,TickTimerCallback>> WORLD_TIMER_CALLBACKS = new ArrayList<>();
    public static final HashMap<ServerWorld, Long2IntOpenHashMap> ANCHOR_CHUNKS = new HashMap<>();
    public static final HashMap<Pair<BlockEntity, ArcanaBlockEntity>,Integer> ACTIVE_ARCANA_BLOCKS = new HashMap<>();
    public static final HashMap<String,List<UUID>> PLAYER_ACHIEVEMENT_TRACKER = new HashMap<>();
    public static final HashMap<UUID,Integer> PLAYER_XP_TRACKER = new HashMap<>();
-   public static final HashMap<ServerPlayerEntity, Pair<Vec3d,Vec3d>> PLAYER_MOVEMENT_TRACKER = new HashMap<>();
-   public static final List<ArcanaEvent> RECENT_EVENTS = new ArrayList<>();
    public static final List<UUID> TOTEM_KILL_LIST = new ArrayList<>();
-   public static final HashMap<VirtualInventoryGui, ServerPlayerEntity> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
+   public static final HashMap<VirtualInventoryGui<?>, ServerPlayerEntity> VIRTUAL_INVENTORY_GUIS = new HashMap<>();
    public static MinecraftServer SERVER = null;
    public static final boolean DEV_MODE = false;
    private static final String CONFIG_NAME = "ArcanaNovum.properties";
    public static final String MOD_ID = "arcananovum";
    public static final String BLANK_UUID = "00000000-0000-4000-8000-000000000000";
+   public static final ItemModDataHandler ITEM_DATA = new ItemModDataHandler(MOD_ID);
    public static ConfigUtils CONFIG;
    public static int DEBUG_VALUE = 0;
    
@@ -89,32 +84,6 @@ public class ArcanaNovum implements ModInitializer, ClientModInitializer {
    @Override
    public void onInitializeClient(){
       LOGGER.info("Arcana Surges Through Your Client!");
-   }
-   
-   public static <T extends ArcanaEvent> List<T> getEventsOfType(Class<T> eventType){
-      List<T> filteredEvents = new ArrayList<>();
-      for (ArcanaEvent event : RECENT_EVENTS) {
-         if (eventType.isInstance(event)) {
-            filteredEvents.add(eventType.cast(event));
-         }
-      }
-      return filteredEvents;
-   }
-   
-   public static void addArcanaEvent(ArcanaEvent event){
-      RECENT_EVENTS.add(event);
-   }
-   
-   public static boolean addTickTimerCallback(TickTimerCallback callback){
-      return SERVER_TIMER_CALLBACKS.add(callback);
-   }
-   
-   public static boolean addTickTimerCallback(ServerWorld world, TickTimerCallback callback){
-      return WORLD_TIMER_CALLBACKS.add(new Pair<>(world,callback));
-   }
-   
-   public static boolean addLoginCallback(LoginCallback callback){
-      return LOGIN_CALLBACK_LIST.get(callback.getWorld()).addCallback(callback);
    }
    
    public static boolean addActiveAnchor(ServerWorld world, BlockPos pos){

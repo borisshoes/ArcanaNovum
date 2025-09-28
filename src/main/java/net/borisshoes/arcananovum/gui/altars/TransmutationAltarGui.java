@@ -3,12 +3,12 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
@@ -67,7 +67,7 @@ public class TransmutationAltarGui extends SimpleGui {
    public void buildMenuGui(){
       for(int i = 0; i < getSize(); i++){
          clearSlot(i);
-         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("Transmutation Altar").formatted(Formatting.BLUE)));
+         setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.EQUAYUS_COLOR)).setName(Text.literal("Transmutation Altar").formatted(Formatting.BLUE)));
       }
       
       GuiElementBuilder cooldownItem = new GuiElementBuilder(Items.CLOCK).hideDefaultTooltip();
@@ -82,7 +82,7 @@ public class TransmutationAltarGui extends SimpleGui {
       }
       setSlot(0,cooldownItem);
       
-      GuiElementBuilder recipeItem = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.TRANSMUTATION_BOOK)).hideDefaultTooltip();
+      GuiElementBuilder recipeItem = GuiElementBuilder.from(GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK)).hideDefaultTooltip();
       recipeItem.setName((Text.literal("")
             .append(Text.literal("Transmutation Recipes").formatted(Formatting.DARK_AQUA))));
       recipeItem.addLoreLine(TextUtils.removeItalics((Text.literal("")

@@ -8,8 +8,8 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.StasisPearl;
 import net.borisshoes.arcananovum.mixins.EntityAccessor;
 import net.borisshoes.arcananovum.mixins.ThrownItemEntityAccessor;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
@@ -42,7 +42,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
    
    public StasisPearlEntity(EntityType<? extends StasisPearlEntity> entityType, World world){
       super(entityType, world);
-      //pearlStack.addEnchantment(MiscUtils.getEnchantment(Enchantments.MENDING),1);
+      //pearlStack.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.MENDING),1);
    }
    
    public StasisPearlEntity(World world, LivingEntity owner, String itemUuid, NbtCompound augments){
@@ -111,7 +111,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
          }
          
          if(this.getWorld() instanceof ServerWorld serverWorld){
-            ParticleEffectUtils.stasisPearl(serverWorld,getPos());
+            ArcanaEffectUtils.stasisPearl(serverWorld,getPos());
          }
       }
       

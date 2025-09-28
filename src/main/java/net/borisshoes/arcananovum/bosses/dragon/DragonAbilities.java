@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.bosses.dragon;
 
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;

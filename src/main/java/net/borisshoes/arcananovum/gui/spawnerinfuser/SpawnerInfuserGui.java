@@ -11,9 +11,9 @@ import net.borisshoes.arcananovum.blocks.SpawnerInfuserBlockEntity;
 import net.borisshoes.arcananovum.gui.SoulstoneSlot;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -187,15 +187,15 @@ public class SpawnerInfuserGui extends SimpleGui {
       boolean usable = hasStone && spawnerDetected;
       
       if(usable){
-         MiscUtils.outlineGUI(this,0x0a6627,Text.literal("Use the arrows to configure the Infusion").formatted(Formatting.GREEN), List.of(
+         GuiHelper.outlineGUI(this,0x0a6627,Text.literal("Use the arrows to configure the Infusion").formatted(Formatting.GREEN), List.of(
                TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Apply a ").formatted(Formatting.DARK_AQUA))
                .append(Text.literal("Redstone signal").formatted(Formatting.RED))
                .append(Text.literal(" to activate the Infuser").formatted(Formatting.DARK_AQUA)))));
       }else if(spawnerDetected){
-         MiscUtils.outlineGUI(this,ArcanaColors.DARK_COLOR,Text.literal("Insert a Soulstone in the top slot").formatted(Formatting.RED));
+         GuiHelper.outlineGUI(this,ArcanaColors.DARK_COLOR,Text.literal("Insert a Soulstone in the top slot").formatted(Formatting.RED));
       }else{
-         MiscUtils.outlineGUI(this,ArcanaColors.DARK_COLOR,Text.literal("A Spawner must be 2 blocks above the Infuser").formatted(Formatting.RED));
+         GuiHelper.outlineGUI(this,ArcanaColors.DARK_COLOR,Text.literal("A Spawner must be 2 blocks above the Infuser").formatted(Formatting.RED));
       }
       
       clearSlot(4);

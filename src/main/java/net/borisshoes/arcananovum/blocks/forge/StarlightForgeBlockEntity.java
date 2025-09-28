@@ -12,7 +12,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.starlightforge.StarlightForgeGui;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.*;
 import net.minecraft.inventory.Inventory;
@@ -112,7 +112,7 @@ public class StarlightForgeBlockEntity extends BlockEntity implements PolymerObj
          if(getForgeAddition(serverWorld, ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY) == null) hasAll = false;
          if(hasAll){
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(crafterId));
+               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player != null){
                   ArcanaAchievements.grant(player,ArcanaAchievements.NIDAVELLIR.id);
                }

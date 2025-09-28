@@ -1,12 +1,12 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
@@ -108,8 +108,8 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
       super.onDeath(damageSource);
       
       if(this.construct != null && this.mage && this.getWorld() instanceof ServerWorld serverWorld){
-         ParticleEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, this.construct::getEyePos,20,1.0, ParticleTypes.RAID_OMEN,4,1,0,0,false,0,50);
-         ArcanaNovum.addTickTimerCallback(new GenericTimer(50, () -> {
+         ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, this.construct::getEyePos,20,1.0, ParticleTypes.RAID_OMEN,4,1,0,0,false,0,50);
+         BorisLib.addTickTimerCallback(new GenericTimer(50, () -> {
             if(this.construct != null && this.construct.isAlive()){
                this.construct.damage(serverWorld, ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.CONCENTRATION,damageSource.getSource(),damageSource.getAttacker()), 35);
             }
@@ -137,10 +137,10 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
                
                if(this.age % 80 == 0){
                   ParticleEffect dust = new DustParticleEffect(0x9e0945,0.8f);
-                  ParticleEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, this.construct::getEyePos,12,0.5, dust,8,1,0,0,false,0,60);
+                  ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, this.construct::getEyePos,12,0.5, dust,8,1,0,0,false,0,60);
                   
                   if(!entities.isEmpty()){
-                     ParticleEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, entities.getFirst()::getEyePos,12,0.5, dust,8,1,0,0,false,0,60);
+                     ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, entities.getFirst()::getEyePos,12,0.5, dust,8,1,0,0,false,0,60);
                   }
                }
             }
@@ -229,7 +229,7 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
       mage = view.getBoolean("mage", false);
       
       if(getWorld() instanceof ServerWorld serverWorld){
-         if(serverWorld.getEntity(MiscUtils.getUUID(view.getString("construct", ""))) instanceof NulConstructEntity con){
+         if(serverWorld.getEntity(AlgoUtils.getUUID(view.getString("construct", ""))) instanceof NulConstructEntity con){
             this.construct = con;
          }
       }

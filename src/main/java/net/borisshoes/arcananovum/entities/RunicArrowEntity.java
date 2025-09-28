@@ -1,7 +1,6 @@
 package net.borisshoes.arcananovum.entities;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.TimedAchievement;
@@ -13,9 +12,10 @@ import net.borisshoes.arcananovum.items.arrows.ArcaneFlakArrows;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.items.arrows.TetherArrows;
 import net.borisshoes.arcananovum.items.arrows.TrackingArrows;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
+import net.borisshoes.borislib.events.Event;
+import net.borisshoes.borislib.utils.MathUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -149,12 +149,12 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE.id))+5;
          double distance = 15;
          List<LivingEntity> possibleTargets = getWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e ->
-               !e.isSpectator() && MiscUtils.inCone(this.getPos(),velocityUnit,distance,1,viewWidth,e.getPos().add(0,e.getHeight()/2,0)) && !e.isInvisible()
+               !e.isSpectator() && MathUtils.inCone(this.getPos(),velocityUnit,distance,1,viewWidth,e.getPos().add(0,e.getHeight()/2,0)) && !e.isInvisible()
          );
          LivingEntity closestTarget = null;
          double distFromLine = distance;
          for(LivingEntity possibleTarget : possibleTargets){
-            double dist = MiscUtils.distToLine(possibleTarget.getPos().add(0,possibleTarget.getHeight()/2,0),this.getPos(),this.getPos().add(velocityUnit.multiply(distance)));
+            double dist = MathUtils.distToLine(possibleTarget.getPos().add(0,possibleTarget.getHeight()/2,0),this.getPos(),this.getPos().add(velocityUnit.multiply(distance)));
             if(dist < distFromLine){
                distFromLine = dist;
                closestTarget = possibleTarget;
@@ -185,7 +185,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
             }
             
             if(getWorld() instanceof ServerWorld serverWorld){
-               ParticleEffectUtils.spawnLongParticle(serverWorld, ParticleTypes.END_ROD,getX(),getY(),getZ(),0,0,0,0,1);
+               ArcanaEffectUtils.spawnLongParticle(serverWorld, ParticleTypes.END_ROD,getX(),getY(),getZ(),0,0,0,0,1);
             }
          }
       }
@@ -206,8 +206,8 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    }
    
    public void incArrowForEveryFoe(ServerPlayerEntity player){
-      ArcanaNovum.addArcanaEvent(new RunicArrowHitEvent(player,arrowType));
-      if(ArcanaNovum.getEventsOfType(RunicArrowHitEvent.class).stream().filter(event -> event.getPlayer().equals(player)).map(event -> event.getArrowType().getId()).distinct().count() >= ((TimedAchievement) ArcanaAchievements.ARROW_FOR_EVERY_FOE).getGoal()){
+      Event.addEvent(new RunicArrowHitEvent(player,arrowType));
+      if(Event.getEventsOfType(RunicArrowHitEvent.class).stream().filter(event -> event.getPlayer().equals(player)).map(event -> event.getArrowType().getId()).distinct().count() >= ((TimedAchievement) ArcanaAchievements.ARROW_FOR_EVERY_FOE).getGoal()){
          ArcanaAchievements.grant(player,ArcanaAchievements.ARROW_FOR_EVERY_FOE);
       }
    }

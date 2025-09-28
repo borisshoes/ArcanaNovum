@@ -5,7 +5,8 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -44,7 +45,7 @@ public abstract class PlayerInventoryMixin {
       PlayerInventory inv = (PlayerInventory) (Object) this;
       for (int i = 0; i < inv.size(); i++) {
          ItemStack itemStack = (ItemStack)inv.getStack(i);
-         if (!itemStack.isEmpty() && (player.isAlive() || EnchantmentHelper.getLevel(MiscUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), itemStack) > 0)) {
+         if (!itemStack.isEmpty() && (player.isAlive() || EnchantmentHelper.getLevel(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR), itemStack) > 0)) {
             anchoredItems.put(i,itemStack);
             inv.setStack(i, ItemStack.EMPTY);
          }
@@ -65,7 +66,7 @@ public abstract class PlayerInventoryMixin {
    private void arcananovum_onPickup(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       try{
          PlayerInventory playerInv = (PlayerInventory) (Object) this;
-         List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(playerInv.player);
+         List<Pair<List<ItemStack>,ItemStack>> allItems = ArcanaUtils.getAllItems(playerInv.player);
          if(playerInv.player.isSneaking()) return;
          
          for(int i = 0; i < allItems.size(); i++){

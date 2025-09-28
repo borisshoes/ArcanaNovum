@@ -11,7 +11,6 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.bosses.BossFights;
 import net.borisshoes.arcananovum.callbacks.EntityKilledCallback;
 import net.borisshoes.arcananovum.callbacks.ShieldTimerCallback;
-import net.borisshoes.arcananovum.callbacks.TickTimerCallback;
 import net.borisshoes.arcananovum.callbacks.VengeanceTotemTimerCallback;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
@@ -23,7 +22,15 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.events.Event;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.timers.TickTimerCallback;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
@@ -71,8 +78,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.SERVER_TIMER_CALLBACKS;
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
+import static net.borisshoes.borislib.BorisLib.SERVER_TIMER_CALLBACKS;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
@@ -105,7 +112,8 @@ public abstract class LivingEntityMixin {
    @Inject(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("RETURN"))
    private void arcananovum_onStatusEffectAdd(StatusEffectInstance effect, Entity source, CallbackInfoReturnable<Boolean> cir){
       if(cir.getReturnValueZ()){
-         if(source instanceof ServerPlayerEntity player && ArcanaNovum.getEventsOfType(CleansingCharmEvent.class).stream().anyMatch(event -> event.getPlayer().equals(player) && event.getEffect().equals(effect.getEffectType()))){
+         
+         if(source instanceof ServerPlayerEntity player && Event.getEventsOfType(CleansingCharmEvent.class).stream().anyMatch(event -> event.getPlayer().equals(player) && event.getEffect().equals(effect.getEffectType()))){
             ArcanaAchievements.grant(player,ArcanaAchievements.CHRONIC_AILMENT);
          }
       }
@@ -188,7 +196,7 @@ public abstract class LivingEntityMixin {
                   player.setHealth(player.getHealth()/2);
                   player.sendMessage(Text.literal("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
                   SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
-                  ParticleEffectUtils.harnessStall(player.getWorld(),player.getPos().add(0,0.5,0));
+                  ArcanaEffectUtils.harnessStall(player.getWorld(),player.getPos().add(0,0.5,0));
                   
                   boolean eProt = Math.max(0,ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.EMERGENCY_PROTOCOL.id)) >= 1;
                   if(eProt){
@@ -241,7 +249,7 @@ public abstract class LivingEntityMixin {
       LivingEntity entity = (LivingEntity) (Object) this;
       
       if(entity instanceof ServerPlayerEntity player){
-         if(source.isIn(DamageTypeTags.IS_FALL) && !MiscUtils.getArcanaItemsWithAug(player,ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.FELINE_GRACE,4).isEmpty()){
+         if(source.isIn(DamageTypeTags.IS_FALL) && !ArcanaUtils.getArcanaItemsWithAug(player,ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.FELINE_GRACE,4).isEmpty()){
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_CAT_PURREOW, 1,1);
             ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL_CAP),ArcanaConfig.getInt(ArcanaRegistry.FELIDAE_CHARM_FALL)*(amount))); // Add xp
             if(amount > player.getHealth()) ArcanaAchievements.grant(player,ArcanaAchievements.LAND_ON_FEET.id);
@@ -302,8 +310,8 @@ public abstract class LivingEntityMixin {
                toRemove.forEach(ShieldTimerCallback::onTimer);
                SERVER_TIMER_CALLBACKS.removeIf(toRemove::contains); // Remove all absorption callbacks
                int duration = 200 + 100*Math.max(0,ArcanaAugments.getAugmentOnItem(shieldStack,ArcanaAugments.SHIELD_OF_RESILIENCE.id));
-               ArcanaNovum.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,20)); // Put 10 hearts back
-               MiscUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,20f);
+               BorisLib.addTickTimerCallback(new ShieldTimerCallback(duration,shieldStack,player,20)); // Put 10 hearts back
+               MinecraftUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,20f);
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
                player.getItemCooldownManager().set(shieldStack,100);
                SoundUtils.playSound(player.getWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
@@ -319,7 +327,7 @@ public abstract class LivingEntityMixin {
       }
    
       if(entity instanceof ServerPlayerEntity player){
-         List<Pair<List<ItemStack>, ItemStack>> allItems = MiscUtils.getAllItems(player);
+         List<Pair<List<ItemStack>, ItemStack>> allItems = ArcanaUtils.getAllItems(player);
          boolean procdFelidae = false;
          
          for(int i = 0; i < allItems.size(); i++){
@@ -407,7 +415,7 @@ public abstract class LivingEntityMixin {
                      player.sendMessage(Text.literal("Your Armored Wings cushion your fall!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
                   }
                   SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ENDER_DRAGON_FLAP, 1, 1.3f);
-                  ArcanaNovum.addTickTimerCallback(new GenericTimer(50, () -> player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.DARK_PURPLE), true)));
+                  BorisLib.addTickTimerCallback(new GenericTimer(50, () -> player.sendMessage(Text.literal("Wing Energy Remaining: " + wings.getEnergy(chestItem)).formatted(Formatting.DARK_PURPLE), true)));
                }
                ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_CUSHION_CAP),ArcanaConfig.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_CUSHION)*dmgReduction)); // Add xp
                if(source.isOf(DamageTypes.FLY_INTO_WALL) && newReturn > player.getHealth() && (newReturn - dmgReduction) < player.getHealth())

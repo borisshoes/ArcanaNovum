@@ -8,7 +8,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.entities.ArbalestArrowEntity;
 import net.borisshoes.arcananovum.items.EverlastingRocket;
 import net.borisshoes.arcananovum.items.QuiverItem;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
@@ -37,7 +37,7 @@ public class RangedWeaponItemMixin {
    @Inject(method = "getProjectile", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getCount()I",shift = At.Shift.BEFORE))
    private static void arcananovum_modifyProjectiles(ItemStack stack, ItemStack projectileStack, LivingEntity shooter, boolean multishot, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 0) LocalIntRef i){
       if(i.get() != 0 &&
-            EnchantmentHelper.getLevel(MiscUtils.getEnchantment(Enchantments.INFINITY),stack) >= 1 &&
+            EnchantmentHelper.getLevel(MinecraftUtils.getEnchantment(Enchantments.INFINITY),stack) >= 1 &&
             ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.ENHANCED_INFINITY.id) >= 1 &&
             (projectileStack.isOf(Items.SPECTRAL_ARROW) || projectileStack.isOf(Items.TIPPED_ARROW))){
          i.set(0);

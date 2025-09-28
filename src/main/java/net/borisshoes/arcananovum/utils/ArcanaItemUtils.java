@@ -298,7 +298,7 @@ public class ArcanaItemUtils {
    }
    
    public static boolean hasItemInInventory(PlayerEntity player, Item itemType){
-      List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(player);
+      List<Pair<List<ItemStack>,ItemStack>> allItems = ArcanaUtils.getAllItems(player);
       
       for(Pair<List<ItemStack>, ItemStack> allItem : allItems){
          List<ItemStack> itemList = allItem.getLeft();

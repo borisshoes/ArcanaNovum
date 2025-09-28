@@ -14,10 +14,12 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarGui;
 import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipes;
-import net.borisshoes.arcananovum.utils.GenericTimer;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -93,15 +95,15 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       this.setActive(true);
       
       if(player == null && getCrafterId() != null){
-         PlayerEntity crafter = serverWorld.getPlayerByUuid(MiscUtils.getUUID(getCrafterId()));
+         PlayerEntity crafter = serverWorld.getPlayerByUuid(AlgoUtils.getUUID(getCrafterId()));
          if(crafter instanceof ServerPlayerEntity){
             player = (ServerPlayerEntity) crafter;
          }
       }
       @Nullable ServerPlayerEntity finalPlayer = player;
       
-      ParticleEffectUtils.transmutationAltarAnim(serverWorld,this.getPos().toCenterPos(), 0, this.getWorld().getBlockState(this.getPos()).get(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
-      ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> this.transmute(finalPlayer,false)));
+      ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getPos().toCenterPos(), 0, this.getWorld().getBlockState(this.getPos()).get(CelestialAltar.CelestialAltarBlock.HORIZONTAL_FACING), speedMod);
+      BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> this.transmute(finalPlayer,false)));
       return true;
    }
    
@@ -167,8 +169,8 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
             double speedMod = hastyBargain ? 2 : 1;
             int castTime = (int) (500.0 / speedMod);
             this.setActive(true);
-            ParticleEffectUtils.transmutationAltarAnim(serverWorld,this.getPos().toCenterPos(), 0, this.getWorld().getBlockState(this.getPos()).get(HORIZONTAL_FACING), speedMod);
-            ArcanaNovum.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> transmute(player,true)));
+            ArcanaEffectUtils.transmutationAltarAnim(serverWorld,this.getPos().toCenterPos(), 0, this.getWorld().getBlockState(this.getPos()).get(HORIZONTAL_FACING), speedMod);
+            BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(castTime, () -> transmute(player,true)));
          }
          
          SoundUtils.playSound(this.getWorld(), this.getPos(), SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS,1,0.8f);
@@ -191,11 +193,11 @@ public class TransmutationAltarBlockEntity extends BlockEntity implements Polyme
       Vec3d reagent1Pos = centerPos.add(new Vec3d(0,0.6,-3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
       Vec3d reagent2Pos = centerPos.add(new Vec3d(0,0.6,3).rotateY((float) -(direction.getHorizontalQuarterTurns()*(Math.PI/2.0f))));
       
-      ItemEntity aequalisEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(aequalisPos)), e -> true));
-      ItemEntity positiveEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(positivePos)), e -> true));
-      ItemEntity negativeEntity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(negativePos)), e -> true));
-      ItemEntity reagent1Entity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent1Pos)), e -> true));
-      ItemEntity reagent2Entity = MiscUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent2Pos)), e -> true));
+      ItemEntity aequalisEntity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(aequalisPos)), e -> true));
+      ItemEntity positiveEntity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(positivePos)), e -> true));
+      ItemEntity negativeEntity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(negativePos)), e -> true));
+      ItemEntity reagent1Entity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent1Pos)), e -> true));
+      ItemEntity reagent2Entity = MinecraftUtils.getLargestItemEntity(this.world.getEntitiesByType(EntityType.ITEM,new Box(BlockPos.ofFloored(reagent2Pos)), e -> true));
       
       stacks.put("aequalis",aequalisEntity);
       stacks.put("positive",positiveEntity);

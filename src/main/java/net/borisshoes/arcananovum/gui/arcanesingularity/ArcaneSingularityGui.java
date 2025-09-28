@@ -4,17 +4,18 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularity;
 import net.borisshoes.arcananovum.blocks.forge.ArcaneSingularityBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -108,7 +109,7 @@ public class ArcaneSingularityGui extends SimpleGui {
                         ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.mergeBooks(book,otherBook);
                         
                         if(result == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
-                           MiscUtils.returnItems(new SimpleInventory(new ItemStack(Items.BOOK)),player);
+                           MinecraftUtils.returnItems(new SimpleInventory(new ItemStack(Items.BOOK)),player);
                            selected = ItemStack.EMPTY;
                         }else if(result == ArcaneSingularityBlockEntity.SingularityResult.FAIL){
                            player.sendMessage(Text.literal("Those books are incompatible").formatted(Formatting.RED),false);
@@ -120,7 +121,7 @@ public class ArcaneSingularityGui extends SimpleGui {
                   selected = book;
                }
             }else if(accretion && type == ClickType.MOUSE_RIGHT){ // split book
-               if(MiscUtils.removeItems(player,Items.BOOK,1)){
+               if(MinecraftUtils.removeItems(player,Items.BOOK,1)){
                   ArcaneSingularityBlockEntity.SingularityResult result = blockEntity.splitBook(book);
                   if(result == ArcaneSingularityBlockEntity.SingularityResult.FULL){
                      player.sendMessage(Text.literal("That Singularity is full").formatted(Formatting.RED),false);
@@ -137,7 +138,7 @@ public class ArcaneSingularityGui extends SimpleGui {
                if(ItemStack.areItemsAndComponentsEqual(book,selected)) selected = ItemStack.EMPTY;
                if(blockEntity.removeBook(book) == ArcaneSingularityBlockEntity.SingularityResult.SUCCESS){
                   ArcanaItem.removeProperty(book, ArcaneSingularity.SINGULARITY_TAG);
-                  MiscUtils.returnItems(new SimpleInventory(book),player);
+                  MinecraftUtils.returnItems(new SimpleInventory(book),player);
                }
             }
             break;
@@ -171,17 +172,17 @@ public class ArcaneSingularityGui extends SimpleGui {
       boolean accretion = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(), ArcanaAugments.ACCRETION.id) >= 1;
       int maxPages = (int) Math.ceil(filteredBooks.size() / 28.0);
       
-      MiscUtils.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this, ArcanaColors.ARCANA_COLOR,Text.empty());
       
       if(maxPages > 1){
-         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
          nextArrow.setName((Text.literal("")
                .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
          nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
          setSlot(53,nextArrow);
          
-         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
          prevArrow.setName((Text.literal("")
                .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
          prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
@@ -200,7 +201,7 @@ public class ArcaneSingularityGui extends SimpleGui {
             .append(Text.literal(" a book in the singularity to remove it").formatted(Formatting.DARK_PURPLE)))));
       setSlot(4,singularityItem);
       
-      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.FILTER)).hideDefaultTooltip();
       filterBuilt.setName(Text.literal("Filter Books").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -209,7 +210,7 @@ public class ArcaneSingularityGui extends SimpleGui {
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(BookFilter.getColoredLabel(filter))));
       setSlot(8,filterBuilt);
       
-      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
       sortBuilt.setName(Text.literal("Sort Books").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -251,7 +252,7 @@ public class ArcaneSingularityGui extends SimpleGui {
                
                setSlot((i*9+10)+j,enchantBook);
             }else{
-               setSlot((i*9+10)+j,GuiElementBuilder.from(GraphicalItem.with("gas")).setName(Text.empty()).hideTooltip());
+               setSlot((i*9+10)+j,GuiElementBuilder.from(GraphicalItem.with(ArcanaRegistry.GAS)).setName(Text.empty()).hideTooltip());
             }
             k++;
          }

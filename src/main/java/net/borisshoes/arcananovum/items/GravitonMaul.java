@@ -8,13 +8,20 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerMaceItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.ExperienceDroppingBlock;
 import net.minecraft.component.DataComponentTypes;
@@ -74,7 +81,7 @@ public class GravitonMaul extends ArcanaItem {
       itemVersion = 0;
       vanillaItem = Items.MACE;
       item = new GravitonMaulItem();
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_MACE, ResearchTasks.OBTAIN_NETHERITE_INGOT, ResearchTasks.OBTAIN_NETHER_STAR, ResearchTasks.UNLOCK_STELLAR_CORE, ResearchTasks.UNLOCK_MIDNIGHT_ENCHANTER, ResearchTasks.ADVANCEMENT_OVER_OVERKILL};
       
       ItemStack stack = new ItemStack(item);
@@ -104,11 +111,11 @@ public class GravitonMaul extends ArcanaItem {
             .append(Text.literal(" has been brought to its ").formatted(Formatting.GRAY))
             .append(Text.literal("limit").formatted(Formatting.AQUA))
             .append(Text.literal(", becoming a ").formatted(Formatting.GRAY))
-            .append(TextUtils.withColor(Text.literal("singularity"), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("singularity").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal(".").formatted(Formatting.GRAY)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(TextUtils.withColor(Text.literal("maul "), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal("acts as a ").formatted(Formatting.GRAY))
             .append(Text.literal("mace ").formatted(Formatting.AQUA))
             .append(Text.literal("combined with an ").formatted(Formatting.GRAY))
@@ -116,7 +123,7 @@ public class GravitonMaul extends ArcanaItem {
             .append(Text.literal(".").formatted(Formatting.GRAY)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(TextUtils.withColor(Text.literal("maul "), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal("can ").formatted(Formatting.GRAY))
             .append(Text.literal("disable shields").formatted(Formatting.BLUE))
             .append(Text.literal(" and deal ").formatted(Formatting.GRAY))
@@ -124,7 +131,7 @@ public class GravitonMaul extends ArcanaItem {
             .append(Text.literal(" while falling.").formatted(Formatting.GRAY)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.GRAY))
-            .append(TextUtils.withColor(Text.literal("maul's "), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("maul's ").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal("gravity well").formatted(Formatting.BLUE))
             .append(Text.literal(" can ").formatted(Formatting.GRAY))
             .append(Text.literal("fell trees").formatted(Formatting.AQUA))
@@ -132,7 +139,7 @@ public class GravitonMaul extends ArcanaItem {
       lore.add(Text.literal("")
             .append(Text.literal("Right Clicking").formatted(Formatting.BLUE))
             .append(Text.literal(" with the ").formatted(Formatting.GRAY))
-            .append(TextUtils.withColor(Text.literal("maul "), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("maul ").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal("launches ").formatted(Formatting.AQUA))
             .append(Text.literal("you in the ").formatted(Formatting.GRAY))
             .append(Text.literal("air").formatted(Formatting.AQUA))
@@ -144,7 +151,7 @@ public class GravitonMaul extends ArcanaItem {
             .append(Text.literal("you ").formatted(Formatting.GRAY))
             .append(Text.literal("downward").formatted(Formatting.AQUA))
             .append(Text.literal(", causing a ").formatted(Formatting.GRAY))
-            .append(TextUtils.withColor(Text.literal("powerful impact"), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("powerful impact").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal(".").formatted(Formatting.GRAY)));
       
       return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
@@ -154,8 +161,8 @@ public class GravitonMaul extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
-            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.BREACH),5)
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
+            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.BREACH),5)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
@@ -165,7 +172,7 @@ public class GravitonMaul extends ArcanaItem {
       ItemStack maceStack = inv.getStack(12); // Should be the Mace
       ItemStack newArcanaItem = getNewItem();
       
-      newArcanaItem.addEnchantment(MiscUtils.getEnchantment(Enchantments.BREACH),5);
+      newArcanaItem.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.BREACH),5);
       if(maceStack.hasEnchantments()){
          for(RegistryEntry<Enchantment> enchantment : maceStack.getEnchantments().getEnchantments()){
             if(EnchantmentHelper.isCompatible(newArcanaItem.getEnchantments().getEnchantments(), enchantment)){
@@ -270,7 +277,7 @@ public class GravitonMaul extends ArcanaItem {
          
          if(player.isOnGround()){
             if(player.getItemUseTime() >= 11){
-               double impactVel = MathHelper.clamp(ArcanaNovum.PLAYER_MOVEMENT_TRACKER.get(player).getRight().getY(),-3,-0.5);
+               double impactVel = MathHelper.clamp(BorisLib.PLAYER_MOVEMENT_TRACKER.get(player).velocity().getY(),-3,-0.5);
                double radius = 3 - impactVel; // 3.5 - 6 block range
                double totalDmg = 0;
                for(Entity affectedEntity : getAffectedEntities(player,false, radius)){
@@ -287,7 +294,7 @@ public class GravitonMaul extends ArcanaItem {
                   }
                }
                ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_PER_10) * totalDmg / 10,ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_CAP)));
-               ParticleEffectUtils.gravitonMaulSlam(player.getWorld(), player.getSteppingPos(),radius,0);
+               ArcanaEffectUtils.gravitonMaulSlam(player.getWorld(), player.getSteppingPos(),radius,0);
                player.stopUsingItem();
                player.getItemCooldownManager().set(stack,40);
             }else{
@@ -316,7 +323,7 @@ public class GravitonMaul extends ArcanaItem {
                livingEntity.damage(player.getWorld(),player.getDamageSources().cramming(),1.0f);
             }
          }
-         ParticleEffectUtils.gravitonMaulMaelstrom(player,player.getItemUseTime());
+         ArcanaEffectUtils.gravitonMaulMaelstrom(player,player.getItemUseTime());
          
          StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 10, 2, false, false, true);
          StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, 10, 3, false, false, true);
@@ -329,7 +336,7 @@ public class GravitonMaul extends ArcanaItem {
    protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,32);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,32);
-      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.BREACH),4));
+      ArcanaIngredient k = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.BREACH),4));
       ArcanaIngredient g = new ArcanaIngredient(Items.COBWEB,32);
       ArcanaIngredient h = new ArcanaIngredient(Items.NETHERITE_INGOT,3);
       ArcanaIngredient c = new ArcanaIngredient(Items.BREEZE_ROD,32);
@@ -348,10 +355,10 @@ public class GravitonMaul extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("   Graviton Maul").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nAfter much experimentation with the Heavy Core, I have brought it to its apex. A singularity, a point of infinite density, contained by an Arcane casing. Gravity itself is at my will.").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("   Graviton Maul").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nThe Maul is an empowered mace that has damage that scales with fall height. To aid in this ability, Using the Maul while on the ground causes a localized lapse in gravity, sending me into the air.").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("   Graviton Maul").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nHowever, I have to be careful not to hit my head on the ceiling. As to not give my foe time to react, I can Use the Maul in the air to amplify gravity and rapidly send me downwards. Impacting the ground causes damage to nearby creatures. ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("   Graviton Maul").formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nThe Maul’s immense gravity also gives it the heft to fell entire trees at once and bust through shields.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nAfter much experimentation with the Heavy Core, I have brought it to its apex. A singularity, a point of infinite density, contained by an Arcane casing. Gravity itself is at my will.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nThe Maul is an empowered mace that has damage that scales with fall height. To aid in this ability, Using the Maul while on the ground causes a localized lapse in gravity, sending me into the air.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nHowever, I have to be careful not to hit my head on the ceiling. As to not give my foe time to react, I can Use the Maul in the air to amplify gravity and rapidly send me downwards. Impacting the ground causes damage to nearby creatures. ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Graviton Maul").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nThe Maul’s immense gravity also gives it the heft to fell entire trees at once and bust through shields.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -399,7 +406,7 @@ public class GravitonMaul extends ArcanaItem {
                      affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
                   }
                }
-               ParticleEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
+               ArcanaEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
             }
          }else{
             putProperty(stack,MODE_TAG,1);
@@ -411,7 +418,7 @@ public class GravitonMaul extends ArcanaItem {
                   affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
                }
             }
-            ParticleEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
+            ArcanaEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
          }
          gravityEffects(player,stack);
          playerEntity.setCurrentHand(hand);

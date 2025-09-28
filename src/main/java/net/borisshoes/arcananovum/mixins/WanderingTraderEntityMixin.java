@@ -2,10 +2,10 @@ package net.borisshoes.arcananovum.mixins;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.items.normal.ArcaneNotesItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,7 +36,7 @@ public class WanderingTraderEntityMixin {
          itemRegistry.iterateEntries(ArcanaRegistry.WORKSHOP_ITEMS).forEach(items::add);
          
          List<Pair<ArcanaRarity,Integer>> weights = List.of(new Pair<>(ArcanaRarity.MUNDANE,10),new Pair<>(ArcanaRarity.EMPOWERED,25),new Pair<>(ArcanaRarity.EXOTIC,15),new Pair<>(ArcanaRarity.SOVEREIGN,5),new Pair<>(ArcanaRarity.DIVINE,1));
-         ArcanaRarity rarity = MiscUtils.getWeightedOption(weights,trader.getRandom().nextLong());
+         ArcanaRarity rarity = AlgoUtils.getWeightedOption(weights,trader.getRandom().nextLong());
          items = items.stream().filter(entry -> {
             ArcanaItem arcanaItem = ArcanaItemUtils.getItemFromId(entry.getIdAsString());
             return arcanaItem != null && arcanaItem.getRarity() == rarity;

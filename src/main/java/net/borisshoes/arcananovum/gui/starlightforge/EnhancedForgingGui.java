@@ -8,11 +8,17 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
-import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.timers.GenericTimer;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -23,6 +29,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
@@ -31,6 +38,8 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 import java.util.*;
+
+import static net.borisshoes.borislib.BorisLib.BORISLIB_ITEM_DATA;
 
 public class EnhancedForgingGui extends SimpleGui {
    private final StarlightForgeBlockEntity blockEntity;
@@ -90,7 +99,7 @@ public class EnhancedForgingGui extends SimpleGui {
          }else{
             if(game.hasNextTurn()){
                if(game.getTurn() == 0 && !paid){
-                  if(MiscUtils.removeItems(player,ArcanaRegistry.STARDUST,game.getTotalCost())){
+                  if(MinecraftUtils.removeItems(player,ArcanaRegistry.STARDUST,game.getTotalCost())){
                      turnMode = false;
                      animated = true;
                      cinematicMode = true;
@@ -156,9 +165,9 @@ public class EnhancedForgingGui extends SimpleGui {
             List<Integer> slots = new ArrayList<>();
             for(int i = 0; i < getSize(); i++){
                ItemStack stack = getSlot(i).getItemStack();
-               if(stack.isOf(ArcanaRegistry.GRAPHICAL_ITEM)){
-                  String id = ArcanaItem.getStringProperty(stack,GraphicalItem.GRAPHICS_TAG);
-                  if(!id.equals(EFItem.STAR.id) && !id.equals(EFItem.PULSAR.id) && !id.equals(EFItem.GAS.id) && !id.equals(GraphicItems.BLACK.id)){
+               if(stack.isOf(BorisLib.GRAPHICAL_ITEM)){
+                  Identifier id = Identifier.of(BORISLIB_ITEM_DATA.getStringProperty(stack, GraphicalItem.GRAPHICS_TAG));
+                  if(!id.equals(EFItem.STAR.displayElement.id()) && !id.equals(EFItem.PULSAR.displayElement.id()) && !id.equals(EFItem.GAS.displayElement.id()) && !id.equals(GraphicalItem.BLACK.id())){
                      slots.add(i);
                   }
                }
@@ -203,14 +212,14 @@ public class EnhancedForgingGui extends SimpleGui {
    public void buildGui(){
       setTitle(Text.literal("Stardust Infusion"));
       
-      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
-      setSlot(16,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
-      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
-      setSlot(25,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
-      setSlot(34,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
-      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
-      setSlot(44,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
-      setSlot(52,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(16,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(25,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(34,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(44,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+      setSlot(52,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
       
       GuiElementBuilder orderItem = GuiElementBuilder.from(Items.CLOCK.getDefaultStack()).hideDefaultTooltip();
       orderItem.setName(Text.literal("Show Item Order").formatted(Formatting.YELLOW));
@@ -226,7 +235,7 @@ public class EnhancedForgingGui extends SimpleGui {
       orderItem.setCount(game.getTurn()+1);
       setSlot(8,orderItem);
       
-      GuiElementBuilder runItem = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CONFIRM)).hideDefaultTooltip();
+      GuiElementBuilder runItem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip();
       runItem.setName(Text.literal("Activate Forge").formatted(Formatting.YELLOW));
       runItem.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to activate the forge.").formatted(Formatting.LIGHT_PURPLE))));
       if(showCodes){
@@ -241,7 +250,7 @@ public class EnhancedForgingGui extends SimpleGui {
       int tileCost = game.getTileChangeCost();
       int totalCost = game.getTotalCost();
       
-      GuiElementBuilder stardustItem = GuiElementBuilder.from(MiscUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultStack())).hideDefaultTooltip();
+      GuiElementBuilder stardustItem = GuiElementBuilder.from(MinecraftUtils.removeLore(ArcanaRegistry.STARDUST.getDefaultStack())).hideDefaultTooltip();
       stardustItem.setName(Text.literal("Requires 10 Stardust").formatted(Formatting.YELLOW));
       stardustItem.setName(Text.literal("")
             .append(Text.literal("Requires ").formatted(Formatting.YELLOW))
@@ -268,7 +277,7 @@ public class EnhancedForgingGui extends SimpleGui {
       stardustItem.setCount(totalCost);
       setSlot(35,stardustItem);
       
-      GuiElementBuilder placementItem = GuiElementBuilder.from(GraphicalItem.with(this.selectedItem.id)).hideDefaultTooltip();
+      GuiElementBuilder placementItem = GuiElementBuilder.from(GraphicalItem.with(this.selectedItem.displayElement)).hideDefaultTooltip();
       placementItem.setName(Text.literal("")
             .append(Text.literal("Change tile to ").formatted(Formatting.YELLOW))
             .append(this.selectedItem.name));
@@ -321,7 +330,7 @@ public class EnhancedForgingGui extends SimpleGui {
       
       if(cinematicMode){
          for(int i = 0; i < 6; i++){
-            GuiElementBuilder elem = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.BLACK)).hideTooltip();
+            GuiElementBuilder elem = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.BLACK)).hideTooltip();
             setSlot(i*9, elem);
             setSlot(i*9+8, elem);
          }
@@ -342,11 +351,11 @@ public class EnhancedForgingGui extends SimpleGui {
          ArcanaNovum.data(player).setResearchTask(ResearchTasks.INFUSE_ITEM, true);
       }
       
-      ParticleEffectUtils.enhancedForgingAnim(world,blockEntity.getPos(),enhancedStack,0,fast ? 1.75 : 1);
+      ArcanaEffectUtils.enhancedForgingAnim(world,blockEntity.getPos(),enhancedStack,0,fast ? 1.75 : 1);
       
       final int finalCost = game.getTotalCost();
       
-      ArcanaNovum.addTickTimerCallback(world, new GenericTimer(fast ? (int) (350 / 1.75) : 350, () -> {
+      BorisLib.addTickTimerCallback(world, new GenericTimer(fast ? (int) (350 / 1.75) : 350, () -> {
          if(percentile >= 0.99 && !enhancedStack.isOf(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER)){
             ArcanaAchievements.grant(player,ArcanaAchievements.MASTER_CRAFTSMAN.id);
          }
@@ -380,7 +389,7 @@ public class EnhancedForgingGui extends SimpleGui {
             cost -= amnt;
          }
       }
-      MiscUtils.returnItems(returnInv,player);
+      MinecraftUtils.returnItems(returnInv,player);
    }
 }
 
@@ -396,18 +405,18 @@ enum EFItem {
                      .append(Text.literal("Plasma").formatted(Formatting.GOLD))),
                Text.literal(""),
                TextUtils.removeItalics(Text.literal("-- Increases Infusion Result --").formatted(Formatting.YELLOW,Formatting.BOLD))
-         ), 64,Integer.MAX_VALUE),
+         ), 64,Integer.MAX_VALUE, ArcanaRegistry.STAR),
    GAS("gas",
          Text.literal("Gas").formatted(Formatting.DARK_PURPLE,Formatting.BOLD),
          List.of(
                TextUtils.removeItalics(Text.literal("Does Nothing").formatted(Formatting.GRAY))
-         ), 0,Integer.MAX_VALUE),
+         ), 0,Integer.MAX_VALUE, ArcanaRegistry.GAS),
    PLASMA("plasma",
          Text.literal("Plasma").formatted(Formatting.GOLD,Formatting.BOLD),
          List.of(
                TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal("Fuel for other tiles.").formatted(Formatting.GRAY)))
-         ), 7,1),
+         ), 7,1, ArcanaRegistry.PLASMA),
    BLACK_HOLE("black_hole",
          Text.literal("Black Hole").formatted(Formatting.BLUE,Formatting.BOLD),
          List.of(
@@ -427,7 +436,7 @@ enum EFItem {
                      .append(Text.literal("Black Hole").formatted(Formatting.BLUE))
                      .append(Text.literal(" or ").formatted(Formatting.GRAY))
                      .append(Text.literal("Pulsar").formatted(Formatting.AQUA)))
-         ), 5,7),
+         ), 5,7, ArcanaRegistry.BLACK_HOLE),
    NOVA("nova",
          Text.literal("Nova").formatted(Formatting.DARK_GREEN,Formatting.BOLD),
          List.of(
@@ -441,7 +450,7 @@ enum EFItem {
                      .append(Text.literal("Turns into ").formatted(Formatting.GRAY))
                      .append(Text.literal("Plasma").formatted(Formatting.GOLD))
                      .append(Text.literal(" otherwise.").formatted(Formatting.GRAY)))
-         ), 5,5),
+         ), 5,5, ArcanaRegistry.NOVA),
    SUPERNOVA("supernova",
          Text.literal("Supernova").formatted(Formatting.GREEN,Formatting.BOLD),
          List.of(
@@ -454,7 +463,7 @@ enum EFItem {
                TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal("Turns into ").formatted(Formatting.GRAY))
                      .append(Text.literal("Quasar").formatted(Formatting.DARK_AQUA)))
-         ), 24,18),
+         ), 24,18, ArcanaRegistry.SUPERNOVA),
    QUASAR("quasar",
          Text.literal("Quasar").formatted(Formatting.DARK_AQUA,Formatting.BOLD),
          List.of(
@@ -468,7 +477,7 @@ enum EFItem {
                      .append(Text.literal("column").formatted(Formatting.RED))
                      .append(Text.literal(" into ").formatted(Formatting.GRAY))
                      .append(Text.literal("Plasma").formatted(Formatting.GOLD)))
-         ), 18,12),
+         ), 18,12, ArcanaRegistry.QUASAR),
    PULSAR("pulsar",
          Text.literal("Pulsar").formatted(Formatting.AQUA,Formatting.BOLD),
          List.of(
@@ -480,7 +489,7 @@ enum EFItem {
                      .append(Text.literal("Plasma").formatted(Formatting.GOLD))),
                Text.literal(""),
                TextUtils.removeItalics(Text.literal("-- Increases Infusion Result --").formatted(Formatting.YELLOW,Formatting.BOLD))
-         ), 64,Integer.MAX_VALUE),
+         ), 64,Integer.MAX_VALUE, ArcanaRegistry.PULSAR),
    NEBULA("nebula",
          Text.literal("Nebula").formatted(Formatting.LIGHT_PURPLE,Formatting.BOLD),
          List.of(
@@ -494,7 +503,7 @@ enum EFItem {
                TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal("Immune to ").formatted(Formatting.GRAY))
                      .append(Text.literal("Black Holes").formatted(Formatting.BLUE)))
-         ), 3,3),
+         ), 3,3, ArcanaRegistry.NEBULA),
    PLANET("planet",
          Text.literal("Planet").formatted(Formatting.DARK_GRAY,Formatting.BOLD),
          List.of(
@@ -502,20 +511,22 @@ enum EFItem {
                TextUtils.removeItalics(Text.literal("")
                      .append(Text.literal("Can only be destroyed by a ").formatted(Formatting.GRAY))
                      .append(Text.literal("Black Hole").formatted(Formatting.BLUE)))
-         ), 1,Integer.MAX_VALUE);
+         ), 1,Integer.MAX_VALUE, ArcanaRegistry.PLANET);
    
    public final String id;
    public final Text name;
    public final List<Text> description;
    public final int placementCost;
    public final int startingValue;
+   public final GraphicalItem.GraphicElement displayElement;
    
-   EFItem(String id, Text name, List<Text> description, int placementCost, int startingValue){
+   EFItem(String id, Text name, List<Text> description, int placementCost, int startingValue, GraphicalItem.GraphicElement display){
       this.id = id;
       this.name = name;
       this.description = description;
       this.placementCost = placementCost;
       this.startingValue = startingValue;
+      this.displayElement = display;
    }
    
    public static boolean hasTurn(EFItem item){
@@ -532,7 +543,7 @@ enum EFItem {
    }
    
    public static GuiElementBuilder getGuiElement(EFItem item){
-      GuiElementBuilder elem = GuiElementBuilder.from(GraphicalItem.with(item.id)).hideDefaultTooltip();
+      GuiElementBuilder elem = GuiElementBuilder.from(GraphicalItem.with(item.displayElement)).hideDefaultTooltip();
       elem.setName(item.name);
       
       for(Text text : item.description){
@@ -996,7 +1007,7 @@ class EnhancedForgingGame{
             }
          }
       }
-      return MiscUtils.convertToBase64(binaryString.toString());
+      return AlgoUtils.convertToBase64(binaryString.toString());
    }
    
    public String getStartingCode(){

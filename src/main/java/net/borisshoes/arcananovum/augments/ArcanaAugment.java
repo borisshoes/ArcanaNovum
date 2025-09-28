@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.augments;
 
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;

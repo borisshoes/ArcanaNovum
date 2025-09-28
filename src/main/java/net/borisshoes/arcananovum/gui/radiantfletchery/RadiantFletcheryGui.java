@@ -3,10 +3,9 @@ package net.borisshoes.arcananovum.gui.radiantfletchery;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.forge.RadiantFletcheryBlockEntity;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -35,9 +34,9 @@ public class RadiantFletcheryGui extends SimpleGui {
    }
    
    public void buildGui(){
-      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(8,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(1,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(6,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_LEFT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(8,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_RIGHT, ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GuiElementBuilder arrowsItem = new GuiElementBuilder(Items.SPECTRAL_ARROW).hideDefaultTooltip();
       arrowsItem.setName((Text.literal("")

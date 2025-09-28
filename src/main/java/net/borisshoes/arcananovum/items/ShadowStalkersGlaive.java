@@ -6,6 +6,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -13,7 +14,13 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -70,7 +77,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.EQUIPMENT};
       vanillaItem = Items.NETHERITE_SWORD;
       item = new ShadowStalkersGlaiveItem();
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.NUL_COLOR);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_NETHERITE_SWORD,ResearchTasks.OBTAIN_NETHER_STAR,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_KILL_A_MOB,ResearchTasks.UNLOCK_STELLAR_CORE};
       
       ItemStack stack = new ItemStack(item);
@@ -180,11 +187,11 @@ public class ShadowStalkersGlaive extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD), ArcanaColors.NUL_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Blade was forged to mimic the power of Endermen to teleport and relentlessly pursue foes. However, instead of using Ender particles to warp through dimensions, this Glaive  ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD), ArcanaColors.NUL_COLOR),Text.literal("\nrelies on a mechanism I came up with after my studies in the Nether. Using the Glaive lets me fall through the shadows and emerge elsewhere. The feeling is far different from Ender-based teleportation, such as ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD), ArcanaColors.NUL_COLOR),Text.literal("\nan Ender Pearl. \n\nBlood that is spilled on the Glaive gets soaked up by its shadowy surface.\nStriking and killing foes grants Glaive Charges.\n\n").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD), ArcanaColors.NUL_COLOR),Text.literal("\nSneak Use consumes one Charge to blink forward and emerge from the shadows 10 blocks in the direction of my gaze. \n\nThe Glaive remembers the last target it struck, and Using the ").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD), ArcanaColors.NUL_COLOR),Text.literal("\nGlaive consumes four Charges to emerge behind the target.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThis Blade was forged to mimic the power of Endermen to teleport and relentlessly pursue foes. However, instead of using Ender particles to warp through dimensions, this Glaive  ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nrelies on a mechanism I came up with after my studies in the Nether. Using the Glaive lets me fall through the shadows and emerge elsewhere. The feeling is far different from Ender-based teleportation, such as ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nan Ender Pearl. \n\nBlood that is spilled on the Glaive gets soaked up by its shadowy surface.\nStriking and killing foes grants Glaive Charges.\n\n").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nSneak Use consumes one Charge to blink forward and emerge from the shadows 10 blocks in the direction of my gaze. \n\nThe Glaive remembers the last target it struck, and Using the ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("  Shadow Stalkers\n       Glaive").formatted(Formatting.BOLD).withColor(ArcanaColors.NUL_COLOR),Text.literal("\nGlaive consumes four Charges to emerge behind the target.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -226,7 +233,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
             
             String targetID = getStringProperty(stack,TETHER_TARGET_TAG);
             if(targetID != null && !targetID.isEmpty()){
-               Entity target = player.getWorld().getEntity(MiscUtils.getUUID(targetID));
+               Entity target = player.getWorld().getEntity(AlgoUtils.getUUID(targetID));
                if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getWorld().getRegistryKey()){
                   putProperty(stack,TETHER_TIME_TAG,-1);
                   putProperty(stack,TETHER_TARGET_TAG,"");
@@ -256,7 +263,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   for(int i = 1; i <= 5; i++){
                      message.append(getEnergy(stack) >= i * 20 ? "✦ " : "✧ ");
                   }
-                  player.sendMessage(TextUtils.withColor(Text.literal(message.toString()),ArcanaColors.NUL_COLOR), true);
+                  player.sendMessage(Text.literal(message.toString()).withColor(ArcanaColors.NUL_COLOR), true);
                }
             }
          }
@@ -273,24 +280,24 @@ public class ShadowStalkersGlaive extends EnergyItem {
          
          if(tetherTarget != null && !tetherTarget.isEmpty() && !player.isSneaking()){
             if(energy >= 80){
-               Entity target = player.getWorld().getEntity(MiscUtils.getUUID(tetherTarget));
+               Entity target = player.getWorld().getEntity(AlgoUtils.getUUID(tetherTarget));
                if(target == null || !target.isAlive() || player.getWorld().getRegistryKey() != target.getWorld().getRegistryKey()){
-                  player.sendMessage(TextUtils.withColor(Text.literal("The Glaive Has No Target"),ArcanaColors.NUL_COLOR),true);
+                  player.sendMessage(Text.literal("The Glaive Has No Target").withColor(ArcanaColors.NUL_COLOR),true);
                }else{
                   Vec3d targetPos = target.getPos();
                   Vec3d targetView = target.getRotationVecClient();
                   Vec3d tpPos = targetPos.add(targetView.multiply(-1.5,0,-1.5));
                   
-                  ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+                  ArcanaEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                   player.teleportTo(new TeleportTarget(player.getWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, target.getYaw(),target.getPitch(), TeleportTarget.NO_OP));
-                  ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+                  ArcanaEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                   SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
                   addEnergy(stack,-80);
                   String message = "Glaive Charges: ";
                   for(int i=1; i<=5; i++){
                      message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                   }
-                  player.sendMessage(TextUtils.withColor(Text.literal(message),ArcanaColors.NUL_COLOR),true);
+                  player.sendMessage(Text.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
                   ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_STALK)); // Add xp
                   
                   if(target instanceof ServerPlayerEntity || target instanceof WardenEntity) ArcanaAchievements.progress(player,ArcanaAchievements.OMAE_WA.id,0);
@@ -316,7 +323,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                   return ActionResult.SUCCESS_SERVER;
                }
             }else{
-               player.sendMessage(TextUtils.withColor(Text.literal("The Glaive Needs At Least 4 Charges"),ArcanaColors.NUL_COLOR),true);
+               player.sendMessage(Text.literal("The Glaive Needs At Least 4 Charges").withColor(ArcanaColors.NUL_COLOR),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
             }
          }else if(player.isSneaking()){
@@ -325,16 +332,16 @@ public class ShadowStalkersGlaive extends EnergyItem {
                Vec3d view = player.getRotationVecClient();
                Vec3d tpPos = playerPos.add(view.multiply(teleportLength));
                
-               ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+               ArcanaEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                player.teleportTo(new TeleportTarget(player.getWorld(),tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.NO_OP));
-               ParticleEffectUtils.shadowGlaiveTp(player.getWorld(),player);
+               ArcanaEffectUtils.shadowGlaiveTp(player.getWorld(),player);
                SoundUtils.playSound(world,player.getBlockPos(), SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL, SoundCategory.PLAYERS,.8f,.8f);
                addEnergy(stack,-20);
                String message = "Glaive Charges: ";
                for(int i=1; i<=5; i++){
                   message += getEnergy(stack) >= i*20 ? "✦ " : "✧ ";
                }
-               player.sendMessage(TextUtils.withColor(Text.literal(message),ArcanaColors.NUL_COLOR),true);
+               player.sendMessage(Text.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHADOW_STALKERS_GLAIVE_BLINK)); // Add xp
                
                int invisDur = new int[]{0,20,40,100}[Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SHADOW_STRIDE.id))];
@@ -343,7 +350,7 @@ public class ShadowStalkersGlaive extends EnergyItem {
                
                return ActionResult.SUCCESS_SERVER;
             }else{
-               player.sendMessage(TextUtils.withColor(Text.literal("The Glaive Needs At Least 1 Charge"),ArcanaColors.NUL_COLOR),true);
+               player.sendMessage(Text.literal("The Glaive Needs At Least 1 Charge").withColor(ArcanaColors.NUL_COLOR),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,0.8f);
             }
          }

@@ -3,6 +3,7 @@ package net.borisshoes.arcananovum.items.arrows;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerArrowItem;
 import net.borisshoes.arcananovum.entities.RunicArrowEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
@@ -11,10 +12,9 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
@@ -89,7 +89,7 @@ public class BlinkArrows extends RunicArrow {
          Vec3d tpPos = entityHitResult.getPos();
          if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
          player.teleportTo(new TeleportTarget(player.getWorld(), tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(), player.getPitch(), TeleportTarget.NO_OP));
-         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
+         ArcanaEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
          int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);
@@ -105,7 +105,7 @@ public class BlinkArrows extends RunicArrow {
          Vec3d tpPos = blockHitResult.getPos().add(offset);
          if(tpPos.distanceTo(player.getPos()) >= 100) ArcanaAchievements.grant(player,ArcanaAchievements.NOW_YOU_SEE_ME.id);
          player.teleportTo(new TeleportTarget(player.getWorld(), tpPos.add(0,0.25,0), Vec3d.ZERO, player.getYaw(), player.getPitch(), TeleportTarget.NO_OP));
-         ParticleEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
+         ArcanaEffectUtils.blinkArrowTp(player.getWorld(),player.getPos());
          SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS,.8f,.9f);
          
          int phaseLvl = arrow.getAugment(ArcanaAugments.PHASE_IN.id);

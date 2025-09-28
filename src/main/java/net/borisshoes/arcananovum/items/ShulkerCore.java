@@ -6,19 +6,24 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreGui;
 import net.borisshoes.arcananovum.gui.shulkercore.ShulkerCoreInventoryListener;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -72,7 +77,7 @@ public class ShulkerCore extends EnergyItem {
       initEnergy = 1000;
       vanillaItem = Items.SHULKER_BOX;
       item = new ShulkerCoreItem();
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD),ArcanaColors.SHULKER_CORE_COLOR);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.SHULKER_CORE_COLOR);
       itemVersion = 1;
       researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_SOULSTONE,ResearchTasks.ADVANCEMENT_LEVITATE,ResearchTasks.EFFECT_SLOW_FALLING,ResearchTasks.UNLOCK_STELLAR_CORE};
       
@@ -214,7 +219,7 @@ public class ShulkerCore extends EnergyItem {
                SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_SHULKER_SHOOT, SoundCategory.PLAYERS, 1, 0.8f);
                ArcanaNovum.data(playerEntity).addXP(ArcanaConfig.getInt(ArcanaRegistry.SHULKER_CORE_PER_SOUL) * (speed / 2 + 1)); // Add xp
                if(world instanceof ServerWorld serverWorld){
-                  ParticleEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
+                  ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
                buildItemLore(stack,playerEntity.getServer());
             }
@@ -236,7 +241,7 @@ public class ShulkerCore extends EnergyItem {
          gui.clearSlot(i);
       }
       
-      GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
+      GuiElementBuilder pane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,hasStone ? ArcanaColors.ARCANA_COLOR : ArcanaColors.DARK_COLOR));
       String paneText = hasStone ? LevelUtils.readableInt(getEnergy(stack)) + " Shulker Souls" : "No Soulstone Inserted";
       Formatting textColor = hasStone ? Formatting.YELLOW : Formatting.RED;
       
@@ -341,8 +346,8 @@ public class ShulkerCore extends EnergyItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal("    Shulker Core").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nShulkers are fascinating creatures. Their unique levitation effect could be a precursor to true flight if I combined a bit of their essence… er… a lot of their essence… What’s a bit of genocide anyways?").formatted(Formatting.BLACK)));
-      list.add(List.of(TextUtils.withColor(Text.literal("    Shulker Core").formatted(Formatting.BOLD),ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nAfter a massacre that took too long to comprehend, I have enough souls to control their power.\nUse the Core to grant levitation. Sneak Use to change the speed. Sneak Use in my off-hand to access the Soulstone for refuelling.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Shulker Core").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nShulkers are fascinating creatures. Their unique levitation effect could be a precursor to true flight if I combined a bit of their essence… er… a lot of their essence… What’s a bit of genocide anyways?").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("    Shulker Core").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nAfter a massacre that took too long to comprehend, I have enough souls to control their power.\nUse the Core to grant levitation. Sneak Use to change the speed. Sneak Use in my off-hand to access the Soulstone for refuelling.").formatted(Formatting.BLACK)));
       return list;
    }
    

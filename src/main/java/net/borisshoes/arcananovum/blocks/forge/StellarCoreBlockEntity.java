@@ -12,10 +12,10 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.stellarcore.StellarCoreGui;
+import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.ParticleEffectUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -99,7 +99,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
       
       if(assembled && seenForge){
          Direction dir = blockState.get(HORIZONTAL_FACING);
-         ParticleEffectUtils.stellarCoreAnim(serverWorld,pos.add(dir.getVector().multiply(-2)).toCenterPos().add(0,1,0),ticks % 300, dir);
+         ArcanaEffectUtils.stellarCoreAnim(serverWorld,pos.add(dir.getVector().multiply(-2)).toCenterPos().add(0,1,0),ticks % 300, dir);
       }
       
       
@@ -224,7 +224,7 @@ public class StellarCoreBlockEntity extends LootableContainerBlockEntity impleme
          });
       }
       
-      int stardust = (int) (MiscUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS.id)));
+      int stardust = (int) (ArcanaUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.FUSION_INJECTORS.id)));
       if(stardust > 0){
          while(stardust > 64){
             salvage.add(ArcanaRegistry.STARDUST.getDefaultStack().copyWithCount(64));

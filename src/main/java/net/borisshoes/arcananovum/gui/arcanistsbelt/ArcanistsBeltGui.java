@@ -7,10 +7,9 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.inventory.SimpleInventory;
@@ -50,7 +49,7 @@ public class ArcanistsBeltGui extends SimpleGui {
          if(i < slotCount){
             setSlotRedirect(i, new ArcanistsBeltSlot(inv,i,i,0));
          }else{
-            setSlot(i,GuiElementBuilder.from(GraphicalItem.with(GraphicItems.CANCEL))
+            setSlot(i,GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL))
                   .setName(Text.literal("Slot Locked").formatted(Formatting.DARK_PURPLE))
                   .addLoreLine(TextUtils.removeItalics(Text.literal("")
                         .append(Text.literal("Unlock this slot with Augments").formatted(Formatting.LIGHT_PURPLE)))));

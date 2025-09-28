@@ -11,7 +11,11 @@ import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.research.ResearchTask;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
@@ -41,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static net.borisshoes.arcananovum.ArcanaNovum.ITEM_DATA;
 
 public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    public static final String SYNTHETIC_TAG = "synthetic";
@@ -144,108 +150,71 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    }
    
    public static NbtCompound getArcanaTag(ItemStack stack){
-      if(stack == null) return new NbtCompound();
-      NbtComponent nbtComponent = stack.get(DataComponentTypes.CUSTOM_DATA);
-      if(nbtComponent == null) return new NbtCompound();
-      NbtCompound data = nbtComponent.copyNbt();
-      if(data.contains(ArcanaNovum.MOD_ID)){
-         return data.getCompoundOrEmpty(ArcanaNovum.MOD_ID);
-      }
-      return new NbtCompound();
+      return ITEM_DATA.getDataTag(stack);
    }
    
    public static int getIntProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return !arcanaTag.contains(key) ? 0 : arcanaTag.getInt(key, 0);
+      return ITEM_DATA.getIntProperty(stack,key);
    }
    
    public static String getStringProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return !arcanaTag.contains(key) ? "" : arcanaTag.getString(key, "");
+      return ITEM_DATA.getStringProperty(stack,key);
    }
    
    public static boolean getBooleanProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return arcanaTag.contains(key) && arcanaTag.getBoolean(key, false);
+      return ITEM_DATA.getBooleanProperty(stack,key);
    }
    
    public static double getDoubleProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return !arcanaTag.contains(key) ? 0.0 : arcanaTag.getDouble(key, 0.0);
+      return ITEM_DATA.getDoubleProperty(stack,key);
    }
    
    public static float getFloatProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return !arcanaTag.contains(key) ? 0.0f : arcanaTag.getFloat(key, 0.0f);
+      return ITEM_DATA.getFloatProperty(stack,key);
    }
    
    public static long getLongProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return !arcanaTag.contains(key) ? 0 : arcanaTag.getLong(key,0L);
+      return ITEM_DATA.getLongProperty(stack,key);
    }
    
-   public static NbtList getListProperty(ItemStack stack, String key, int listType){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return !arcanaTag.contains(key) ? new NbtList() : arcanaTag.getListOrEmpty(key);
+   public static NbtList getListProperty(ItemStack stack, String key){
+      return ITEM_DATA.getListProperty(stack,key);
    }
    
    public static NbtCompound getCompoundProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return !arcanaTag.contains(key) ? new NbtCompound() : arcanaTag.getCompoundOrEmpty(key);
+      return ITEM_DATA.getCompoundProperty(stack,key);
    }
    
    public static void putProperty(ItemStack stack, String key, int property){
-      putProperty(stack, key, NbtInt.of(property));
+      ITEM_DATA.putProperty(stack, key, NbtInt.of(property));
    }
    
    public static void putProperty(ItemStack stack, String key, boolean property){
-      putProperty(stack, key, NbtByte.of(property));
+      ITEM_DATA.putProperty(stack, key, NbtByte.of(property));
    }
    
    public static void putProperty(ItemStack stack, String key, double property){
-      putProperty(stack,key,NbtDouble.of(property));
+      ITEM_DATA.putProperty(stack,key,NbtDouble.of(property));
    }
    
    public static void putProperty(ItemStack stack, String key, float property){
-      putProperty(stack,key,NbtFloat.of(property));
+      ITEM_DATA.putProperty(stack,key,NbtFloat.of(property));
    }
    
    public static void putProperty(ItemStack stack, String key, String property){
-      putProperty(stack,key,NbtString.of(property));
+      ITEM_DATA.putProperty(stack,key,NbtString.of(property));
    }
    
    public static void putProperty(ItemStack stack, String key, NbtElement property){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      arcanaTag.put(key,property);
-      NbtComponent nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
-      NbtCompound data = nbtComponent.copyNbt();
-      data.put(ArcanaNovum.MOD_ID,arcanaTag);
-      NbtComponent.set(DataComponentTypes.CUSTOM_DATA, stack, data);
+      ITEM_DATA.putProperty(stack,key,property);
    }
    
    public static boolean hasProperty(ItemStack stack, String key){
-      NbtCompound arcanaTag = getArcanaTag(stack);
-      return arcanaTag.contains(key);
+      return ITEM_DATA.hasProperty(stack,key);
    }
    
    public static boolean removeProperty(ItemStack stack, String key){
-      if(hasProperty(stack,key)){
-         NbtCompound arcanaTag = getArcanaTag(stack);
-         arcanaTag.remove(key);
-         if(arcanaTag.isEmpty()){
-            NbtComponent nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
-            NbtCompound data = nbtComponent.copyNbt();
-            data.remove(ArcanaNovum.MOD_ID);
-            NbtComponent.set(DataComponentTypes.CUSTOM_DATA, stack, data);
-         }else{
-            NbtComponent nbtComponent = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
-            NbtCompound data = nbtComponent.copyNbt();
-            data.put(ArcanaNovum.MOD_ID,arcanaTag);
-            NbtComponent.set(DataComponentTypes.CUSTOM_DATA, stack, data);
-         }
-         return true;
-      }
-      return false;
+      return ITEM_DATA.removeProperty(stack,key);
    }
    
    // Returns item stack with preferred attributes and a unique UUID
@@ -299,7 +268,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
          putProperty(newStack,UUID_TAG,uuid);
       }
       NbtCompound augments = getCompoundProperty(stack,AUGMENTS_TAG);
-      NbtList catalysts = getListProperty(stack,CATALYSTS_TAG,NbtElement.COMPOUND_TYPE);
+      NbtList catalysts = getListProperty(stack,CATALYSTS_TAG);
       if(!augments.isEmpty()) putProperty(newStack, AUGMENTS_TAG, augments);
       if(!catalysts.isEmpty()) putProperty(newStack, CATALYSTS_TAG, catalysts);
       addCrafter(newStack,getCrafter(stack),isSynthetic(stack),server);
@@ -501,7 +470,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       
       loreList.add(Text.literal(""));
       if(!player.isBlank() && server != null){
-         String crafterName = server.getUserCache().getByUuid(MiscUtils.getUUID(player)).orElse(new GameProfile(MiscUtils.getUUID(player),"???")).getName();
+         String crafterName = server.getUserCache().getByUuid(AlgoUtils.getUUID(player)).orElse(new GameProfile(AlgoUtils.getUUID(player),"???")).getName();
          String crafted = synthetic ? "Synthesized by" : rarity == ArcanaRarity.DIVINE ? "Earned by" : "Crafted by";
          loreList.add(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal(crafted+" ").formatted(Formatting.ITALIC,Formatting.DARK_PURPLE))

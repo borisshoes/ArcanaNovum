@@ -13,20 +13,27 @@ import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.altars.TransmutationAltarRecipeGui;
 import net.borisshoes.arcananovum.gui.twilightanvil.TwilightAnvilGui;
 import net.borisshoes.arcananovum.items.ArcaneTome;
 import net.borisshoes.arcananovum.items.normal.ArcaneNotesItem;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -366,13 +373,13 @@ public class TomeGui extends SimpleGui {
                   ArcanaRarity rarity = arcanaItem.getRarity();
                   Item paperType = ArcanaRarity.getArcanePaper(rarity);
                   int cost = profile.getArcanePaperRequirement(rarity);
-                  if(MiscUtils.removeItems(player,paperType,cost)){
+                  if(MinecraftUtils.removeItems(player,paperType,cost)){
                      ItemStack newNotes = new ItemStack(ArcanaRegistry.ARCANE_NOTES);
                      ArcanaItem.putProperty(newNotes,ArcaneNotesItem.UNLOCK_ID_TAG,arcanaItem.getId());
                      ArcanaItem.putProperty(newNotes,ArcaneNotesItem.COST_TAG,cost);
                      ArcanaItem.putProperty(newNotes,ArcaneNotesItem.AUTHOR_TAG,player.getGameProfile().getName());
                      ArcaneNotesItem.buildLore(newNotes);
-                     MiscUtils.returnItems(new SimpleInventory(newNotes),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(newNotes),player);
                      
                      SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BOOK_PAGE_TURN, 2, 0.75f);
                      SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);
@@ -451,13 +458,13 @@ public class TomeGui extends SimpleGui {
                int cost = profile.getArcanePaperRequirement(rarity);
                
                if(allAcquired){
-                  if(MiscUtils.removeItems(player,paperType,cost)){
+                  if(MinecraftUtils.removeItems(player,paperType,cost)){
                      ItemStack newNotes = new ItemStack(ArcanaRegistry.ARCANE_NOTES);
                      ArcanaItem.putProperty(newNotes,ArcaneNotesItem.UNLOCK_ID_TAG,arcanaItem.getId());
                      ArcanaItem.putProperty(newNotes,ArcaneNotesItem.COST_TAG,cost);
                      ArcanaItem.putProperty(newNotes,ArcaneNotesItem.AUTHOR_TAG,player.getGameProfile().getName());
                      ArcaneNotesItem.buildLore(newNotes);
-                     MiscUtils.returnItems(new SimpleInventory(newNotes),player);
+                     MinecraftUtils.returnItems(new SimpleInventory(newNotes),player);
                      
                      SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_BOOK_PAGE_TURN, 2, 0.75f);
                      SoundUtils.playSongToPlayer(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 2, 0.9f);
@@ -477,9 +484,9 @@ public class TomeGui extends SimpleGui {
    public void buildProfileGui(ServerPlayerEntity player){
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       setMode(TomeMode.PROFILE);
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
-      setSlot(27,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      setSlot(27,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       GameProfile gameProfile = player.getGameProfile();
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
@@ -605,9 +612,9 @@ public class TomeGui extends SimpleGui {
       }
       int numPages = (int) Math.ceil((float)items.size()/28.0);
       settings.setPage(MathHelper.clamp(settings.getPage(),1,Math.max(1,numPages)));
-      List<CompendiumEntry> pageItems = MiscUtils.listToPage(items, settings.getPage(),28);
+      List<CompendiumEntry> pageItems = AlgoUtils.listToPage(items, settings.getPage(),28);
       
-      MiscUtils.outlineGUI(gui,ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(gui,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       GameProfile gameProfile = player.getGameProfile();
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
@@ -622,7 +629,7 @@ public class TomeGui extends SimpleGui {
       }
       gui.setSlot(4,head);
       
-      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.FILTER)).hideDefaultTooltip();
       filterBuilt.setName(Text.literal("Filter Arcana Items").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -631,7 +638,7 @@ public class TomeGui extends SimpleGui {
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(TomeFilter.getColoredLabel(settings.getFilterType()))));
       gui.setSlot(8,filterBuilt);
       
-      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
       sortBuilt.setName(Text.literal("Sort Arcana Items").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -641,14 +648,14 @@ public class TomeGui extends SimpleGui {
       gui.setSlot(0,sortBuilt);
       
       if(numPages > 1){
-         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
          nextPage.setName(Text.literal("Next Page (" + settings.getPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
          nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
                .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
          gui.setSlot(53, nextPage);
          
-         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
          prevPage.setName(Text.literal("Previous Page (" + settings.getPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
          prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
@@ -675,10 +682,10 @@ public class TomeGui extends SimpleGui {
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       setMode(TomeMode.ACHIEVEMENTS);
       List<ArcanaAchievement> items = sortedFilteredAchievementList(player,settings);
-      List<ArcanaAchievement> pageItems = MiscUtils.listToPage(items, settings.getAchPage(),28);
+      List<ArcanaAchievement> pageItems = AlgoUtils.listToPage(items, settings.getAchPage(),28);
       int numPages = (int) Math.ceil((float)items.size()/28.0);
       
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       GameProfile gameProfile = player.getGameProfile();
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
@@ -688,7 +695,7 @@ public class TomeGui extends SimpleGui {
       head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click an item").formatted(Formatting.YELLOW)).append(Text.literal(" to view its page").formatted(Formatting.LIGHT_PURPLE)))));
       setSlot(4,head);
       
-      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.FILTER)).hideDefaultTooltip();
       filterBuilt.setName(Text.literal("Filter Achievements").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -698,7 +705,7 @@ public class TomeGui extends SimpleGui {
       setSlot(8,filterBuilt);
       
       
-      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
       sortBuilt.setName(Text.literal("Sort Achievements").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -708,14 +715,14 @@ public class TomeGui extends SimpleGui {
       setSlot(0,sortBuilt);
       
       if(numPages > 1){
-         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
          nextPage.setName(Text.literal("Next Page (" + settings.getAchPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
          nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
                .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
          setSlot(53, nextPage);
          
-         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
          prevPage.setName(Text.literal("Previous Page (" + settings.getAchPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
          prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
@@ -786,12 +793,12 @@ public class TomeGui extends SimpleGui {
       IArcanaProfileComponent profile = ArcanaNovum.data(player);
       setMode(TomeMode.LEADERBOARD);
       List<UUID> items = sortedFilteredLeaderboardList(settings);
-      List<UUID> pageItems = MiscUtils.listToPage(items, settings.getLeaderboardPage(),28);
+      List<UUID> pageItems = AlgoUtils.listToPage(items, settings.getLeaderboardPage(),28);
       HashMap<UUID,List<String>> achievementMap = ArcanaAchievements.getInvertedTracker();
       int numPages = (int) Math.ceil((float)items.size()/28.0);
       int numAchievements = ArcanaAchievements.registry.size();
       
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       GameProfile gameProfile = player.getGameProfile();
       GuiElementBuilder head = new GuiElementBuilder(Items.PLAYER_HEAD).setSkullOwner(gameProfile,player.getServer());
@@ -815,7 +822,7 @@ public class TomeGui extends SimpleGui {
       head.addLoreLine(TextUtils.removeItalics((Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to return to the profile page").formatted(Formatting.LIGHT_PURPLE)))));
       setSlot(4,head);
       
-      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.FILTER)).hideDefaultTooltip();
       filterBuilt.setName(Text.literal("Filter Arcanists").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current filter.").formatted(Formatting.LIGHT_PURPLE))));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle filter backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -824,7 +831,7 @@ public class TomeGui extends SimpleGui {
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Current Filter: ").formatted(Formatting.AQUA)).append(LeaderboardFilter.getColoredLabel(settings.getLeaderFilterType()))));
       setSlot(8,filterBuilt);
       
-      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
       sortBuilt.setName(Text.literal("Sort Arcanists").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));
@@ -834,14 +841,14 @@ public class TomeGui extends SimpleGui {
       setSlot(0,sortBuilt);
       
       if(numPages > 1){
-         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW));
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW));
          nextPage.setName(Text.literal("Next Page (" + settings.getLeaderboardPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
          nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
                .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
          setSlot(53, nextPage);
          
-         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW));
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW));
          prevPage.setName(Text.literal("Previous Page (" + settings.getLeaderboardPage() + "/" + numPages + ")").formatted(Formatting.DARK_PURPLE));
          prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
@@ -908,22 +915,22 @@ public class TomeGui extends SimpleGui {
       
       for(int i = 0; i < gui.getSize(); i++){
          if(i/9 == 1){
-            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 0){
-            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 8){
-            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i/9 == 4){
-            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }
       }
-      gui.setSlot(9,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(36,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(44,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(9,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(36,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(44,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       for(int i = 0; i < 9; i++){
-         gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.PAGE_COLOR)).setName(Text.empty()).hideTooltip());
+         gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.PAGE_COLOR)).setName(Text.empty()).hideTooltip());
       }
       
       if(arcanaItem instanceof MultiblockCore multicore){
@@ -1010,7 +1017,7 @@ public class TomeGui extends SimpleGui {
             .append(Text.literal("to view the research for this item").formatted(Formatting.LIGHT_PURPLE)))));
       gui.setSlot(8,notes);
       
-      GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.PAGE_COLOR)).hideDefaultTooltip();
+      GuiElementBuilder augmentPane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.PAGE_COLOR)).hideDefaultTooltip();
       augmentPane.setName(Text.literal("Augments:").formatted(Formatting.DARK_PURPLE));
       augmentPane.addLoreLine(TextUtils.removeItalics(Text.literal("Unlocked augments can be applied to enhance Arcana Items!").formatted(Formatting.LIGHT_PURPLE)));
       
@@ -1075,7 +1082,7 @@ public class TomeGui extends SimpleGui {
          gui.setSlot(28+augmentSlots[i], augmentItem2);
       }
       
-      GuiElementBuilder achievePane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.PAGE_COLOR)).hideDefaultTooltip();
+      GuiElementBuilder achievePane = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.PAGE_COLOR)).hideDefaultTooltip();
       achievePane.setName(Text.literal("Achievements:").formatted(Formatting.DARK_PURPLE));
       achievePane.addLoreLine(TextUtils.removeItalics(Text.literal("Earning Achievements Grants Skill Points and XP!").formatted(Formatting.LIGHT_PURPLE)));
       
@@ -1140,19 +1147,19 @@ public class TomeGui extends SimpleGui {
       
       for(int i = 0; i < gui.getSize(); i++){
          if(i%9 == 0 || i%9 == 6){
-            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 8){
-            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }else if(i%9 == 7){
-            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+            gui.setSlot(i,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          }
       }
-      gui.setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
-      gui.setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(17,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(35,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(15,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(33,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(7,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+      gui.setSlot(43,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,ArcanaColors.ARCANA_COLOR)).hideTooltip());
       
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(output);
       if(arcanaItem != null){
@@ -1249,35 +1256,35 @@ public class TomeGui extends SimpleGui {
       List<ResearchTask> tasks = settings.hideCompletedResearch() ? uncompletedOnly : allTasks;
       int numPages = (int) (Math.ceil(tasks.size() / 28.0));
       if(allTaskPages == uncompletedPages){
-         taskPair = MiscUtils.randomlySpace(allTasks,allTaskPages*28, GeneratorOptions.parseSeed(arcanaItem.getId()).orElse(GeneratorOptions.getRandomSeed()));
+         taskPair = AlgoUtils.randomlySpace(allTasks,allTaskPages*28, GeneratorOptions.parseSeed(arcanaItem.getId()).orElse(GeneratorOptions.getRandomSeed()));
          if(settings.hideCompletedResearch()){
             taskPair = taskPair.stream().filter(pair -> !pair.getLeft().isAcquired(player)).toList();
          }
       }else{
-         taskPair = MiscUtils.randomlySpace(tasks,numPages*28, GeneratorOptions.parseSeed(arcanaItem.getId()).orElse(GeneratorOptions.getRandomSeed()));
+         taskPair = AlgoUtils.randomlySpace(tasks,numPages*28, GeneratorOptions.parseSeed(arcanaItem.getId()).orElse(GeneratorOptions.getRandomSeed()));
       }
       
       int paperCost = profile.getArcanePaperRequirement(arcanaItem.getRarity());
       
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       
       setSlot(4,GuiElementBuilder.from(arcanaItem.getPrefItem()).glow());
       
-      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.FILTER)).hideDefaultTooltip();
+      GuiElementBuilder filterBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.FILTER)).hideDefaultTooltip();
       String filterStr = settings.hideCompletedResearch() ? " to show all research." : " to hide completed research.";
       filterBuilt.setName(Text.literal("Filter Research Tasks").formatted(Formatting.DARK_PURPLE));
       filterBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(filterStr).formatted(Formatting.LIGHT_PURPLE))));
       setSlot(8,filterBuilt);
       
       if(numPages > 1){
-         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW));
+         GuiElementBuilder nextPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW));
          nextPage.setName(Text.literal("Next Page ("+settings.getResearchPage()+"/"+numPages+")").formatted(Formatting.DARK_PURPLE));
          nextPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
                .append(Text.literal(" to go to the Next Page").formatted(Formatting.LIGHT_PURPLE))));
          setSlot(53,nextPage);
          
-         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW));
+         GuiElementBuilder prevPage = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW));
          prevPage.setName(Text.literal("Previous Page ("+settings.getResearchPage()+"/"+numPages+")").formatted(Formatting.DARK_PURPLE));
          prevPage.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
@@ -1290,7 +1297,7 @@ public class TomeGui extends SimpleGui {
       
       for(int i = 0; i < 4; i++){
          for(int j = 0; j < 7; j++){
-            setSlot((i*9+10)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG,allAcquired ? ArcanaColors.ARCANE_PAGE_COLOR : ArcanaColors.PAGE_COLOR)).hideTooltip());
+            setSlot((i*9+10)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG,allAcquired ? ArcanaColors.ARCANE_PAGE_COLOR : ArcanaColors.PAGE_COLOR)).hideTooltip());
          }
       }
       
@@ -1313,7 +1320,7 @@ public class TomeGui extends SimpleGui {
                boolean colorSwitch = false;
                for(Text text : task.getDescription()){
                   if(!text.getString().isEmpty() && text.getString().charAt(0) != ' ') colorSwitch = !colorSwitch;
-                  taskItem.addLoreLine(TextUtils.withColor(TextUtils.removeItalics(MutableText.of(text.getContent())), colorSwitch ? 0xe6d9bc : 0xb5a684));
+                  taskItem.addLoreLine(TextUtils.removeItalics(MutableText.of(text.getContent())).withColor(colorSwitch ? 0xe6d9bc : 0xb5a684));
                }
             }else{
                taskItem.setName(Text.literal("???").formatted(Formatting.YELLOW,Formatting.ITALIC));

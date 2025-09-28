@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.items;
 
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
@@ -8,8 +9,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
@@ -34,7 +34,7 @@ public class TemporalMoment extends ArcanaItem {
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
       vanillaItem = Items.CLOCK;
       item = new TemporalMomentItem();
-      displayName = TextUtils.withColor(Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD), ArcanaColors.BETTER_DARK_BLUE);
+      displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE);
       researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_CLOCK,ResearchTasks.ADVANCEMENT_SLEEP_IN_BED,ResearchTasks.USE_ENDER_PEARL};
       
       ItemStack stack = new ItemStack(item);
@@ -51,7 +51,7 @@ public class TemporalMoment extends ArcanaItem {
             .append(Text.literal("spacetime ").formatted(Formatting.DARK_GRAY))
             .append(Text.literal("collapsing").formatted(Formatting.ITALIC,Formatting.DARK_AQUA))
             .append(Text.literal(" down to a single ").formatted(Formatting.BLUE))
-            .append(TextUtils.withColor(Text.literal("moment"), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("moment").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal(".").formatted(Formatting.BLUE)));
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.BLUE))
@@ -59,7 +59,7 @@ public class TemporalMoment extends ArcanaItem {
             .append(Text.literal(" itself is stuck between ").formatted(Formatting.BLUE))
             .append(Text.literal("one ").formatted(Formatting.DARK_AQUA))
             .append(Text.literal("instant of ").formatted(Formatting.BLUE))
-            .append(TextUtils.withColor(Text.literal("time"), ArcanaColors.BETTER_DARK_BLUE))
+            .append(Text.literal("time").withColor(ArcanaColors.BETTER_DARK_BLUE))
             .append(Text.literal(" and ").formatted(Formatting.BLUE))
             .append(Text.literal("another").formatted(Formatting.DARK_AQUA))
             .append(Text.literal(".").formatted(Formatting.BLUE)));
@@ -95,7 +95,7 @@ public class TemporalMoment extends ArcanaItem {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(TextUtils.withColor(Text.literal(" Temporal Moment").formatted(Formatting.BOLD),ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nTime always moves forwards, but its rate can be changed from fluctuation in spacetime. With enough energy, perhaps it can be slowed to a halt, freezing a moment in time to use later.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal(" Temporal Moment").formatted(Formatting.BOLD).withColor(ArcanaColors.BETTER_DARK_BLUE),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nTime always moves forwards, but its rate can be changed from fluctuation in spacetime. With enough energy, perhaps it can be slowed to a halt, freezing a moment in time to use later.").formatted(Formatting.BLACK)));
       return list;
    }
    

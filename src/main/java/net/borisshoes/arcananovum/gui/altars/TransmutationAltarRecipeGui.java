@@ -10,10 +10,14 @@ import net.borisshoes.arcananovum.blocks.altars.TransmutationAltar;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.AequalisScientia;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.recipes.transmutation.*;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -126,20 +130,20 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
    
    
    public void buildRecipeListGui(){
-      MiscUtils.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR,Text.literal("Transmutation Recipes").formatted(Formatting.BLUE));
+      GuiHelper.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR,Text.literal("Transmutation Recipes").formatted(Formatting.BLUE));
       
       List<TransmutationRecipe> pageRecipes = recipes;
       int numPages = (int) Math.ceil((float)pageRecipes.size()/28.0);
       
       if(numPages > 1){
-         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
          nextArrow.setName(Text.literal("Next Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
          nextArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.YELLOW))
                .append(Text.literal(" to go to the Next Page").formatted(Formatting.DARK_PURPLE))));
          setSlot(53,nextArrow);
          
-         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
          prevArrow.setName(Text.literal("Previous Page ("+page+"/"+numPages+")").formatted(Formatting.GOLD));
          prevArrow.addLoreLine(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.YELLOW))
@@ -321,7 +325,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
    public void buildRecipeViewGui(String recipeName){
       this.curRecipeName = recipeName;
       
-      MiscUtils.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR,Text.literal("Transmutation Recipes").formatted(Formatting.BLUE));
+      GuiHelper.outlineGUI(this, ArcanaColors.EQUAYUS_COLOR,Text.literal("Transmutation Recipes").formatted(Formatting.BLUE));
       
       for(TransmutationRecipe rec : recipes){
          if(rec.getName().equals(recipeName) && rec instanceof CommutativeTransmutationRecipe crec){
@@ -335,14 +339,14 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
       int numPages = (int) Math.ceil((float)inputs.size()/28.0);
       
       if(numPages > 1){
-         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
          nextArrow.setName((Text.literal("")
                .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
          nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("("+commiePage+" of "+numPages+")").formatted(Formatting.DARK_PURPLE)))));
          setSlot(53,nextArrow);
          
-         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
          prevArrow.setName((Text.literal("")
                .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
          prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
@@ -427,7 +431,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             .append(Text.translatable(reagent2.getItem().getTranslationKey()).formatted(Formatting.AQUA)))));
       setSlot(50,reagent2Item);
       
-      GuiElementBuilder recipeItem = new GuiElementBuilder(GraphicalItem.with(GraphicItems.TRANSMUTATION_BOOK)).hideDefaultTooltip();
+      GuiElementBuilder recipeItem = new GuiElementBuilder(GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK)).hideDefaultTooltip();
       recipeItem.setName((Text.literal("")
             .append(Text.literal("Transmutation Recipes").formatted(Formatting.DARK_AQUA))));
       recipeItem.addLoreLine(TextUtils.removeItalics((Text.literal("")

@@ -7,12 +7,13 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
-import net.borisshoes.arcananovum.callbacks.ColliderLoginCallback;
 import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
+import net.borisshoes.arcananovum.callbacks.login.ColliderLoginCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
@@ -176,10 +177,10 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
             }
             
             if(crafterId != null && !crafterId.isEmpty()){
-               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(MiscUtils.getUUID(crafterId));
+               ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(AlgoUtils.getUUID(crafterId));
                if(player == null){
-                  ArcanaNovum.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
-                  ArcanaNovum.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
+                  BorisLib.addLoginCallback(new ColliderLoginCallback(serverWorld.getServer(),crafterId,1));
+                  BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(),crafterId,ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
                }else{
                   ArcanaAchievements.progress(player,ArcanaAchievements.ENDLESS_EXTRUSION.id,1);
                   ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE));

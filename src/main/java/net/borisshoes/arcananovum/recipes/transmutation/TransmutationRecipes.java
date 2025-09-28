@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.recipes.transmutation;
 import com.mojang.datafixers.util.Either;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.SuspiciousStewEffectsComponent;
@@ -357,7 +357,7 @@ public class TransmutationRecipes {
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Aequalis Scientia Synthesis",ArcanaRegistry.DIVINE_CATALYST.getPrefItemNoLore(),ArcanaRegistry.AEQUALIS_SCIENTIA.getPrefItemNoLore(),new ItemStack(Items.AMETHYST_BLOCK,64),new ItemStack(Items.DIAMOND_BLOCK,1)));
       
       // Permutation Recipes
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Faeries' Stew", new ItemStack(Items.MUSHROOM_STEW,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 1)), new ItemStack(Items.NETHER_WART),  (stack, minecraftServer) -> {
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Faeries' Stew", new ItemStack(Items.MUSHROOM_STEW,1), MinecraftUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 1)), new ItemStack(Items.NETHER_WART),  (stack, minecraftServer) -> {
          ItemStack stewStack = new ItemStack(Items.SUSPICIOUS_STEW);
          stewStack.set(DataComponentTypes.RARITY, Rarity.RARE);
          stewStack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+".faeries_stew"));
@@ -374,7 +374,7 @@ public class TransmutationRecipes {
          return stewStack;
       }, Text.literal("A 'Delicious' Stew")));
       
-      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Book Exchange", new ItemStack(Items.ENCHANTED_BOOK,1), MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 15)), new ItemStack(Items.LAPIS_LAZULI,5),  (stack, minecraftServer) -> {
+      TRANSMUTATION_RECIPES.add(new PermutationTransmutationRecipe("Book Exchange", new ItemStack(Items.ENCHANTED_BOOK,1), MinecraftUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE, 15)), new ItemStack(Items.LAPIS_LAZULI,5),  (stack, minecraftServer) -> {
          ItemStack newBook = new ItemStack(Items.BOOK);
          ArrayList<RegistryEntry<Enchantment>> enchants = new ArrayList<>();
          minecraftServer.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries().forEach(enchants::add);

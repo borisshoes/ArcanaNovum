@@ -1,8 +1,8 @@
 package net.borisshoes.arcananovum.gui.arcanetome;
 
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.text.MutableText;
@@ -15,7 +15,7 @@ import java.util.List;
 public class TransmutationRecipesCompendiumEntry extends CompendiumEntry{
    
    public TransmutationRecipesCompendiumEntry(){
-      super(new TomeGui.TomeFilter[]{}, GraphicalItem.with(GraphicItems.TRANSMUTATION_BOOK));
+      super(new TomeGui.TomeFilter[]{}, GraphicalItem.with(ArcanaRegistry.TRANSMUTATION_BOOK));
       
       displayStack.set(DataComponentTypes.ITEM_NAME, Text.literal("Transmutation Recipes").formatted(Formatting.AQUA));
       List<Text> loreText = new ArrayList<>();

@@ -15,9 +15,15 @@ import net.borisshoes.arcananovum.blocks.forge.MidnightEnchanterBlockEntity;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForge;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.gui.VirtualInventoryGui;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -82,11 +88,11 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
                return true;
             }
             
-            if(MiscUtils.removeItems(player,Items.LAPIS_LAZULI,lapisLevel)){
+            if(MinecraftUtils.removeItems(player,Items.LAPIS_LAZULI,lapisLevel)){
                player.applyEnchantmentCosts(stack,0);
                applyEnchants();
                removeXP(lapisLevel);
-               MiscUtils.returnItems(inventory,player);
+               MinecraftUtils.returnItems(inventory,player);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
                listener.setUpdating();
                inventory.setStack(0,ItemStack.EMPTY);
@@ -99,14 +105,14 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             }
          }else if(stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER)){
             if(player.experienceLevel >= xpCost || player.isCreative()){
-               if(MiscUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
+               if(MinecraftUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
                   listener.setUpdating();
                   ItemStack newStack = new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER);
                   newStack.setCount(stack.getCount());
                   inventory.setStack(0,newStack);
                   removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-                  MiscUtils.returnItems(inventory,player);
+                  MinecraftUtils.returnItems(inventory,player);
                   inventory.setStack(0,ItemStack.EMPTY);
                   setItem(ItemStack.EMPTY);
                   listener.finishUpdate();
@@ -122,11 +128,11 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          }else{
             if(getSelected().isEmpty()) return true;
             if(player.experienceLevel >= xpCost || player.isCreative()){
-               if(MiscUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
+               if(MinecraftUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
                   applyEnchants();
                   removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-                  MiscUtils.returnItems(inventory,player);
+                  MinecraftUtils.returnItems(inventory,player);
                   listener.setUpdating();
                   inventory.setStack(0,ItemStack.EMPTY);
                   setItem(ItemStack.EMPTY);
@@ -149,7 +155,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          nextPage();
          buildGui();
       }else if(index == 6 && precision && enchanted){
-         if(MiscUtils.removeItems(player,Items.BOOK,1)){
+         if(MinecraftUtils.removeItems(player,Items.BOOK,1)){
             ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
             if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
                ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
@@ -163,7 +169,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             }
             SimpleInventory sinv = new SimpleInventory(book);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-            MiscUtils.returnItems(sinv,player);
+            MinecraftUtils.returnItems(sinv,player);
          }else{
             player.sendMessage(Text.literal("You need a book to put the enchants on").formatted(Formatting.RED,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -171,7 +177,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          buildGui();
       }else if(index == 7){
          if(enchanted){
-            int essence = (int) (MiscUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA.id)));
+            int essence = (int) (ArcanaUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA.id)));
             SimpleInventory sinv = new SimpleInventory(essence / 64 + 1);
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE)*essence);
             if(essence > 0){
@@ -184,7 +190,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
                }
             }
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-            MiscUtils.returnItems(sinv,player);
+            MinecraftUtils.returnItems(sinv,player);
             
             int maxCount = 0;
             
@@ -223,7 +229,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          ArcaneSingularityBlockEntity singularity;
          if(forge != null && (singularity = (ArcaneSingularityBlockEntity) forge.getForgeAddition(serverWorld,ArcanaRegistry.ARCANE_SINGULARITY_BLOCK_ENTITY)) != null){
             if(singularity.getNumBooks() < singularity.getCapacity()){
-               if(MiscUtils.removeItems(player,Items.BOOK,1)){
+               if(MinecraftUtils.removeItems(player,Items.BOOK,1)){
                   ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
                   if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
                      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
@@ -275,7 +281,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       boolean precision = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PRECISION_DISENCHANTING.id) >= 1;
       boolean paperUpgrade = stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
       
-      MiscUtils.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
+      GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       clearSlot(4);
       
       if(inventory == null){
@@ -293,29 +299,29 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       
       for(int i = 0; i < 9; i++){
          if(i == 0){
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_LEFT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_LEFT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
          }else if(i == 8){
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_RIGHT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_RIGHT_CONNECTOR,color)).hideDefaultTooltip().setName(name));
          }else if(i == 3){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_RIGHT,color)).hideDefaultTooltip().setName(name));
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_RIGHT,color)).hideDefaultTooltip().setName(name));
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
          }else if(i == 5){
-            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_LEFT,color)).hideDefaultTooltip().setName(name));
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+            setSlot(i, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_LEFT,color)).hideDefaultTooltip().setName(name));
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,color)).hideDefaultTooltip().setName(name));
          }else{
-            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_HORIZONTAL,color)).hideDefaultTooltip().setName(name));
+            setSlot(i+9, GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_HORIZONTAL,color)).hideDefaultTooltip().setName(name));
          }
       }
       
       if(maxPages > 1 && !(stack.isEnchantable() && !enchanted && bookshelves >= 0)){
-         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.RIGHT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
          nextArrow.setName((Text.literal("")
                .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
          nextArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("("+page+" of "+maxPages+")").formatted(Formatting.DARK_PURPLE)))));
          setSlot(35,nextArrow);
          
-         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.LEFT_ARROW)).hideDefaultTooltip();
+         GuiElementBuilder prevArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.LEFT_ARROW)).hideDefaultTooltip();
          prevArrow.setName((Text.literal("")
                .append(Text.literal("Prev Page").formatted(Formatting.GOLD))));
          prevArrow.addLoreLine(TextUtils.removeItalics((Text.literal("")
@@ -324,7 +330,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       }
       
       if(enchanted){
-         GuiElementBuilder essenceItem = GuiElementBuilder.from(MiscUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack())).hideDefaultTooltip();
+         GuiElementBuilder essenceItem = GuiElementBuilder.from(MinecraftUtils.removeLore(ArcanaRegistry.NEBULOUS_ESSENCE.getDefaultStack())).hideDefaultTooltip();
          essenceItem.setName((Text.literal("")
                .append(Text.literal("Disenchant into Essence").formatted(Formatting.DARK_AQUA))));
          essenceItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
@@ -356,7 +362,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             setSlot(8,singularityItem);
          }
       }else if(paperUpgrade){
-         GuiElementBuilder exoticPaper = GuiElementBuilder.from(MiscUtils.removeLore(ArcanaRegistry.EXOTIC_ARCANE_PAPER.getDefaultStack()));
+         GuiElementBuilder exoticPaper = GuiElementBuilder.from(MinecraftUtils.removeLore(ArcanaRegistry.EXOTIC_ARCANE_PAPER.getDefaultStack()));
          setSlot(7,exoticPaper);
       }else{
          GuiElementBuilder essenceItem;
@@ -398,17 +404,17 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       
       if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
          for(int i = 19; i < 26; i++){
-            GuiElementBuilder bgPane2 = GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
+            GuiElementBuilder bgPane2 = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
             bgPane2.setName(Text.empty()).hideTooltip();
             setSlot(i,bgPane2);
             setSlot(i+9,bgPane2);
             setSlot(i+18,bgPane2);
          }
-         setSlot(11,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_TOP_CONNECTOR,color)).hideDefaultTooltip().setName(name));
-         setSlot(20,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,lapisLevel == 1 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
-         setSlot(29,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,lapisLevel == 2 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
-         setSlot(38,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_VERTICAL,lapisLevel == 3 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
-         setSlot(47,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
+         setSlot(11,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_TOP_CONNECTOR,color)).hideDefaultTooltip().setName(name));
+         setSlot(20,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL,lapisLevel == 1 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
+         setSlot(29,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL,lapisLevel == 2 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
+         setSlot(38,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_VERTICAL,lapisLevel == 3 ? ArcanaColors.EQUAYUS_COLOR : color)).hideDefaultTooltip().setName(name));
+         setSlot(47,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.MENU_BOTTOM_CONNECTOR,ArcanaColors.ARCANA_COLOR)).hideTooltip());
          
          Random random = Random.create();
          int playerSeed = player.getEnchantingTableSeed();
@@ -458,7 +464,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       }else if(paperUpgrade){
          for(int i = 0; i < 3; i++){
             for(int j = 0; j < 7; j++){
-               setSlot((i*9+19)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, ArcanaColors.DARK_COLOR)).hideTooltip());
+               setSlot((i*9+19)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)).hideTooltip());
             }
          }
          xpCost = 10;
@@ -487,7 +493,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
                   
                   setSlot((i*9+19)+j,enchantBook);
                }else{
-                  setSlot((i*9+19)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicItems.PAGE_BG, stack.isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+                  setSlot((i*9+19)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, stack.isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
                }
                k++;
             }
@@ -729,7 +735,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             rarityMod *= 2;
          }
          cost += entry.level()*rarityMod;
-         eCost += (int) Math.ceil(MiscUtils.calcEssenceValue(entry.enchantment(),entry.level())*1.5);
+         eCost += (int) Math.ceil(ArcanaUtils.calcEssenceValue(entry.enchantment(),entry.level())*1.5);
       }
       
       essenceCost = eCost;
@@ -819,7 +825,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    
    @Override
    public void onClose(){
-      MiscUtils.returnItems(inventory,player);
+      MinecraftUtils.returnItems(inventory,player);
    }
    
    @Override

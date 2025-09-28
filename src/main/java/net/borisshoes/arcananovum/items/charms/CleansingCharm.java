@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.events.CleansingCharmEvent;
@@ -14,9 +15,9 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.SoundUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.events.Event;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
@@ -105,7 +106,7 @@ public class CleansingCharm extends EnergyItem {
          if(canCleanse.isEmpty()) break;
          RegistryEntry<StatusEffect> effect = canCleanse.removeFirst().getKey();
          player.removeStatusEffect(effect);
-         ArcanaNovum.addArcanaEvent(new CleansingCharmEvent(player,effect));
+         Event.addEvent(new CleansingCharmEvent(player,effect));
          
          if(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REJUVENATION) > 0){
             StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 100, 1, false, false, true);

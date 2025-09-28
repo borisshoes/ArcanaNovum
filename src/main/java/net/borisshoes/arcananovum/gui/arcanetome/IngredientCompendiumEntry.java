@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum.gui.arcanetome;
 
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.ItemStack;

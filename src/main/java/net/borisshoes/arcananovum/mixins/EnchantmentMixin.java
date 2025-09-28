@@ -3,7 +3,7 @@ package net.borisshoes.arcananovum.mixins;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentEffectContext;
 import net.minecraft.enchantment.Enchantments;
@@ -50,7 +50,7 @@ public class EnchantmentMixin {
    private void arcananovum_applyLocationEffects(ServerWorld world, int level, EnchantmentEffectContext context, LivingEntity user, CallbackInfo ci){
       if(user instanceof ServerPlayerEntity player){
          Enchantment enchant = (Enchantment) (Object) this;
-         if(enchant.toString().equals(MiscUtils.getEnchantment(Enchantments.SOUL_SPEED).value().toString())){
+         if(enchant.toString().equals(MinecraftUtils.getEnchantment(Enchantments.SOUL_SPEED).value().toString())){
             ArcanaNovum.data(player).setResearchTask(ResearchTasks.USE_SOUL_SPEED, true);
          }
       }
@@ -60,7 +60,7 @@ public class EnchantmentMixin {
    private void arcananovum_modifyDamageProtection(ServerWorld world, int level, ItemStack stack, Entity user, DamageSource damageSource, MutableFloat damageProtection, CallbackInfo ci){
       if(user instanceof ServerPlayerEntity player){
          Enchantment enchant = (Enchantment) (Object) this;
-         if(enchant.toString().equals(MiscUtils.getEnchantment(Enchantments.FEATHER_FALLING).value().toString())){
+         if(enchant.toString().equals(MinecraftUtils.getEnchantment(Enchantments.FEATHER_FALLING).value().toString())){
             ArcanaNovum.data(player).setResearchTask(ResearchTasks.FEATHER_FALL, true);
          }
       }

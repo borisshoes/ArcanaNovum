@@ -7,6 +7,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBowItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.items.arrows.PhotonicArrows;
@@ -16,7 +17,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -77,8 +81,8 @@ public class RunicBow extends ArcanaItem {
    public void finalizePrefItem(MinecraftServer server){
       super.finalizePrefItem(server);
       ItemStack curPrefItem = this.getPrefItem();
-      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MiscUtils.makeEnchantComponent(
-            new EnchantmentLevelEntry(MiscUtils.getEnchantment(server.getRegistryManager(),Enchantments.POWER),7)
+      curPrefItem.set(DataComponentTypes.ENCHANTMENTS, MinecraftUtils.makeEnchantComponent(
+            new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(server.getRegistryManager(),Enchantments.POWER),7)
       ));
       this.prefItem = buildItemLore(curPrefItem, server);
    }
@@ -129,7 +133,7 @@ public class RunicBow extends ArcanaItem {
       if(bowStack.hasEnchantments()){
          EnchantmentHelper.set(newArcanaItem,bowStack.getEnchantments());
       }
-      newArcanaItem.addEnchantment(MiscUtils.getEnchantment(Enchantments.POWER),7);
+      newArcanaItem.addEnchantment(MinecraftUtils.getEnchantment(Enchantments.POWER),7);
       
       if(hasProperty(bowStack, EnhancedStatUtils.ENHANCED_STAT_TAG)){
          EnhancedStatUtils.enhanceItem(newArcanaItem,getDoubleProperty(bowStack,EnhancedStatUtils.ENHANCED_STAT_TAG));
@@ -142,7 +146,7 @@ public class RunicBow extends ArcanaItem {
 	protected ArcanaRecipe makeRecipe(){
       ArcanaIngredient a = new ArcanaIngredient(Items.NETHER_STAR,2);
       ArcanaIngredient b = new ArcanaIngredient(Items.AMETHYST_SHARD,32);
-      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MiscUtils.getEnchantment(Enchantments.POWER),5));
+      ArcanaIngredient c = new ArcanaIngredient(Items.ENCHANTED_BOOK,1).withEnchantments(new EnchantmentLevelEntry(MinecraftUtils.getEnchantment(Enchantments.POWER),5));
       ArcanaIngredient d = new ArcanaIngredient(Items.END_CRYSTAL,24);
       ArcanaIngredient g = new ArcanaIngredient(Items.NETHERITE_INGOT,1);
       GenericArcanaIngredient h = new GenericArcanaIngredient(ArcanaRegistry.RUNIC_MATRIX,1);

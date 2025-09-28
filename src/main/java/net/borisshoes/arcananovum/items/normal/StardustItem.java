@@ -5,7 +5,8 @@ import net.borisshoes.arcananovum.core.polymer.NormalPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.IngredientCompendiumEntry;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.Item;
@@ -75,7 +76,7 @@ public class StardustItem extends NormalPolymerItem {
    }
    
    public static IngredientCompendiumEntry getCompendiumEntry(){
-      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicItems.PAGE_BG, 0xff8800),1,"",false)
+      ExplainIngredient a = new ExplainIngredient(GraphicalItem.withColor(GraphicalItem.PAGE_BG, 0xff8800),1,"",false)
             .withName(Text.literal("In Stellar Core").formatted(Formatting.GOLD));
       ExplainIngredient b = new ExplainIngredient(Items.BLAZE_POWDER,1,"",false)
             .withName(Text.literal("Salvage Enchanted Equipment").formatted(Formatting.GOLD))

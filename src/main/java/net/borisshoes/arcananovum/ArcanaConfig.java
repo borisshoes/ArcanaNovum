@@ -1,7 +1,7 @@
 package net.borisshoes.arcananovum;
 
 import net.borisshoes.arcananovum.utils.ConfigUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 
 import java.util.Objects;
 

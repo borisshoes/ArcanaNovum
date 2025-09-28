@@ -4,11 +4,10 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
-import net.borisshoes.arcananovum.items.normal.GraphicItems;
-import net.borisshoes.arcananovum.items.normal.GraphicalItem;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.gui.GraphicalItem;
+import net.borisshoes.borislib.gui.GuiHelper;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
@@ -122,7 +121,7 @@ public class StarpathAltarChartsGui extends SimpleGui {
    }
    
    public void buildGui(){
-      MiscUtils.outlineGUI(this, ArcanaColors.STARPATH_COLOR,Text.literal("Saved Locations").formatted(Formatting.BLUE));
+      GuiHelper.outlineGUI(this, ArcanaColors.STARPATH_COLOR,Text.literal("Saved Locations").formatted(Formatting.BLUE));
       loadDestinations();
       
       int numPages = (int) Math.ceil((float) destinations.size()/28.0);
@@ -159,7 +158,7 @@ public class StarpathAltarChartsGui extends SimpleGui {
          setSlot(45,prevArrow);
       }
       
-      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicItems.SORT)).hideDefaultTooltip();
+      GuiElementBuilder sortBuilt = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.SORT)).hideDefaultTooltip();
       sortBuilt.setName(Text.literal("Sort Destinations").formatted(Formatting.DARK_PURPLE));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Click").formatted(Formatting.AQUA)).append(Text.literal(" to change current sort type.").formatted(Formatting.LIGHT_PURPLE))));
       sortBuilt.addLoreLine(TextUtils.removeItalics(Text.literal("").append(Text.literal("Right Click").formatted(Formatting.GREEN)).append(Text.literal(" to cycle sort backwards.").formatted(Formatting.LIGHT_PURPLE))));

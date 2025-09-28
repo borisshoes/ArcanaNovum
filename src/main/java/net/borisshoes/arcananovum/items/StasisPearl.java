@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.ArcanaConfig;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.entities.StasisPearlEntity;
@@ -13,7 +14,10 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.*;
+import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.utils.AlgoUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
@@ -216,7 +220,7 @@ public class StasisPearl extends EnergyItem {
          if(!pearlID.isEmpty()){
             Entity foundEntity = null;
             for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
-               Entity possibleEntity = possibleWorlds.getEntity(MiscUtils.getUUID(pearlID));
+               Entity possibleEntity = possibleWorlds.getEntity(AlgoUtils.getUUID(pearlID));
                if(foundEntity == null && possibleEntity != null){
                   foundEntity = possibleEntity;
                }
@@ -266,7 +270,7 @@ public class StasisPearl extends EnergyItem {
                if(world instanceof ServerWorld serverWorld){
                   Entity foundEntity = null;
                   for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
-                     Entity possibleEntity = possibleWorlds.getEntity(MiscUtils.getUUID(pearlID));
+                     Entity possibleEntity = possibleWorlds.getEntity(AlgoUtils.getUUID(pearlID));
                      if(foundEntity == null && possibleEntity != null){
                         foundEntity = possibleEntity;
                      }
@@ -285,7 +289,7 @@ public class StasisPearl extends EnergyItem {
                if(world instanceof ServerWorld serverWorld){
                   Entity foundEntity = null;
                   for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
-                     Entity possibleEntity = possibleWorlds.getEntity(MiscUtils.getUUID(pearlID));
+                     Entity possibleEntity = possibleWorlds.getEntity(AlgoUtils.getUUID(pearlID));
                      if(foundEntity == null && possibleEntity != null){
                         foundEntity = possibleEntity;
                      }
@@ -305,7 +309,7 @@ public class StasisPearl extends EnergyItem {
                if(world instanceof ServerWorld serverWorld){
                   Entity foundEntity = null;
                   for(ServerWorld possibleWorlds : serverWorld.getServer().getWorlds()){
-                     Entity possibleEntity = possibleWorlds.getEntity(MiscUtils.getUUID(pearlID));
+                     Entity possibleEntity = possibleWorlds.getEntity(AlgoUtils.getUUID(pearlID));
                      if(foundEntity == null && possibleEntity != null){
                         foundEntity = possibleEntity;
                      }

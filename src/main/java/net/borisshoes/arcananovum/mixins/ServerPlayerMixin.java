@@ -12,7 +12,7 @@ import net.borisshoes.arcananovum.research.EffectResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -27,8 +27,6 @@ import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.storage.ReadView;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.TeleportTarget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,8 +36,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
-import static net.borisshoes.arcananovum.ArcanaNovum.PLAYER_MOVEMENT_TRACKER;
-
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerMixin {
    
@@ -47,14 +43,6 @@ public class ServerPlayerMixin {
    private void arcananovum_readStasisPearl(ReadView view, CallbackInfo ci, @Local Entity entity){
       if(entity instanceof StasisPearlEntity stasisPearl){
          stasisPearl.resyncHolder();
-      }
-   }
-   
-   @Inject(method = "onTeleportationDone", at = @At("HEAD"))
-   private void arcananovum_resetVelTrackerTeleport(CallbackInfo ci){
-      ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-      if(PLAYER_MOVEMENT_TRACKER.containsKey(player)){
-         PLAYER_MOVEMENT_TRACKER.put(player, new Pair<>(player.getPos(), new Vec3d(0,0,0)));
       }
    }
    
@@ -73,7 +61,7 @@ public class ServerPlayerMixin {
    @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;increaseStat(Lnet/minecraft/util/Identifier;I)V", ordinal = 0))
    private void arcananovum_swimStats(double deltaX, double deltaY, double deltaZ, CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-      boolean hasCetacea = MiscUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, null, 0).stream().anyMatch(stack -> ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG));
+      boolean hasCetacea = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, null, 0).stream().anyMatch(stack -> ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG));
       if(hasCetacea){
          int i = Math.round((float)Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) * 100.0F);
          if(i > 0){

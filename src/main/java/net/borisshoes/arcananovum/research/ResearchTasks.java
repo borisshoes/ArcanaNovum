@@ -3,8 +3,8 @@ package net.borisshoes.arcananovum.research;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Lifecycle;
 import net.borisshoes.arcananovum.ArcanaRegistry;
-import net.borisshoes.arcananovum.utils.MiscUtils;
 import net.borisshoes.arcananovum.utils.TreeNode;
+import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffects;
@@ -558,7 +558,7 @@ public class ResearchTasks {
                   Text.literal("Theoretically, this would look like a powder"),
                   Text.literal(" that exhibits some latent arcane properties.")
             },
-            MiscUtils.removeLore(new ItemStack(ArcanaRegistry.STARDUST)), ADVANCEMENT_ENCHANT_ITEM
+            MinecraftUtils.removeLore(new ItemStack(ArcanaRegistry.STARDUST)), ADVANCEMENT_ENCHANT_ITEM
       ));
       
       ResearchTasks.register(OBTAIN_NEBULOUS_ESSENCE, new ObtainResearchTask(
@@ -575,7 +575,7 @@ public class ResearchTasks {
                   Text.literal("Maybe I can revert the enchantment Arcana back "),
                   Text.literal(" into this nebulous state, and isolate it.")
             },
-            MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE)), ADVANCEMENT_ENCHANT_ITEM
+            MinecraftUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE)), ADVANCEMENT_ENCHANT_ITEM
       ));
       
       ResearchTasks.register(OBTAIN_BLAST_FURNACE, new ObtainResearchTask(
@@ -1772,7 +1772,7 @@ public class ResearchTasks {
                   Text.literal(" my mind. Growing ever closer to discomfort."),
                   Text.literal("I wonder how much I can handle?")
             },
-            MiscUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE))
+            MinecraftUtils.removeLore(new ItemStack(ArcanaRegistry.NEBULOUS_ESSENCE))
       ));
       
       ResearchTasks.register(FEATHER_FALL, new CustomResearchTask(

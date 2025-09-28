@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.blocks.forge;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
+import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
@@ -11,8 +12,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
-import net.borisshoes.arcananovum.utils.ArcanaRarity;
-import net.borisshoes.arcananovum.utils.TextUtils;
+import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -25,7 +25,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -119,7 +118,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
             .append(Text.literal(".").formatted(Formatting.DARK_AQUA)));
       
       if(itemStack != null){
-         int size = getListProperty(itemStack,BOOKS_TAG,NbtElement.COMPOUND_TYPE).size();
+         int size = getListProperty(itemStack,BOOKS_TAG).size();
          if(size > 0){
             lore.add(Text.literal(""));
             lore.add(Text.literal("")
@@ -135,7 +134,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
    
    @Override
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
-      NbtList targetsList = getListProperty(stack,BOOKS_TAG, NbtElement.COMPOUND_TYPE);
+      NbtList targetsList = getListProperty(stack,BOOKS_TAG);
       ItemStack newStack = super.updateItem(stack,server);
       putProperty(newStack,BOOKS_TAG,targetsList);
       return buildItemLore(newStack,server);
@@ -274,7 +273,7 @@ public class ArcaneSingularity extends ArcanaBlock implements MultiblockCore {
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof ArcaneSingularityBlockEntity singularity){
             initializeArcanaBlock(stack,singularity);
-            singularity.initializeBooks(getListProperty(stack,BOOKS_TAG,NbtElement.COMPOUND_TYPE),world.getRegistryManager());
+            singularity.initializeBooks(getListProperty(stack,BOOKS_TAG),world.getRegistryManager());
          }
       }
    }

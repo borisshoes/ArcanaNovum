@@ -11,7 +11,7 @@ import net.borisshoes.arcananovum.items.ShadowStalkersGlaive;
 import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -47,7 +47,7 @@ public class EntityKilledCallback {
             String entityTypeId = EntityType.getId(killed.getType()).toString();
             
             // Check for soulstone then activate
-            List<Pair<List<ItemStack>,ItemStack>> allItems = MiscUtils.getAllItems(player);
+            List<Pair<List<ItemStack>,ItemStack>> allItems = ArcanaUtils.getAllItems(player);
             PlayerInventory playerInv = player.getInventory();
             boolean procdStone = false;
             

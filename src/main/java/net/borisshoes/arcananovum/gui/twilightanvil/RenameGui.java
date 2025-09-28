@@ -6,8 +6,8 @@ import eu.pb4.sgui.api.gui.AnvilInputGui;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.blocks.forge.TwilightAnvilBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
-import net.borisshoes.arcananovum.utils.MiscUtils;
-import net.borisshoes.arcananovum.utils.SoundUtils;
+import net.borisshoes.borislib.utils.MinecraftUtils;
+import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -128,7 +128,7 @@ public class RenameGui extends AnvilInputGui {
    
    @Override
    public void onClose(){
-      MiscUtils.returnItems(inv,player);
+      MinecraftUtils.returnItems(inv,player);
    }
    
    @Override

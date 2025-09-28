@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.utils;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.borislib.BorisLib;
+import net.borisshoes.borislib.timers.GenericTimer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 
@@ -57,7 +58,7 @@ public class DialogHelper {
          }
          if(curDelay != 0){
             int finalIndex = index;
-            ArcanaNovum.addTickTimerCallback(new GenericTimer(curDelay, () -> {
+            BorisLib.addTickTimerCallback(new GenericTimer(curDelay, () -> {
                for(ServerPlayerEntity player : players){
                   player.sendMessage(msg, false);
                   if(sounds && finalIndex < dialog.sounds().size()){
