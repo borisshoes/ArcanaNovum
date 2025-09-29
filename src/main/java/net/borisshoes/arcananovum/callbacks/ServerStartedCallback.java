@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.callbacks;
 
 import com.mojang.authlib.GameProfile;
 import net.borisshoes.arcananovum.ArcanaNovum;
+import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievement;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class ServerStartedCallback {
    
    public static void serverStarted(MinecraftServer server){
+      ArcanaRegistry.onServerStarted(server);
       getPlayerStats(server);
    }
    

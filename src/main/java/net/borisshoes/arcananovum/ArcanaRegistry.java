@@ -602,7 +602,7 @@ public class ArcanaRegistry {
       PolymerItemGroupUtils.registerPolymerItemGroup(Identifier.of(MOD_ID,"arcana_ingredients"), ARCANA_INGREDIENTS_GROUP);
    }
    
-   public static void onServerInitialize(MinecraftServer server){
+   public static void onServerStarted(MinecraftServer server){
       ARCANA_ITEMS.getEntrySet().forEach(entry -> entry.getValue().finalizePrefItem(server));
       TransmutationRecipes.initializeTransmutationRecipes(server);
    }

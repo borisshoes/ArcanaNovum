@@ -55,8 +55,7 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    //modImplementation include("maven.modrinth:boris-lib:${project.borislib_version}")
-    modImplementation include("com.github.borisshoes:borislib:-SNAPSHOT")
+    modImplementation include("maven.modrinth:boris-lib:${project.borislib_version}")
 	
 	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
 

@@ -28,5 +28,6 @@ public class VirtualInventoryGui<I extends Inventory> extends SimpleGui {
    public void onClose(){
       VIRTUAL_INVENTORY_GUIS.remove(this);
       super.onClose();
+      inventory.clear();
    }
 }
