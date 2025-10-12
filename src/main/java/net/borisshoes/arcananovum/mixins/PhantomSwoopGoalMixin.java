@@ -34,7 +34,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    PhantomEntity field_7333; // Outer class synthetic field
    
    @ModifyReturnValue(method = "shouldContinue", at = @At(value = "RETURN"))
-   private boolean arcananovum_shouldContinue(boolean original){
+   private boolean arcananovum$shouldContinue(boolean original){
       if(original && field_7333.getTarget() instanceof ServerPlayerEntity player){
          PlayerInventory inv = player.getInventory();
          for(int i=0; i<inv.size();i++){
@@ -62,7 +62,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    }
    
    @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/CatEntity;hiss()V"))
-   private void arcananovum_phantomScare(CallbackInfoReturnable<Boolean> cir, @Local CatEntity catEntity){
+   private void arcananovum$phantomScare(CallbackInfoReturnable<Boolean> cir, @Local CatEntity catEntity){
       if(catEntity.getWorld() instanceof ServerWorld serverWorld){
          for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(catEntity.getBlockPos(), 10.0))){
             ArcanaNovum.data(player).setResearchTask(ResearchTasks.CAT_SCARE, true);

@@ -3,43 +3,46 @@ package net.borisshoes.arcananovum.gui.altars;
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class StarpathAltarChartsGui extends SimpleGui {
    
    private final StarpathAltarBlockEntity blockEntity;
    private final SimpleGui returnGui;
-   private final Map<String, BlockPos> destinationMap;
-   private List<Pair<String, BlockPos>> destinations;
+   private List<StarpathAltarBlockEntity.TargetEntry> destinations;
    private DestinationSort sort = DestinationSort.ALPHABETICAL;
    private int page = 1;
+   private final boolean stargate;
    
    public StarpathAltarChartsGui(ServerPlayerEntity player, SimpleGui returnGui, StarpathAltarBlockEntity blockEntity){
       super(ScreenHandlerType.GENERIC_9X6, player, false);
       this.blockEntity = blockEntity;
       this.returnGui = returnGui;
-      this.destinationMap = blockEntity.getSavedTargets();
-      loadDestinations();
+      this.destinations = new ArrayList<>(blockEntity.getSavedTargets());
+      stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE.id) > 0;
       
       setTitle(Text.literal("Star Charts"));
    }
@@ -70,7 +73,7 @@ public class StarpathAltarChartsGui extends SimpleGui {
       }else if(index == 49){
          AtomicReference<BlockPos> newDest = new AtomicReference<>();
          StarpathTargetGui nameGui = new StarpathTargetGui(player,blockEntity,false,this,(obj) -> {
-            destinationMap.put((String) obj,newDest.get());
+            blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry((String) obj,player.getWorld().getRegistryKey().getValue().toString(),newDest.get().getX(),newDest.get().getY(),newDest.get().getZ()));
             buildGui();
          });
          
@@ -85,16 +88,17 @@ public class StarpathAltarChartsGui extends SimpleGui {
          if(type == ClickType.MOUSE_RIGHT){ // Rename
             StarpathTargetGui gui = new StarpathTargetGui(player,blockEntity,false,this,(obj) -> {
                String newName = (String) obj;
-               destinationMap.remove(destinations.get(ind).getLeft());
-               destinationMap.put(newName,destinations.get(ind).getRight());
+               StarpathAltarBlockEntity.TargetEntry toRemove = destinations.get(ind);
+               blockEntity.getSavedTargets().remove(toRemove);
+               blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry(newName,toRemove.dimension(),toRemove.x(),toRemove.y(),toRemove.z()));
                buildGui();
             });
             gui.open();
          }else if(type == ClickType.MOUSE_LEFT_SHIFT){ // Delete
-            blockEntity.getSavedTargets().remove(destinations.get(ind).getLeft());
+            blockEntity.getSavedTargets().remove(destinations.get(ind));
             buildGui();
          }else{ // Select
-            blockEntity.setTargetCoords(destinations.get(ind).getRight());
+            blockEntity.setTarget(destinations.get(ind));
             close();
          }
       }
@@ -102,20 +106,17 @@ public class StarpathAltarChartsGui extends SimpleGui {
    }
    
    public void loadDestinations(){
-      destinations = new ArrayList<>();
-      for(Map.Entry<String, BlockPos> entry : destinationMap.entrySet()){
-         destinations.add(new Pair<>(entry.getKey(),entry.getValue()));
-      }
+      destinations = new ArrayList<>(blockEntity.getSavedTargets());
       
       switch(sort){
          case CLOSEST -> {
-            destinations.sort(Comparator.comparingInt(pair -> (int) pair.getRight().getSquaredDistance(blockEntity.getPos())));
+            destinations.sort(Comparator.comparingInt(pair -> (int) pair.getBlockCoords().getSquaredDistance(blockEntity.getPos())));
          }
          case FURTHEST -> {
-            destinations.sort(Comparator.comparingInt(pair -> (int) -pair.getRight().getSquaredDistance(blockEntity.getPos())));
+            destinations.sort(Comparator.comparingInt(pair -> (int) -pair.getBlockCoords().getSquaredDistance(blockEntity.getPos())));
          }
          case ALPHABETICAL -> {
-            destinations.sort(Comparator.comparing(Pair::getLeft));
+            destinations.sort(Comparator.comparing(StarpathAltarBlockEntity.TargetEntry::name));
          }
       }
    }
@@ -172,8 +173,15 @@ public class StarpathAltarChartsGui extends SimpleGui {
          for(int j = 0; j < 7; j++){
             if(k < destinations.size()){
                GuiElementBuilder destItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
-               destItem.setName(Text.literal(destinations.get(k).getLeft()).formatted(Formatting.GOLD,Formatting.BOLD));
-               destItem.addLoreLine(TextUtils.removeItalics(Text.literal(destinations.get(k).getRight().toShortString()).formatted(Formatting.YELLOW)));
+               destItem.setName(Text.literal(destinations.get(k).name()).formatted(Formatting.GOLD,Formatting.BOLD));
+               destItem.addLoreLine(TextUtils.removeItalics(Text.literal(destinations.get(k).getBlockCoords().toShortString()).formatted(Formatting.YELLOW)));
+               if(stargate){
+                  RegistryKey<World> dim = RegistryKey.of(RegistryKeys.WORLD, Identifier.of(destinations.get(k).dimension()));
+                  if(dim == null){
+                     dim = blockEntity.getWorld().getRegistryKey();
+                  }
+                  destItem.addLoreLine(Text.literal("Dimension: ").formatted(Formatting.YELLOW).append(ArcanaUtils.getFormattedDimName(dim)));
+               }
                destItem.addLoreLine(TextUtils.removeItalics(Text.literal("")));
                destItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                      .append(Text.literal("Click").formatted(Formatting.AQUA))

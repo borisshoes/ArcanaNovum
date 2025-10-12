@@ -1,6 +1,7 @@
 package net.borisshoes.arcananovum.blocks.altars;
 
 import net.borisshoes.arcananovum.ArcanaRegistry;
+import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaBlock;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -8,17 +9,21 @@ import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockEntity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerBlockItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
+import net.borisshoes.arcananovum.items.Waystone;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
+import net.borisshoes.arcananovum.recipes.arcana.WaystoneIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -48,6 +53,7 @@ import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -70,7 +76,7 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       block = new StarpathAltarBlock(AbstractBlock.Settings.create().mapColor(MapColor.BLACK).strength(3.0f,1200.0f).luminance(state -> 6).sounds(BlockSoundGroup.SCULK_CATALYST));
       item = new StarpathAltarItem(this.block);
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.WHITE);
-      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.USE_ENDER_EYE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN};
+      researchTasks = new RegistryKey[]{ResearchTasks.OBTAIN_STARDUST,ResearchTasks.USE_ENDER_EYE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.ADVANCEMENT_OBTAIN_CRYING_OBSIDIAN,ResearchTasks.UNLOCK_WAYSTONE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -147,17 +153,18 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    
    @Override
 	protected ArcanaRecipe makeRecipe(){
-      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_EYE,16);
+      ArcanaIngredient a = new ArcanaIngredient(Items.ENDER_EYE,24);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,16);
       ArcanaIngredient c = new ArcanaIngredient(Items.CRYING_OBSIDIAN,16);
       ArcanaIngredient h = new ArcanaIngredient(ArcanaRegistry.STARDUST,8);
       ArcanaIngredient m = new ArcanaIngredient(Items.NETHER_STAR,1);
+      ArcanaIngredient o = new WaystoneIngredient(true);
       
       ArcanaIngredient[][] ingredients = {
             {a,b,c,b,a},
-            {b,a,h,a,b},
-            {c,h,m,h,c},
-            {b,a,h,a,b},
+            {b,h,o,h,b},
+            {c,o,m,o,c},
+            {b,h,o,h,b},
             {a,b,c,b,a}};
       return new ArcanaRecipe(ingredients,new ForgeRequirement());
    }
@@ -165,9 +172,10 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
    @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("   Starpath Altar").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe leylines flow like rivers through the world, yet they are indistinct and would be impossible to navigate. However, the stars above pull on them like the moon on the tide. By charting the stars,").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Starpath Altar").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nI should be able to send teleportation energy through the leylines along a charted course to exactly where I want to go in the world.\nIt should even be capable of taking a group of creatures all at once to the same destination!\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("   Starpath Altar").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nUnfortunately, an Eye of Ender only contains so much teleportation energy, so the farther I wish to travel, the more Eyes I need to provide to have enough energy to create a continuous pathway along the leylines.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Starpath Altar").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nThe leylines flow like rivers through the world, yet they are almost indistinct and would be impossible to navigate. However, the stars above pull on them like the moon on the tide. By charting the stars, and using ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Starpath Altar").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nWaystones to mark them, I should be able to send teleportation energy through the leylines along a charted course to exactly where I want to go in the world. It should even be capable of taking a group of creatures").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Starpath Altar").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nall at once to the same destination!\n\nUnfortunately, an Eye of Ender only contains so much teleportation energy, so the farther I wish to travel, the more Eyes I need to provide to have ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("   Starpath Altar").formatted(Formatting.BOLD).withColor(ArcanaColors.STARLIGHT_FORGE_COLOR),Text.literal("\nenough energy to create a continuous pathway along the leylines.\n\nI can Sneak Use a Waystone to encode a location into the Altar, or enter one manually.").formatted(Formatting.BLACK)));
       return list;
    }
    
@@ -255,6 +263,22 @@ public class StarpathAltar extends ArcanaBlock implements MultiblockCore {
       private void tryActivate(BlockState state, World world, BlockPos pos){
          BlockEntity entity = world.getBlockEntity(pos);
          if(entity instanceof StarpathAltarBlockEntity altar && world instanceof ServerWorld serverWorld){
+            boolean stargate = ArcanaAugments.getAugmentFromMap(altar.getAugments(),ArcanaAugments.STARGATE.id) > 0;
+            Optional<ItemEntity> waystone = serverWorld.getEntitiesByClass(ItemEntity.class,new Box(pos.up()), e ->
+                  e.getStack().isOf(ArcanaRegistry.WAYSTONE.getItem())
+                        && Waystone.getTarget(e.getStack()) != null
+                        && (stargate || Waystone.getTarget(e.getStack()).world().getValue().equals(world.getRegistryKey().getValue()))).stream().findAny();
+            if(waystone.isPresent()){
+               Waystone.WaystoneTarget target = Waystone.getTarget(waystone.get().getStack());
+               altar.setTarget(new StarpathAltarBlockEntity.TargetEntry(
+                     ArcanaUtils.getFormattedDimName(target.world()).getString()+" "+BlockPos.ofFloored(target.position()).toShortString(),
+                     target.world().getValue().toString(),
+                     (int) target.position().getX(),
+                     (int) target.position().getY(),
+                     (int) target.position().getZ()
+               ));
+            }
+            
             boolean paid = MinecraftUtils.removeItemEntities(serverWorld,new Box(pos.up()),(itemStack) -> itemStack.isOf(COST),altar.calculateCost());
             if(paid) altar.startTeleport(null);
          }

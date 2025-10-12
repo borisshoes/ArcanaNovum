@@ -17,6 +17,7 @@ import net.borisshoes.arcananovum.recipes.arcana.SoulstoneIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.Block;
@@ -136,7 +137,7 @@ public class EssenceEgg extends ArcanaItem {
    
    public static void setType(ItemStack stack, String entityId){
       putProperty(stack,Soulstone.TYPE_TAG,entityId);
-      ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,ArcanaNovum.SERVER);
+      ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack, BorisLib.SERVER);
    }
    
    public static String getType(ItemStack stack){
@@ -154,7 +155,7 @@ public class EssenceEgg extends ArcanaItem {
          stack.decrement(stack.getCount());
       }else{
          putProperty(stack,USES_TAG,uses);
-         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,ArcanaNovum.SERVER);
+         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,BorisLib.SERVER);
       }
    }
    
@@ -165,7 +166,7 @@ public class EssenceEgg extends ArcanaItem {
          stack.decrement(stack.getCount());
       }else{
          putProperty(stack,USES_TAG,newUses);
-         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,ArcanaNovum.SERVER);
+         ArcanaRegistry.ESSENCE_EGG.buildItemLore(stack,BorisLib.SERVER);
       }
    }
    

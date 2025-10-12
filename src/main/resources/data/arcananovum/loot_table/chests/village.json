@@ -108,6 +108,23 @@
               }
             }
           ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "arcananovum:waystone",
+          "weight": 2,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 0,
+                "max": 2
+              }
+            },
+            {
+              "function": "arcananovum:found_arcana_item"
+            }
+          ]
         }
       ]
     },

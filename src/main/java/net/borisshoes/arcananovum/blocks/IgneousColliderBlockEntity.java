@@ -46,18 +46,18 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    private int cooldown;
    private String crafterId;
    private String uuid;
-   private boolean synthetic;
+   private int origin;
    private String customName;
    
    public IgneousColliderBlockEntity(BlockPos pos, BlockState state){
       super(ArcanaRegistry.IGNEOUS_COLLIDER_BLOCK_ENTITY, pos, state);
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
-      this.synthetic = synthetic;
+      this.origin = origin;
       this.customName = customName == null ? "" : customName;
       int injectionLvl = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.MAGMATIC_INJECTION.id);
       this.cooldown = 20 * (IgneousCollider.COOLDOWN-1-2*injectionLvl);
@@ -208,8 +208,8 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
       return uuid;
    }
    
-   public boolean isSynthetic(){
-      return synthetic;
+   public int getOrigin(){
+      return origin;
    }
    
    public String getCustomArcanaName(){
@@ -223,10 +223,10 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    @Override
    public void readData(ReadView view){
       super.readData(view);
-      this.uuid = view.getString("arcanaUuid", "");
-      this.crafterId = view.getString("crafterId", "");
-      this.customName = view.getString("customName", "");
-      this.synthetic = view.getBoolean("synthetic", false);
+      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getInt("cooldown", 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
@@ -237,11 +237,11 @@ public class IgneousColliderBlockEntity extends BlockEntity implements PolymerOb
    @Override
    protected void writeData(WriteView view){
       super.writeData(view);
-      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
-      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
-      view.putString("customName",this.customName == null ? "" : this.customName);
-      view.putBoolean("synthetic",this.synthetic);
+      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
       view.putInt("cooldown",this.cooldown);
    }
 }

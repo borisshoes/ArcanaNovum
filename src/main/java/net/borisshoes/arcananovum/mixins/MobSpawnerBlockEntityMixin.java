@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MobSpawnerBlockEntityMixin {
 
    @Inject(method="serverTick", at = @At(value="HEAD"), cancellable = true)
-   private static void arcananovum_infuseSpawner(World world, BlockPos pos, BlockState state, MobSpawnerBlockEntity blockEntity, CallbackInfo ci){
+   private static void arcananovum$infuseSpawner(World world, BlockPos pos, BlockState state, MobSpawnerBlockEntity blockEntity, CallbackInfo ci){
       try{
          BlockPos infuserPos = blockEntity.getPos().add(0,-2,0);
          

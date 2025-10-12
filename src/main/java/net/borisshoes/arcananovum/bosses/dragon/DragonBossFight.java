@@ -562,7 +562,7 @@ public class DragonBossFight {
          // Give reward
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
-            ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),false,player.getServer());
+            ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),0,player.getServer());
             wings.addEnchantment(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR),1);
             ArcanaNovum.data(player).addCraftedSilent(wings);
             BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(wings,player,0));

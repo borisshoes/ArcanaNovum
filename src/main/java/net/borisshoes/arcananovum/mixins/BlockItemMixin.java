@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.GreavesOfGaialtus;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
@@ -25,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class BlockItemMixin {
 
    @Inject(method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;decrementUnlessCreative(ILnet/minecraft/entity/LivingEntity;)V", shift = At.Shift.AFTER))
-   private void arcananovum_greavesHandRefill(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> cir, @Local ItemStack stack){
+   private void arcananovum$greavesHandRefill(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> cir, @Local ItemStack stack){
       int count = stack.getCount();
       int lowerThresh = (int) (stack.getMaxCount() * 0.33);
       int upperThresh = (int) (stack.getMaxCount() * 0.67);
@@ -37,7 +38,7 @@ public class BlockItemMixin {
       if(!refillStack.isEmpty()){
          int amtToRefill = Math.min(upperThresh - count, refillStack.getCount());
          player.getInventory().insertStack(refillStack.split(amtToRefill));
-         greaves.buildItemLore(pants, ArcanaNovum.SERVER);
+         greaves.buildItemLore(pants, BorisLib.SERVER);
          
          if(stack.isOf(Items.DIAMOND_BLOCK)){
             ArcanaAchievements.grant(player,ArcanaAchievements.MINERS_WALLET);

@@ -336,6 +336,8 @@ public class TransmutationRecipes {
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Sculk Shard Infusion",new ItemStack(Items.SCULK,4),new ItemStack(Items.ECHO_SHARD,1),new ItemStack(Items.AMETHYST_SHARD,36),new ItemStack(Items.DIAMOND,12)));
       
+      TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Lodestone Refinement",new ItemStack(Items.LODESTONE,1),ArcanaRegistry.WAYSTONE.getPrefItemNoLore(),new ItemStack(Items.AMETHYST_SHARD,16),new ItemStack(Items.REDSTONE,42)));
+      
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Divine Paper Infusion",new ItemStack(ArcanaRegistry.SOVEREIGN_ARCANE_PAPER,2),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,1),ArcanaRegistry.SOVEREIGN_CATALYST.getPrefItemNoLore(),new ItemStack(Items.DIAMOND,16)));
       
       TRANSMUTATION_RECIPES.add(new InfusionTransmutationRecipe("Nautilus Synthesis",new ItemStack(Items.TURTLE_SCUTE,4),new ItemStack(Items.NAUTILUS_SHELL,1),new ItemStack(Items.PRISMARINE_CRYSTALS,16),new ItemStack(Items.QUARTZ,16)));

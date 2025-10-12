@@ -1,11 +1,11 @@
 package net.borisshoes.arcananovum.mixins;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
@@ -41,7 +41,7 @@ public abstract class PlayerInventoryMixin {
    private final Map<Integer, ItemStack> anchoredItems = new HashMap<>();
    
    @Inject(method = "dropAll", at = @At("HEAD"))
-   private void arcananovum_fateAnchorSave(CallbackInfo ci){
+   private void arcananovum$fateAnchorSave(CallbackInfo ci){
       PlayerInventory inv = (PlayerInventory) (Object) this;
       for (int i = 0; i < inv.size(); i++) {
          ItemStack itemStack = (ItemStack)inv.getStack(i);
@@ -53,7 +53,7 @@ public abstract class PlayerInventoryMixin {
    }
    
    @Inject(method = "dropAll", at = @At("RETURN"))
-   private void arcananovum_fateAnchorRestore(CallbackInfo ci){
+   private void arcananovum$fateAnchorRestore(CallbackInfo ci){
       PlayerInventory inv = (PlayerInventory) (Object) this;
       for(Map.Entry<Integer, ItemStack> entry : anchoredItems.entrySet()){
          inv.setStack(entry.getKey(),entry.getValue());
@@ -63,7 +63,7 @@ public abstract class PlayerInventoryMixin {
    
    // Charm of Cinders Auto Smelt
    @Inject(method = "insertStack(ILnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_onPickup(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$onPickup(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir){
       try{
          PlayerInventory playerInv = (PlayerInventory) (Object) this;
          List<Pair<List<ItemStack>,ItemStack>> allItems = ArcanaUtils.getAllItems(playerInv.player);
@@ -96,7 +96,7 @@ public abstract class PlayerInventoryMixin {
             }
             
             if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-               belt.buildItemLore(carrier, ArcanaNovum.SERVER);
+               belt.buildItemLore(carrier, BorisLib.SERVER);
             }
          }
          

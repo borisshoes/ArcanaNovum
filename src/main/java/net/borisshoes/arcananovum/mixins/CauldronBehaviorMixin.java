@@ -35,7 +35,7 @@ import java.util.Map;
 public interface CauldronBehaviorMixin {
    
    @Inject(method = "registerBehavior", at = @At("TAIL"))
-   private static void arcananovum_cauldronInteractions(CallbackInfo ci, @Local(ordinal = 0) Map<Item, CauldronBehavior> emptyCauldronMap, @Local(ordinal = 1) Map<Item, CauldronBehavior> waterCauldronMap, @Local(ordinal = 2) Map<Item, CauldronBehavior> lavaCauldronMap, @Local(ordinal = 3) Map<Item, CauldronBehavior> snowCauldronMap){
+   private static void arcananovum$cauldronInteractions(CallbackInfo ci, @Local(ordinal = 0) Map<Item, CauldronBehavior> emptyCauldronMap, @Local(ordinal = 1) Map<Item, CauldronBehavior> waterCauldronMap, @Local(ordinal = 2) Map<Item, CauldronBehavior> lavaCauldronMap, @Local(ordinal = 3) Map<Item, CauldronBehavior> snowCauldronMap){
       
       // Dyed Item Washing
       final CauldronBehavior CLEAN_DYEABLE_ITEM = (state, world, pos, player, hand, stack) -> {

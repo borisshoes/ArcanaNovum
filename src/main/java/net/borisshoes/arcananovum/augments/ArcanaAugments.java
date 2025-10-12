@@ -3,11 +3,11 @@ package net.borisshoes.arcananovum.augments;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.ItemStack;
@@ -763,6 +763,11 @@ public class ArcanaAugments {
          new String[]{"Target locations can be saved and loaded"," using the Target Input menu buttons"},
          new ArcanaRarity[]{EMPOWERED}
    ));
+   public static final ArcanaAugment STARGATE = ArcanaAugments.register(
+         new ArcanaAugment("Stargate", "stargate", new ItemStack(Items.END_PORTAL_FRAME), ArcanaRegistry.STARPATH_ALTAR,
+         new String[]{"The Altar can teleport to other dimensions"," when using a Waystone for targeting"},
+         new ArcanaRarity[]{DIVINE}
+   ));
    
    // Starlight Forge
    public static final ArcanaAugment RESOURCEFUL = ArcanaAugments.register(
@@ -1153,7 +1158,7 @@ public class ArcanaAugments {
       });
       
       ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG,augsTag);
-      arcanaItem.buildItemLore(stack,ArcanaNovum.SERVER);
+      arcanaItem.buildItemLore(stack, BorisLib.SERVER);
    }
    
    public static boolean isIncompatible(ItemStack item, String id){
@@ -1218,7 +1223,7 @@ public class ArcanaAugments {
       if(isIncompatible(stack,id)) return false;
       if(curLevel >= level) return false;
       
-      NbtCompound augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);;
+      NbtCompound augmentTag = ArcanaItem.getCompoundProperty(stack, ArcanaItem.AUGMENTS_TAG);
       augmentTag.putInt(id,level);
       ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG,augmentTag);
       
@@ -1237,7 +1242,7 @@ public class ArcanaAugments {
       }
       
       arcanaItem.onAugment(stack, augment, level);
-      arcanaItem.buildItemLore(stack, ArcanaNovum.SERVER);
+      arcanaItem.buildItemLore(stack, BorisLib.SERVER);
       return true;
    }
    

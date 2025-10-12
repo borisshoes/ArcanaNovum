@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
@@ -120,9 +121,9 @@ public class ContainmentCirclet extends ArcanaItem {
          int hp = (int) getFloatProperty(itemStack,HP_TAG);
          int maxHp = (int) getFloatProperty(itemStack,MAX_HP_TAG);
          
-         if(ArcanaNovum.SERVER != null){
+         if(BorisLib.SERVER != null){
             try (ErrorReporter.Logging logging = new ErrorReporter.Logging(LogUtils.getLogger())){
-               ReadView readView = NbtReadView.create(logging, ArcanaNovum.SERVER.getRegistryManager(), contents);
+               ReadView readView = NbtReadView.create(logging, BorisLib.SERVER.getRegistryManager(), contents);
                Optional<EntityType<?>> entity = EntityType.fromData(readView);
                if(!contents.isEmpty() && entity.isPresent()){
                   String entityTypeName = entity.get().getName().getString();

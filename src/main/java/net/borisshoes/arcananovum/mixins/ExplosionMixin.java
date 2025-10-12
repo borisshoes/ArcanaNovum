@@ -27,7 +27,7 @@ public class ExplosionMixin {
    private DamageSource damageSource;
    
    @ModifyReturnValue(method = "shouldDestroyBlocks", at = @At("RETURN"))
-   private boolean arcananovum_detArrowDestroyBlocks(boolean original){
+   private boolean arcananovum$detArrowDestroyBlocks(boolean original){
       if(damageSource.isOf(ArcanaDamageTypes.DETONATION_DAMAGE)){
          return false;
       }else{
@@ -36,7 +36,7 @@ public class ExplosionMixin {
    }
    
    @ModifyExpressionValue(method = "damageEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/explosion/ExplosionBehavior;calculateDamage(Lnet/minecraft/world/explosion/Explosion;Lnet/minecraft/entity/Entity;F)F"))
-   private float arcananovum_detArrowDamage(float original, @Local Entity entity){
+   private float arcananovum$detArrowDamage(float original, @Local Entity entity){
       if(damageSource.isOf(ArcanaDamageTypes.DETONATION_DAMAGE)){
          if(entity instanceof PlayerEntity){
             return original / 5;
@@ -48,7 +48,7 @@ public class ExplosionMixin {
    }
    
    @Inject(method = "damageEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;addVelocity(Lnet/minecraft/util/math/Vec3d;)V"))
-   private void arcananovum_detArrowAchievement(CallbackInfo ci, @Local Entity entity){
+   private void arcananovum$detArrowAchievement(CallbackInfo ci, @Local Entity entity){
       if(damageSource.isOf(ArcanaDamageTypes.DETONATION_DAMAGE) && entity instanceof ServerPlayerEntity hitPlayer){
          Entity attacker = damageSource.getAttacker();
          if(attacker != null && hitPlayer.getUuid().equals(attacker.getUuid()) && hitPlayer.getHealth() > 0f && hitPlayer.getHealth() < 2f)

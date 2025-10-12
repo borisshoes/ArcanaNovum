@@ -45,8 +45,8 @@ public abstract class ArcanaPolymerBlockEntity extends BlockWithEntity implement
       
       TreeMap<ArcanaAugment,Integer> augments = ArcanaAugments.getAugmentsOnItem(stack);
       String crafterId = arcanaItem.getCrafter(stack);
-      String uuid = arcanaItem.getUUID(stack);
-      boolean synthetic = arcanaItem.isSynthetic(stack);
+      String uuid = ArcanaItem.getUUID(stack);
+      int origin = arcanaItem.getOrigin(stack);
       String customName = null;
       if(stack.contains(DataComponentTypes.CUSTOM_NAME)){
          customName = stack.get(DataComponentTypes.CUSTOM_NAME).getString();
@@ -55,7 +55,7 @@ public abstract class ArcanaPolymerBlockEntity extends BlockWithEntity implement
       if(uuid == null || uuid.isEmpty()){
          uuid = UUID.randomUUID().toString();
       }
-      arcanaBlock.initialize(augments,crafterId,uuid,synthetic,customName);
+      arcanaBlock.initialize(augments,crafterId,uuid,origin,customName);
    }
    
    @Override

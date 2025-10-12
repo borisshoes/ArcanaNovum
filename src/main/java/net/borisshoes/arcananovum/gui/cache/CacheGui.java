@@ -125,7 +125,7 @@ public class CacheGui extends SimpleGui {
                CompendiumEntry entry = pageItems.get(k);
                if(entry instanceof ArcanaItemCompendiumEntry arcanaEntry){
                   ArcanaItem item = arcanaEntry.getArcanaItem();
-                  inv.setStack(k,item.addCrafter(item.getNewItem(),player.getUuidAsString(),true,player.getServer()));
+                  inv.setStack(k,item.addCrafter(item.getNewItem(),player.getUuidAsString(),1,player.getServer()));
                }else if(entry instanceof IngredientCompendiumEntry ingredientEntry){
                   inv.setStack(k,new ItemStack(ingredientEntry.getDisplayStack().getItem(),ingredientEntry.getDisplayStack().getItem().getMaxCount()));
                }

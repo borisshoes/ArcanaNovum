@@ -17,7 +17,7 @@ public class PhantomMoveControlMixin {
    private float targetSpeed;
    
    @Inject(method = "tick", at=@At("HEAD"), cancellable = true)
-   private void arcananovum_ensnarementMobPhantom(CallbackInfo ci){
+   private void arcananovum$ensnarementMobPhantom(CallbackInfo ci){
       PhantomEntity.PhantomMoveControl moveControl = (PhantomEntity.PhantomMoveControl)(Object)this;
       MobEntity entity = moveControl.entity;
       

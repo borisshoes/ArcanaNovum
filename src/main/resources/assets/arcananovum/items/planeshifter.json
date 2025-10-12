@@ -34,7 +34,7 @@
         ],
         "fallback": {
             "type": "minecraft:model",
-            "model": "arcananovum:item/planeshifter_none"
+            "model": "arcananovum:item/planeshifter_unknown"
         }
     },
     "hand_animation_on_swap": false

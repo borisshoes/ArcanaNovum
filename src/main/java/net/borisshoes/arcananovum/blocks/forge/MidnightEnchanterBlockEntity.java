@@ -29,7 +29,7 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
-   private boolean synthetic;
+   private int origin;
    private String customName;
    private final Multiblock multiblock;
    private boolean assembled;
@@ -41,11 +41,11 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       this.multiblock = ((MultiblockCore) ArcanaRegistry.MIDNIGHT_ENCHANTER).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
-      this.synthetic = synthetic;
+      this.origin = origin;
       this.customName = customName == null ? "" : customName;
    }
    
@@ -116,8 +116,8 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
       return uuid;
    }
    
-   public boolean isSynthetic(){
-      return synthetic;
+   public int getOrigin(){
+      return origin;
    }
    
    public String getCustomArcanaName(){
@@ -131,10 +131,10 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    @Override
    public void readData(ReadView view){
       super.readData(view);
-      this.uuid = view.getString("arcanaUuid", "");
-      this.crafterId = view.getString("crafterId", "");
-      this.customName = view.getString("customName", "");
-      this.synthetic = view.getBoolean("synthetic", false);
+      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
@@ -144,10 +144,10 @@ public class MidnightEnchanterBlockEntity extends BlockEntity implements Polymer
    @Override
    protected void writeData(WriteView view){
       super.writeData(view);
-      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
-      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
-      view.putString("customName",this.customName == null ? "" : this.customName);
-      view.putBoolean("synthetic",this.synthetic);
+      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
    }
 }

@@ -56,6 +56,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    
    private long chunkTicketExpiryTicks = 0L;
    private float damage;
+   private int slot = -1;
    private ArrayList<Vec3d> oldPos = new ArrayList<>();
    
    public SpearOfTenbrousEntity(EntityType<? extends SpearOfTenbrousEntity> entityType, World world) {
@@ -80,12 +81,22 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    protected void writeCustomData(WriteView view){
       super.writeCustomData(view);
       view.putFloat("spearDamage",damage);
+      view.putInt("prefSlot",slot);
    }
    
    @Override
    protected void readCustomData(ReadView view){
       super.readCustomData(view);
       this.damage = view.getFloat("spearDamage", 0.0f);
+      this.slot = view.getInt("prefSlot",-1);
+   }
+   
+   public int getSlot(){
+      return slot;
+   }
+   
+   public void setSlot(int slot){
+      this.slot = slot;
    }
    
    @Override
@@ -234,7 +245,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       super.remove(reason);
       if(this.getOwner() != null && this.getOwner() instanceof ServerPlayerEntity player && getWorld() instanceof ServerWorld serverWorld){
          int cooldownTime = 20 * (9 - 2*Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.UNENDING_HATRED)));
-         if(!player.isInCreativeMode()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(stack,player,0)); // TODO, pref slot
+         if(!player.isInCreativeMode()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(stack,player,0, slot));
          player.getItemCooldownManager().set(stack,cooldownTime);
          
          this.playSound(SoundEvents.ENTITY_PLAYER_TELEPORT, 1.0F, 1.0F);

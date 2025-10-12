@@ -472,5 +472,7 @@
   "text.arcananovum.materials_copy_message": "Click to copy the materials list",
   "tag.item.arcananovum.fletchery_potion_items": "Radiant Fletchery Potion Items",
   "tag.item.arcananovum.runic_arrows": "Runic Arrows",
-  "achievement.arcananovum.name.air_traffic_control": "Air Traffic Control"
+  "achievement.arcananovum.name.air_traffic_control": "Air Traffic Control",
+  "item.arcananovum.waystone": "Waystone",
+  "augment.arcananovum.name.stargate": "Stargate"
 }

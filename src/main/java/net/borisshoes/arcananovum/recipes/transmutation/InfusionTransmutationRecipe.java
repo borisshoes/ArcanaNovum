@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.entity.ItemEntity;
@@ -33,9 +34,9 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       int iterations = positiveInput.getCount() / getInput().getCount();
       for(int i = 0; i < iterations; i++){
          ItemStack outputStack = output.copy();
-         if(ArcanaItemUtils.isArcane(positiveInput) && ArcanaItemUtils.isArcane(outputStack)){
+         if(ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),false,player.getServer());
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),0,player.getServer());
          }
          returnItems.add(outputStack);
       }
@@ -72,10 +73,9 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
       
       for(int i = 0; i < iterations; i++){
          ItemStack outputStack = output.copy();
-         if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(outputStack)){
-            ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
+         if(ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),false,ArcanaNovum.SERVER);
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player == null ? null : player.getUuidAsString(),0, BorisLib.SERVER);
          }
          
          outputs.add(new Pair<>(outputStack,outputPos));

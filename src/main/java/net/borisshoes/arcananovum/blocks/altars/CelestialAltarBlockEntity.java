@@ -47,7 +47,7 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
-   private boolean synthetic;
+   private int origin;
    private String customName;
    private int cooldown;
    private int mode = 0; // 0 - time, 1 - phase
@@ -60,11 +60,11 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       this.multiblock = ((MultiblockCore) ArcanaRegistry.CELESTIAL_ALTAR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
-      this.synthetic = synthetic;
+      this.origin = origin;
       this.customName = customName == null ? "" : customName;
       this.mode = 0;
       this.phase = 0;
@@ -219,8 +219,8 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
       return uuid;
    }
    
-   public boolean isSynthetic(){
-      return synthetic;
+   public int getOrigin(){
+      return origin;
    }
    
    public String getCustomArcanaName(){
@@ -235,10 +235,10 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    @Override
    public void readData(ReadView view){
       super.readData(view);
-      this.uuid = view.getString("arcanaUuid", "");
-      this.crafterId = view.getString("crafterId", "");
-      this.customName = view.getString("customName", "");
-      this.synthetic = view.getBoolean("synthetic", false);
+      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getInt("cooldown", 0);
       this.mode = view.getInt("mode", 0);
       this.phase = view.getInt("phase", 0);
@@ -251,11 +251,11 @@ public class CelestialAltarBlockEntity extends BlockEntity implements PolymerObj
    @Override
    protected void writeData(WriteView view){
       super.writeData(view);
-      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
-      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
-      view.putString("customName",this.customName == null ? "" : this.customName);
-      view.putBoolean("synthetic",this.synthetic);
+      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
       view.putInt("cooldown",this.cooldown);
       view.putInt("mode",this.mode);
       view.putInt("phase",this.phase);

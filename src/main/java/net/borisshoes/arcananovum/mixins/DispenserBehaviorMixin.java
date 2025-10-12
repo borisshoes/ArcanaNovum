@@ -1,12 +1,12 @@
 package net.borisshoes.arcananovum.mixins;
 
 import com.mojang.logging.LogUtils;
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.dispenser.DispenserBehavior;
@@ -51,7 +51,7 @@ import java.util.Optional;
 public interface DispenserBehaviorMixin {
    
    @Inject(method = "registerDefaults", at = @At("TAIL"))
-   private static void arcananovum_dispenserInteractions(CallbackInfo ci){
+   private static void arcananovum$dispenserInteractions(CallbackInfo ci){
       
       DispenserBlock.registerBehavior(ArcanaRegistry.AQUATIC_EVERSOURCE.getItem(),
             new FallibleItemDispenserBehavior() {
@@ -352,7 +352,7 @@ public interface DispenserBehaviorMixin {
                            this.setSuccess(false);
                            return stack;
                         }
-                        NbtCompound contentData = be.createNbtWithIdentifyingData(ArcanaNovum.SERVER.getRegistryManager());
+                        NbtCompound contentData = be.createNbtWithIdentifyingData(BorisLib.SERVER.getRegistryManager());
                         ArcanaItem.putProperty(stack,ChestTranslocator.CONTENTS_TAG,contentData);
                         ArcanaItem.putProperty(stack,ChestTranslocator.STATE_TAG, NbtHelper.fromBlockState(state));
                         if(be instanceof Clearable clearable) clearable.clear();

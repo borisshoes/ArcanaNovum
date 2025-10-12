@@ -23,6 +23,7 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -192,7 +193,7 @@ public class LevitationHarness extends EnergyItem {
       int souls = getIntProperty(stack,SOULS_TAG);
       int glowstone = getIntProperty(stack,GLOWSTONE_TAG) / 16;
       setEnergy(stack,60*Math.min(souls,glowstone));
-      buildItemLore(stack,ArcanaNovum.SERVER);
+      buildItemLore(stack, BorisLib.SERVER);
    }
    
    public int getGlow(ItemStack stack){
@@ -208,7 +209,7 @@ public class LevitationHarness extends EnergyItem {
          putProperty(stack,STONE_DATA_TAG,new NbtCompound());
          putProperty(stack,SOULS_TAG,-1);
       }else{
-         putProperty(stack,STONE_DATA_TAG,ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stone).getOrThrow());
+         putProperty(stack,STONE_DATA_TAG,ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,BorisLib.SERVER.getRegistryManager()),stone).getOrThrow());
          putProperty(stack,SOULS_TAG,Soulstone.getSouls(stone));
       }
    }
@@ -293,7 +294,7 @@ public class LevitationHarness extends EnergyItem {
       if(ArcanaItemUtils.identifyItem(coreStack) instanceof ShulkerCore core){
          newArcanaItem = getNewItem();
          setStone(newArcanaItem,core.getStone(coreStack));
-         buildItemLore(newArcanaItem,ArcanaNovum.SERVER);
+         buildItemLore(newArcanaItem,BorisLib.SERVER);
          
          ArcanaAugments.copyAugment(coreStack,newArcanaItem,ArcanaAugments.SHULKER_RECYCLER.id,ArcanaAugments.HARNESS_RECYCLER.id);
       }

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public class PhantomSpawnerMixin {
    
    @ModifyExpressionValue(method="spawn",at=@At(value="INVOKE",target="Lnet/minecraft/server/network/ServerPlayerEntity;isSpectator()Z"))
-   private boolean arcananovum_fuckPhantoms(boolean original, @Local ServerPlayerEntity player){
+   private boolean arcananovum$fuckPhantoms(boolean original, @Local ServerPlayerEntity player){
       if(original) return true;
       return !ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.FELIDAE_CHARM, ArcanaAugments.PANTHERA, 1).isEmpty();
    }

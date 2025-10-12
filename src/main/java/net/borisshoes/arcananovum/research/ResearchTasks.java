@@ -107,6 +107,7 @@ public class ResearchTasks {
    public static final RegistryKey<ResearchTask> UNLOCK_OVERFLOWING_QUIVER = of("unlock_overflowing_quiver");
    public static final RegistryKey<ResearchTask> UNLOCK_SPAWNER_HARNESS = of("unlock_spawner_harness");
    public static final RegistryKey<ResearchTask> UNLOCK_TRANSMUTATION_ALTAR = of("unlock_transmutation_altar");
+   public static final RegistryKey<ResearchTask> UNLOCK_WAYSTONE = of("unlock_waystone");
    public static final RegistryKey<ResearchTask> ADVANCEMENT_ENCHANT_ITEM = of("advancement_enchant_item");
    public static final RegistryKey<ResearchTask> ADVANCEMENT_CHARGE_RESPAWN_ANCHOR = of("advancement_charge_respawn_anchor");
    public static final RegistryKey<ResearchTask> ADVANCEMENT_OBTAIN_ANCIENT_DEBRIS = of("advancement_obtain_ancient_debris");
@@ -1159,6 +1160,17 @@ public class ResearchTasks {
                   Text.literal("I think I need to learn how to transmute things...")
             },
             ArcanaRegistry.TRANSMUTATION_ALTAR.getPrefItemNoLore()
+      ));
+      
+      ResearchTasks.register(UNLOCK_WAYSTONE, new ArcanaItemResearchTask(
+            UNLOCK_WAYSTONE.getValue().getPath(), ArcanaRegistry.WAYSTONE,
+            Text.literal("Research the Waystone"),
+            new Text[]{
+                  Text.literal("I need a way to help mark a location."),
+                  Text.literal("Perhaps a stone can encode a static point?"),
+                  Text.literal("I think I've seen something like this before...")
+            },
+            ArcanaRegistry.WAYSTONE.getPrefItemNoLore()
       ));
       
       

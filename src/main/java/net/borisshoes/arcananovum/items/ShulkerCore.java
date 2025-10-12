@@ -21,6 +21,7 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -289,7 +290,7 @@ public class ShulkerCore extends EnergyItem {
             if(stoneData == null || stoneData.isEmpty()){
                stone = Soulstone.setType(ArcanaRegistry.SOULSTONE.getNewItem(), EntityType.SHULKER);
             }else{
-               stone = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stoneData).result().orElse(ItemStack.EMPTY);
+               stone = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, BorisLib.SERVER.getRegistryManager()),stoneData).result().orElse(ItemStack.EMPTY);
             }
             stone = Soulstone.setSouls(stone,getEnergy(stack));
             
@@ -306,7 +307,7 @@ public class ShulkerCore extends EnergyItem {
          setEnergy(stack,0);
       }else{
          putProperty(stack,STONE_TAG,true);
-         putProperty(stack,STONE_DATA_TAG,ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stone).getOrThrow());
+         putProperty(stack,STONE_DATA_TAG,ItemStack.CODEC.encodeStart(RegistryOps.of(NbtOps.INSTANCE,BorisLib.SERVER.getRegistryManager()),stone).getOrThrow());
          setEnergy(stack,Soulstone.getSouls(stone));
       }
    }
@@ -319,7 +320,7 @@ public class ShulkerCore extends EnergyItem {
       if(ArcanaItemUtils.identifyItem(soulstoneStack) instanceof Soulstone){
          newArcanaItem = getNewItem();
          setStone(newArcanaItem,soulstoneStack);
-         buildItemLore(newArcanaItem,ArcanaNovum.SERVER);
+         buildItemLore(newArcanaItem,BorisLib.SERVER);
       }
       return newArcanaItem;
    }

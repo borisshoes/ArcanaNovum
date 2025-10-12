@@ -19,7 +19,7 @@ import java.util.List;
 public class PolymerBlockUtilsMixin {
    
    @ModifyReturnValue(method = "shouldMineServerSide", at = @At("RETURN"))
-   private static boolean arcananovum_overrideServerMining(boolean original, ServerPlayerEntity player, BlockPos pos, BlockState state){
+   private static boolean arcananovum$overrideServerMining(boolean original, ServerPlayerEntity player, BlockPos pos, BlockState state){
       if(!original){
          List<ItemStack> stacks = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, ArcanaAugments.MARINERS_GRACE, 1);
          for(ItemStack stack : stacks){

@@ -40,26 +40,26 @@ import java.util.Map;
 public class ServerPlayerMixin {
    
    @Inject(method = "readEnderPearl", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;addEnderPearlTicket(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/ChunkPos;)J"))
-   private void arcananovum_readStasisPearl(ReadView view, CallbackInfo ci, @Local Entity entity){
+   private void arcananovum$readStasisPearl(ReadView view, CallbackInfo ci, @Local Entity entity){
       if(entity instanceof StasisPearlEntity stasisPearl){
          stasisPearl.resyncHolder();
       }
    }
    
    @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onKilledBy(Lnet/minecraft/entity/LivingEntity;)V"))
-   private void arcananovum_onEntityKilledOther(DamageSource damageSource, CallbackInfo ci){
+   private void arcananovum$onEntityKilledOther(DamageSource damageSource, CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       EntityKilledCallback.killedEntity(player.getWorld(),damageSource, damageSource.getAttacker(),player);
    }
    
    @Inject(method="onDeath",at=@At("HEAD"))
-   private void arcananovum_restoreOffhandOnDeath(CallbackInfo ci){
+   private void arcananovum$restoreOffhandOnDeath(CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       ArcanaNovum.data(player).restoreOffhand();
    }
    
    @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;increaseStat(Lnet/minecraft/util/Identifier;I)V", ordinal = 0))
-   private void arcananovum_swimStats(double deltaX, double deltaY, double deltaZ, CallbackInfo ci){
+   private void arcananovum$swimStats(double deltaX, double deltaY, double deltaZ, CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       boolean hasCetacea = ArcanaUtils.getArcanaItemsWithAug(player, ArcanaRegistry.CETACEA_CHARM, null, 0).stream().anyMatch(stack -> ArcanaItem.getBooleanProperty(stack,ArcanaItem.ACTIVE_TAG));
       if(hasCetacea){
@@ -73,7 +73,7 @@ public class ServerPlayerMixin {
    }
    
    @Inject(method="increaseTravelMotionStats", at = @At(value="INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;isSprinting()Z",shift = At.Shift.BEFORE))
-   private void arcananovum_onGroundMove(double dx, double dy, double dz, CallbackInfo ci){
+   private void arcananovum$onGroundMove(double dx, double dy, double dz, CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       ItemStack bootsItem = player.getEquippedStack(EquipmentSlot.FEET);
       if(ArcanaItemUtils.identifyItem(bootsItem) instanceof SojournerBoots boots){
@@ -85,7 +85,7 @@ public class ServerPlayerMixin {
    }
    
    @Inject(method = "tick", at = @At(value="INVOKE",target="Lnet/minecraft/server/network/ServerPlayerEntity;tickFallStartPos()V", shift = At.Shift.BEFORE))
-   private void arcananovum_ensnarementMovement(CallbackInfo ci){
+   private void arcananovum$ensnarementMovement(CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       if(player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          player.move(MovementType.PLAYER,player.getVelocity());
@@ -94,7 +94,7 @@ public class ServerPlayerMixin {
    }
    
    @Inject(method = "onStatusEffectApplied", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/criterion/EffectsChangedCriterion;trigger(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/entity/Entity;)V"))
-   private void arcananovum_effectApplied(StatusEffectInstance effect, Entity source, CallbackInfo ci){
+   private void arcananovum$effectApplied(StatusEffectInstance effect, Entity source, CallbackInfo ci){
       // Effect Research Task Check
       for(Map.Entry<RegistryKey<ResearchTask>, ResearchTask> entry : ResearchTasks.RESEARCH_TASKS.getEntrySet()){
          ResearchTask task = entry.getValue();
@@ -108,7 +108,7 @@ public class ServerPlayerMixin {
    }
    
    @Inject(method = "teleportTo", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;getLevelProperties()Lnet/minecraft/world/WorldProperties;"))
-   private void arcananovum_teleportDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir){
+   private void arcananovum$teleportDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       ArcanaNovum.data(player).setResearchTask(ResearchTasks.DIMENSION_TRAVEL, true);
    }

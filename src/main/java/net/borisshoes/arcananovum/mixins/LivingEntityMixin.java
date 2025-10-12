@@ -91,13 +91,13 @@ public abstract class LivingEntityMixin {
    @Shadow public abstract void enterCombat();
    
    @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;emitGameEvent(Lnet/minecraft/registry/entry/RegistryEntry;)V"))
-   private void arcananovum_onEntityKilledOther(DamageSource damageSource, CallbackInfo ci, @Local Entity attacker, @Local ServerWorld serverWorld){
+   private void arcananovum$onEntityKilledOther(DamageSource damageSource, CallbackInfo ci, @Local Entity attacker, @Local ServerWorld serverWorld){
       LivingEntity thisEntity = (LivingEntity) (Object) this;
       EntityKilledCallback.killedEntity(serverWorld,damageSource,attacker,thisEntity);
    }
    
    @Inject(method="onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getDamageTracker()Lnet/minecraft/entity/damage/DamageTracker;"))
-   private void arcananovum_witherOneHit(DamageSource source, CallbackInfo ci){
+   private void arcananovum$witherOneHit(DamageSource source, CallbackInfo ci){
       if((LivingEntity)(Object)this instanceof WitherEntity wither && wither.isDead()){
          List<DamageRecord> record = wither.getDamageTracker().recentDamage;
          if(!record.isEmpty()){
@@ -110,7 +110,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("RETURN"))
-   private void arcananovum_onStatusEffectAdd(StatusEffectInstance effect, Entity source, CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$onStatusEffectAdd(StatusEffectInstance effect, Entity source, CallbackInfoReturnable<Boolean> cir){
       if(cir.getReturnValueZ()){
          
          if(source instanceof ServerPlayerEntity player && Event.getEventsOfType(CleansingCharmEvent.class).stream().anyMatch(event -> event.getPlayer().equals(player) && event.getEffect().equals(effect.getEffectType()))){
@@ -120,7 +120,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method="onDeath", at = @At("RETURN"))
-   private void arcananovum_onDeath(DamageSource damageSource, CallbackInfo ci){
+   private void arcananovum$onDeath(DamageSource damageSource, CallbackInfo ci){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       for(TickTimerCallback t : SERVER_TIMER_CALLBACKS){
          if(t instanceof VengeanceTotemTimerCallback vt && vt.getAttacker() != null && vt.getAttacker().getUuidAsString().equals(livingEntity.getUuidAsString())){
@@ -130,7 +130,7 @@ public abstract class LivingEntityMixin {
    }
    
    @ModifyExpressionValue(method = "getDamageBlockedAmount", at = @At(value = "INVOKE", target = "Lnet/minecraft/component/type/BlocksAttacksComponent;getDamageReductionAmount(Lnet/minecraft/entity/damage/DamageSource;FD)F"))
-   private float arcananovum_whiteDwarfBlock(float original, ServerWorld world, DamageSource source, float damage, @Local ItemStack blockStack){
+   private float arcananovum$whiteDwarfBlock(float original, ServerWorld world, DamageSource source, float damage, @Local ItemStack blockStack){
       LivingEntity entity = (LivingEntity) (Object) this;
       ItemStack mainhand = entity.getMainHandStack();
       if(!(ArcanaItemUtils.identifyItem(mainhand) instanceof BinaryBlades blades)) return original;
@@ -150,7 +150,7 @@ public abstract class LivingEntityMixin {
    
    // Mixin for Shield of Fortitude giving absorption hearts
    @Inject(method="getDamageBlockedAmount",at=@At(value = "INVOKE", target = "Lnet/minecraft/component/type/BlocksAttacksComponent;onShieldHit(Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/util/Hand;F)V"))
-   private void arcananovum_shieldAbsorb(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Local ItemStack shieldStack, @Local(ordinal = 0, argsOnly = true) float blocked){
+   private void arcananovum$shieldAbsorb(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir, @Local ItemStack shieldStack, @Local(ordinal = 0, argsOnly = true) float blocked){
       LivingEntity entity = (LivingEntity) (Object) this;
       ArcanaItem arcaneItem;
       ItemStack item = null;
@@ -167,7 +167,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/world/World;getTime()J"))
-   private void arcananovum_playerDamaged(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$playerDamaged(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
       LivingEntity entity = (LivingEntity) (Object) this;
       if(entity instanceof ServerPlayerEntity player){
          PlayerInventory inv = player.getInventory();
@@ -223,7 +223,7 @@ public abstract class LivingEntityMixin {
    
    // Mixin for shadow stalker's glaive doing damage
    @Inject(method="damage",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)V"))
-   private void arcananovum_damageDealt(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$damageDealt(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
       LivingEntity entity = (LivingEntity) (Object) this;
       Entity attacker = source.getAttacker();
       if(attacker instanceof ServerPlayerEntity player){
@@ -245,7 +245,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method = "damage", at = @At("HEAD"), cancellable = true, order = 892)
-   private void arcananovum_cancelDamage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$cancelDamage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
       LivingEntity entity = (LivingEntity) (Object) this;
       
       if(entity instanceof ServerPlayerEntity player){
@@ -260,7 +260,7 @@ public abstract class LivingEntityMixin {
    
    // Mixin for damage modifiers
    @ModifyReturnValue(method = "modifyAppliedDamage", at = @At("RETURN"))
-   private float arcananovum_modifyDamage(float original, DamageSource source, float amount){
+   private float arcananovum$modifyDamage(float original, DamageSource source, float amount){
       float newReturn = original;
       LivingEntity entity = (LivingEntity) (Object) this;
       Entity attacker = source.getAttacker();
@@ -397,7 +397,7 @@ public abstract class LivingEntityMixin {
             }
             
             if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-               belt.buildItemLore(carrier, ArcanaNovum.SERVER);
+               belt.buildItemLore(carrier, BorisLib.SERVER);
             }
          }
       }
@@ -489,13 +489,13 @@ public abstract class LivingEntityMixin {
    }
    
    @ModifyExpressionValue(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/damage/DamageSource;isIn(Lnet/minecraft/registry/tag/TagKey;)Z"))
-   public boolean arcananovum_totemDamageCheck(boolean original, DamageSource source){
+   public boolean arcananovum$totemDamageCheck(boolean original, DamageSource source){
       if (!original) return false;
       return !source.isIn(ArcanaRegistry.ALLOW_TOTEM_USAGE);
    }
    
    @ModifyExpressionValue(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;"))
-   public ItemStack arcananovum_deathProtectorCooldown(ItemStack original){
+   public ItemStack arcananovum$deathProtectorCooldown(ItemStack original){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       if(livingEntity instanceof ServerPlayerEntity player){
          if(player.getItemCooldownManager().isCoolingDown(original)){
@@ -506,7 +506,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setHealth(F)V"), cancellable = true)
-   public void arcananovum_vengeanceTrigger(DamageSource source, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0) ItemStack itemStack){
+   public void arcananovum$vengeanceTrigger(DamageSource source, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0) ItemStack itemStack){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       List<NulConstructEntity> constructs = livingEntity.getWorld().getEntitiesByClass(NulConstructEntity.class,livingEntity.getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE*2),construct -> construct.getSummoner().getUuid().equals(livingEntity.getUuid()));
       
@@ -522,7 +522,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method = "tryUseDeathProtector", at = @At("RETURN"), cancellable = true)
-   public void arcananovum_findTotem(DamageSource source, CallbackInfoReturnable<Boolean> cir){
+   public void arcananovum$findTotem(DamageSource source, CallbackInfoReturnable<Boolean> cir){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       if(cir.getReturnValueZ()) return;
       
@@ -534,17 +534,19 @@ public abstract class LivingEntityMixin {
       if(livingEntity instanceof ServerPlayerEntity player){
          ItemCooldownManager cooldowns = player.getItemCooldownManager();
          Inventory inv = player.getInventory();
-         for(int i = 0; i < inv.size(); i++){
-            ItemStack beltStack = inv.getStack(i);
-            if(ArcanaItemUtils.identifyItem(beltStack) instanceof ArcanistsBelt){
-               ContainerComponent beltItems = beltStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
-               for(ItemStack stack : beltItems.iterateNonEmpty()){
-                  if(cooldowns.isCoolingDown(stack)) continue;
-                  deathProtectionComponent = stack.get(DataComponentTypes.DEATH_PROTECTION);
-                  if (deathProtectionComponent != null) {
-                     itemStack = stack.copy();
-                     stack.decrement(1);
-                     break;
+         block: {
+            for(int i = 0; i < inv.size(); i++){
+               ItemStack beltStack = inv.getStack(i);
+               if(ArcanaItemUtils.identifyItem(beltStack) instanceof ArcanistsBelt){
+                  ContainerComponent beltItems = beltStack.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+                  for(ItemStack stack : beltItems.iterateNonEmpty()){
+                     if(cooldowns.isCoolingDown(stack)) continue;
+                     deathProtectionComponent = stack.get(DataComponentTypes.DEATH_PROTECTION);
+                     if (deathProtectionComponent != null) {
+                        itemStack = stack.copy();
+                        stack.decrement(1);
+                        break block;
+                     }
                   }
                }
             }
@@ -577,7 +579,9 @@ public abstract class LivingEntityMixin {
          if(ArcanaItemUtils.identifyItem(itemStack) instanceof TotemOfVengeance vengeance){
             vengeance.triggerTotem(itemStack, livingEntity, source); // TODO, maybe turn this into a death effect thing?
          }
-         deathProtectionComponent.applyDeathEffects(itemStack, livingEntity);
+         if(deathProtectionComponent != null){
+            deathProtectionComponent.applyDeathEffects(itemStack, livingEntity);
+         }
          livingEntity.getWorld().sendEntityStatus(livingEntity, EntityStatuses.USE_TOTEM_OF_UNDYING);
          cir.setReturnValue(true);
          return;
@@ -592,7 +596,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method="onStatusEffectsRemoved",at=@At(value = "INVOKE", target = "Lnet/minecraft/entity/effect/StatusEffect;onRemoved(Lnet/minecraft/entity/attribute/AttributeContainer;)V"))
-   private void arcananovum_effectRemoved(Collection<StatusEffectInstance> effects, CallbackInfo ci){
+   private void arcananovum$effectRemoved(Collection<StatusEffectInstance> effects, CallbackInfo ci){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       for(StatusEffectInstance effect : effects){
          if(effect.getEffectType() == ArcanaRegistry.GREATER_INVISIBILITY_EFFECT && livingEntity.getServer() != null){
@@ -602,7 +606,7 @@ public abstract class LivingEntityMixin {
    }
    
    @Inject(method="updatePotionVisibility", at=@At(value="INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setInvisible(Z)V", ordinal = 1, shift = At.Shift.AFTER))
-   private void arcananovum_greaterInvisibilityUpdate(CallbackInfo ci){
+   private void arcananovum$greaterInvisibilityUpdate(CallbackInfo ci){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       livingEntity.setInvisible(livingEntity.isInvisible() || livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT));
    }

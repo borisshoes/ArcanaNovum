@@ -6,6 +6,7 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
@@ -25,10 +26,14 @@ import static net.borisshoes.arcananovum.blocks.altars.StarpathAltarBlockEntity.
 
 public class StarpathAltarGui extends SimpleGui {
    private final StarpathAltarBlockEntity blockEntity;
+   private final boolean starcharts;
+   private final boolean stargate;
    
    public StarpathAltarGui(ServerPlayerEntity player, StarpathAltarBlockEntity blockEntity){
       super(ScreenHandlerType.HOPPER, player, false);
       this.blockEntity = blockEntity;
+      starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STAR_CHARTS.id) > 0;
+      stargate = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STARGATE.id) > 0;
       
       setTitle(Text.literal("Starpath Altar"));
    }
@@ -36,14 +41,13 @@ public class StarpathAltarGui extends SimpleGui {
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(index == 2){
-         boolean starcharts = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.STAR_CHARTS.id) > 0;
          
          if(starcharts){
             StarpathAltarChartsGui gui = new StarpathAltarChartsGui(player,this,blockEntity);
             gui.buildGui();
             gui.open();
          }else{
-            StarpathTargetGui gui = new StarpathTargetGui(player,blockEntity,true,this,(obj) -> blockEntity.setTargetCoords((BlockPos) obj));
+            StarpathTargetGui gui = new StarpathTargetGui(player,blockEntity,true,this,(obj) -> blockEntity.setTarget((BlockPos) obj));
             gui.open();
          }
       }else if(index == 4){
@@ -96,7 +100,7 @@ public class StarpathAltarGui extends SimpleGui {
       }
       setSlot(0,cooldownItem);
       
-      BlockPos target = blockEntity.getTargetCoords();
+      BlockPos target = blockEntity.getTarget();
       GuiElementBuilder locationItem = new GuiElementBuilder(Items.FILLED_MAP).hideDefaultTooltip();
       locationItem.setName((Text.literal("")
             .append(Text.literal("Target Location").formatted(Formatting.GOLD))));
@@ -106,6 +110,9 @@ public class StarpathAltarGui extends SimpleGui {
             .append(Text.literal("Y: "+target.getY()).formatted(Formatting.YELLOW)))));
       locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("Z: "+target.getZ()).formatted(Formatting.YELLOW)))));
+      if(stargate){
+         locationItem.addLoreLine(Text.literal("Dimension: ").formatted(Formatting.YELLOW).append(ArcanaUtils.getFormattedDimName(blockEntity.getTargetDimension())));
+      }
       locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
             .append(Text.literal("").formatted(Formatting.YELLOW)))));
       locationItem.addLoreLine(TextUtils.removeItalics((Text.literal("")

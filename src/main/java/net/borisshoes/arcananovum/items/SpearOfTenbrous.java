@@ -194,7 +194,9 @@ public class SpearOfTenbrous extends ArcanaItem {
          playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
          if (world instanceof ServerWorld serverWorld) {
             stack.damage(1, playerEntity);
+            int slot = playerEntity.getInventory().getSlotWithStack(stack);
             SpearOfTenbrousEntity spearEntity = ProjectileEntity.spawnWithVelocity(SpearOfTenbrousEntity::new, serverWorld, stack, playerEntity, 0.0F, 3.5F, 0.1F);
+            spearEntity.setSlot(slot);
             if(!playerEntity.isInCreativeMode()){
                playerEntity.getInventory().removeOne(stack);
             }

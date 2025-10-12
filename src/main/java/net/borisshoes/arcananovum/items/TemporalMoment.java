@@ -69,7 +69,7 @@ public class TemporalMoment extends ArcanaItem {
             .append(Text.literal(" unlocks a whole ").formatted(Formatting.BLUE))
             .append(Text.literal("world").formatted(Formatting.DARK_GRAY))
             .append(Text.literal(" of ").formatted(Formatting.BLUE))
-            .append(Text.literal("possibilites").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("possibilities").formatted(Formatting.DARK_AQUA))
             .append(Text.literal(".").formatted(Formatting.BLUE)));
      return lore.stream().map(TextUtils::removeItalics).collect(Collectors.toCollection(ArrayList::new));
    }

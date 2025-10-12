@@ -111,7 +111,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
                if(canApplySkilled){
                   buildSkilledGui(arcanaItem.getId());
                }else{
-                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),false,player.getServer());
+                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getServer());
                   forgeItem(arcanaItem, newArcanaItem, recipe, null,type == ClickType.MOUSE_LEFT_SHIFT);
                }
             }
@@ -240,13 +240,13 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
                }
                
                ArcanaRecipe recipe = arcanaItem.getRecipe();
-               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),false,player.getServer());
+               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getServer());
                forgeItem(arcanaItem, newArcanaItem, recipe, new Pair<>(augment,applicableLevel), type == ClickType.MOUSE_LEFT_SHIFT);
                close();
             }
          }else if(index == 40 && arcanaItem != null){
             ArcanaRecipe recipe = arcanaItem.getRecipe();
-            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),false,player.getServer());
+            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getServer());
             forgeItem(arcanaItem, newArcanaItem, recipe, null, type == ClickType.MOUSE_LEFT_SHIFT);
          }
       }
@@ -785,6 +785,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
       }
       
       MinecraftUtils.returnItems(inventory,player);
+      super.onClose();
    }
    
    @Override

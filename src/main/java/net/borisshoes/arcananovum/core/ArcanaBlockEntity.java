@@ -19,17 +19,23 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 public interface ArcanaBlockEntity {
+   String AUGMENT_TAG = "arcanaAugments";
+   String ARCANA_UUID_TAG = "arcanaUuid";
+   String CRAFTER_ID_TAG = "crafterId";
+   String CUSTOM_NAME = "customName";
+   String ORIGIN_TAG = "synthetic";
+   
    TreeMap<ArcanaAugment, Integer> getAugments();
    
    String getCrafterId();
    
    String getUuid();
    
-   boolean isSynthetic();
+   int getOrigin();
    
    String getCustomArcanaName();
    
-   void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName);
+   void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName);
    
    ArcanaItem getArcanaItem();
    
@@ -61,7 +67,7 @@ public interface ArcanaBlockEntity {
          stack = arcanaItem.getNewItem();
       }
       
-      stack = arcanaItem.addCrafter(stack, arcanaBlockEntity.getCrafterId(), arcanaBlockEntity.isSynthetic(),world.getServer());
+      stack = arcanaItem.addCrafter(stack, arcanaBlockEntity.getCrafterId(), arcanaBlockEntity.getOrigin(),world.getServer());
       
       if(augmentsTag != null){
          ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG,augmentsTag);

@@ -16,6 +16,7 @@ import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.BlockState;
@@ -29,6 +30,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -50,6 +53,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,6 +65,8 @@ public class Planeshifter extends EnergyItem {
    
    public static final String NETHER_UNLOCK_TAG = "netherUnlocked";
    public static final String END_UNLOCK_TAG = "endUnlocked";
+   public static final String DIMENSIONS_TAG = "dimensions";
+   public static final String SELECTED_TAG = "selected";
    public static final String HEAT_TAG = "heat";
    
    public static final int[] cdReduction = {0,60,120,240,360,480};
@@ -70,7 +76,7 @@ public class Planeshifter extends EnergyItem {
       name = "Planeshifter";
       rarity = ArcanaRarity.EXOTIC;
       categories = new TomeGui.TomeFilter[]{ArcanaRarity.getTomeFilter(rarity), TomeGui.TomeFilter.ITEMS};
-      itemVersion = 0;
+      itemVersion = 1;
       initEnergy = 600;
       vanillaItem = Items.RECOVERY_COMPASS;
       item = new PlaneshifterItem();
@@ -80,9 +86,8 @@ public class Planeshifter extends EnergyItem {
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
       stack.setCount(item.getMaxCount());
-      putProperty(stack,NETHER_UNLOCK_TAG,false);
-      putProperty(stack,END_UNLOCK_TAG,false);
-      putProperty(stack,MODE_TAG,-1); // -1 disabled, 0 nether, 1 end
+      putProperty(stack,DIMENSIONS_TAG, new NbtList());
+      putProperty(stack,SELECTED_TAG,"");
       putProperty(stack,HEAT_TAG,0);
       setPrefStack(stack);
    }
@@ -100,12 +105,10 @@ public class Planeshifter extends EnergyItem {
       lore.add(Text.literal("")
             .append(Text.literal("The ").formatted(Formatting.DARK_PURPLE))
             .append(Text.literal("shifter ").formatted(Formatting.LIGHT_PURPLE))
-            .append(Text.literal("must be taken to the ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("Nether ").formatted(Formatting.RED))
-            .append(Text.literal("and ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("End ").formatted(Formatting.DARK_AQUA))
+            .append(Text.literal("must be taken to each ").formatted(Formatting.DARK_PURPLE))
+            .append(Text.literal("Dimension ").formatted(Formatting.DARK_AQUA))
             .append(Text.literal("to unlock their ").formatted(Formatting.DARK_PURPLE))
-            .append(Text.literal("modes").formatted(Formatting.BLUE))
+            .append(Text.literal("mode").formatted(Formatting.BLUE))
             .append(Text.literal(".").formatted(Formatting.DARK_PURPLE)));
       lore.add(Text.literal("")
             .append(Text.literal("When in ").formatted(Formatting.DARK_PURPLE))
@@ -161,12 +164,18 @@ public class Planeshifter extends EnergyItem {
    public ItemStack updateItem(ItemStack stack, MinecraftServer server){
       boolean hasNether = getBooleanProperty(stack,NETHER_UNLOCK_TAG);
       boolean hasEnd = getBooleanProperty(stack,END_UNLOCK_TAG);
-      int mode = getIntProperty(stack,MODE_TAG);
       int heat = getIntProperty(stack,HEAT_TAG);
+      NbtList dimensions = getListProperty(stack,DIMENSIONS_TAG);
+      String selected = getStringProperty(stack,SELECTED_TAG);
       ItemStack newStack = super.updateItem(stack,server);
-      putProperty(newStack,NETHER_UNLOCK_TAG,hasNether);
-      putProperty(newStack,END_UNLOCK_TAG,hasEnd);
-      putProperty(newStack,MODE_TAG,mode);
+      if(hasNether && !dimensions.contains(NbtString.of(ServerWorld.NETHER.getValue().toString()))){
+         dimensions.add(NbtString.of(ServerWorld.NETHER.getValue().toString()));
+      }
+      if(hasEnd && !dimensions.contains(NbtString.of(ServerWorld.END.getValue().toString()))){
+         dimensions.add(NbtString.of(ServerWorld.END.getValue().toString()));
+      }
+      putProperty(newStack,DIMENSIONS_TAG,dimensions);
+      putProperty(newStack,SELECTED_TAG,selected);
       putProperty(newStack,HEAT_TAG,heat);
       return buildItemLore(newStack,server);
    }
@@ -192,25 +201,32 @@ public class Planeshifter extends EnergyItem {
          player.resetPortalCooldown();
          player.sendMessage(Text.literal("The Planeshifter syncs up with a Nether Portal").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
       }else{
-         player.teleportTo(new TeleportTarget(destWorld, destPos, Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
          player.sendMessage(Text.literal("The Planeshifter could not find a Nether Portal").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-         
-         for(int y = player.getBlockY(); y >= player.getBlockY()-destWorld.getHeight(); y--){
-            BlockPos blockPos = new BlockPos(player.getBlockX(),y,player.getBlockZ());
-            BlockState state = destWorld.getBlockState(blockPos);
-            if(state.isOf(Blocks.LAVA)){
-               ArcanaAchievements.grant(player,ArcanaAchievements.UNFORTUNATE_MATERIALIZATION.id);
-               break;
-            }else if(!(state.isAir() || state.getCollisionShape(destWorld,blockPos).isEmpty())){
-               break;
-            }
+         directTeleport(player,destWorld);
+      }
+   }
+   
+   private void directTeleport(ServerPlayerEntity player, ServerWorld destWorld){
+      double scale = DimensionType.getCoordinateScaleFactor(player.getWorld().getDimension(), destWorld.getDimension());
+      WorldBorder worldBorder = destWorld.getWorldBorder();
+      Vec3d destPos = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
+      player.teleportTo(new TeleportTarget(destWorld, destPos, Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
+      for(int y = player.getBlockY(); y >= player.getBlockY()-destWorld.getHeight(); y--){
+         BlockPos blockPos = new BlockPos(player.getBlockX(),y,player.getBlockZ());
+         BlockState state = destWorld.getBlockState(blockPos);
+         if(state.isOf(Blocks.LAVA)){
+            ArcanaAchievements.grant(player,ArcanaAchievements.UNFORTUNATE_MATERIALIZATION.id);
+            break;
+         }else if(!(state.isAir() || state.getCollisionShape(destWorld,blockPos).isEmpty())){
+            break;
          }
       }
    }
    
    private void teleport(ItemStack stack, ServerPlayerEntity player){
-      int mode = getIntProperty(stack,MODE_TAG);
       ServerWorld world = player.getWorld();
+      ServerWorld target = getTargetDim(stack,world.getServer());
+      if(target == null) return;
       
       boolean inOverworld = world.getRegistryKey().getValue().equals(ServerWorld.OVERWORLD.getValue());
       boolean inEnd = world.getRegistryKey().getValue().equals(ServerWorld.END.getValue());
@@ -218,26 +234,22 @@ public class Planeshifter extends EnergyItem {
       if(inNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "From The Nether",true);
       if(inEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The End",true);
       if(inOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"From The Overworld",true);
+      boolean destOverworld = target.getRegistryKey().getValue().equals(ServerWorld.OVERWORLD.getValue());
+      boolean destEnd = target.getRegistryKey().getValue().equals(ServerWorld.END.getValue());
+      boolean destNether = target.getRegistryKey().getValue().equals(ServerWorld.NETHER.getValue());
+      if(destNether) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Nether",true);
+      if(destEnd) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"To The End",true);
+      if(destOverworld) ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id,"To The Overworld",true);
       
-      if(mode == 0){ // nether mode
-         if(inNether){
-            world = world.getServer().getWorld(World.OVERWORLD);
-            findPortalAndTeleport(player,world,false);
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Overworld",true);
-         }else{
-            world = world.getServer().getWorld(World.NETHER);
-            findPortalAndTeleport(player,world,true);
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Nether",true);
-         }
-      }else if(mode == 1){ // end mode
+      if(inNether && destOverworld){
+         findPortalAndTeleport(player,target,false);
+      }else if(destNether){
+         findPortalAndTeleport(player,target,true);
+      }else if(destEnd || (inEnd && destOverworld)){
          EndPortalBlock endPortalBlock = (EndPortalBlock) Blocks.END_PORTAL;
-         
          player.teleportTo(endPortalBlock.createTeleportTarget(player.getWorld(),player,player.getBlockPos()));
-         if(inEnd){
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The Overworld",true);
-         }else{
-            ArcanaAchievements.setCondition(player,ArcanaAchievements.PLANE_RIDER.id, "To The End",true);
-         }
+      }else{
+         directTeleport(player,target);
       }
       
       ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PLANESHIFTER_USE)); // Add xp
@@ -246,17 +258,18 @@ public class Planeshifter extends EnergyItem {
       ArcanaEffectUtils.recallTeleport(world,player.getPos());
    }
    
-   private RegistryKey<World> getTargetWorld(RegistryKey<World> currentWorld, int mode){
-       if(mode == 0){
-          if(!currentWorld.getValue().equals(ServerWorld.NETHER.getValue())){
-             return ServerWorld.NETHER;
-          }
-       }else if(mode == 1){
-          if(!currentWorld.getValue().equals(ServerWorld.END.getValue())){
-             return ServerWorld.END;
-          }
-       }
-       return ServerWorld.OVERWORLD;
+   private ServerWorld getTargetDim(ItemStack stack, MinecraftServer server){
+      String selected = getStringProperty(stack,SELECTED_TAG);
+      for(ServerWorld serverWorld : server.getWorlds()){
+         if(serverWorld.getRegistryKey().getValue().toString().equals(selected)){
+            return serverWorld;
+         }
+      }
+      return null;
+   }
+   
+   public boolean hasDimension(ItemStack stack, RegistryKey<World> world){
+      return getListProperty(stack,DIMENSIONS_TAG).contains(NbtString.of(world.getValue().toString()));
    }
    
    @Override
@@ -297,19 +310,18 @@ public class Planeshifter extends EnergyItem {
          ItemStack baseStack = super.getPolymerItemStack(itemStack, tooltipType, context);
          List<String> stringList = new ArrayList<>();
          
-         int mode = getIntProperty(itemStack,MODE_TAG); // 0 nether - 1 end
+         String selected = getStringProperty(itemStack,SELECTED_TAG);
          if(context.getPlayer() != null){
-            ServerWorld world = context.getPlayer().getWorld();
-            String worldString = world.getRegistryKey().getValue().toString();
-            boolean inEnd = worldString.equals("minecraft:the_end");
-            boolean inNether = worldString.equals("minecraft:the_nether");
-            
-            if(getEnergy(itemStack) < getMaxEnergy(itemStack)){
+            if(getEnergy(itemStack) < getMaxEnergy(itemStack) || selected.isBlank()){
                stringList.add("none");
-            }else if(mode == 0){
-               stringList.add(inNether ? "overworld" : "nether");
-            }else if(mode == 1){
-               stringList.add(inEnd ? "overworld" : "end");
+            }else if(selected.equals(World.OVERWORLD.getValue().toString())){
+               stringList.add("overworld");
+            }else if(selected.equals(World.END.getValue().toString())){
+               stringList.add("end");
+            }else if(selected.equals(World.NETHER.getValue().toString())){
+               stringList.add("nether");
+            }else{
+               stringList.add("other");
             }
          }else{
             stringList.add("none");
@@ -321,44 +333,40 @@ public class Planeshifter extends EnergyItem {
       @Override
       public ActionResult use(World world, PlayerEntity playerEntity, Hand hand){
          ItemStack stack = playerEntity.getStackInHand(hand);
-         if(!ArcanaItemUtils.isArcane(stack)) return ActionResult.PASS;
-         
-         int mode = getIntProperty(stack,MODE_TAG);
-         boolean nether = getBooleanProperty(stack,NETHER_UNLOCK_TAG);
-         boolean end = getBooleanProperty(stack,END_UNLOCK_TAG);
+         if(!ArcanaItemUtils.isArcane(stack) || !(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          
          if(playerEntity.isSneaking()){
-            if(!end && !nether){
-               playerEntity.sendMessage(Text.literal("The Planeshifter has not unlocked any dimensions").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            }else if(!end){
-               playerEntity.sendMessage(Text.literal("The Planeshifter only has Nether mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            }else if(!nether){
-               playerEntity.sendMessage(Text.literal("The Planeshifter only has End mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            }else{
-               if(mode != 0){
-                  playerEntity.sendMessage(Text.literal("The Planeshifter set to Nether mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-                  putProperty(stack,MODE_TAG,0);
-               }else{
-                  playerEntity.sendMessage(Text.literal("The Planeshifter set to End mode").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-                  putProperty(stack,MODE_TAG,1);
-               }
-            }
+            rotateDimension(stack,player,true);
          }else{
             int curEnergy = getEnergy(stack);
-            RegistryKey<World> targetWorld = getTargetWorld(playerEntity.getWorld().getRegistryKey(),mode);
+            String selected = getStringProperty(stack,SELECTED_TAG);
             
-            if(mode == -1){
-               playerEntity.sendMessage(Text.literal("The Planeshifter has not unlocked any dimensions").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            if(curEnergy < getMaxEnergy(stack)){
+               playerEntity.sendMessage(Text.literal("Planeshifter Recharging: " + (curEnergy * 100 / getMaxEnergy(stack)) + "%").formatted(Formatting.DARK_AQUA), true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-            }else if(!playerEntity.getServer().isWorldAllowed(playerEntity.getServer().getWorld(targetWorld))){
+               return ActionResult.SUCCESS_SERVER;
+            }
+            if(selected.isBlank()){
+               playerEntity.sendMessage(Text.literal("The Planeshifter has not unlocked any other dimensions").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
+               return ActionResult.SUCCESS_SERVER;
+            }
+            if(selected.equals(world.getRegistryKey().getValue().toString())){
+               playerEntity.sendMessage(Text.literal("The Planeshifter cannot teleport within the same dimension").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
+               return ActionResult.SUCCESS_SERVER;
+            }
+            
+            ServerWorld targetWorld = getTargetDim(stack,player.getServer());
+            if(targetWorld == null){
+               playerEntity.sendMessage(Text.literal("The Planeshifter cannot find its target").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+               SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
+            }else if(!playerEntity.getServer().isWorldAllowed(playerEntity.getServer().getWorld(targetWorld.getRegistryKey()))){
                playerEntity.sendMessage(Text.literal("The targeted world is not enabled on this Server").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }else if(curEnergy >= getMaxEnergy(stack)){
                putProperty(stack,HEAT_TAG,1); // Starts the heat up process
                SoundUtils.playSound(playerEntity.getWorld(), playerEntity.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
-            }else{
-               playerEntity.sendMessage(Text.literal("Planeshifter Recharging: " + (curEnergy * 100 / getMaxEnergy(stack)) + "%").formatted(Formatting.DARK_AQUA), true);
-               SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }
          }
          return ActionResult.SUCCESS_SERVER;
@@ -370,17 +378,9 @@ public class Planeshifter extends EnergyItem {
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          int heat = getIntProperty(stack,HEAT_TAG);
          
-         if(!getBooleanProperty(stack,NETHER_UNLOCK_TAG) && player.getWorld().getRegistryKey().equals(World.NETHER)){
-            putProperty(stack,NETHER_UNLOCK_TAG,true);
-            putProperty(stack,MODE_TAG,0);
-            player.sendMessage(Text.literal("The Planeshifter has Unlocked The Nether").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
-         }
-         if(!getBooleanProperty(stack,END_UNLOCK_TAG) && player.getWorld().getRegistryKey().equals(World.END)){
-            putProperty(stack,END_UNLOCK_TAG,true);
-            putProperty(stack,MODE_TAG,1);
-            player.sendMessage(Text.literal("The Planeshifter has Unlocked The End").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
-            SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
+         String selected = getStringProperty(stack,SELECTED_TAG);
+         if(selected.equals(world.getRegistryKey().getValue().toString())){
+            rotateDimension(stack,player,false);
          }
          
          if(heat == 100){
@@ -398,9 +398,80 @@ public class Planeshifter extends EnergyItem {
          }
          
          if(world.getServer().getTicks() % 20 == 0){
+            unlockDimension(stack,world.getRegistryKey(),player);
+            List<ItemStack> waystones = ArcanaUtils.getArcanaItems(player,ArcanaRegistry.WAYSTONE);
+            for(ItemStack waystone : waystones){
+               Waystone.WaystoneTarget target = Waystone.getTarget(waystone);
+               if(target != null) unlockDimension(stack, target.world(), player);
+            }
+            
             addEnergy(stack, 1); // Recharge
             buildItemLore(stack,world.getServer());
          }
+      }
+      
+      private void rotateDimension(ItemStack stack, ServerPlayerEntity player, boolean announce){
+         NbtList dimensions = getListProperty(stack,DIMENSIONS_TAG);
+         ArrayList<RegistryKey<World>> dims = new ArrayList<>();
+         for(ServerWorld world : player.getServer().getWorlds()){
+            if(dimensions.contains(NbtString.of(world.getRegistryKey().getValue().toString())) && !player.getWorld().getRegistryKey().getValue().equals(world.getRegistryKey().getValue())){
+               dims.add(world.getRegistryKey());
+            }
+         }
+         dims.sort(Comparator.comparing(s -> s.getValue().getPath()));
+         String selected = getStringProperty(stack,SELECTED_TAG);
+         RegistryKey<World> world = null;
+         if(dims.isEmpty()){
+            putProperty(stack,SELECTED_TAG,"");
+            buildItemLore(stack,player.getServer());
+            return;
+         }else if(selected.isEmpty()){
+            world = dims.getFirst();
+         }else{
+            int ind = -1;
+            for(int i = 0; i < dims.size(); i++){
+               if(dims.get(i).getValue().toString().equals(selected)){
+                  ind = i;
+                  break;
+               }
+            }
+            ind = (ind+1) % dims.size();
+            world = dims.get(ind);
+         }
+         
+         if(announce){
+            if(world.equals(World.OVERWORLD)){
+               player.sendMessage(Text.literal("Planeshifter set to The Overworld").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            }else if(world.equals(World.NETHER)){
+               player.sendMessage(Text.literal("Planeshifter set to The Nether").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            }else if(world.equals(World.END)){
+               player.sendMessage(Text.literal("Planeshifter set to The End").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            }else{
+               player.sendMessage(Text.literal("Planeshifter set to "+world.getValue().toString()).formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            }
+            SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_LODESTONE_COMPASS_LOCK, 1, 0.7f);
+         }
+         putProperty(stack,SELECTED_TAG,world.getValue().toString());
+      }
+      
+      private void unlockDimension(ItemStack stack, RegistryKey<World> world, ServerPlayerEntity player){
+         if(hasDimension(stack,world)) return;
+         NbtList dimensions = getListProperty(stack,DIMENSIONS_TAG);
+         
+         if(world.equals(World.OVERWORLD)){
+            player.sendMessage(Text.literal("The Planeshifter has Unlocked The Overworld").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+         }else if(world.equals(World.NETHER)){
+            player.sendMessage(Text.literal("The Planeshifter has Unlocked The Nether").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+         }else if(world.equals(World.END)){
+            player.sendMessage(Text.literal("The Planeshifter has Unlocked The End").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+         }else{
+            player.sendMessage(Text.literal("The Planeshifter has Unlocked "+world.getValue().toString()).formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+         }
+         dimensions.add(NbtString.of(world.getValue().toString()));
+         
+         SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
+         putProperty(stack,DIMENSIONS_TAG,dimensions);
+         buildItemLore(stack,player.getServer());
       }
       
       @Override

@@ -128,13 +128,13 @@ public class DragonLairActions {
             for(ServerPlayerEntity player : nearbyPlayers){
                BlockPos pos = locations.get(i);
                player.teleportTo(new TeleportTarget(endWorld, pos.toCenterPos(), player.getVelocity(), (float) (Math.random()*360-180),(float) (Math.random()*360-180), TeleportTarget.NO_OP));
-               endWorld.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),500,.3,1,.3,3);
+               endWorld.spawnParticles(ParticleTypes.REVERSE_PORTAL,pos.getX(),pos.getY()+1.5,pos.getZ(),300,.3,1,.3,3);
                player.sendMessage(Text.literal("Ender Energy Surges Through You!").formatted(Formatting.DARK_PURPLE,Formatting.ITALIC),true);
                i++;
             }
          }else{
             for(ServerPlayerEntity player : nearbyPlayers){
-               endWorld.spawnParticles(ParticleTypes.PORTAL, player.getX(), player.getY() - .5, player.getZ(), 5, .3, 1, .3, .3);
+               endWorld.spawnParticles(ParticleTypes.PORTAL, player.getX(), player.getY() - .5, player.getZ(), 1, .3, 1, .3, .3);
             }
          }
          dimensionTicks--;
@@ -158,10 +158,8 @@ public class DragonLairActions {
             star = star.add(0,-1,0);
             stars.set(i,star);
             
-            endWorld.spawnParticles(ParticleTypes.END_ROD, star.getX(), star.getY(), star.getZ(), 5, 0.1, 0.1, 0.1, 0);
+            endWorld.spawnParticles(ParticleTypes.END_ROD, star.getX(), star.getY(), star.getZ(), 2, 0.1, 0.1, 0.1, 0);
             endWorld.spawnParticles(ParticleTypes.END_ROD, star.getX(), star.getY()-.25, star.getZ(), 1, 0, 0, 0, 0);
-            endWorld.spawnParticles(ParticleTypes.END_ROD, star.getX(), star.getY()-.5, star.getZ(), 1, 0, 0, 0, 0);
-            endWorld.spawnParticles(ParticleTypes.END_ROD, star.getX(), star.getY()-.75, star.getZ(), 1, 0, 0, 0, 0);
    
             Vec3d finalStar = star;
             List<ServerPlayerEntity> hitPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(finalStar) <= 2*2 && !p.isSpectator() && !p.isCreative() && !starHits.containsKey(p.getUuidAsString()));

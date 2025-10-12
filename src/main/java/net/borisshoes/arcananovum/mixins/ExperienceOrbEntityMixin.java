@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ExperienceOrbEntityMixin {
    
    @Inject(method="repairPlayerGears", at= @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;setDamage(I)V"))
-   private void arcananovum_mendingActivated(ServerPlayerEntity player, int amount, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 1) int j){
+   private void arcananovum$mendingActivated(ServerPlayerEntity player, int amount, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 1) int j){
       if(j > 0) ArcanaNovum.data(player).setResearchTask(ResearchTasks.ACTIVATE_MENDING, true);
    }
 }

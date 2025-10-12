@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -14,6 +13,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -105,14 +105,14 @@ public class ExoticMatter extends EnergyItem {
    public int useFuel(ItemStack item, int fuel){
       int newFuel = MathHelper.clamp(getEnergy(item)-fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
-      buildItemLore(item,ArcanaNovum.SERVER);
+      buildItemLore(item, BorisLib.SERVER);
       return newFuel;
    }
    
    public void setFuel(ItemStack item, int fuel){
       int newFuel = MathHelper.clamp(fuel, 0, getMaxEnergy(item));
       setEnergy(item,newFuel);
-      buildItemLore(item,ArcanaNovum.SERVER);
+      buildItemLore(item,BorisLib.SERVER);
    }
    
    public String getDuration(ItemStack item){

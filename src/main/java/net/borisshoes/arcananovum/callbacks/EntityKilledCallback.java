@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.callbacks;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.achievements.ConditionalsAchievement;
@@ -12,6 +11,7 @@ import net.borisshoes.arcananovum.items.Soulstone;
 import net.borisshoes.arcananovum.items.WingsOfEnderia;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -77,7 +77,7 @@ public class EntityKilledCallback {
                }
                
                if(ArcanaItemUtils.identifyItem(carrier) instanceof ArcanistsBelt belt){
-                  belt.buildItemLore(carrier, ArcanaNovum.SERVER);
+                  belt.buildItemLore(carrier, BorisLib.SERVER);
                }
             }
             

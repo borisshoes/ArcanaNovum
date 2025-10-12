@@ -27,7 +27,7 @@ public class FleeEntityGoalMixin<T extends LivingEntity> {
    protected T targetEntity;
    
    @Inject(method = "start", at=@At("RETURN"))
-   private void arcananovum_fleeEntityStart(CallbackInfo ci){
+   private void arcananovum$fleeEntityStart(CallbackInfo ci){
       if(mob instanceof CreeperEntity && targetEntity instanceof CatEntity cat){
          if(cat.getWorld() instanceof ServerWorld serverWorld){
             for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(cat.getBlockPos(), 10.0))){

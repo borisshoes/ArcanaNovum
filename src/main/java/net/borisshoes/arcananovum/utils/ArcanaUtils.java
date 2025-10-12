@@ -14,14 +14,32 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ArcanaUtils {
+   
+   public static MutableText getFormattedDimName(RegistryKey<World> worldKey){
+      if(worldKey.getValue().toString().equals(ServerWorld.OVERWORLD.getValue().toString())){
+         return Text.literal("Overworld").formatted(Formatting.GREEN);
+      }else if(worldKey.getValue().toString().equals(ServerWorld.NETHER.getValue().toString())){
+         return Text.literal("The Nether").formatted(Formatting.RED);
+      }else if(worldKey.getValue().toString().equals(ServerWorld.END.getValue().toString())){
+         return Text.literal("The End").formatted(Formatting.DARK_PURPLE);
+      }else{
+         return Text.literal(worldKey.getValue().toString()).formatted(Formatting.YELLOW);
+      }
+   }
    
    public static void blockWithShield(LivingEntity entity, float damage){
       if(entity.isBlocking()){
@@ -34,6 +52,32 @@ public class ArcanaUtils {
             shield.shieldBlock(entity, activeItem, damage);
          }
       }
+   }
+   
+   public static List<ItemStack> getArcanaItems(PlayerEntity player, ArcanaItem arcanaItem){
+      List<ItemStack> stacks = new ArrayList<>();
+      PlayerInventory inv = player.getInventory();
+      for(int i=0; i<inv.size();i++){
+         ItemStack item = inv.getStack(i);
+         if(item.isEmpty()){
+            continue;
+         }
+         
+         ArcanaItem arcItem = ArcanaItemUtils.identifyItem(item);
+         if(arcItem != null && arcItem.getId().equals(arcanaItem.getId())){
+            stacks.add(item);
+         }
+         if(arcItem instanceof ArcanistsBelt){
+            ContainerComponent containerItems = item.getOrDefault(DataComponentTypes.CONTAINER,ContainerComponent.DEFAULT);
+            for(ItemStack stack : containerItems.iterateNonEmpty()){
+               ArcanaItem aItem = ArcanaItemUtils.identifyItem(stack);
+               if(aItem != null && aItem.getId().equals(arcanaItem.getId())){
+                  stacks.add(stack);
+               }
+            }
+         }
+      }
+      return stacks;
    }
    
    public static List<ItemStack> getArcanaItemsWithAug(PlayerEntity player, ArcanaItem arcanaItem, ArcanaAugment augment, int level){

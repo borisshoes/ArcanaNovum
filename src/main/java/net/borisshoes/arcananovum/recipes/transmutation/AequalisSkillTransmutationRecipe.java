@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
@@ -162,7 +163,7 @@ public class AequalisSkillTransmutationRecipe extends TransmutationRecipe{
             aequalisEntity.discard();
          }else if(!timeless){
             ArcanaItem.putProperty(aequalisStack,AequalisScientia.USES_TAG,uses-1);
-            ArcanaRegistry.AEQUALIS_SCIENTIA.buildItemLore(aequalisStack, ArcanaNovum.SERVER);
+            ArcanaRegistry.AEQUALIS_SCIENTIA.buildItemLore(aequalisStack, BorisLib.SERVER);
             aequalisEntity.setStack(aequalisStack);
          }
       }

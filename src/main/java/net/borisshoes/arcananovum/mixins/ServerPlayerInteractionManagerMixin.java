@@ -30,7 +30,7 @@ public class ServerPlayerInteractionManagerMixin {
    protected ServerPlayerEntity player;
    
    @Inject(method = "continueMining", at = @At("HEAD"))
-   private void arcananovum_continueMining(BlockState state, BlockPos pos, int failedStartMiningTime, CallbackInfoReturnable<Float> cir){
+   private void arcananovum$continueMining(BlockState state, BlockPos pos, int failedStartMiningTime, CallbackInfoReturnable<Float> cir){
       if(player != null && mining){
          ItemStack mineStack = player.getMainHandStack();
          if(ArcanaItemUtils.identifyItem(mineStack) instanceof PickaxeOfCeptyus pick && mineStack.contains(DataComponentTypes.TOOL)){
@@ -42,7 +42,7 @@ public class ServerPlayerInteractionManagerMixin {
    }
    
    @Inject(at = @At("HEAD"), method = "interactItem", cancellable = true)
-   public void arcananovum_interactItem(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> info){
+   public void arcananovum$interactItem(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> info){
       ItemStack mainStack = player.getStackInHand(Hand.MAIN_HAND);
       ItemStack offStack = player.getStackInHand(Hand.OFF_HAND);
       ArcanaItem arcanaItem1 = ArcanaItemUtils.identifyItem(mainStack);

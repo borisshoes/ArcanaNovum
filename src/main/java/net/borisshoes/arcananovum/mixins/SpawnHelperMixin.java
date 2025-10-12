@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public class SpawnHelperMixin {
    
    @ModifyExpressionValue(method = "setupSpawn", at = @At(value = "INVOKE",target = "Lnet/minecraft/entity/mob/MobEntity;cannotDespawn()Z"))
-   private static boolean arcananovum_infuserMobCapGet(boolean original, @Local MobEntity entity){
+   private static boolean arcananovum$infuserMobCapGet(boolean original, @Local MobEntity entity){
       if(original) return true;
       if(entity.getCommandTags().contains("$arcananovum.infused_spawn")){
          return true;

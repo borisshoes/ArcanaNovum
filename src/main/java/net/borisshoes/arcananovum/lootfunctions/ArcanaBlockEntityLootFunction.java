@@ -65,7 +65,7 @@ public class ArcanaBlockEntityLootFunction extends ConditionalLootFunction {
       ArcanaItem arcanaItem = arcanaBlockEntity.getArcanaItem();
       arcanaItem.initializeArcanaTag(stack,false);
       
-      stack = arcanaItem.addCrafter(stack, arcanaBlockEntity.getCrafterId(), arcanaBlockEntity.isSynthetic(),world.getServer());
+      stack = arcanaItem.addCrafter(stack, arcanaBlockEntity.getCrafterId(), arcanaBlockEntity.getOrigin(),world.getServer());
       
       if(augmentsTag != null){
          ArcanaItem.putProperty(stack, ArcanaItem.AUGMENTS_TAG,augmentsTag);

@@ -621,6 +621,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
          blockEntity.openGui(2,player,"");
       }
       MinecraftUtils.returnItems(inventory,player);
+      super.onClose();
    }
    
    @Override

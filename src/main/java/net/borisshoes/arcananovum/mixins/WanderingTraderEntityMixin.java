@@ -28,7 +28,7 @@ import java.util.List;
 public class WanderingTraderEntityMixin {
    
    @Inject(method = "fillRecipes", at = @At("TAIL"))
-   private void arcananovum_addArcaneNotesTrade(CallbackInfo ci){
+   private void arcananovum$addArcaneNotesTrade(CallbackInfo ci){
       WanderingTraderEntity trader = (WanderingTraderEntity) (Object) this;
       if(trader.getRandom().nextDouble() < 0.1){
          List<RegistryEntry<Item>> items = new ArrayList<>();
@@ -49,10 +49,15 @@ public class WanderingTraderEntityMixin {
          ArcanaItem.putProperty(notes, ArcaneNotesItem.UNLOCK_ID_TAG,arcanaId);
          ArcaneNotesItem.buildLore(notes);
          
+         ItemStack waystone = ArcanaRegistry.WAYSTONE.getNewItem();
+         ArcanaRegistry.WAYSTONE.addCrafter(waystone,null,2,trader.getServer());
+         
          TradeOffer offer1 = new TradeOffer(new TradedItem(Items.EMERALD_BLOCK, trader.getRandom().nextBetween(10,16)), notes.copy(), 1, 1, 0.05f);
          TradeOffer offer2 = new TradeOffer(new TradedItem(ArcanaRegistry.STARDUST, trader.getRandom().nextBetween(3,16)), new ItemStack(Items.EMERALD,trader.getRandom().nextBetween(1,24)), 12, 1, 0.05f);
+         TradeOffer offer3 = new TradeOffer(new TradedItem(Items.EMERALD, trader.getRandom().nextBetween(32,64)),waystone, 1, 1, 0.05f);
          trader.getOffers().add(offer1);
          trader.getOffers().add(offer2);
+         trader.getOffers().add(offer3);
       }
    }
 }

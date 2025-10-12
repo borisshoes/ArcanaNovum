@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.items;
 
-import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaItemContainer;
@@ -16,6 +15,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.DataFixer;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -223,7 +223,7 @@ public class ArcanistsBelt extends ArcanaItem implements ArcanaItemContainer.Arc
          for(ItemStack invStack : beltItems.iterateNonEmpty()){
             invStack.getItem().inventoryTick(invStack,world,entity,null);
          }
-         buildItemLore(stack,ArcanaNovum.SERVER);
+         buildItemLore(stack, BorisLib.SERVER);
       }
       
       @Override

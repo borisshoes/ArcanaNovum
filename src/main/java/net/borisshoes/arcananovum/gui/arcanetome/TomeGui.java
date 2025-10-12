@@ -28,6 +28,7 @@ import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.AlgoUtils;
@@ -125,7 +126,19 @@ public class TomeGui extends SimpleGui {
                      }
                   }
                }else if(entry instanceof IngredientCompendiumEntry ingredientEntry){
-                  tome.openRecipeGui(player,settings, ingredientEntry.getName(), ingredientEntry.getRecipe(), ingredientEntry.getDisplayStack());
+                  if(type.isLeft && ingredientEntry.hasBookLore()){
+                     List<List<Text>> loreData = ingredientEntry.getBookLore();
+                     if(loreData != null){
+                        BookElementBuilder bookBuilder = new BookElementBuilder();
+                        loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Text[0])));
+                        LoreGui loreGui = new LoreGui(player,bookBuilder,tome,TomeMode.COMPENDIUM,settings,null);
+                        loreGui.open();
+                     }else{
+                        player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
+                     }
+                  }else{
+                     tome.openRecipeGui(player,settings, ingredientEntry.getName(), ingredientEntry.getRecipe(), ingredientEntry.getDisplayStack());
+                  }
                }else if(entry instanceof TransmutationRecipesCompendiumEntry){
                   TransmutationAltarRecipeGui transmutationGui = new TransmutationAltarRecipeGui(player,this,Optional.empty());
                   transmutationGui.buildRecipeListGui();
@@ -279,7 +292,7 @@ public class TomeGui extends SimpleGui {
                   if(loreData != null){
                      BookElementBuilder bookBuilder = new BookElementBuilder();
                      loreData.forEach(list -> bookBuilder.addPage(list.toArray(new Text[0])));
-                     LoreGui loreGui = new LoreGui(player,bookBuilder,tome, TomeMode.RECIPE,settings, arcanaItem.getId());
+                     LoreGui loreGui = new LoreGui(player,bookBuilder,tome,TomeMode.RECIPE,settings,arcanaItem.getId());
                      loreGui.open();
                   }else{
                      player.sendMessage(Text.literal("No Lore Found For That Item").formatted(Formatting.RED),false);
@@ -667,7 +680,14 @@ public class TomeGui extends SimpleGui {
       for(int i = 0; i < 4; i++){
          for(int j = 0; j < 7; j++){
             if(k < pageItems.size()){
-               gui.setSlot((i*9+10)+j,GuiElementBuilder.from(pageItems.get(k).getDisplayStack()).glow());
+               GuiElementBuilder builder = GuiElementBuilder.from(pageItems.get(k).getDisplayStack()).glow();
+               if(pageItems.get(k) instanceof IngredientCompendiumEntry ice && ice.hasBookLore() && gui instanceof TomeGui){
+                  builder.addLoreLine(Text.literal(""));
+                  builder.addLoreLine(TextUtils.removeItalics(Text.literal("")
+                        .append(Text.literal("Click").formatted(Formatting.DARK_AQUA))
+                        .append(Text.literal(" to read about this Ingredient Item").formatted(Formatting.DARK_PURPLE))));
+               }
+               gui.setSlot((i*9+10)+j,builder);
             }else{
                gui.setSlot((i*9+10)+j,new GuiElementBuilder(Items.AIR));
             }
@@ -1589,7 +1609,7 @@ public class TomeGui extends SimpleGui {
          }
          case NAME -> {
             Comparator<UUID> nameComparator = Comparator.comparing(playerID -> {
-               GameProfile profile = ArcanaNovum.SERVER.getUserCache().getByUuid(playerID).orElse(null);
+               GameProfile profile = BorisLib.SERVER.getUserCache().getByUuid(playerID).orElse(null);
                return profile == null ? "" : profile.getName();
             });
             filteredSortedPlayers.sort(nameComparator);

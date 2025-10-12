@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class FarmlandBlockMixin {
    
    @Inject(method = "setToDirt",at=@At(value = "HEAD"),cancellable = true)
-   private static void arcananovum_wildGrowthStopTrample(Entity entity, BlockState state, World world, BlockPos pos, CallbackInfo ci){
+   private static void arcananovum$wildGrowthStopTrample(Entity entity, BlockState state, World world, BlockPos pos, CallbackInfo ci){
       if(entity instanceof ServerPlayerEntity player && ArcanaItemUtils.hasItemInInventory(player, ArcanaRegistry.WILD_GROWTH_CHARM.getItem())){
          ci.cancel();
       }

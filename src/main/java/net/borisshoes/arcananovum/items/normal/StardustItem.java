@@ -36,7 +36,7 @@ public class StardustItem extends NormalPolymerItem {
    @Override
    public ItemStack getDefaultStack(){
       ItemStack defStack = super.getDefaultStack();
-      defStack.set(DataComponentTypes.ITEM_NAME, Text.translatable("item."+MOD_ID+".stardust").formatted(Formatting.YELLOW,Formatting.BOLD));
+      defStack.set(DataComponentTypes.ITEM_NAME, getName(null));
       return defStack;
    }
    

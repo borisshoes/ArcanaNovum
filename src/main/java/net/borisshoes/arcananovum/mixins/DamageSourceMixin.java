@@ -20,7 +20,7 @@ public class DamageSourceMixin {
    @Shadow @Final private @Nullable Entity source;
    
    @Inject(method="getDeathMessage",at=@At(value="RETURN"), cancellable = true)
-   private void arcananovum_deathMessage(LivingEntity killed, CallbackInfoReturnable<Text> cir){
+   private void arcananovum$deathMessage(LivingEntity killed, CallbackInfoReturnable<Text> cir){
       DamageSource source = (DamageSource) (Object) this;
       
       if(source.getName().contains("arcananovum.concentration")){

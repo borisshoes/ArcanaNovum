@@ -1,5 +1,6 @@
 package net.borisshoes.arcananovum.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
@@ -8,6 +9,7 @@ import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -53,8 +55,29 @@ public class ServerPlayNetworkHandlerMixin {
    @Shadow
    private Vec3d requestedTeleportPos;
    
+   @ModifyExpressionValue(method = "onPickItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getSlotWithStack(Lnet/minecraft/item/ItemStack;)I"))
+   private int arcananovum$greavesPickblock(int original, ItemStack stack){
+      if(original == -1){
+         ItemStack pants = player.getEquippedStack(EquipmentSlot.LEGS);
+         if(!(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus greaves) || !ArcanaItem.getBooleanProperty(pants,ArcanaItem.ACTIVE_TAG))
+            return original;
+         ItemStack refillStack = greaves.getStackOf(pants, stack);
+         PlayerInventory inv = player.getInventory();
+         int emptySlot = inv.getEmptySlot();
+         if(!refillStack.isEmpty() && emptySlot != -1){
+            int amtToRefill = Math.min((int) (stack.getMaxCount() * 0.67), refillStack.getCount());
+            ItemStack insertStack = refillStack.split(amtToRefill);
+            inv.insertStack(emptySlot,insertStack);
+            player.playerScreenHandler.sendContentUpdates();
+            greaves.buildItemLore(pants, BorisLib.SERVER);
+            return emptySlot;
+         }
+      }
+      return original;
+   }
+   
    @Inject(method = "onPlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;", ordinal = 0))
-   private void arcananovum_onHandSwap(PlayerActionC2SPacket packet, CallbackInfo ci){
+   private void arcananovum$onHandSwap(PlayerActionC2SPacket packet, CallbackInfo ci){
       ItemStack offHand = player.getOffHandStack();
       if(BinaryBlades.isFakeBlade(offHand)){
          player.setStackInHand(Hand.OFF_HAND,ItemStack.EMPTY);
@@ -63,7 +86,7 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @Inject(method = "onPlayerLoaded", at = @At("TAIL"))
-   private void arcananovum_onPlayerLoad(PlayerLoadedC2SPacket packet, CallbackInfo ci){
+   private void arcananovum$onPlayerLoad(PlayerLoadedC2SPacket packet, CallbackInfo ci){
       for(UUID uuid : ArcanaNovum.TOTEM_KILL_LIST){
          if(uuid.equals(player.getUuid())){
             player.damage(player.getWorld(), ArcanaDamageTypes.of(player.getWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,player), player.getMaxHealth()*10);
@@ -74,7 +97,7 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @Inject(method = "onHandSwing", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V"))
-   private void arcananovum_handSwing(HandSwingC2SPacket packet, CallbackInfo ci){
+   private void arcananovum$handSwing(HandSwingC2SPacket packet, CallbackInfo ci){
       ServerPlayNetworkHandler networkHandler = (ServerPlayNetworkHandler) (Object) this;
       
       // Hit through Greater Invisibility
@@ -123,7 +146,7 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @Inject(method = "requestTeleport(Lnet/minecraft/entity/player/PlayerPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
-   private void arcananovum_ensnarementPlayerTeleport(PlayerPosition pos, Set<PositionFlag> flags, CallbackInfo ci){
+   private void arcananovum$ensnarementPlayerTeleport(PlayerPosition pos, Set<PositionFlag> flags, CallbackInfo ci){
       StatusEffectInstance effect = player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null && effect.getAmplifier() > 0){
          player.sendMessage(Text.literal("Your teleport has been ensnared!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
@@ -133,7 +156,7 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @Inject(method = "onPlayerMove", at = @At(value = "INVOKE",target = "Lnet/minecraft/server/network/ServerPlayerEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))
-   private void arcananovum_ensnarementPlayerOnMove(PlayerMoveC2SPacket packet, CallbackInfo ci){
+   private void arcananovum$ensnarementPlayerOnMove(PlayerMoveC2SPacket packet, CallbackInfo ci){
       StatusEffectInstance effect = player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null){
          if (++requestedTeleportId == Integer.MAX_VALUE) {
@@ -154,7 +177,7 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @ModifyVariable(method="onPlayerMove",at=@At("STORE"), ordinal = 0)
-   private double arcananovum_ensnarementPlayerX(double x){
+   private double arcananovum$ensnarementPlayerX(double x){
       if(player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getX();
       }else{
@@ -164,7 +187,7 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @ModifyVariable(method="onPlayerMove",at=@At("STORE"), ordinal = 1)
-   private double arcananovum_ensnarementPlayerY(double y){
+   private double arcananovum$ensnarementPlayerY(double y){
       if(player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getY();
       }else{
@@ -173,7 +196,7 @@ public class ServerPlayNetworkHandlerMixin {
    }
    
    @ModifyVariable(method="onPlayerMove",at=@At("STORE"), ordinal = 2)
-   private double arcananovum_ensnarementPlayerZ(double z){
+   private double arcananovum$ensnarementPlayerZ(double z){
       if(player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          return player.getZ();
       }else{

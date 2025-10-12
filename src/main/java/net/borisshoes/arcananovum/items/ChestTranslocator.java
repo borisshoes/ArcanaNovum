@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.Block;
@@ -154,7 +155,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
          
          for(int i = 0; i < items.size(); i++){
             NbtCompound stack = items.getCompoundOrEmpty(i);
-            ItemStack itemStack = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE,ArcanaNovum.SERVER.getRegistryManager()),stack).result().orElse(ItemStack.EMPTY);
+            ItemStack itemStack = ItemStack.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, BorisLib.SERVER.getRegistryManager()),stack).result().orElse(ItemStack.EMPTY);
             inv.setStack(stack.getByte("Slot", (byte) 0), itemStack);
          }
       }
@@ -243,7 +244,7 @@ public class ChestTranslocator extends EnergyItem implements ArcanaItemContainer
                if(cooldown == 0){
                   BlockEntity be = world.getBlockEntity(blockPos);
                   if(be == null) return ActionResult.PASS;
-                  NbtCompound contentData = be.createNbtWithIdentifyingData(ArcanaNovum.SERVER.getRegistryManager());
+                  NbtCompound contentData = be.createNbtWithIdentifyingData(BorisLib.SERVER.getRegistryManager());
                   putProperty(stack,CONTENTS_TAG,contentData);
                   putProperty(stack,STATE_TAG,NbtHelper.fromBlockState(state));
                   if(be instanceof Clearable clearable) clearable.clear();

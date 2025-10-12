@@ -23,7 +23,7 @@ public class EntityTrackerEntryMixin {
    private Entity entity;
    
    @Inject(method = "startTracking", at= @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;sendPacket(Lnet/minecraft/network/packet/Packet;)V", shift = At.Shift.BEFORE))
-   private void arcananovum_stopInvisTracking(ServerPlayerEntity player, CallbackInfo ci, @Local List<?> list){
+   private void arcananovum$stopInvisTracking(ServerPlayerEntity player, CallbackInfo ci, @Local List<?> list){
       if(entity instanceof LivingEntity livingEntity && livingEntity.hasStatusEffect(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT)){
          list.clear();
       }

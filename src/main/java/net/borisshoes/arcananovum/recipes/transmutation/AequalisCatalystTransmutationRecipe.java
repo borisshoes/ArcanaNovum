@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.items.AequalisScientia;
 import net.borisshoes.arcananovum.items.arrows.RunicArrow;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
@@ -96,7 +97,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
                
                if(aug.equals(augment.id) && level == lvl){
                   ArcanaItem arcanaCata = ArcanaRarity.getAugmentCatalyst(rarity);
-                  ItemStack catalyst = arcanaCata.addCrafter(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack),false,altar.getWorld().getServer());
+                  ItemStack catalyst = arcanaCata.addCrafter(arcanaCata.getNewItem(), arcanaItem.getCrafter(arcanaItemStack),0,altar.getWorld().getServer());
                   outputs.add(new Pair<>(catalyst,outputPos));
                   consumedCatas++;
                   cataFound = true;
@@ -124,7 +125,7 @@ public class AequalisCatalystTransmutationRecipe extends TransmutationRecipe{
             aequalisEntity.discard();
          }else if(!timeless){
             ArcanaItem.putProperty(aequalisStack,AequalisScientia.USES_TAG,uses-1);
-            ArcanaRegistry.AEQUALIS_SCIENTIA.buildItemLore(aequalisStack, ArcanaNovum.SERVER);
+            ArcanaRegistry.AEQUALIS_SCIENTIA.buildItemLore(aequalisStack, BorisLib.SERVER);
             aequalisEntity.setStack(aequalisStack);
          }
       }

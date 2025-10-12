@@ -101,12 +101,22 @@ public class ArcaneTome extends ArcanaItem {
          TomeGui.buildCompendiumGui(gui,player,settings);
          open = true;
       }else if(mode == TomeGui.TomeMode.ITEM){
-         gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
-         TomeGui.buildItemGui(gui,player,data);
-         open = true;
+         if(ArcanaItemUtils.getItemFromId(data) != null){
+            gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
+            TomeGui.buildItemGui(gui,player,data);
+            open = true;
+         }else{
+            gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
+            TomeGui.buildCompendiumGui(gui,player,settings);
+            open = true;
+         }
       }else if(mode == TomeGui.TomeMode.RECIPE){
          if(ArcanaItemUtils.getItemFromId(data) != null){
             openRecipeGui(player,settings,ArcanaItemUtils.getItemFromId(data));
+         }else{
+            gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);
+            TomeGui.buildCompendiumGui(gui,player,settings);
+            open = true;
          }
       }else if(mode == TomeGui.TomeMode.ACHIEVEMENTS){
          gui = new TomeGui(ScreenHandlerType.GENERIC_9X6,player,mode,this,settings);

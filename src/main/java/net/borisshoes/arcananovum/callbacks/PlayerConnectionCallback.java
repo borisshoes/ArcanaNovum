@@ -104,7 +104,7 @@ public class PlayerConnectionCallback {
       }
       
       VIRTUAL_INVENTORY_GUIS.forEach((virtualInventoryGui, p) -> {
-         if(player.getUuidAsString().equals(p.getUuidAsString())){
+         if(player.getUuidAsString().equals(p.getUuidAsString()) && virtualInventoryGui.getInventory() != null){
             for(ItemStack itemStack : virtualInventoryGui.getInventory()){
                if(!itemStack.isEmpty()){
                   BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(itemStack.copyAndEmpty(),player,0));

@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
@@ -49,7 +50,7 @@ import java.util.UUID;
 import static net.borisshoes.arcananovum.ArcanaNovum.ITEM_DATA;
 
 public abstract class ArcanaItem implements Comparable<ArcanaItem>{
-   public static final String SYNTHETIC_TAG = "synthetic";
+   public static final String ORIGIN_TAG = "synthetic";
    public static final String CRAFTER_TAG = "crafter";
    public static final String UUID_TAG = "uuid";
    public static final String RARITY_TAG = "Rarity";
@@ -225,10 +226,11 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return stack;
    }
    
-   public ItemStack addCrafter(ItemStack stack, String player, boolean synthetic, MinecraftServer server){
+   // Origin 0 - Crafted, 1 - Synthesized, 2 - Found, 3 - Earned
+   public ItemStack addCrafter(ItemStack stack, String player, int origin, MinecraftServer server){
       player = player == null ? "" : player;
       putProperty(stack,CRAFTER_TAG,player);
-      putProperty(stack,SYNTHETIC_TAG, synthetic);
+      putProperty(stack, ORIGIN_TAG, origin);
       return buildItemLore(stack, server);
    }
    
@@ -238,10 +240,10 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       return getStringProperty(item,CRAFTER_TAG);
    }
    
-   public boolean isSynthetic(ItemStack item){
+   public int getOrigin(ItemStack item){
       if(!ArcanaItemUtils.isArcane(item))
-         return false;
-      return getBooleanProperty(item,SYNTHETIC_TAG);
+         return 0;
+      return getIntProperty(item, ORIGIN_TAG);
    }
    
    
@@ -250,7 +252,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
    }
    
    public void initializePrefItem(){
-      prefItem = buildItemLore(prefItem, ArcanaNovum.SERVER);
+      prefItem = buildItemLore(prefItem, BorisLib.SERVER);
    }
    
    // Override to apply any default enchantments
@@ -271,7 +273,7 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       NbtList catalysts = getListProperty(stack,CATALYSTS_TAG);
       if(!augments.isEmpty()) putProperty(newStack, AUGMENTS_TAG, augments);
       if(!catalysts.isEmpty()) putProperty(newStack, CATALYSTS_TAG, catalysts);
-      addCrafter(newStack,getCrafter(stack),isSynthetic(stack),server);
+      addCrafter(newStack,getCrafter(stack), getOrigin(stack),server);
       
       EnchantmentHelper.set(newStack,stack.getEnchantments());
       
@@ -464,14 +466,20 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       List<Text> loreList = getItemLore(item);
       String player = getCrafter(item);
       player = player == null ? "" : player;
-      boolean synthetic = isSynthetic(item);
+      int origin = getOrigin(item); // Origin 0 - Crafted, 1 - Synthesized, 2 - Found, 3 - Earned
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
       ArcanaRarity rarity = arcanaItem == null ? ArcanaRarity.MUNDANE : arcanaItem.getRarity();
       
       loreList.add(Text.literal(""));
       if(!player.isBlank() && server != null){
          String crafterName = server.getUserCache().getByUuid(AlgoUtils.getUUID(player)).orElse(new GameProfile(AlgoUtils.getUUID(player),"???")).getName();
-         String crafted = synthetic ? "Synthesized by" : rarity == ArcanaRarity.DIVINE ? "Earned by" : "Crafted by";
+         String crafted = switch(origin){
+            case 0 -> rarity == ArcanaRarity.DIVINE ? "Earned by" : "Crafted by";
+            case 1 -> "Synthesized by";
+            case 2 -> "Found by";
+            case 3 -> "Earned by";
+            default -> "Crafted by";
+         };
          loreList.add(TextUtils.removeItalics(Text.literal("")
                .append(Text.literal(crafted+" ").formatted(Formatting.ITALIC,Formatting.DARK_PURPLE))
                .append(Text.literal(crafterName).formatted(Formatting.LIGHT_PURPLE))));

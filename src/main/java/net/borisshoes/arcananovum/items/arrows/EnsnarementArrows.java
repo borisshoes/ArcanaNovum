@@ -94,7 +94,7 @@ public class EnsnarementArrows extends RunicArrow {
             
             if(!ArcanaAchievements.isTimerActive(player, ArcanaAchievements.SHACKLED.id)){
                ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
-               BorisLib.addTickTimerCallback(new RepeatTimer(10,120, ()->{
+               BorisLib.addTickTimerCallback(new RepeatTimer(10,121, ()->{
                   if(living.isAlive() && living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
                      ArcanaAchievements.progress(player, ArcanaAchievements.SHACKLED.id,10);
                   }else{

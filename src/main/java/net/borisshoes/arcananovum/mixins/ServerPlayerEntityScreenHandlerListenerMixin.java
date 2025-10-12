@@ -19,7 +19,7 @@ public class ServerPlayerEntityScreenHandlerListenerMixin {
    ServerPlayerEntity field_29183;
    
    @Inject(method = "onSlotUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/criterion/InventoryChangedCriterion;trigger(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/item/ItemStack;)V"))
-   private void arcananovum_inventoryChanged(ScreenHandler handler, int slotId, ItemStack stack, CallbackInfo ci){
+   private void arcananovum$inventoryChanged(ScreenHandler handler, int slotId, ItemStack stack, CallbackInfo ci){
       InventoryChangedCallback.onSlotUpdate(field_29183,field_29183.getInventory(),stack);
    }
 }

@@ -12,6 +12,7 @@ import net.borisshoes.arcananovum.gui.greaves.GreavesSlot;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
@@ -350,7 +351,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                      stack.set(DataComponentTypes.CONTAINER,addPair.getLeft());
                   }
                }
-               buildItemLore(stack,ArcanaNovum.SERVER);
+               buildItemLore(stack, BorisLib.SERVER);
                return true;
             }else if(clickType == ClickType.RIGHT && otherStack.isEmpty()){ // Try remove
                boolean found = false;
@@ -365,7 +366,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                
                if(found){
                   stack.set(DataComponentTypes.CONTAINER,ContainerComponent.fromStacks(beltList));
-                  buildItemLore(stack,ArcanaNovum.SERVER);
+                  buildItemLore(stack,BorisLib.SERVER);
                   return true;
                }else{
                   return false;

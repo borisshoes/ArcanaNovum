@@ -5,14 +5,12 @@ import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.blocks.forge.StarlightForgeBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.EnergyItem;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaIngredient;
-import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
-import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
-import net.borisshoes.arcananovum.recipes.arcana.GenericArcanaIngredient;
+import net.borisshoes.arcananovum.recipes.arcana.*;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
@@ -23,6 +21,7 @@ import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.tooltip.TooltipType;
@@ -67,7 +66,7 @@ public class PearlOfRecall extends EnergyItem {
       vanillaItem = Items.ENDER_EYE;
       item = new PearlOfRecallItem();
       displayName = Text.translatableWithFallback("item."+MOD_ID+"."+ID,name).formatted(Formatting.BOLD,Formatting.DARK_AQUA);
-      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL};
+      researchTasks = new RegistryKey[]{ResearchTasks.UNLOCK_TEMPORAL_MOMENT,ResearchTasks.ADVANCEMENT_USE_LODESTONE,ResearchTasks.USE_ENDER_PEARL,ResearchTasks.UNLOCK_WAYSTONE};
       
       ItemStack stack = new ItemStack(item);
       initializeArcanaTag(stack);
@@ -134,10 +133,10 @@ public class PearlOfRecall extends EnergyItem {
             dimColor = Formatting.RED;
             dimensionName = "The Nether";
          }else if(dim.equals(ServerWorld.END.getValue().toString())){
-            dimColor = Formatting.YELLOW;
+            dimColor = Formatting.DARK_PURPLE;
             dimensionName = "The End";
          }else{
-            dimColor = Formatting.AQUA;
+            dimColor = Formatting.YELLOW;
             dimensionName = dim;
          }
          
@@ -214,7 +213,7 @@ public class PearlOfRecall extends EnergyItem {
       ArcanaIngredient b = new ArcanaIngredient(Items.GOLD_INGOT,8);
       ArcanaIngredient c = new ArcanaIngredient(Items.CLOCK,8);
       ArcanaIngredient g = new ArcanaIngredient(Items.ENDER_EYE,4);
-      ArcanaIngredient h = new ArcanaIngredient(Items.LODESTONE,1, true);
+      ArcanaIngredient h = new WaystoneIngredient(true);
       ArcanaIngredient l = new ArcanaIngredient(Items.NETHER_STAR,1);
       GenericArcanaIngredient m = new GenericArcanaIngredient(ArcanaRegistry.TEMPORAL_MOMENT,1);
       
@@ -229,11 +228,32 @@ public class PearlOfRecall extends EnergyItem {
    }
    
    @Override
+   public ItemStack forgeItem(Inventory inv, StarlightForgeBlockEntity starlightForge){
+      ItemStack waystone = inv.getStack(7); // Should be the Waystone
+      ItemStack newArcanaItem = getNewItem();
+      
+      Waystone.WaystoneTarget target = Waystone.getTarget(waystone);
+      if(target != null){
+         NbtCompound locNbt = getCompoundProperty(newArcanaItem,LOCATION_TAG);
+         locNbt.putString("dim", target.world().getValue().toString());
+         locNbt.putDouble("x", target.position().x);
+         locNbt.putDouble("y", target.position().y);
+         locNbt.putDouble("z", target.position().z);
+         locNbt.putFloat("yaw", target.yaw());
+         locNbt.putFloat("pitch", target.pitch());
+         putProperty(newArcanaItem,LOCATION_TAG,locNbt);
+         buildItemLore(newArcanaItem,starlightForge.getWorld().getServer());
+      }
+      
+      return newArcanaItem;
+   }
+   
+   @Override
    public List<List<Text>> getBookLore(){
       List<List<Text>> list = new ArrayList<>();
-      list.add(List.of(Text.literal("  Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it. I can even use it multiple times after a recharge.").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nUsing the Pearl sets its Recall point.\n\nUsing the Pearl again starts to unfreeze the Pearl in time.\n \nTaking damage resets the process and requires more recharging.\n\n").formatted(Formatting.BLACK)));
-      list.add(List.of(Text.literal("  Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nAfter using the Pearl, it takes a while to resync to the timeline before use again.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nRarity: ").formatted(Formatting.BLACK).append(ArcanaRarity.getColoredLabel(getRarity(),false)),Text.literal("\nBy freezing an Ender Pearl in time as it activates, I can keep the frozen Pearl with me and unfreeze it when I need to recall myself to where I froze it by using a Waystone to encode the location. ").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nI can even use it multiple times after a recharge.\n\nUsing the Pearl permanently sets its Recall point.\n\nUsing the Pearl again starts to unfreeze the Pearl in time.").formatted(Formatting.BLACK)));
+      list.add(List.of(Text.literal("Pearl of Recall").formatted(Formatting.DARK_AQUA,Formatting.BOLD),Text.literal("\nTaking damage resets the process and requires more recharging.\n\nAfter using the Pearl, it takes a while to resync to the timeline before use again.").formatted(Formatting.BLACK)));
       return list;
    }
    

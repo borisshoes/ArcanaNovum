@@ -33,7 +33,11 @@ import net.borisshoes.arcananovum.items.charms.*;
 import net.borisshoes.arcananovum.items.normal.*;
 import net.borisshoes.arcananovum.lootfunctions.ArcanaBlockEntityLootFunction;
 import net.borisshoes.arcananovum.lootfunctions.ArcaneNotesLootFunction;
+import net.borisshoes.arcananovum.lootfunctions.FoundArcanaItemLootFunction;
+import net.borisshoes.arcananovum.recipes.AquaticEversourceFillRecipe;
 import net.borisshoes.arcananovum.recipes.ArcanaShieldDecoratorRecipe;
+import net.borisshoes.arcananovum.recipes.MagmaticEversourceFillRecipe;
+import net.borisshoes.arcananovum.recipes.WaystoneCleanseRecipe;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainIngredient;
 import net.borisshoes.arcananovum.recipes.arcana.ExplainRecipe;
 import net.borisshoes.arcananovum.recipes.transmutation.TransmutationRecipes;
@@ -69,6 +73,7 @@ import net.minecraft.item.equipment.EquipmentAsset;
 import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.loot.function.LootFunction;
 import net.minecraft.loot.function.LootFunctionType;
+import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.registry.*;
@@ -129,6 +134,7 @@ public class ArcanaRegistry {
    public static final TagKey<EntityType<?>> IGNORES_GREATER_INVISIBILITY = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"ignores_greater_invisibility"));
    public static final TagKey<EntityType<?>> IGNORES_GREATER_BLINDNESS = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"ignores_greater_blindness"));
    public static final TagKey<EntityType<?>> TENBROUS_BONUS_DAMAGE = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"tenbrous_bonus_damage"));
+   public static final TagKey<EntityType<?>> STARPATH_ALLOWED = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(MOD_ID,"starpath_allowed"));
    
    public static final TagKey<Enchantment> FATE_ANCHOR_EXCLUSIVE_SET = TagKey.of(RegistryKeys.ENCHANTMENT, Identifier.of(MOD_ID,"exclusive_set/fate_anchor"));
    
@@ -144,6 +150,36 @@ public class ArcanaRegistry {
          public String toString(){return "arcana_shield_decoration_recipe";}
       });
       ARCANA_SHIELD_DECORATION_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "arcana_shield_decoration"), new ArcanaShieldDecoratorRecipe.ShieldRecipeSerializer(ArcanaShieldDecoratorRecipe::new));
+   }
+   
+   // Registering Eversource Recipes
+   public static final SpecialCraftingRecipe.SpecialRecipeSerializer<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
+   public static final RecipeType<AquaticEversourceFillRecipe> AQUATIC_EVERSOURCE_FILL_RECIPE;
+   public static final SpecialCraftingRecipe.SpecialRecipeSerializer<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER;
+   public static final RecipeType<MagmaticEversourceFillRecipe> MAGMATIC_EVERSOURCE_FILL_RECIPE;
+   static {
+      AQUATIC_EVERSOURCE_FILL_RECIPE = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "aquatic_eversource_fill"), new RecipeType<AquaticEversourceFillRecipe>(){
+         @Override
+         public String toString(){return "aquatic_eversource_fill_recipe";}
+      });
+      AQUATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "aquatic_eversource_fill"), new AquaticEversourceFillRecipe.AquaticEversourceRecipeSerializer(AquaticEversourceFillRecipe::new));
+      
+      MAGMATIC_EVERSOURCE_FILL_RECIPE = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "magmatic_eversource_fill"), new RecipeType<MagmaticEversourceFillRecipe>(){
+         @Override
+         public String toString(){return "magmatic_eversource_fill_recipe";}
+      });
+      MAGMATIC_EVERSOURCE_FILL_RECIPE_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "magmatic_eversource_fill"), new MagmaticEversourceFillRecipe.MagmaticEversourceRecipeSerializer(MagmaticEversourceFillRecipe::new));
+   }
+   
+   // Registering Waystone Cook Recipe
+   public static final AbstractCookingRecipe.Serializer<WaystoneCleanseRecipe> WAYSTONE_CLEANSE_RECIPE_SERIALIZER;
+   public static final RecipeType<WaystoneCleanseRecipe> WAYSTONE_CLEANSE_RECIPE;
+   static {
+      WAYSTONE_CLEANSE_RECIPE = Registry.register(Registries.RECIPE_TYPE, Identifier.of(MOD_ID, "waystone_cleanse"), new RecipeType<WaystoneCleanseRecipe>(){
+         @Override
+         public String toString(){return "waystone_cleanse";}
+      });
+      WAYSTONE_CLEANSE_RECIPE_SERIALIZER = Registry.register(Registries.RECIPE_SERIALIZER, Identifier.of(MOD_ID, "waystone_cleanse"), new WaystoneCleanseRecipe.WaystoneCleanseRecipeSerializer(WaystoneCleanseRecipe::new));
    }
    
    public static final RegistryKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ASSET_REGISTRY_KEY = RegistryKey.ofRegistry(Identifier.ofVanilla("equipment_asset"));
@@ -334,6 +370,9 @@ public class ArcanaRegistry {
    public static final ArcanaItem CLEANSING_CHARM = ArcanaRegistry.register(new CleansingCharm());
    public static final ArcanaItem CETACEA_CHARM = ArcanaRegistry.register(new CetaceaCharm());
    
+   // 3.2 Items
+   public static final ArcanaItem WAYSTONE = ArcanaRegistry.register(new Waystone());
+   
    // Block Entities
    public static final BlockEntityType<? extends BlockEntity> IGNEOUS_COLLIDER_BLOCK_ENTITY = registerBlockEntity(IGNEOUS_COLLIDER.getId(), FabricBlockEntityTypeBuilder.create(IgneousColliderBlockEntity::new,((ArcanaBlock) IGNEOUS_COLLIDER).getBlock()).build());
    public static final BlockEntityType<? extends BlockEntity> FRACTAL_SPONGE_BLOCK_ENTITY = registerBlockEntity(FRACTAL_SPONGE.getId(), FabricBlockEntityTypeBuilder.create(FractalSpongeBlockEntity::new,((ArcanaBlock) FRACTAL_SPONGE).getBlock()).build());
@@ -353,6 +392,7 @@ public class ArcanaRegistry {
    // Loot Functions / Item Modifiers
    public static final LootFunctionType<? extends LootFunction> ARCANE_NOTES_LOOT_FUNCTION = registerLootFunction("arcane_notes", ArcaneNotesLootFunction.CODEC);
    public static final LootFunctionType<? extends LootFunction> ARCANA_BLOCK_ENTITY_LOOT_FUNCTION = registerLootFunction("arcana_block_entity", ArcanaBlockEntityLootFunction.CODEC);
+   public static final LootFunctionType<? extends LootFunction> FOUND_ARCANA_ITEM_LOOT_FUNCTION = registerLootFunction("found_arcana_item", FoundArcanaItemLootFunction.CODEC);
    
    // PlayerAbilityLib Identifiers
    public static final AbilitySource LEVITATION_HARNESS_ABILITY = Pal.getAbilitySource(Identifier.of(MOD_ID, LEVITATION_HARNESS.getId()), AbilitySource.CONSUMABLE);
@@ -534,6 +574,7 @@ public class ArcanaRegistry {
             new ArcanaItemCompendiumEntry(STARPATH_ALTAR),
             new ArcanaItemCompendiumEntry(TRANSMUTATION_ALTAR),
             new TransmutationRecipesCompendiumEntry(),
+            new ArcanaItemCompendiumEntry(WAYSTONE),
             DivineArcanePaper.getCompendiumEntry(),
             new ArcanaItemCompendiumEntry(EXOTIC_MATTER),
             new ArcanaItemCompendiumEntry(CONTINUUM_ANCHOR),

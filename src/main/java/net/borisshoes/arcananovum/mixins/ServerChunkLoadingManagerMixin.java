@@ -39,7 +39,7 @@ public class ServerChunkLoadingManagerMixin implements ServerChunkLoadingManager
    }
    
    @ModifyReturnValue(method = "shouldTick", at = @At("RETURN"))
-   private boolean arcananovum_shouldTick(boolean original, ChunkPos chunkPos){
+   private boolean arcananovum$shouldTick(boolean original, ChunkPos chunkPos){
       if(!original && ContinuumAnchor.isChunkLoaded(hookedWorld, chunkPos)){
          return true;
       }
@@ -47,7 +47,7 @@ public class ServerChunkLoadingManagerMixin implements ServerChunkLoadingManager
    }
    
    @ModifyReturnValue(method = "isAnyPlayerTicking", at = @At("RETURN"))
-   private boolean arcananovum_isAnyPlayerTicking(boolean original, ChunkPos chunkPos){
+   private boolean arcananovum$isAnyPlayerTicking(boolean original, ChunkPos chunkPos){
       if(!original && ContinuumAnchor.isChunkLoaded(hookedWorld, chunkPos)){
          return true;
       }

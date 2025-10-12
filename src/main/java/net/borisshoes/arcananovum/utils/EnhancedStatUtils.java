@@ -2,6 +2,7 @@ package net.borisshoes.arcananovum.utils;
 
 import net.borisshoes.arcananovum.ArcanaNovum;
 import net.borisshoes.arcananovum.core.ArcanaItem;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
@@ -111,7 +112,7 @@ public class EnhancedStatUtils {
          stack.set(DataComponentTypes.LORE, new LoreComponent(lines, styledLines));
       }else{
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
-         arcanaItem.buildItemLore(stack,ArcanaNovum.SERVER);
+         arcanaItem.buildItemLore(stack, BorisLib.SERVER);
       }
    }
    
@@ -217,7 +218,7 @@ public class EnhancedStatUtils {
             stack.set(DataComponentTypes.LORE, new LoreComponent(lines, styledLines));
          }else{
             ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
-            arcanaItem.buildItemLore(stack,ArcanaNovum.SERVER);
+            arcanaItem.buildItemLore(stack,BorisLib.SERVER);
          }
       }
    }

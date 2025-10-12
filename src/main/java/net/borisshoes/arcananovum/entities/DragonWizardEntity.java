@@ -192,7 +192,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
             if(laserTick % 10 == 0){ // Damage every half second
                player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this,this),1.25f);
             }
-            if(laserTick % 2 == 0){ // Particles every other tick
+            if(laserTick % 3 == 0){ // Particles every third tick
                ArcanaEffectUtils.line(endWorld,null,this.getPos(),player.getPos(), ParticleTypes.WITCH,(int)(dist*1.75),1,0.2,0);
             }
          }

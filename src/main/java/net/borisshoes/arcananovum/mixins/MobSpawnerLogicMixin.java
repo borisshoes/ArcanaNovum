@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(MobSpawnerLogic.class)
 public class MobSpawnerLogicMixin {
    @ModifyReturnValue(method = "isPlayerInRange", at = @At(value = "RETURN"))
-   private boolean arcananovum_isPlayerInRange(boolean original, World world, BlockPos pos){
+   private boolean arcananovum$isPlayerInRange(boolean original, World world, BlockPos pos){
       if(original) return true;
       
       if(world instanceof ServerWorld serverWorld){
@@ -54,7 +54,7 @@ public class MobSpawnerLogicMixin {
    }
    
    @Inject(method = "isPlayerInRange", at = @At("RETURN"))
-   private void arcananovum_forPlayersInRange(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$forPlayersInRange(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir){
       if(cir.getReturnValue() && world instanceof ServerWorld serverWorld){
          for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(pos, 5.0))){
             ArcanaNovum.data(player).setResearchTask(ResearchTasks.FIND_SPAWNER, true);
@@ -63,7 +63,7 @@ public class MobSpawnerLogicMixin {
    }
    
    @Inject(method = "serverTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;syncWorldEvent(ILnet/minecraft/util/math/BlockPos;I)V"))
-   private void arcananovum_infuserMobCapSet(ServerWorld world, BlockPos pos, CallbackInfo ci, @Local Entity entity){
+   private void arcananovum$infuserMobCapSet(ServerWorld world, BlockPos pos, CallbackInfo ci, @Local Entity entity){
       if(!(entity instanceof MobEntity mob)) return;
       BlockPos infuserPos = pos.add(0,-2,0);
       BlockEntity be = world.getBlockEntity(infuserPos);

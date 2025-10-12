@@ -86,7 +86,7 @@ public class TickCallback {
                   if(item.isIn(ArcanaRegistry.ALL_ARCANA_ITEMS)){
                      ArcanaItem arcanaItem = ArcanaRegistry.ARCANA_ITEMS.get(Identifier.of(item.getItem().toString()));
                      if(arcanaItem != null){
-                        inv.setStack(i,arcanaItem.addCrafter(arcanaItem.getNewItem(),player.getUuidAsString(),true,server));
+                        inv.setStack(i,arcanaItem.addCrafter(arcanaItem.getNewItem(),player.getUuidAsString(),1,server));
                         item = inv.getStack(i);
                      }
                   }
@@ -107,12 +107,16 @@ public class TickCallback {
                
                ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
                if(ArcanaItem.hasProperty(item,ArcanaItem.UNINITIALIZED_TAG)){
-                  inv.setStack(i,arcanaItem.addCrafter(arcanaItem.getNewItem(),player.getUuidAsString(),true,server));
+                  inv.setStack(i,arcanaItem.addCrafter(arcanaItem.getNewItem(),player.getUuidAsString(),1,server));
                   continue;
                }else if(ArcanaItemUtils.needsVersionUpdate(item)){
                   inv.setStack(i,arcanaItem.updateItem(item,server));
                   ArcanaNovum.devPrint("Updating Item "+item.getName().getString());
                   continue;
+               }
+               
+               if(arcanaItem.getOrigin(item) == 2 && arcanaItem.getCrafter(item).isEmpty()){
+                  arcanaItem.addCrafter(item,player.getUuidAsString(),2,server);
                }
    
                // Achievements

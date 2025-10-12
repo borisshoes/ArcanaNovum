@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EntityMixin {
    
    @Inject(method = "bypassesSteppingEffects", at = @At("RETURN"), cancellable = true)
-   private void arcananovum_greavesWindGrace(CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$greavesWindGrace(CallbackInfoReturnable<Boolean> cir){
       if(cir.getReturnValueZ()) return;
       if(((Entity)(Object)this) instanceof LivingEntity living){
          ItemStack pants = living.getEquippedStack(EquipmentSlot.LEGS);

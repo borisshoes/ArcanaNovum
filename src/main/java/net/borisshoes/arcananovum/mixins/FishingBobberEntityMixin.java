@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class FishingBobberEntityMixin {
    
    @Inject(method = "pullHookedEntity", at = @At(value="INVOKE",target="Lnet/minecraft/entity/Entity;setVelocity(Lnet/minecraft/util/math/Vec3d;)V"))
-   private void arcananovum_pullHookedEntity(CallbackInfo ci){
+   private void arcananovum$pullHookedEntity(CallbackInfo ci){
       FishingBobberEntity bobber = (FishingBobberEntity) (Object) this;
       
       if(bobber.getPlayerOwner() instanceof ServerPlayerEntity player){

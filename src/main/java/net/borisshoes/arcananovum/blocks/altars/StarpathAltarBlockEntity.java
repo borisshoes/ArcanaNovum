@@ -9,6 +9,7 @@ import net.borisshoes.arcananovum.ArcanaRegistry;
 import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
+import net.borisshoes.arcananovum.callbacks.XPLoginCallback;
 import net.borisshoes.arcananovum.core.ArcanaBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.Multiblock;
@@ -18,20 +19,21 @@ import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.timers.GenericTimer;
-import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -41,6 +43,7 @@ import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -49,7 +52,9 @@ import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 
 public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObject, ArcanaBlockEntity {
    public static final Item COST = Items.ENDER_EYE;
@@ -57,11 +62,11 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    private TreeMap<ArcanaAugment,Integer> augments;
    private String crafterId;
    private String uuid;
-   private boolean synthetic;
+   private int origin;
    private String customName;
    private int cooldown;
-   private BlockPos targetCoords;
-   private Map<String,BlockPos> savedTargets;
+   private TargetEntry target;
+   private List<TargetEntry> savedTargets;
    private int activeTicks;
    private final Multiblock multiblock;
    
@@ -70,19 +75,19 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.multiblock = ((MultiblockCore) ArcanaRegistry.STARPATH_ALTAR).getMultiblock();
    }
    
-   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, boolean synthetic, @Nullable String customName){
+   public void initialize(TreeMap<ArcanaAugment,Integer> augments, String crafterId, String uuid, int origin, @Nullable String customName){
       this.augments = augments;
       this.crafterId = crafterId;
       this.uuid = uuid;
-      this.synthetic = synthetic;
+      this.origin = origin;
       this.customName = customName == null ? "" : customName;
-      this.targetCoords = getPos().mutableCopy();
+      this.target = new TargetEntry("","",getPos().getX(), getPos().getY(), getPos().getZ());
       this.activeTicks = 0;
-      this.savedTargets = new HashMap<>();
+      this.savedTargets = new ArrayList<>();
       resetCooldown();
    }
    
-   public Map<String,BlockPos> getSavedTargets(){
+   public List<TargetEntry> getSavedTargets(){
       return this.savedTargets;
    }
    
@@ -98,57 +103,58 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    
    private void teleport(@Nullable ServerPlayerEntity player){
       if(!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+      ServerWorld destWorld = getWorld().getServer().getWorld(getTargetDimension());
+      if(!destWorld.getRegistryKey().getValue().equals(getWorld().getRegistryKey().getValue()) && ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STARGATE.id) < 1) return;
       Box teleportBox = (new Box(this.getPos().add(0,2,0))).expand(5,2,5);
-      List<LivingEntity> targets = this.getWorld().getEntitiesByClass(LivingEntity.class,teleportBox,(e)->true);
+      List<Entity> targets = this.getWorld().getOtherEntities(null,teleportBox,(e)->e instanceof LivingEntity || e.getType().isIn(ArcanaRegistry.STARPATH_ALLOWED));
       
       int tries = 0; int range = 4; int height = 2;
       ArrayList<BlockPos> locations;
       do{
-         locations = SpawnPile.makeSpawnLocations(targets.size(),range, this.getTargetCoords().getY()+height, serverWorld, this.getTargetCoords());
+         locations = SpawnPile.makeSpawnLocations(targets.size(),range, this.getTarget().getY()+height, destWorld, this.getTarget());
          tries++; range++; height += 16; // Expand search area
       }while(locations.size() != targets.size() && tries < 5);
       if(locations.size() != targets.size()){
-         for(LivingEntity target : targets){
+         for(Entity target : targets){
             if(target instanceof ServerPlayerEntity targetPlayer) targetPlayer.sendMessage(Text.literal("The teleport goes awry, everyone is shunted uncontrollably!").formatted(Formatting.RED,Formatting.ITALIC),false);
          }
          locations = new ArrayList<>();
          for(int i = 0; i < targets.size(); i++){
-            locations.add(this.getTargetCoords());
+            locations.add(this.getTarget());
          }
       }
       
       for(int i = 0; i < targets.size(); i++){
-         LivingEntity target = targets.get(i);
+         Entity target = targets.get(i);
          BlockPos location = locations.get(i);
-         target.teleportTo(new TeleportTarget(serverWorld, location.toCenterPos(), Vec3d.ZERO, target.getYaw(), target.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
-         ArcanaEffectUtils.recallTeleport(serverWorld,target.getPos());
+         target.teleportTo(new TeleportTarget(destWorld, location.toCenterPos(), Vec3d.ZERO, target.getYaw(), target.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
+         ArcanaEffectUtils.recallTeleport(destWorld,target.getPos());
          
-         if(target instanceof ServerPlayerEntity p && Math.sqrt(this.getPos().getSquaredDistance(this.getTargetCoords())) >= 100000){
+         if(target instanceof ServerPlayerEntity p && Math.sqrt(this.getPos().getSquaredDistance(this.getTarget())) >= 100000){
             ArcanaAchievements.grant(p,ArcanaAchievements.FAR_FROM_HOME.id);
          }
          if(player != null && (target instanceof TameableEntity tameable && tameable.isOwner(player) || (target instanceof ServerPlayerEntity && target != player)) && targets.contains(player)){
             ArcanaAchievements.grant(player,ArcanaAchievements.ADVENTURING_PARTY.id);
          }
       }
-      SoundUtils.playSound(serverWorld,this.getTargetCoords(), SoundEvents.BLOCK_PORTAL_TRAVEL, SoundCategory.BLOCKS, 2, 1.5f);
+      SoundUtils.playSound(destWorld,this.getTarget(), SoundEvents.BLOCK_PORTAL_TRAVEL, SoundCategory.BLOCKS, 2, 1.5f);
    }
    
    public boolean startTeleport(@Nullable ServerPlayerEntity player){
       if(this.getCooldown() > 0 || !(this.getWorld() instanceof ServerWorld serverWorld)) return false;
-      if(player == null && getCrafterId() != null){
-         PlayerEntity crafter = serverWorld.getPlayerByUuid(AlgoUtils.getUUID(getCrafterId()));
-         if(crafter instanceof ServerPlayerEntity){
-            player = (ServerPlayerEntity) crafter;
-         }
-      }
-      @Nullable ServerPlayerEntity finalPlayer = player;
+      ServerWorld destWorld = getWorld().getServer().getWorld(getTargetDimension());
+      if(!destWorld.getRegistryKey().getValue().equals(getWorld().getRegistryKey().getValue()) && ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.STARGATE.id) < 1) return false;
       
       this.setActiveTicks(500);
       this.resetCooldown();
-      ArcanaEffectUtils.starpathAltarAnim(serverWorld,this.getPos().toCenterPos());
-      BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(500, () -> {
-         teleport(finalPlayer);
-         if(finalPlayer != null) ArcanaNovum.data(finalPlayer).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARPATH_ALTAR_ACTIVATE));
+      ArcanaEffectUtils.starpathAltarAnim(destWorld,this.getPos().toCenterPos());
+      BorisLib.addTickTimerCallback(new GenericTimer(500, () -> {
+         teleport(player);
+         if(player == null && getCrafterId() != null){
+            BorisLib.addLoginCallback(new XPLoginCallback(serverWorld.getServer(), getCrafterId(),ArcanaConfig.getInt(ArcanaRegistry.IGNEOUS_COLLIDER_PRODUCE)));
+         }else if(player != null){
+            ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.STARPATH_ALTAR_ACTIVATE));
+         }
       }));
       return true;
    }
@@ -161,10 +167,14 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    
    public int calculateCost(){
       BlockPos origin = getPos().mutableCopy();
-      BlockPos target = targetCoords.mutableCopy();
+      BlockPos target = this.target.getBlockCoords();
       int multiplier = ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.ASTRAL_PATHFINDER.id);
       int blocksPerUnit = 64 * (1 << multiplier);
-      return Math.max(1,(int) (Math.sqrt(origin.getSquaredDistance(target)) / blocksPerUnit));
+      int cost = Math.max(1,(int) (Math.sqrt(origin.getSquaredDistance(target)) / blocksPerUnit));
+      if(!getTargetDimension().getValue().equals(getWorld().getRegistryKey().getValue())){
+         cost += cost + 16;
+      }
+      return cost;
    }
    
    @Override
@@ -235,19 +245,27 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       this.cooldown = 36000 - ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.CONSTELLATION_DRIFT.id) * 6000;
    }
    
-   public void setTargetCoords(BlockPos pos){
-      this.targetCoords = pos.mutableCopy();
+   public void setTarget(BlockPos pos){
+      this.target = new TargetEntry("","",pos.getX(), pos.getY(), pos.getZ());
    }
    
-   public void setTargetCoords(int x, int y, int z){
-      this.targetCoords = new BlockPos(x,y,z);
+   public void setTarget(TargetEntry pos){
+      this.target = pos;
    }
    
-   public BlockPos getTargetCoords(){
-      if(this.targetCoords == null){
-         this.targetCoords = this.getPos();
+   public BlockPos getTarget(){
+      if(this.target == null){
+         this.target = new TargetEntry("","",getPos().getX(), getPos().getY(), getPos().getZ());
       }
-      return this.targetCoords;
+      return this.target.getBlockCoords();
+   }
+   
+   public RegistryKey<World> getTargetDimension(){
+      ServerWorld fetchedWorld = getWorld().getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, Identifier.of(this.target.dimension())));
+      if(fetchedWorld == null){
+         return getWorld().getRegistryKey();
+      }
+      return fetchedWorld.getRegistryKey();
    }
    
    public TreeMap<ArcanaAugment, Integer> getAugments(){
@@ -262,8 +280,8 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
       return uuid;
    }
    
-   public boolean isSynthetic(){
-      return synthetic;
+   public int getOrigin(){
+      return origin;
    }
    
    public String getCustomArcanaName(){
@@ -277,12 +295,13 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    public NbtList writeTargets(){
       if(this.savedTargets != null){
          NbtList targetList = new NbtList();
-         for(Map.Entry<String, BlockPos> entry : this.savedTargets.entrySet()){
+         for(TargetEntry entry : this.savedTargets){
             NbtCompound target = new NbtCompound();
-            target.putString("name",entry.getKey());
-            target.putInt("x",entry.getValue().getX());
-            target.putInt("y",entry.getValue().getY());
-            target.putInt("z",entry.getValue().getZ());
+            target.putString("name",entry.name);
+            target.putString("dimension", entry.dimension);
+            target.putInt("x",entry.x);
+            target.putInt("y",entry.y);
+            target.putInt("z",entry.z);
             targetList.add(target);
          }
          return targetList;
@@ -292,71 +311,64 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
    }
    
    public void readTargets(NbtList targetList){
-      this.savedTargets = new HashMap<>();
+      this.savedTargets = new ArrayList<>();
       for(NbtElement e : targetList){
          NbtCompound target = ((NbtCompound) e);
-         this.savedTargets.put(target.getString("name", ""), new BlockPos(target.getInt("x", 0), target.getInt("y", 0), target.getInt("z", 0)));
+         this.savedTargets.add(new TargetEntry(
+               target.getString("name",""),
+               target.getString("dimension",""),
+               target.getInt("x", 0),
+               target.getInt("y", 0),
+               target.getInt("z", 0)));
       }
    }
    
    @Override
    public void readData(ReadView view){
       super.readData(view);
-      this.uuid = view.getString("arcanaUuid", "");
-      this.crafterId = view.getString("crafterId", "");
-      this.customName = view.getString("customName", "");
-      this.synthetic = view.getBoolean("synthetic", false);
+      this.uuid = view.getString(ArcanaBlockEntity.ARCANA_UUID_TAG, "");
+      this.crafterId = view.getString(ArcanaBlockEntity.CRAFTER_ID_TAG, "");
+      this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
+      this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.cooldown = view.getInt("cooldown", 0);
-      this.targetCoords = getPos();
-      view.read("target",BlockPos.CODEC).ifPresent(data -> {
-         this.targetCoords = data;
+      this.target = new TargetEntry("","",getPos().getX(), getPos().getY(), getPos().getZ());;
+      view.read("target",ENTRY_CODEC).ifPresent(data -> {
+         this.target = data;
       });
       this.augments = new TreeMap<>();
       view.read("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC).ifPresent(data -> {
          this.augments = data;
       });
       
-      view.read("targets",StarpathTargets.CODEC).ifPresent(targets -> {
-         this.savedTargets = targets.targets();
+      view.read("targets",ENTRY_CODEC.listOf()).ifPresent(targets -> {
+         this.savedTargets = new ArrayList<>(targets);
       });
    }
    
    @Override
    protected void writeData(WriteView view){
       super.writeData(view);
-      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
-      view.putString("arcanaUuid",this.uuid == null ? "" : this.uuid);
-      view.putString("crafterId",this.crafterId == null ? "" : this.crafterId);
-      view.putString("customName",this.customName == null ? "" : this.customName);
-      view.putBoolean("synthetic",this.synthetic);
+      view.putNullable(ArcanaBlockEntity.AUGMENT_TAG,ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putString(ArcanaBlockEntity.ARCANA_UUID_TAG,this.uuid == null ? "" : this.uuid);
+      view.putString(ArcanaBlockEntity.CRAFTER_ID_TAG,this.crafterId == null ? "" : this.crafterId);
+      view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
+      view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
       view.putInt("cooldown",this.cooldown);
-      view.putNullable("target",BlockPos.CODEC,targetCoords);
-      view.putNullable("targets",StarpathTargets.CODEC,new StarpathTargets(this.savedTargets));
+      view.putNullable("target",ENTRY_CODEC, target);
+      view.putNullable("targets",ENTRY_CODEC.listOf(),this.savedTargets);
    }
    
-   public record StarpathTargets(Map<String, BlockPos> targets) {
-      
-      public StarpathTargets {
-         if (targets == null) targets = new HashMap<>();
+   public record TargetEntry(String name, String dimension, int x, int y, int z) {
+      public BlockPos getBlockCoords(){
+         return new BlockPos(x,y,z);
       }
-      
-      private record TargetEntry(String name, int x, int y, int z) {}
-      private static final Codec<TargetEntry> ENTRY_CODEC = RecordCodecBuilder.create(i -> i.group(
-            Codec.STRING.fieldOf("name").forGetter(TargetEntry::name),
-            Codec.INT.fieldOf("x").forGetter(TargetEntry::x),
-            Codec.INT.fieldOf("y").forGetter(TargetEntry::y),
-            Codec.INT.fieldOf("z").forGetter(TargetEntry::z)
-      ).apply(i, TargetEntry::new));
-      
-      // CODEC encodes/decodes directly as a list of entry objects (no wrapper), matching the NBT list produced/consumed below
-      public static final Codec<StarpathTargets> CODEC = ENTRY_CODEC.listOf().xmap(list -> {
-         Map<String, BlockPos> map = new HashMap<>();
-         for (TargetEntry e : list) map.put(e.name(), new BlockPos(e.x(), e.y(), e.z()));
-         return new StarpathTargets(map);
-      }, sp -> {
-         List<TargetEntry> out = new ArrayList<>(sp.targets.size());
-         sp.targets.forEach((name, pos) -> out.add(new TargetEntry(name, pos.getX(), pos.getY(), pos.getZ())));
-         return out;
-      });
    }
+   
+   private static final Codec<TargetEntry> ENTRY_CODEC = RecordCodecBuilder.create(i -> i.group(
+         Codec.STRING.fieldOf("name").forGetter(TargetEntry::name),
+         Codec.STRING.fieldOf("dimension").forGetter(TargetEntry::dimension),
+         Codec.INT.fieldOf("x").forGetter(TargetEntry::x),
+         Codec.INT.fieldOf("y").forGetter(TargetEntry::y),
+         Codec.INT.fieldOf("z").forGetter(TargetEntry::z)
+   ).apply(i, TargetEntry::new));
 }

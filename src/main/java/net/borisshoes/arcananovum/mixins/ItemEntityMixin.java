@@ -43,7 +43,7 @@ import java.util.List;
 public class ItemEntityMixin {
    
    @Inject(method="setStack",at=@At("HEAD"))
-   private void arcananovum_destroyFake(ItemStack stack, CallbackInfo ci){
+   private void arcananovum$destroyFake(ItemStack stack, CallbackInfo ci){
       ItemEntity itemEntity = (ItemEntity) (Object) this;
       if(BinaryBlades.isFakeBlade(stack)){
          itemEntity.discard();
@@ -54,7 +54,7 @@ public class ItemEntityMixin {
    }
    
    @Inject(method="tick",at=@At("TAIL"))
-   private void arcananovum_worldDetection(CallbackInfo ci){
+   private void arcananovum$worldDetection(CallbackInfo ci){
       ItemEntity itemEntity = (ItemEntity) (Object) this;
       ItemStack stack = itemEntity.getStack();
       World world = itemEntity.getWorld();
@@ -115,7 +115,7 @@ public class ItemEntityMixin {
                serverWorld.setBlockState(smithPos, ((ArcanaBlock)ArcanaRegistry.STARLIGHT_FORGE).getBlock().getDefaultState(),3);
                BlockEntity blockEntity = serverWorld.getBlockEntity(smithPos);
                if(blockEntity instanceof StarlightForgeBlockEntity forge){
-                  ItemStack newForgeStack = forgeItem.addCrafter(forgeItem.getNewItem(),playerId,false,serverWorld.getServer());
+                  ItemStack newForgeStack = forgeItem.addCrafter(forgeItem.getNewItem(),playerId,0,serverWorld.getServer());
                   ArcanaPolymerBlockEntity.initializeArcanaBlock(newForgeStack,forge);
                   
                   if(player != null){
@@ -178,7 +178,7 @@ public class ItemEntityMixin {
                }
                if(tomeCrafter != null){
                   IArcanaProfileComponent profile = ArcanaNovum.data(tomeCrafter);
-                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getUuidAsString(),false,itemEntity.getServer());
+                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getUuidAsString(),0,itemEntity.getServer());
                   if(!profile.addCrafted(tomeStack)){
                      profile.addXP(ArcanaRarity.getFirstCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));
                   }
@@ -275,7 +275,7 @@ public class ItemEntityMixin {
    }
    
    @Inject(method="onPlayerCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;insertStack(Lnet/minecraft/item/ItemStack;)Z",shift = At.Shift.BEFORE))
-   private void arcananovum_removeCraftData(PlayerEntity player, CallbackInfo ci, @Local LocalRef<ItemStack> itemStackRef){
+   private void arcananovum$removeCraftData(PlayerEntity player, CallbackInfo ci, @Local LocalRef<ItemStack> itemStackRef){
       ItemStack stack = itemStackRef.get();
       if(stack.isOf(ArcanaRegistry.MUNDANE_ARCANE_PAPER)){
          ArcanaItem.removeProperty(stack,ArcaneTome.TOME_TAG);

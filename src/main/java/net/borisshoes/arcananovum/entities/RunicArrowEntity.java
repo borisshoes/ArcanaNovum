@@ -243,7 +243,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
    @Override
    protected void writeCustomData(WriteView view){
       super.writeCustomData(view);
-      view.putNullable("arcanaAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
+      view.putNullable("runicAugments",ArcanaAugments.AugmentData.AUGMENT_MAP_CODEC,this.augments);
       view.putString("runicArrowType",arrowType.getId());
       view.putNullable("runicArrowData",NbtCompound.CODEC,data);
    }

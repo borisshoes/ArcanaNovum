@@ -15,6 +15,7 @@ import net.borisshoes.arcananovum.recipes.arcana.ForgeRequirement;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.DataComponentTypes;
@@ -184,7 +185,7 @@ public class Soulstone extends ArcanaItem {
       ItemStack item = stack.copy();
       String entityTypeId = EntityType.getId(type).toString();
       putProperty(item,TYPE_TAG,entityTypeId);
-      return ArcanaRegistry.SOULSTONE.buildItemLore(item,ArcanaNovum.SERVER);
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item, BorisLib.SERVER);
    }
    
    public static ItemStack setUnattuned(ItemStack stack){
@@ -194,7 +195,7 @@ public class Soulstone extends ArcanaItem {
       ItemStack item = setSouls(stack,0);
       
       putProperty(item,TYPE_TAG,"unattuned");
-      return ArcanaRegistry.SOULSTONE.buildItemLore(item,ArcanaNovum.SERVER);
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item,BorisLib.SERVER);
    }
    
    public static int getSouls(ItemStack item){
@@ -213,7 +214,7 @@ public class Soulstone extends ArcanaItem {
       newSouls = MathHelper.clamp(newSouls,0,Integer.MAX_VALUE);
       putProperty(item,SOULS_TAG,newSouls);
       putProperty(item,SOULS_FROM_SPEAR_TAG,Math.min(getIntProperty(item,SOULS_FROM_SPEAR_TAG),newSouls));
-      return ArcanaRegistry.SOULSTONE.buildItemLore(item,ArcanaNovum.SERVER);
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item,BorisLib.SERVER);
    }
    
    public static ItemStack getShowcaseItem(int souls, @Nullable String typeId){
@@ -224,7 +225,7 @@ public class Soulstone extends ArcanaItem {
          item = setType(item, type);
       }
       item = setSouls(item,souls);
-      return ArcanaRegistry.SOULSTONE.buildItemLore(item, ArcanaNovum.SERVER);
+      return ArcanaRegistry.SOULSTONE.buildItemLore(item, BorisLib.SERVER);
    }
    
    public static int soulsToTier(int souls){

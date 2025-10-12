@@ -1,0 +1,17 @@
+{
+  "values": [
+    "#minecraft:arrows",
+    "#minecraft:boat",
+    "#minecraft:impact_projectiles",
+    "minecraft:experience_orb",
+    "minecraft:minecart",
+    "minecraft:chest_minecart",
+    "minecraft:furnace_minecart",
+    "minecraft:tnt_minecart",
+    "minecraft:command_block_minecart",
+    "minecraft:hopper_minecart",
+    "minecraft:spawner_minecart",
+    "minecraft:falling_block",
+    "minecraft:tnt"
+  ]
+}

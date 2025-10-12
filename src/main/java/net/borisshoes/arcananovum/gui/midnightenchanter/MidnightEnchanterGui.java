@@ -19,6 +19,7 @@ import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.gui.GraphicalItem;
 import net.borisshoes.borislib.gui.GuiHelper;
 import net.borisshoes.borislib.utils.MinecraftUtils;
@@ -628,7 +629,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       }
       
       if(ArcanaItemUtils.isArcane(stack)){
-         ArcanaItemUtils.identifyItem(stack).buildItemLore(stack, ArcanaNovum.SERVER);
+         ArcanaItemUtils.identifyItem(stack).buildItemLore(stack, BorisLib.SERVER);
       }
       inventory.setStack(0,stack);
       listener.finishUpdate();
@@ -826,6 +827,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    @Override
    public void onClose(){
       MinecraftUtils.returnItems(inventory,player);
+      super.onClose();
    }
    
    @Override

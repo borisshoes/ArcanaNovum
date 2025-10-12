@@ -917,7 +917,7 @@ public class ArcanaCommands {
          }
    
          for(ServerPlayerEntity target : targets){
-            ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),target.getUuidAsString(),true,source.getServer());
+            ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),target.getUuidAsString(),1,source.getServer());
             
             if(item == null){
                source.sendMessage((Text.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).formatted(Formatting.RED, Formatting.ITALIC));
@@ -942,7 +942,7 @@ public class ArcanaCommands {
             source.sendMessage(Text.literal("Invalid Arcana Item ID: "+id).formatted(Formatting.RED, Formatting.ITALIC));
             return 0;
          }
-         ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),true,source.getServer());
+         ItemStack item = arcanaItem.addCrafter(arcanaItem.getNewItem(),source.getPlayerOrThrow().getUuidAsString(),1,source.getServer());
          
          if(item == null){
             source.sendMessage((Text.literal("No Preferred Item Found For: ").append(arcanaItem.getTranslatedName())).formatted(Formatting.RED, Formatting.ITALIC));
@@ -1266,7 +1266,7 @@ public class ArcanaCommands {
             }else if(dim.equals(ServerWorld.NETHER.getValue().toString())){
                dimensionName = Text.literal("The Nether").formatted(Formatting.RED);
             }else if(dim.equals(ServerWorld.END.getValue().toString())){
-               dimensionName = Text.literal("The End").formatted(Formatting.YELLOW);
+               dimensionName = Text.literal("The End").formatted(Formatting.DARK_PURPLE);
             }
             BlockPos pos = blockEntity.getPos();
             String posStr = pos.getX()+","+pos.getY()+","+pos.getZ();

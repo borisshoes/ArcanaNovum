@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class RemoveEffectsConsumeEffectMixin {
    
    @Inject(method = "onConsume", at = @At("RETURN"))
-   private void arcananovum_honeyCleanse(World world, ItemStack stack, LivingEntity user, CallbackInfoReturnable<Boolean> cir){
+   private void arcananovum$honeyCleanse(World world, ItemStack stack, LivingEntity user, CallbackInfoReturnable<Boolean> cir){
       if(cir.getReturnValue() && stack.isOf(Items.HONEY_BOTTLE) && user instanceof ServerPlayerEntity player){
          ArcanaNovum.data(player).setResearchTask(ResearchTasks.HONEY_CLEANSE, true);
       }

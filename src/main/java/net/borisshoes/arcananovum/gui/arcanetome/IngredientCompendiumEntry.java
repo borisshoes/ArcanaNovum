@@ -11,16 +11,23 @@ import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class IngredientCompendiumEntry extends CompendiumEntry{
    
    private final ExplainRecipe recipe;
    private final Text name;
+   private final Optional<List<List<Text>>> bookLore;
    
    public IngredientCompendiumEntry(Text name, ItemStack displayStack, ExplainRecipe recipe){
+      this(name,displayStack,recipe,null);
+   }
+   
+   public IngredientCompendiumEntry(Text name, ItemStack displayStack, ExplainRecipe recipe, List<List<Text>> bookLore){
       super(new TomeGui.TomeFilter[]{TomeGui.TomeFilter.INGREDIENT}, displayStack);
       this.recipe = recipe;
       this.name = name;
+      this.bookLore = bookLore == null ? Optional.empty() : Optional.of(bookLore);
       LoreComponent lore = this.displayStack.getOrDefault(DataComponentTypes.LORE, LoreComponent.DEFAULT);
       if(!lore.lines().isEmpty()){
          List<Text> lines = new ArrayList<>(lore.styledLines());
@@ -46,5 +53,13 @@ public class IngredientCompendiumEntry extends CompendiumEntry{
    @Override
    public int getRarityValue(){
       return -1;
+   }
+   
+   public boolean hasBookLore(){
+      return bookLore.isPresent();
+   }
+   
+   public List<List<Text>> getBookLore(){
+      return bookLore.orElse(null);
    }
 }

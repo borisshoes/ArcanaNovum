@@ -157,7 +157,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
       }
       
       public void applyEffect(ServerWorld world, LivingEntity entity, StatusEffectInstance effect){
-         if(!world.getRegistryKey().toString().equals(blockWorld.getRegistryKey().toString())) return;
+         if(!world.getRegistryKey().getValue().toString().equals(blockWorld.getRegistryKey().getValue().toString())) return;
          StatusEffectInstance existing = entity.getStatusEffect(effect.getEffectType());
          if(existing != null && existing.getAmplifier() >= effect.getAmplifier()){
             return;
@@ -171,7 +171,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
       
       @Override
       public List<BlockPos> getAffectedBlocks(ServerWorld world){
-         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().toString().equals(world.getRegistryKey().toString())){
+         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().getValue().toString().equals(world.getRegistryKey().getValue().toString())){
             ArrayList<BlockPos> blocks = new ArrayList<>();
             for(BlockPos block : BlockPos.iterateOutwards(getBlockPos(), (int) range+4, (int) range+4, (int) range+4)){
                if(block.toCenterPos().distanceTo(getBlockPos().toCenterPos()) <= range+0.4){
@@ -186,7 +186,7 @@ public class AlchemicalArrowAreaEffectTracker extends AreaEffectTracker{
       
       @Override
       public List<Entity> getAffectedEntities(ServerWorld world){
-         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().toString().equals(world.getRegistryKey().toString())){
+         if(getSourceWorld() instanceof ServerWorld thisWorld && thisWorld.getRegistryKey().getValue().toString().equals(world.getRegistryKey().getValue().toString())){
             BlockPos blockPos = getBlockPos();
             Box rangeBox = Box.from(blockPos.toCenterPos()).expand(range+4);
             return world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(blockPos.toCenterPos()) < range*range && e instanceof LivingEntity);

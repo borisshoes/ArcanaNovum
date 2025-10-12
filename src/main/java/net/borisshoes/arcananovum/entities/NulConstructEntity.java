@@ -513,13 +513,13 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       boolean dropped = isExalted || this.random.nextFloat() < 0.01;
       
       if(dropped){
-         ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),false,server);
+         ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),0,server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }
       
       if(!isExalted){
-         ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(),summoner.getUuidAsString(),false,server);
+         ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(),summoner.getUuidAsString(),0,server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
          dropItem(getWorld(), stack.copyWithCount(1),getPos());
       }

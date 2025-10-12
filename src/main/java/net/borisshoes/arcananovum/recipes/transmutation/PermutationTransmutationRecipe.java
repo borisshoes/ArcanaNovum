@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.blocks.altars.TransmutationAltarBlockEntity;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.AlgoUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.entity.ItemEntity;
@@ -40,7 +41,7 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe{
          ItemStack outputStack = permutationFunction.apply(input,player.getServer()).copy();
          if(ArcanaItemUtils.isArcane(positiveInput) && ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),false,player.getServer());
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),0,player.getServer());
          }
          returnItems.add(outputStack);
       }
@@ -82,7 +83,7 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe{
          if(ArcanaItemUtils.isArcane(inputStack) && ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaInputItem = ArcanaItemUtils.identifyItem(inputStack);
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),false, ArcanaNovum.SERVER);
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),arcanaInputItem.getCrafter(inputStack),0, BorisLib.SERVER);
          }
          
          outputs.add(new Pair<>(outputStack,outputPos));

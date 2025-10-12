@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MoveControlMixin {
    
    @Inject(method = "tick", at=@At("HEAD"))
-   private void arcananovum_ensnarementMob(CallbackInfo ci){
+   private void arcananovum$ensnarementMob(CallbackInfo ci){
       MoveControl moveControl = (MoveControl)(Object)this;
       MobEntity entity = moveControl.entity;
       
