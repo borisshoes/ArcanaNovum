@@ -291,6 +291,7 @@ public class SpawnerInfuserBlockEntity extends LootableContainerBlockEntity impl
          this.augments = data;
       });
       this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
       if (!this.readLootTable(view)) {
          Inventories.readData(view, this.inventory.getHeldStacks());
       }

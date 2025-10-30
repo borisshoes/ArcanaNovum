@@ -1,5 +1,7 @@
 package net.borisshoes.arcananovum.utils;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.borisshoes.arcananovum.augments.ArcanaAugment;
 import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
@@ -13,21 +15,54 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.StackWithSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ArcanaUtils {
+   
+   public static final Codec<StackWithSlot> BIG_STACK_CODEC = RecordCodecBuilder.create(
+         instance -> instance.group(Codecs.NON_NEGATIVE_INT.fieldOf("Slot").orElse(0).forGetter(StackWithSlot::slot), ItemStack.MAP_CODEC.forGetter(StackWithSlot::stack))
+               .apply(instance, StackWithSlot::new)
+   );
+   
+   public static void readBigInventory(ReadView view, DefaultedList<ItemStack> stacks){
+      for (StackWithSlot stackWithSlot : view.getTypedListView("Items", BIG_STACK_CODEC)) {
+         if (stackWithSlot.isValidSlot(stacks.size())) {
+            stacks.set(stackWithSlot.slot(), stackWithSlot.stack());
+         }
+      }
+   }
+   
+   public static void writeBigInventory(WriteView view, DefaultedList<ItemStack> stacks, boolean setIfEmpty) {
+      WriteView.ListAppender<StackWithSlot> listAppender = view.getListAppender("Items", BIG_STACK_CODEC);
+      
+      for (int i = 0; i < stacks.size(); i++) {
+         ItemStack itemStack = stacks.get(i);
+         if (!itemStack.isEmpty()) {
+            listAppender.add(new StackWithSlot(i, itemStack));
+         }
+      }
+      
+      if (listAppender.isEmpty() && !setIfEmpty) {
+         view.remove("Items");
+      }
+   }
    
    public static MutableText getFormattedDimName(RegistryKey<World> worldKey){
       if(worldKey.getValue().toString().equals(ServerWorld.OVERWORLD.getValue().toString())){

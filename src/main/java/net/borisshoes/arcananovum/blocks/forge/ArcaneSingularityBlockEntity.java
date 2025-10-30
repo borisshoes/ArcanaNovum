@@ -14,6 +14,7 @@ import net.borisshoes.arcananovum.core.Multiblock;
 import net.borisshoes.arcananovum.core.MultiblockCore;
 import net.borisshoes.arcananovum.gui.arcanesingularity.ArcaneSingularityGui;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -23,7 +24,10 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.*;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.InventoryChangedListener;
+import net.minecraft.inventory.SidedInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtElement;
@@ -400,8 +404,9 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
          this.augments = data;
       });
       this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
       if (!this.readLootTable(view)) {
-         Inventories.readData(view, this.inventory.getHeldStacks());
+         ArcanaUtils.readBigInventory(view, this.inventory.getHeldStacks());
       }
    }
    
@@ -414,7 +419,7 @@ public class ArcaneSingularityBlockEntity extends LootableContainerBlockEntity i
       view.putString(ArcanaBlockEntity.CUSTOM_NAME,this.customName == null ? "" : this.customName);
       view.putInt(ArcanaBlockEntity.ORIGIN_TAG,this.origin);
       if (!this.writeLootTable(view)) {
-         Inventories.writeData(view, this.inventory.getHeldStacks());
+         ArcanaUtils.writeBigInventory(view, this.inventory.getHeldStacks(), true);
       }
    }
    
