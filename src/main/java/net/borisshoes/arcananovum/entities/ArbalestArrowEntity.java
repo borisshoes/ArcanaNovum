@@ -77,7 +77,7 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
       if(weaponStack != null){
          this.weapon = weaponStack.copy();
          
-         if(getWorld() instanceof ServerWorld serverWorld){
+         if(getEntityWorld() instanceof ServerWorld serverWorld){
             int i = EnchantmentHelper.getProjectilePiercing(serverWorld, weapon, this.stack);
             if(i > 0){
                this.setPierceLevel((byte)i);
@@ -100,8 +100,8 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    
    @Override
    protected void onEntityHit(EntityHitResult entityHitResult){
-      if(getWorld() instanceof ServerWorld world){
-         deployAura(world,getPos());
+      if(getEntityWorld() instanceof ServerWorld world){
+         deployAura(world,getEntityPos());
       }
       super.onEntityHit(entityHitResult);
       
@@ -114,8 +114,8 @@ public class ArbalestArrowEntity extends ArrowEntity implements PolymerEntity {
    
    @Override
    protected void onBlockHit(BlockHitResult blockHitResult){
-      if(getWorld() instanceof ServerWorld world){
-         deployAura(world,getPos());
+      if(getEntityWorld() instanceof ServerWorld world){
+         deployAura(world,getEntityPos());
       }
       super.onBlockHit(blockHitResult);
       

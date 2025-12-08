@@ -97,9 +97,9 @@ public class ArcaneFlakArrows extends RunicArrow {
    }
    
    public static void detonate(PersistentProjectileEntity arrow, double damageRange){
-      if(!(arrow.getWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(arrow.getEntityWorld() instanceof ServerWorld serverWorld)) return;
       int deadPhantomCount = 0;
-      List<Entity> triggerTargets = arrow.getWorld().getOtherEntities(arrow,arrow.getBoundingBox().expand(damageRange*2),
+      List<Entity> triggerTargets = arrow.getEntityWorld().getOtherEntities(arrow,arrow.getBoundingBox().expand(damageRange*2),
             e -> !e.isSpectator() && e.distanceTo(arrow) <= damageRange && e instanceof LivingEntity);
       for(Entity entity : triggerTargets){
          if(entity instanceof LivingEntity e){
@@ -113,7 +113,7 @@ public class ArcaneFlakArrows extends RunicArrow {
       }
       if(arrow.getOwner() instanceof ServerPlayerEntity player && deadPhantomCount >= 5) ArcanaAchievements.grant(player,ArcanaAchievements.AA_ARTILLERY.id);
       
-      ArcanaEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getPos(),damageRange,0);
+      ArcanaEffectUtils.arcaneFlakArrowDetonate(serverWorld,arrow.getEntityPos(),damageRange,0);
       SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS,1f,1f);
       SoundUtils.playSound(serverWorld,arrow.getBlockPos(), SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,1f,1f);
       arrow.discard();

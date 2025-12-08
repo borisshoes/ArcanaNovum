@@ -24,7 +24,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class StardustItem extends NormalPolymerItem {
    
-   public StardustItem(String id, Settings settings){
+   public StardustItem(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

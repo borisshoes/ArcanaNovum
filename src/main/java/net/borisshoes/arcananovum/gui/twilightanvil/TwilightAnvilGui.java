@@ -143,7 +143,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
                }
             }
             
-            SoundUtils.playSound(player.getWorld(),blockEntity.getPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
+            SoundUtils.playSound(player.getEntityWorld(),blockEntity.getPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.BLOCKS, 1f, (float)(0.75f * 0.5f*Math.random()));
             listener.finishUpdate();
          }
       }else if(mode == 2 && inventory != null){ // Augmenting
@@ -151,7 +151,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          
          if(tinkerSlotType == 1){
-            StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getWorld(),blockEntity.getPos());
+            StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getEntityWorld(),blockEntity.getPos());
             if(forge != null){
                item = ArcanaBlockEntity.getBlockEntityAsItem(forge,forge.getWorld());
                arcanaItem = ArcanaItemUtils.identifyItem(item);
@@ -393,7 +393,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
                ArcanaNovum.log(3,"Error applying augment "+augment.id+" to "+ ArcanaItemUtils.identifyItem(item).getId());
             }
          }if(tinkerSlotType == 1){
-            StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getWorld(),blockEntity.getPos());
+            StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getEntityWorld(),blockEntity.getPos());
             if(forge == null){
                player.sendMessage(Text.literal("No Starlight Forge Found").formatted(Formatting.RED),false);
                return false;
@@ -421,7 +421,7 @@ public class TwilightAnvilGui extends VirtualInventoryGui<SimpleInventory> {
       
       if(mode == 2){ // Tinkering
          if(tinkerSlotType == 1){
-            StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getWorld(),blockEntity.getPos());
+            StarlightForgeBlockEntity forge = StarlightForge.findActiveForge(player.getEntityWorld(),blockEntity.getPos());
             if(forge != null){
                item = ArcanaBlockEntity.getBlockEntityAsItem(forge,forge.getWorld());
                arcanaItem = ArcanaItemUtils.identifyItem(item);

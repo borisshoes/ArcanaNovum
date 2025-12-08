@@ -266,7 +266,7 @@ public class TelescopingBeacon extends ArcanaItem {
             }
          }
          if(mining){
-            BorisLib.addTickTimerCallback(player.getWorld(),new BeaconMiningLaserCallback(player.getWorld(),pos,pos.up()));
+            BorisLib.addTickTimerCallback(player.getEntityWorld(),new BeaconMiningLaserCallback(player.getEntityWorld(),pos,pos.up()));
          }
          
          
@@ -276,7 +276,7 @@ public class TelescopingBeacon extends ArcanaItem {
          
          for(int i = 0; i <= tier; i++){
             int j = i;
-            BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
+            BorisLib.addTickTimerCallback(player.getEntityWorld(), new GenericTimer(2*(i+1), () -> SoundUtils.playSound(world,pos,SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.PLAYERS,1,.8f+(.2f*j))));
          }
          
          if(blockTotals.size() == 1 && blockTotals.get(blockKey) >= 164){
@@ -389,7 +389,7 @@ public class TelescopingBeacon extends ArcanaItem {
                
                putProperty(stack,BLOCKS_TAG,new NbtList());
                putProperty(stack,BEACON_TAG,false);
-               buildItemLore(stack,player.getServer());
+               buildItemLore(stack,player.getEntityWorld().getServer());
                player.getItemCooldownManager().set(stack,20);
             }else{
                playerEntity.sendMessage(Text.literal("The Beacon cannot be placed here.").formatted(Formatting.RED,Formatting.ITALIC),true);
@@ -445,7 +445,7 @@ public class TelescopingBeacon extends ArcanaItem {
             putProperty(stack,BEACON_TAG,true);
             
             if(careful){
-               putProperty(stack,DATA_TAG,beaconBlock.createNbtWithIdentifyingData(player.getServer().getRegistryManager()));
+               putProperty(stack,DATA_TAG,beaconBlock.createNbtWithIdentifyingData(player.getEntityWorld().getServer().getRegistryManager()));
             }else{
                putProperty(stack,DATA_TAG,new NbtCompound());
             }
@@ -461,7 +461,7 @@ public class TelescopingBeacon extends ArcanaItem {
                }
             }
             
-            buildItemLore(stack,player.getServer());
+            buildItemLore(stack,player.getEntityWorld().getServer());
             player.getItemCooldownManager().set(stack,20);
          }
          

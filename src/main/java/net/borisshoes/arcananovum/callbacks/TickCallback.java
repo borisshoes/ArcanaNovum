@@ -95,7 +95,7 @@ public class TickCallback {
                      BundleContentsComponent bundleComp = item.get(DataComponentTypes.BUNDLE_CONTENTS);
                      List<ItemStack> newStacks = new ArrayList<>();
                      for(ItemStack invStack : bundleComp.iterate()){
-                        invStack.getItem().inventoryTick(invStack,player.getWorld(),player,null);
+                        invStack.getItem().inventoryTick(invStack,player.getEntityWorld(),player,null);
                         if(!invStack.isEmpty()){
                            newStacks.add(invStack);
                         }
@@ -194,7 +194,7 @@ public class TickCallback {
          if(ArcanaConfig.getBoolean(ArcanaRegistry.DO_CONCENTRATION_DAMAGE)){
             player.sendMessage(Text.literal("Your mind burns as your Arcana overwhelms you!").formatted(Formatting.RED, Formatting.ITALIC, Formatting.BOLD), true);
             SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ILLUSIONER_CAST_SPELL,2,.1f);
-            player.damage(player.getWorld(), ArcanaDamageTypes.of(player.getWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
+            player.damage(player.getEntityWorld(), ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.CONCENTRATION), concTick*2);
          }
          if(!player.isDead()){
             if(player.getHealth() <= 1.5f){
@@ -233,7 +233,7 @@ public class TickCallback {
       
       // Dragon Tower Check
       boolean dragonTowerFly = false;
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(player.getServer().getWorld(World.END)).getBossFight();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(player.getEntityWorld().getServer().getWorld(World.END)).getBossFight();
       if(bossFight != null && bossFight.getLeft() == BossFights.DRAGON){
          List<DragonBossFight.ReclaimState> reclaimStates = DragonBossFight.getReclaimStates();
          if(reclaimStates != null){

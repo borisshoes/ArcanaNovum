@@ -87,6 +87,6 @@ public class GreavesOfGaialtusGui extends SimpleGui {
          items.set(i, itemStack);
       }
       greavesStack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(items));
-      greaves.buildItemLore(greavesStack,player.getServer());
+      greaves.buildItemLore(greavesStack,player.getEntityWorld().getServer());
    }
 }

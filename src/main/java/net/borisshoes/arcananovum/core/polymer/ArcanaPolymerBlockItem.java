@@ -30,7 +30,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class ArcanaPolymerBlockItem extends BlockItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
-   public ArcanaPolymerBlockItem(ArcanaItem arcanaItem, Block block, Settings settings){
+   public ArcanaPolymerBlockItem(ArcanaItem arcanaItem, Block block, net.minecraft.item.Item.Settings settings){
       super(block, settings.useBlockPrefixedTranslationKey().registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }

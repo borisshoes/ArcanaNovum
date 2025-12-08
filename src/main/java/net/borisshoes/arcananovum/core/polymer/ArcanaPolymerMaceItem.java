@@ -29,7 +29,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class ArcanaPolymerMaceItem extends MaceItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
-   public ArcanaPolymerMaceItem(ArcanaItem arcanaItem, Settings settings){
+   public ArcanaPolymerMaceItem(ArcanaItem arcanaItem, net.minecraft.item.Item.Settings settings){
       super(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }

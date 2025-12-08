@@ -85,7 +85,7 @@ public class SmokeArrowAreaEffectTracker extends AreaEffectTracker {
       
       public World getSourceWorld(){
          if(fromEntity){
-            return sourceEntity.getWorld();
+            return sourceEntity.getEntityWorld();
          }else{
             return blockWorld;
          }

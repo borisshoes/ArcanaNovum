@@ -38,10 +38,10 @@ public class PermutationTransmutationRecipe extends TransmutationRecipe{
       List<ItemStack> returnItems = new ArrayList<>();
       int iterations = positiveInput.getCount() / getInput().getCount();
       for(int i = 0; i < iterations; i++){
-         ItemStack outputStack = permutationFunction.apply(input,player.getServer()).copy();
+         ItemStack outputStack = permutationFunction.apply(input,player.getEntityWorld().getServer()).copy();
          if(ArcanaItemUtils.isArcane(positiveInput) && ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),0,player.getServer());
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),0,player.getEntityWorld().getServer());
          }
          returnItems.add(outputStack);
       }

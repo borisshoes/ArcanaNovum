@@ -111,7 +111,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
                if(canApplySkilled){
                   buildSkilledGui(arcanaItem.getId());
                }else{
-                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getServer());
+                  ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getEntityWorld().getServer());
                   forgeItem(arcanaItem, newArcanaItem, recipe, null,type == ClickType.MOUSE_LEFT_SHIFT);
                }
             }
@@ -240,13 +240,13 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
                }
                
                ArcanaRecipe recipe = arcanaItem.getRecipe();
-               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getServer());
+               ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getEntityWorld().getServer());
                forgeItem(arcanaItem, newArcanaItem, recipe, new Pair<>(augment,applicableLevel), type == ClickType.MOUSE_LEFT_SHIFT);
                close();
             }
          }else if(index == 40 && arcanaItem != null){
             ArcanaRecipe recipe = arcanaItem.getRecipe();
-            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getServer());
+            ItemStack newArcanaItem = arcanaItem.addCrafter(arcanaItem.forgeItem(inventory, blockEntity),player.getUuidAsString(),0,player.getEntityWorld().getServer());
             forgeItem(arcanaItem, newArcanaItem, recipe, null, type == ClickType.MOUSE_LEFT_SHIFT);
          }
       }
@@ -260,7 +260,7 @@ public class StarlightForgeGui extends VirtualInventoryGui<SimpleInventory> {
          ArcanaAugments.applyAugment(newArcanaItem, skillPair.getLeft().id, skillPair.getRight(),false);
       }
       
-      arcanaItem.buildItemLore(newArcanaItem,player.getServer());
+      arcanaItem.buildItemLore(newArcanaItem,player.getEntityWorld().getServer());
       
       ItemStack[][] ingredients = new ItemStack[5][5];
       for(int i = 0; i < inventory.size(); i++){

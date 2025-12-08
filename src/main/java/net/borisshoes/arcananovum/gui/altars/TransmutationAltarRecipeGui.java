@@ -80,7 +80,7 @@ public class TransmutationAltarRecipeGui extends SimpleGui {
             if(selectionModeStack != null && ArcanaItemUtils.identifyItem(selectionModeStack) instanceof AequalisScientia aq){
                if(recipe.getName().equals("Aequalis Reconfiguration")) ArcanaAchievements.grant(player,ArcanaAchievements.FRACTAL_ATTUNEMENT);
                ArcanaItem.putProperty(selectionModeStack, AequalisScientia.TRANSMUTATION_TAG,recipe.getName());
-               aq.buildItemLore(selectionModeStack,player.getServer());
+               aq.buildItemLore(selectionModeStack,player.getEntityWorld().getServer());
                SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM,1,0.8f);
                close();
                return true;

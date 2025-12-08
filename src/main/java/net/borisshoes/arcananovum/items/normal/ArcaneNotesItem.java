@@ -36,7 +36,7 @@ public class ArcaneNotesItem extends NormalPolymerItem {
    public static final String AUTHOR_TAG = "author";
    public static final String COST_TAG = "paper_cost";
    
-   public ArcaneNotesItem(String id, Settings settings){
+   public ArcaneNotesItem(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

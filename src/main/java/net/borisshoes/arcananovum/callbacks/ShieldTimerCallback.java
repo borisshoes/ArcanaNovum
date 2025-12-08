@@ -28,7 +28,7 @@ public class ShieldTimerCallback extends TickTimerCallback {
    @Override
    public void onTimer(){
       try{
-         ServerPlayerEntity player1 = player.getServer().getPlayerManager().getPlayer(player.getUuid());
+         ServerPlayerEntity player1 = player.getEntityWorld().getServer().getPlayerManager().getPlayer(player.getUuid());
          if(player1 == null){
             //log("Player ("+player.getEntityName()+") is not connected, creating login callback");
             BorisLib.addLoginCallback(new ShieldLoginCallback(player,hearts));

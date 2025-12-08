@@ -89,8 +89,8 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void gravitonMaulMaelstrom(ServerPlayerEntity player, int tick){
-      ServerWorld world = player.getWorld();
-      Vec3d center = player.getPos().add(0,0.1,0);
+      ServerWorld world = player.getEntityWorld();
+      Vec3d center = player.getEntityPos().add(0,0.1,0);
       ParticleEffect dust = new DustParticleEffect(0x000ea8,1f);
       ParticleEffect dust2 = new DustParticleEffect(0x000754,1.5f);
       
@@ -118,7 +118,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       if(tick % 80 == 0){
-         SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS,.5f,1.6f);
+         SoundUtils.playSound(player.getEntityWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS,.5f,1.6f);
       }
       
       world.spawnParticles(dust,center.x,center.y+0.15,center.z,60,2.5,0.2,2.5,0.01);
@@ -126,7 +126,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void arcaneNotesFinish(ServerPlayerEntity player, ArcanaItem arcanaItem){
-      ServerWorld world = player.getWorld();
+      ServerWorld world = player.getEntityWorld();
       world.spawnParticles(ParticleTypes.ENCHANT,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),100,0.4,0.8,0.4,0);
       world.spawnParticles(ParticleTypes.WITCH,player.getX(),player.getY()+player.getHeight()/1.5,+player.getZ(),100,0.25,0.6,0.25,0.3);
       
@@ -136,7 +136,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void arcaneNotesAnim(ServerPlayerEntity player, ArcanaItem arcanaItem, int usageTick){
-      ServerWorld world = player.getWorld();
+      ServerWorld world = player.getEntityWorld();
       world.spawnParticles(ParticleTypes.ENCHANT,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),3,0.25,0.6,0.25,0);
       world.spawnParticles(player,ParticleTypes.ENCHANT,false,true,player.getX(),player.getY()+player.getHeight()/2.0,+player.getZ(),5,0.25,0.6,0.25,1);
       
@@ -244,7 +244,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       if(tick == adjustTime(330,speedMod)){
-         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
+         world.spawnParticles(TintedParticleEffect.create(ParticleTypes.FLASH,0xffffff),center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
       }
       
       if(tick % 2 == 0){
@@ -402,7 +402,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       if(tick == adjustTime(330,speedMod)){
-         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
+         world.spawnParticles(TintedParticleEffect.create(ParticleTypes.FLASH,0xffffff),center.x,center.y+2,center.z,3,0.1,0.1,0.1,0.02);
          world.spawnParticles(ParticleTypes.WITCH,itemCenter.x,itemCenter.y,itemCenter.z,100,0.2,0.5,0.2,0.1);
       }
       
@@ -463,14 +463,14 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    
    
    public static void ensnaredEffect(LivingEntity living, int amplifier, int tick){
-      if(!living.isAlive() || living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) == null || !(living.getWorld() instanceof ServerWorld world)){
+      if(!living.isAlive() || living.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) == null || !(living.getEntityWorld() instanceof ServerWorld world)){
          return;
       }
       double eHeight = living.getHeight();
       double eWidth = living.getWidth();
       double circleHeight = eHeight*0.6;
       double circleRadius = eWidth / 1.6;
-      Vec3d circleCenter = living.getPos().add(0,eHeight/1.8,0);
+      Vec3d circleCenter = living.getEntityPos().add(0,eHeight/1.8,0);
       ParticleEffect purple = new DustParticleEffect(0xa100e6,0.7f);
       
       int intervals = (int) (15 * Math.sqrt(circleRadius*circleRadius+circleHeight*circleHeight));
@@ -647,7 +647,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       if(tick < 500){
          BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> aequalisTransmuteAnim(world, center, rawTick+(1*speedMod), rotation, speedMod, input, output, reagent1, reagent2, aequalis)));
       }else{
-         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y,center.z,5,0.3,0.3,0.3,0);
+         world.spawnParticles(TintedParticleEffect.create(ParticleTypes.FLASH,0xffffff),center.x,center.y,center.z,5,0.3,0.3,0.3,0);
          SoundUtils.playSound(world, BlockPos.ofFloored(center), SoundEvents.ENTITY_ALLAY_AMBIENT_WITH_ITEM, SoundCategory.BLOCKS,1,0.8f);
       }
    }
@@ -776,7 +776,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
          world.spawnParticles(ParticleTypes.END_ROD,itemSpot.x,itemSpot.y,itemSpot.z,1,0.25,0.25,0.25,0.02);
          
          if(tick == 500){
-            world.spawnParticles(ParticleTypes.FLASH,itemSpot.x,itemSpot.y+0.25,itemSpot.z,3,0.25,0.25,0.25,0);
+            world.spawnParticles(TintedParticleEffect.create(ParticleTypes.FLASH,0xffffff),itemSpot.x,itemSpot.y+0.25,itemSpot.z,3,0.25,0.25,0.25,0);
          }
       }
       
@@ -808,7 +808,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    public static void craftForge(ServerWorld world, BlockPos pos, int tick){
       Vec3d center = pos.toCenterPos();
       if(tick == 100){
-         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y,center.z,3,0.4,0.4,0.4,0);
+         world.spawnParticles(TintedParticleEffect.create(ParticleTypes.FLASH,0xffffff),center.x,center.y,center.z,3,0.4,0.4,0.4,0);
          world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,center.x,center.y,center.z,25,0.6,0.8,0.6,0);
          SoundUtils.playSound(world,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.BLOCKS, 2, 0.8f);
       }else{
@@ -820,7 +820,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    public static void craftTome(ServerWorld world, BlockPos pos, int tick){
       Vec3d center = pos.toCenterPos();
       if(tick == 100){
-         world.spawnParticles(ParticleTypes.FLASH,center.x,center.y,center.z,3,0.4,0.4,0.4,0);
+         world.spawnParticles(TintedParticleEffect.create(ParticleTypes.FLASH,0xffffff),center.x,center.y,center.z,3,0.4,0.4,0.4,0);
          world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,center.x,center.y,center.z,25,0.6,0.8,0.6,0);
          SoundUtils.playSound(world,pos, SoundEvents.ENTITY_ZOMBIE_VILLAGER_CONVERTED, SoundCategory.BLOCKS, 2, 0.8f);
       }else{
@@ -1198,7 +1198,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       }
       
       world.spawnParticles(ParticleTypes.PORTAL,pos.x,pos.y,pos.z,20,0.3,0.3,0.3,1);
-      world.spawnParticles(ParticleTypes.DRAGON_BREATH,pos.x,pos.y+0.75,pos.z,3,0.3,0.3,0.3,0.03);
+      world.spawnParticles(DragonBreathParticleEffect.of(ParticleTypes.DRAGON_BREATH,1),pos.x,pos.y+0.75,pos.z,3,0.3,0.3,0.3,0.03);
       
       if(tick%2 == 0){
          ParticleEffect dust = new DustParticleEffect(0xFF00D4,0.75f);
@@ -1263,7 +1263,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    public static void webOfFireCast(ServerWorld world, ParticleEffect type, ServerPlayerEntity caster, List<LivingEntity> hits, double range, int calls){
       final int totalCalls = 15;
       
-      Vec3d center = caster.getPos().add(0,caster.getHeight()*.25,0);
+      Vec3d center = caster.getEntityPos().add(0,caster.getHeight()*.25,0);
       if(calls%2 == 0 && calls < 5){
          circle(world,null,center,type,range,(int)(10*range),1,0.05,0.01);
          circle(world,null,center,type,2,20,1,0.05,0.01);
@@ -1317,8 +1317,8 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       double radius = .5+calls*(range/5.0);
       double radius2 = radius*.75;
       sphere(world,null,pos,ParticleTypes.WITCH,radius,(int)(radius*radius+radius*10+10),3,0.3,0,0);
-      sphere(world,null,pos,ParticleTypes.DRAGON_BREATH,radius2,(int)(radius2*radius2+radius2*5+10),3,0.3,0,0);
-      world.spawnParticles(ParticleTypes.FLASH,pos.x,pos.y,pos.z,1,0,0,0,1);
+      sphere(world,null,pos,DragonBreathParticleEffect.of(ParticleTypes.DRAGON_BREATH,1),radius2,(int)(radius2*radius2+radius2*5+10),3,0.3,0,0);
+      world.spawnParticles(TintedParticleEffect.create(ParticleTypes.FLASH,0xd7aeff),pos.x,pos.y,pos.z,1,0,0,0,1);
       
       if(calls < 5){
          BorisLib.addTickTimerCallback(world, new GenericTimer(1, () -> arcaneFlakArrowDetonate(world, pos,range,calls + 1)));
@@ -1336,7 +1336,7 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
       sphere(world,null,center,dust2,.6,50,2,0.1,0,0);
       
       for(Entity e : entities){
-         Vec3d pos = e.getPos().add(0,e.getHeight()/2,0);
+         Vec3d pos = e.getEntityPos().add(0,e.getHeight()/2,0);
          world.spawnParticles(dust,pos.x,pos.y,pos.z,count,range,range,range,.01);
       }
    }
@@ -1402,14 +1402,14 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    
    public static void tetherArrowEntity(ServerWorld world, LivingEntity entity, ServerPlayerEntity player){
       ParticleEffect dust = new DustParticleEffect(0xa6a58a,.4f);
-      double len = player.getPos().subtract(entity.getPos()).length();
-      longDistLine(world,player.getPos().add(0,player.getHeight()/2,0),entity.getPos().add(0,entity.getHeight()/2,0),dust,(int)(20*len),3,0.03,1);
+      double len = player.getEntityPos().subtract(entity.getEntityPos()).length();
+      longDistLine(world,player.getEntityPos().add(0,player.getHeight()/2,0),entity.getEntityPos().add(0,entity.getHeight()/2,0),dust,(int)(20*len),3,0.03,1);
    }
    
    public static void tetherArrowGrapple(ServerWorld world, ServerPlayerEntity player, Vec3d pos){
       ParticleEffect dust = new DustParticleEffect(0xa6a58a,.4f);
-      double len = player.getPos().subtract(pos).length();
-      longDistLine(world,player.getPos(),pos,dust,(int)(20*len),3,0.03,1);
+      double len = player.getEntityPos().subtract(pos).length();
+      longDistLine(world,player.getEntityPos(),pos,dust,(int)(20*len),3,0.03,1);
    }
    
    public static void blinkArrowTp(ServerWorld world, Vec3d pos){
@@ -1417,9 +1417,9 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void harnessFly(ServerWorld world, ServerPlayerEntity player, int duration){
-      Vec3d pos = player.getPos();
+      Vec3d pos = player.getEntityPos();
       world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y,pos.z,1,.3,.3,.3,0.05);
-      world.spawnParticles(ParticleTypes.INSTANT_EFFECT,pos.x,pos.y,pos.z,1,.3,.3,.3,1);
+      world.spawnParticles(EffectParticleEffect.of(ParticleTypes.INSTANT_EFFECT,0xffffff,1),pos.x,pos.y,pos.z,1,.3,.3,.3,1);
       
       if(0 < duration){
          BorisLib.addTickTimerCallback(world, new GenericTimer(2, () -> harnessFly(world, player,duration-1)));
@@ -1450,13 +1450,13 @@ public class ArcanaEffectUtils extends ParticleEffectUtils {
    }
    
    public static void shadowGlaiveTp(ServerWorld world, ServerPlayerEntity player){
-      Vec3d pos = player.getPos();
+      Vec3d pos = player.getEntityPos();
       world.spawnParticles(ParticleTypes.LARGE_SMOKE,pos.x,pos.y+0.5,pos.z,100,.4,.4,.4,0.07);
    }
    
    public static void shulkerCoreLevitate(ServerWorld world, PlayerEntity player, int duration){
       if(player.getStatusEffect(StatusEffects.LEVITATION) == null) return;
-      Vec3d pos = player.getPos();
+      Vec3d pos = player.getEntityPos();
       world.spawnParticles(ParticleTypes.END_ROD,pos.x,pos.y+1,pos.z,1,.3,.3,.3,0.05);
    
       if(0 < duration){

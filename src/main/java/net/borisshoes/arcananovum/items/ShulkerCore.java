@@ -222,7 +222,7 @@ public class ShulkerCore extends EnergyItem {
                if(world instanceof ServerWorld serverWorld){
                   ArcanaEffectUtils.shulkerCoreLevitate(serverWorld, playerEntity, duration);
                }
-               buildItemLore(stack,playerEntity.getServer());
+               buildItemLore(stack,playerEntity.getEntityWorld().getServer());
             }
          }else{
             playerEntity.sendMessage(Text.literal("The Shulker Core is empty.").formatted(Formatting.YELLOW, Formatting.ITALIC), true);

@@ -38,7 +38,7 @@ public class GreaterBlindnessEffect extends StatusEffect implements PolymerStatu
    
    @Override
    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier){
-      MinecraftServer server = entity.getServer();
+      MinecraftServer server = entity.getEntityWorld().getServer();
       
       if(entity instanceof ServerPlayerEntity player && server != null && server.getTicks() % 10 == 0){
          ElementHolder holder = new ElementHolder(){

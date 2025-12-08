@@ -167,7 +167,7 @@ public class EverlastingRocket extends EnergyItem {
          ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(item);
          if(arcanaItem instanceof EverlastingRocket rocket && getUUID(item).equals(rocketId)){
             rocket.addEnergy(item,-1);
-            rocket.buildItemLore(stack,player.getServer());
+            rocket.buildItemLore(stack,player.getEntityWorld().getServer());
             ArcanaAchievements.progress(player,ArcanaAchievements.MISSILE_LAUNCHER.id, 1);
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
             return;
@@ -258,16 +258,16 @@ public class EverlastingRocket extends EnergyItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld serverWorld && entity instanceof ServerPlayerEntity player)) return;
          
-         if(player.getServer().getTicks() % (600-(100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SULFUR_REPLICATION.id)))) == 0){
+         if(player.getEntityWorld().getServer().getTicks() % (600-(100*Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SULFUR_REPLICATION.id)))) == 0){
             addEnergy(stack,1);
-            buildItemLore(stack,player.getServer());
+            buildItemLore(stack,player.getEntityWorld().getServer());
          }
       }
       
       @Override
       public ActionResult useOnBlock(ItemUsageContext context){
          World world = context.getWorld();
-         if(!world.isClient && context.getPlayer() instanceof ServerPlayerEntity player){
+         if(!world.isClient() && context.getPlayer() instanceof ServerPlayerEntity player){
             if(((EnergyItem)getThis()).getEnergy(context.getStack()) > 0){
                ItemStack itemStack = context.getStack();
                Vec3d vec3d = context.getHitPos();
@@ -275,7 +275,7 @@ public class EverlastingRocket extends EnergyItem {
                FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, context.getPlayer(), vec3d.x + (double)direction.getOffsetX() * 0.15, vec3d.y + (double)direction.getOffsetY() * 0.15, vec3d.z + (double)direction.getOffsetZ() * 0.15, getFireworkStack(itemStack));
                world.spawnEntity(fireworkRocketEntity);
                ((EnergyItem)getThis()).addEnergy(context.getStack(),-1);
-               buildItemLore(itemStack,player.getServer());
+               buildItemLore(itemStack,player.getEntityWorld().getServer());
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
             }else{
                player.sendMessage(Text.literal("The Rocket is out of Charges").formatted(Formatting.YELLOW),true);
@@ -296,17 +296,17 @@ public class EverlastingRocket extends EnergyItem {
             player.sendMessage(Text.literal("Fuse Adjusted to "+flight).formatted(Formatting.YELLOW),true);
             SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_NOTE_BLOCK_SNARE, 1,0.8f);
          }else if(user.isGliding()){
-            if(!world.isClient && user instanceof ServerPlayerEntity player){
+            if(!world.isClient() && user instanceof ServerPlayerEntity player){
                if(((EnergyItem)getThis()).getEnergy(itemStack) > 0){
                   FireworkRocketEntity fireworkRocketEntity = new FireworkRocketEntity(world, getFireworkStack(itemStack), user);
                   world.spawnEntity(fireworkRocketEntity);
                   if(!user.isCreative()){
                      ((EnergyItem)getThis()).addEnergy(itemStack,-1);
-                     buildItemLore(itemStack,player.getServer());
+                     buildItemLore(itemStack,player.getEntityWorld().getServer());
                      ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.EVERLASTING_ROCKET_USE)); // Add xp
                   }
                   user.incrementStat(Stats.USED.getOrCreateStat(this));
-                  if(player.getPos().getY() > 500){
+                  if(player.getEntityPos().getY() > 500){
                      ArcanaAchievements.grant(player,ArcanaAchievements.ROCKETMAN.id);
                   }
                }else{

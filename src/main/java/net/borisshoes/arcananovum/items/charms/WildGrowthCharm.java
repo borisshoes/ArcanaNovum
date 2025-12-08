@@ -191,7 +191,7 @@ public class WildGrowthCharm extends ArcanaItem {
             int fertLvl = Math.max(ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.FERTILIZATION.id),0);
             int tickTime = RATES[fertLvl];
             
-            if(active && !world.isClient && player.getServer().getTicks() % tickTime == 0){
+            if(active && !world.isClient() && player.getEntityWorld().getServer().getTicks() % tickTime == 0){
                boolean bloom = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.CHARM_OF_BLOOMING.id) >= 1;
                int reaping = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.REAPING.id);
                
@@ -210,7 +210,7 @@ public class WildGrowthCharm extends ArcanaItem {
                         block instanceof ChorusFlowerBlock ||
                         block instanceof OxidizableBlock ||
                         block instanceof BuddingAmethystBlock){
-                     state.randomTick(player.getWorld(),blockPos,world.getRandom());
+                     state.randomTick(player.getEntityWorld(),blockPos,world.getRandom());
                      world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
                   }else if((block instanceof AbstractPlantStemBlock ||
                         block instanceof CropBlock ||
@@ -252,7 +252,7 @@ public class WildGrowthCharm extends ArcanaItem {
                   
                   if(a instanceof AnimalEntity animal){
                      int i = animal.getBreedingAge();
-                     if(!animal.getWorld().isClient && i == 0 && animal.canEat()){
+                     if(!animal.getEntityWorld().isClient() && i == 0 && animal.canEat()){
                         animal.lovePlayer(player);
                         break;
                      }
@@ -345,7 +345,7 @@ public class WildGrowthCharm extends ArcanaItem {
          }
          
          if(BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
-            if(!world.isClient){
+            if(!world.isClient()){
                world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
             }
             return ActionResult.SUCCESS_SERVER;
@@ -353,7 +353,7 @@ public class WildGrowthCharm extends ArcanaItem {
          BlockState blockState = world.getBlockState(blockPos);
          boolean bl = blockState.isSideSolidFullSquare(world, blockPos, context.getSide());
          if(bl && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos2, context.getSide())){
-            if(!world.isClient){
+            if(!world.isClient()){
                world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos2, 15);
             }
             return ActionResult.SUCCESS_SERVER;

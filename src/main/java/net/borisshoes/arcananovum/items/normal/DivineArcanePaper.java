@@ -18,7 +18,7 @@ import java.util.List;
 
 public class DivineArcanePaper extends NormalPolymerItem {
    
-   public DivineArcanePaper(String id, Settings settings){
+   public DivineArcanePaper(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

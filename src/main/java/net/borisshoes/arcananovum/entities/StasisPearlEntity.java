@@ -104,21 +104,21 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
       }
       
       // Update holder every second
-      MinecraftServer server = this.getServer();
+      MinecraftServer server = this.getEntityWorld().getServer();
       if(server != null){
          if(server.getTicks() % 20 == 0){
             resyncHolder();
          }
          
-         if(this.getWorld() instanceof ServerWorld serverWorld){
-            ArcanaEffectUtils.stasisPearl(serverWorld,getPos());
+         if(this.getEntityWorld() instanceof ServerWorld serverWorld){
+            ArcanaEffectUtils.stasisPearl(serverWorld,getEntityPos());
          }
       }
       
    }
    
    public void resyncHolder(){
-      ServerPlayerEntity holder = ArcanaItemUtils.findHolder(this.getServer(),itemStackId);
+      ServerPlayerEntity holder = ArcanaItemUtils.findHolder(this.getEntityWorld().getServer(),itemStackId);
       if(holder != null && holder.networkHandler.isConnectionOpen()){
          setOwner(holder);
          ItemStack stack = ArcanaItemUtils.getHolderStack(holder,itemStackId);
@@ -134,12 +134,12 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
       
       // Find Holder of the item
       ServerPlayerEntity holder = null;
-      if(itemStackId != null && getServer() != null){
-         holder = ArcanaItemUtils.findHolder(getServer(),itemStackId);
-         if(holder != null && holder.networkHandler.isConnectionOpen() && holder.getWorld() == this.getWorld() && !holder.isSleeping()){
+      if(itemStackId != null && getEntityWorld().getServer() != null){
+         holder = ArcanaItemUtils.findHolder(getEntityWorld().getServer(),itemStackId);
+         if(holder != null && holder.networkHandler.isConnectionOpen() && holder.getEntityWorld() == this.getEntityWorld() && !holder.isSleeping()){
             setOwner(holder);
             
-            if(holder.getPos().distanceTo(getPos()) >= 1000){
+            if(holder.getEntityPos().distanceTo(getEntityPos()) >= 1000){
                ArcanaAchievements.grant(holder, ArcanaAchievements.INSTANT_TRANSMISSION.id);
             }
             int reconstructLvl = augments.getInt(ArcanaAugments.STASIS_RECONSTRUCTION.id, 0);
@@ -149,7 +149,7 @@ public class StasisPearlEntity extends EnderPearlEntity implements PolymerEntity
                holder.addStatusEffect(regen);
                holder.addStatusEffect(resist);
                
-               holder.getWorld().spawnParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
+               holder.getEntityWorld().spawnParticles(ParticleTypes.HAPPY_VILLAGER,getX(),getY()+holder.getHeight()/2,getZ(),10*reconstructLvl, .5,.5,.5,1);
             }
          }
       }

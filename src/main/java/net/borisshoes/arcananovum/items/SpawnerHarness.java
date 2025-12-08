@@ -218,13 +218,13 @@ public class SpawnerHarness extends ArcanaItem {
                      player.sendMessage(Text.literal("The harness successfully places the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_PLACE, 1,.1f);
                      putProperty(stack,SPAWNER_TAG,new NbtCompound());
-                     buildItemLore(stack,player.getServer());
+                     buildItemLore(stack,player.getEntityWorld().getServer());
                   }else{
                      boolean scrap = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SALVAGEABLE_FRAME.id)) > 0;
                      player.sendMessage(Text.literal("The harness shatters upon placing the spawner.").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                      SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.ITEM_SHIELD_BREAK, 1,.5f);
                      putProperty(stack,SPAWNER_TAG,new NbtCompound());
-                     buildItemLore(stack,player.getServer());
+                     buildItemLore(stack,player.getEntityWorld().getServer());
                      stack.decrementUnlessCreative(stack.getCount(),player);
                      if(scrap) giveScrap(player);
                   }
@@ -249,7 +249,7 @@ public class SpawnerHarness extends ArcanaItem {
                world.breakBlock(context.getBlockPos(),false);
                
                SoundUtils.playSongToPlayer((ServerPlayerEntity) player, SoundEvents.BLOCK_CHAIN_BREAK, 1,.1f);
-               buildItemLore(stack,player.getServer());
+               buildItemLore(stack,player.getEntityWorld().getServer());
                
                return ActionResult.SUCCESS_SERVER;
             }

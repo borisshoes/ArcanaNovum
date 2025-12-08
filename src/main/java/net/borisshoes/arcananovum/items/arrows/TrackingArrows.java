@@ -80,7 +80,7 @@ public class TrackingArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player && arrowData.contains("initPos")){
          NbtList posList = arrowData.getListOrEmpty("initPos");
          Vec3d initPos = new Vec3d(posList.getDouble(0,0.0),posList.getDouble(1,0.0),posList.getDouble(2,0.0));
-         double dist = initPos.multiply(1,0,1).distanceTo(arrow.getPos().multiply(1,0,1));
+         double dist = initPos.multiply(1,0,1).distanceTo(arrow.getEntityPos().multiply(1,0,1));
          if(dist >= 250){
             ArcanaAchievements.grant(player,ArcanaAchievements.ACTUAL_AIMBOT.id);
          }

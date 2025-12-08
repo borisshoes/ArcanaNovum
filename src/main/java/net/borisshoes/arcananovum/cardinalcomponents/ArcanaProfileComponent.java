@@ -253,7 +253,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       int newLevel = LevelUtils.levelFromXp(this.xp+xp);
       if(getLevel() != newLevel){
          if(getLevel()/5 < newLevel/5){
-            MinecraftServer server = player.getServer();
+            MinecraftServer server = player.getEntityWorld().getServer();
             List<MutableText> msgs = new ArrayList<>();
             
             if(server != null){
@@ -333,7 +333,7 @@ public class ArcanaProfileComponent implements IArcanaProfileComponent{
       String itemId = arcanaItem.getId();
       if(crafted.stream().anyMatch(i -> i.equalsIgnoreCase(itemId))) return false;
       if(player instanceof ServerPlayerEntity){
-         MinecraftServer server = player.getServer();
+         MinecraftServer server = player.getEntityWorld().getServer();
          if(server != null){
             MutableText newCraftMsg = Text.literal("")
                   .append(player.getDisplayName()).formatted(Formatting.ITALIC)

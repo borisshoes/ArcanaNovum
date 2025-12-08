@@ -230,7 +230,7 @@ public class MagmaticEversource extends EnergyItem {
                if(getEnergy(stack) >= getMaxEnergy(stack)){
                   setEnergy(stack,0);
                   putProperty(stack,USES_TAG,charges+1);
-                  buildItemLore(stack, entity.getServer());
+                  buildItemLore(stack, entity.getEntityWorld().getServer());
                }
             }
          }
@@ -293,7 +293,7 @@ public class MagmaticEversource extends EnergyItem {
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MAGMATIC_EVERSOURCE_USE)); // Add xp
                ArcanaAchievements.progress(player,ArcanaAchievements.HELLGATE.id,1);
                putProperty(stack,USES_TAG,charges-1);
-               buildItemLore(stack, playerEntity.getServer());
+               buildItemLore(stack, playerEntity.getEntityWorld().getServer());
                playerEntity.incrementStat(Stats.USED.getOrCreateStat(this));
                return ActionResult.SUCCESS_SERVER;
             }
@@ -323,7 +323,7 @@ public class MagmaticEversource extends EnergyItem {
                return true;
             }
          }
-         if(!world.isClient && bl && !blockState.isLiquid()){
+         if(!world.isClient() && bl && !blockState.isLiquid()){
             world.breakBlock(pos, true);
          }
          if(world.setBlockState(pos, fluid.getDefaultState().getBlockState(), Block.NOTIFY_ALL_AND_REDRAW) || blockState.getFluidState().isStill()){

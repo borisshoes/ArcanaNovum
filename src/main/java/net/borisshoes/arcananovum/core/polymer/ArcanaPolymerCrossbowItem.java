@@ -43,7 +43,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements PolymerItem {
    protected final ArcanaItem arcanaItem;
-   public ArcanaPolymerCrossbowItem(ArcanaItem arcanaItem, Settings settings){
+   public ArcanaPolymerCrossbowItem(ArcanaItem arcanaItem, net.minecraft.item.Item.Settings settings){
       super(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }
@@ -60,7 +60,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
             sound = SoundEvents.BLOCK_AMETHYST_BLOCK_HIT;
             volume = 1.2f;
             
-            if(projectile.getWorld() instanceof ServerWorld serverWorld){
+            if(projectile.getEntityWorld() instanceof ServerWorld serverWorld){
                int alignmentLvl = Math.max(0, runicArrow.getAugment(ArcanaAugments.PRISMATIC_ALIGNMENT.id));
                photonArrows.shoot(serverWorld, shooter, projectile, alignmentLvl);
                projectile.kill(serverWorld);
@@ -70,7 +70,7 @@ public abstract class ArcanaPolymerCrossbowItem extends CrossbowItem implements 
          if(shooter instanceof ServerPlayerEntity player){
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.RUNIC_ARROW_SHOOT));
             ArcanaAchievements.progress(player,ArcanaAchievements.JUST_LIKE_ARCHER.id, 1);
-            shooter.getWorld().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundCategory.PLAYERS,volume, 1.0F / (shooter.getWorld().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
+            shooter.getEntityWorld().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundCategory.PLAYERS,volume, 1.0F / (shooter.getEntityWorld().getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
          }
       }
    }

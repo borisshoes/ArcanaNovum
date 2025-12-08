@@ -330,7 +330,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
       
       @Override
       public boolean onClicked(ItemStack stack, ItemStack otherStack, Slot slot, ClickType clickType, PlayerEntity playerEntity, StackReference cursorStackReference) {
-         if(playerEntity.getWorld().isClient || !(playerEntity instanceof ServerPlayerEntity player)) return false;
+         if(playerEntity.getEntityWorld().isClient() || !(playerEntity instanceof ServerPlayerEntity player)) return false;
          if (clickType == ClickType.LEFT && otherStack.isEmpty()) {
             return false;
          } else {
@@ -347,7 +347,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                   if(count == addPair.getRight().getCount()){
                      SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT_FAIL,1f,1f);
                   }else{
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT,0.8F, 0.8F + player.getWorld().getRandom().nextFloat() * 0.4F);
+                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_INSERT,0.8F, 0.8F + player.getEntityWorld().getRandom().nextFloat() * 0.4F);
                      stack.set(DataComponentTypes.CONTAINER,addPair.getLeft());
                   }
                }
@@ -358,7 +358,7 @@ public class GreavesOfGaialtus extends ArcanaItem {
                for(ItemStack itemStack : beltList.reversed()){
                   if(!itemStack.isEmpty()){
                      cursorStackReference.set(itemStack.copyAndEmpty());
-                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.getWorld().getRandom().nextFloat() * 0.4F);
+                     SoundUtils.playSongToPlayer(player,SoundEvents.ITEM_BUNDLE_REMOVE_ONE,0.8F, 0.8F + player.getEntityWorld().getRandom().nextFloat() * 0.4F);
                      found = true;
                      break;
                   }

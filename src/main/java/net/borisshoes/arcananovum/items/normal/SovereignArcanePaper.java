@@ -16,7 +16,7 @@ import java.util.List;
 
 public class SovereignArcanePaper extends NormalPolymerItem {
    
-   public SovereignArcanePaper(String id, Settings settings){
+   public SovereignArcanePaper(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

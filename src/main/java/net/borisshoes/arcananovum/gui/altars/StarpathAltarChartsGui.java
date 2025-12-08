@@ -73,7 +73,7 @@ public class StarpathAltarChartsGui extends SimpleGui {
       }else if(index == 49){
          AtomicReference<BlockPos> newDest = new AtomicReference<>();
          StarpathTargetGui nameGui = new StarpathTargetGui(player,blockEntity,false,this,(obj) -> {
-            blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry((String) obj,player.getWorld().getRegistryKey().getValue().toString(),newDest.get().getX(),newDest.get().getY(),newDest.get().getZ()));
+            blockEntity.getSavedTargets().add(new StarpathAltarBlockEntity.TargetEntry((String) obj,player.getEntityWorld().getRegistryKey().getValue().toString(),newDest.get().getX(),newDest.get().getY(),newDest.get().getZ()));
             buildGui();
          });
          

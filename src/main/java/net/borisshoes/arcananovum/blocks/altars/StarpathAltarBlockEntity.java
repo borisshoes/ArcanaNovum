@@ -128,7 +128,7 @@ public class StarpathAltarBlockEntity extends BlockEntity implements PolymerObje
          Entity target = targets.get(i);
          BlockPos location = locations.get(i);
          target.teleportTo(new TeleportTarget(destWorld, location.toCenterPos(), Vec3d.ZERO, target.getYaw(), target.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
-         ArcanaEffectUtils.recallTeleport(destWorld,target.getPos());
+         ArcanaEffectUtils.recallTeleport(destWorld,target.getEntityPos());
          
          if(target instanceof ServerPlayerEntity p && Math.sqrt(this.getPos().getSquaredDistance(this.getTarget())) >= 100000){
             ArcanaAchievements.grant(p,ArcanaAchievements.FAR_FROM_HOME.id);

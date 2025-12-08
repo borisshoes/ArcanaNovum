@@ -386,13 +386,13 @@ public class BinaryBlades extends EnergyItem {
          if(world.getServer().getTicks() % 5 == 0){
             int redGiant = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.RED_GIANT_BLADES);
             if(energy >= 50 && redGiant >= 2){
-               List<Entity> entities = new ArrayList<>(player.getWorld().getOtherEntities(player, player.getBoundingBox().expand(8), e -> e.distanceTo(player) <= 3.5));
+               List<Entity> entities = new ArrayList<>(player.getEntityWorld().getOtherEntities(player, player.getBoundingBox().expand(8), e -> e.distanceTo(player) <= 3.5));
                for(Entity nearEntity : entities){
                   if(nearEntity instanceof LivingEntity living && !nearEntity.isFireImmune()){
                      living.setOnFireFor(3);
                   }
                }
-               ArcanaEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.2,0), ParticleTypes.FLAME,0.5,8,2,0.1,0.05);
+               ArcanaEffectUtils.circle(player.getEntityWorld(),null,player.getEntityPos().add(0,0.2,0), ParticleTypes.FLAME,0.5,8,2,0.1,0.05);
             }
             
             int lastHitTime = getIntProperty(stack, LAST_HIT_TAG);
@@ -450,15 +450,15 @@ public class BinaryBlades extends EnergyItem {
                      continue;
                   }
                }
-               hit.damage(player.getWorld(), ArcanaDamageTypes.of(player.getWorld(),ArcanaDamageTypes.PHOTONIC,player), damage);
+               hit.damage(player.getEntityWorld(), ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,player), damage);
                ArcanaItem.putProperty(stack,BinaryBlades.LAST_HIT_TAG,20);
                energyGain += 10;
             }
-            ArcanaEffectUtils.pulsarBladeShoot(player.getWorld(),player.getEyePos().subtract(0,player.getHeight()/4,0),lasercast.endPos(),0);
-            SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS,1.0f,2.0f);
+            ArcanaEffectUtils.pulsarBladeShoot(player.getEntityWorld(),player.getEyePos().subtract(0,player.getHeight()/4,0),lasercast.endPos(),0);
+            SoundUtils.playSound(player.getEntityWorld(),player.getBlockPos(),SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS,1.0f,2.0f);
             addEnergy(stack, energyGain-energyCost);
             player.getItemCooldownManager().set(stack,10);
-            player.getWorld().getChunkManager().sendToNearbyPlayers(player, new EntityAnimationS2CPacket(player, EntityAnimationS2CPacket.SWING_OFF_HAND));
+            player.getEntityWorld().getChunkManager().sendToNearbyPlayers(player, new EntityAnimationS2CPacket(player, EntityAnimationS2CPacket.SWING_OFF_HAND));
             return ActionResult.SUCCESS_SERVER;
          }
          

@@ -645,7 +645,7 @@ public class ArcanaAchievements {
                new String[]{"Ensnare a drowning creature"}
          ));
    public static final ArcanaAchievement SHACKLED = ArcanaAchievements.register(
-         new TimedAchievement("Shackled", "shackled", new ItemStack(Items.CHAIN), ArcanaRegistry.ENSNAREMENT_ARROWS, 1500, 1,
+         new TimedAchievement("Shackled", "shackled", new ItemStack(Items.IRON_CHAIN), ArcanaRegistry.ENSNAREMENT_ARROWS, 1500, 1,
                new String[]{"Keep a creature ensnared for 60 consecutive seconds"}, 1200, 1211
          ));
    

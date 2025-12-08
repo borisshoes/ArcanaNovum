@@ -213,6 +213,7 @@ public class ContinuumAnchorBlockEntity extends LootableContainerBlockEntity imp
          this.augments = data;
       });
       this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
       if (!this.readLootTable(view)) {
          Inventories.readData(view, this.inventory.getHeldStacks());
       }

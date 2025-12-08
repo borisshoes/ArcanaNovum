@@ -33,7 +33,7 @@ public abstract class ArcanaPolymerItem extends Item implements PolymerItem {
       this(arcanaItem,arcanaItem.getArcanaItemComponents());
    }
    
-   public ArcanaPolymerItem(ArcanaItem arcanaItem, Settings settings){
+   public ArcanaPolymerItem(ArcanaItem arcanaItem, net.minecraft.item.Item.Settings settings){
       super(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,arcanaItem.getId()))));
       this.arcanaItem = arcanaItem;
    }

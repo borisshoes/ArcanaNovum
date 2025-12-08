@@ -23,8 +23,8 @@ public class AdvancementResearchTask extends ResearchTask{
    
    @Override
    public boolean isAcquired(ServerPlayerEntity player){
-      if(player.getServer() == null) return false;
-      AdvancementEntry entry = player.getServer().getAdvancementLoader().get(Identifier.of(advancementId));
+      if(player.getEntityWorld().getServer() == null) return false;
+      AdvancementEntry entry = player.getEntityWorld().getServer().getAdvancementLoader().get(Identifier.of(advancementId));
       if(entry == null) return false;
       return player.getAdvancementTracker().getProgress(entry).isDone();
    }

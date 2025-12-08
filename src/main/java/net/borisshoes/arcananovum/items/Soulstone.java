@@ -167,7 +167,7 @@ public class Soulstone extends ArcanaItem {
       }
       putProperty(stone,SOULS_FROM_SPEAR_TAG,soulsFromSpear);
       putProperty(stone,SOULS_TAG,souls);
-      buildItemLore(stone,player.getServer());
+      buildItemLore(stone,player.getEntityWorld().getServer());
    }
    
    public static String getType(ItemStack stack){
@@ -301,7 +301,7 @@ public class Soulstone extends ArcanaItem {
                String entityTypeName = EntityType.get(entityTypeId).get().getName().getString();
                
                putProperty(stack,TYPE_TAG,entityTypeId);
-               buildItemLore(stack,player.getServer());
+               buildItemLore(stack,player.getEntityWorld().getServer());
                player.sendMessage(Text.literal("The Soulstone attunes to the essence of "+entityTypeName).formatted(Formatting.DARK_RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1,.5f);
             }

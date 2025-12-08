@@ -243,7 +243,7 @@ public class GravitonMaul extends ArcanaItem {
    }
    
    private List<Entity> getAffectedEntities(ServerPlayerEntity player, boolean includePlayer, double range){
-      List<Entity> entities = new ArrayList<>(player.getWorld().getOtherEntities(player, player.getBoundingBox().expand(range*2), e -> e.distanceTo(player) <= range));
+      List<Entity> entities = new ArrayList<>(player.getEntityWorld().getOtherEntities(player, player.getBoundingBox().expand(range*2), e -> e.distanceTo(player) <= range));
       if(includePlayer) entities.add(player);
       return entities;
    }
@@ -262,17 +262,17 @@ public class GravitonMaul extends ArcanaItem {
             }
             
             if(affectedEntity.verticalCollision && !affectedEntity.groundCollision && affectedEntity instanceof LivingEntity livingEntity){
-               livingEntity.damage(player.getWorld(),player.getDamageSources().flyIntoWall(),2.0f);
+               livingEntity.damage(player.getEntityWorld(),player.getDamageSources().flyIntoWall(),2.0f);
                if(livingEntity.getHealth() < 2.0 && livingEntity instanceof ServerPlayerEntity affectedPlayer){
                   ArcanaAchievements.grant(affectedPlayer,ArcanaAchievements.RAISE_THE_ROOF);
                }
             }
             
-            player.getWorld().spawnParticles(ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getHeight()/2,affectedEntity.getZ(),5,affectedEntity.getWidth()/2,affectedEntity.getHeight()/2,affectedEntity.getWidth()/2,0.01);
+            player.getEntityWorld().spawnParticles(ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getHeight()/2,affectedEntity.getZ(),5,affectedEntity.getWidth()/2,affectedEntity.getHeight()/2,affectedEntity.getWidth()/2,0.01);
          }
       }else if(mode == 1){
          for(Entity affectedEntity : domain ? getAffectedEntities(player,true, 3.5) : List.of(player)){
-            player.getWorld().spawnParticles(ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getHeight()/2,affectedEntity.getZ(),5,affectedEntity.getWidth()/2,affectedEntity.getHeight()/2,affectedEntity.getWidth()/2,0.01);
+            player.getEntityWorld().spawnParticles(ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,affectedEntity.getX(),affectedEntity.getY()+affectedEntity.getHeight()/2,affectedEntity.getZ(),5,affectedEntity.getWidth()/2,affectedEntity.getHeight()/2,affectedEntity.getWidth()/2,0.01);
          }
          
          if(player.isOnGround()){
@@ -281,7 +281,7 @@ public class GravitonMaul extends ArcanaItem {
                double radius = 3 - impactVel; // 3.5 - 6 block range
                double totalDmg = 0;
                for(Entity affectedEntity : getAffectedEntities(player,false, radius)){
-                  Vec3d diff = player.getPos().subtract(affectedEntity.getPos());
+                  Vec3d diff = player.getEntityPos().subtract(affectedEntity.getEntityPos());
                   double multiplier = MathHelper.clamp(diff.length()*.2,.03,2);
                   Vec3d motion = diff.normalize().multiply(-multiplier,0,-multiplier).add(0,radius*0.15,0);
                   affectedEntity.addVelocity(motion.x,motion.y,motion.z);
@@ -289,12 +289,12 @@ public class GravitonMaul extends ArcanaItem {
                      affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
                   }
                   if(affectedEntity instanceof LivingEntity livingEntity){
-                     livingEntity.damage(player.getWorld(),player.getDamageSources().fallingBlock(player),(float)radius);
+                     livingEntity.damage(player.getEntityWorld(),player.getDamageSources().fallingBlock(player),(float)radius);
                      totalDmg += radius;
                   }
                }
                ArcanaNovum.data(player).addXP((int) Math.min(ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_PER_10) * totalDmg / 10,ArcanaConfig.getInt(ArcanaRegistry.GRAVITON_MAUL_IMPACT_DAMAGE_CAP)));
-               ArcanaEffectUtils.gravitonMaulSlam(player.getWorld(), player.getSteppingPos(),radius,0);
+               ArcanaEffectUtils.gravitonMaulSlam(player.getEntityWorld(), player.getSteppingPos(),radius,0);
                player.stopUsingItem();
                player.getItemCooldownManager().set(stack,40);
             }else{
@@ -309,7 +309,7 @@ public class GravitonMaul extends ArcanaItem {
          }
       }else if(mode == 2){
          for(Entity affectedEntity : getAffectedEntities(player,false, 5.5)){
-            Vec3d diff = affectedEntity.getPos().subtract(player.getPos().add(0,0.1,0));
+            Vec3d diff = affectedEntity.getEntityPos().subtract(player.getEntityPos().add(0,0.1,0));
             double multiplier = MathHelper.clamp(diff.length()*.2,.03,2);
             Vec3d motion = diff.add(0,0,0).normalize().multiply(-multiplier);
             affectedEntity.setVelocity(motion.x,motion.y,motion.z);
@@ -320,7 +320,7 @@ public class GravitonMaul extends ArcanaItem {
             if(affectedEntity instanceof LivingEntity livingEntity){
                StatusEffectInstance amp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 10, 1, false, true, true);
                livingEntity.addStatusEffect(amp);
-               livingEntity.damage(player.getWorld(),player.getDamageSources().cramming(),1.0f);
+               livingEntity.damage(player.getEntityWorld(),player.getDamageSources().cramming(),1.0f);
             }
          }
          ArcanaEffectUtils.gravitonMaulMaelstrom(player,player.getItemUseTime());
@@ -406,7 +406,7 @@ public class GravitonMaul extends ArcanaItem {
                      affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
                   }
                }
-               ArcanaEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
+               ArcanaEffectUtils.circle(player.getEntityWorld(),null,player.getEntityPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
             }
          }else{
             putProperty(stack,MODE_TAG,1);
@@ -418,7 +418,7 @@ public class GravitonMaul extends ArcanaItem {
                   affectedPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(affectedPlayer));
                }
             }
-            ArcanaEffectUtils.circle(player.getWorld(),null,player.getPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
+            ArcanaEffectUtils.circle(player.getEntityWorld(),null,player.getEntityPos().add(0,0.25,0), ParticleTypes.TRIAL_SPAWNER_DETECTION_OMINOUS,domain ? 3.5 : 0.5,40,5,0.1,0.01);
          }
          gravityEffects(player,stack);
          playerEntity.setCurrentHand(hand);

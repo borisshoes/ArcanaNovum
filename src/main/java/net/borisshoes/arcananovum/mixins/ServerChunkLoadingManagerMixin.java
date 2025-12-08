@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.datafixers.DataFixer;
 import net.borisshoes.arcananovum.accessors.ServerChunkLoadingManagerAccessor;
 import net.borisshoes.arcananovum.blocks.ContinuumAnchor;
-import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerWorld;
@@ -29,7 +28,7 @@ public class ServerChunkLoadingManagerMixin implements ServerChunkLoadingManager
    private ServerWorld hookedWorld;
    
    @Inject(method = "<init>", at = @At(value = "TAIL"))
-   private void ServerChunkLoadingManager(ServerWorld world, LevelStorage.Session session, DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor executor, ThreadExecutor mainThreadExecutor, ChunkProvider chunkProvider, ChunkGenerator chunkGenerator, WorldGenerationProgressListener worldGenerationProgressListener, ChunkStatusChangeListener chunkStatusChangeListener, Supplier persistentStateManagerFactory, ChunkTicketManager ticketManager, int viewDistance, boolean dsync, CallbackInfo ci){
+   private void ServerChunkLoadingManager(ServerWorld world, LevelStorage.Session session, DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor executor, ThreadExecutor mainThreadExecutor, ChunkProvider chunkProvider, ChunkGenerator chunkGenerator, ChunkStatusChangeListener chunkStatusChangeListener, Supplier persistentStateManagerFactory, ChunkTicketManager ticketManager, int viewDistance, boolean dsync, CallbackInfo ci){
       hookedWorld = world;
    }
    

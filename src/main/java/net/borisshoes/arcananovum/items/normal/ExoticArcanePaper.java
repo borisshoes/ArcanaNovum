@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ExoticArcanePaper extends NormalPolymerItem {
    
-   public ExoticArcanePaper(String id, Settings settings){
+   public ExoticArcanePaper(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

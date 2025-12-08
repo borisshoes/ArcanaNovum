@@ -202,7 +202,7 @@ public class NulMemento extends EnergyItem {
          return false;
       }
       
-      if(living.getWorld() instanceof ServerWorld world){
+      if(living.getEntityWorld() instanceof ServerWorld world){
          world.spawnParticles(ParticleTypes.LARGE_SMOKE,living.getX(),living.getY()+living.getHeight()/2,living.getZ(),100,.4,.4,.4,0.07);
       }
       
@@ -244,7 +244,7 @@ public class NulMemento extends EnergyItem {
       living.clearStatusEffects();
       living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.DEATH_WARD_EFFECT, constructInterference ? 300/2 : 300, 0));
       living.addStatusEffect(new StatusEffectInstance(ArcanaRegistry.GREATER_INVISIBILITY_EFFECT, 100, 0));
-      living.getWorld().sendEntityStatus(living, EntityStatuses.USE_TOTEM_OF_UNDYING);
+      living.getEntityWorld().sendEntityStatus(living, EntityStatuses.USE_TOTEM_OF_UNDYING);
       return true;
    }
    
@@ -775,7 +775,7 @@ public class NulMemento extends EnergyItem {
          }
          if(nowOnHead && getEnergy(stack) > 0){
             addEnergy(stack,-1);
-            buildItemLore(stack,entity.getServer());
+            buildItemLore(stack,entity.getEntityWorld().getServer());
          }
          
          // 0.0000075 ~ 120 minutes between voice lines

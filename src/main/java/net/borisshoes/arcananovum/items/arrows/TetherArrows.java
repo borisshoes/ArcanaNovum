@@ -88,8 +88,8 @@ public class TetherArrows extends RunicArrow {
       if(arrow.getOwner() instanceof ServerPlayerEntity player && entityHitResult.getEntity() instanceof LivingEntity entity){
          Vec3d hitPos = entityHitResult.getPos();
          
-         BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(1, () -> {
-            Vec3d motion = player.getPos().subtract(hitPos);
+         BorisLib.addTickTimerCallback(player.getEntityWorld(), new GenericTimer(1, () -> {
+            Vec3d motion = player.getEntityPos().subtract(hitPos);
             Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
             motion = motion.add(horizBoost);
             double verticalMotion = motion.y < -3 ? (player.getY() - entity.getY())*.3 : velFromHeight(motion.y)/20;
@@ -97,8 +97,8 @@ public class TetherArrows extends RunicArrow {
             entity.setVelocity(velocity);
             if(entity instanceof ServerPlayerEntity targetPlayer) targetPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(targetPlayer));
             
-            ArcanaEffectUtils.tetherArrowEntity(player.getWorld(),entity,player);
-            SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
+            ArcanaEffectUtils.tetherArrowEntity(player.getEntityWorld(),entity,player);
+            SoundUtils.playSound(arrow.getEntityWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_1, SoundCategory.PLAYERS,.8f,.6f);
          }));
       }
    }
@@ -108,14 +108,14 @@ public class TetherArrows extends RunicArrow {
       if(arrow.getData().getBoolean("severed", false)) return;
       if(arrow.getOwner() instanceof ServerPlayerEntity player){
          Vec3d hitPos = blockHitResult.getPos();
-         Vec3d motion = hitPos.subtract(player.getPos());
+         Vec3d motion = hitPos.subtract(player.getEntityPos());
          Vec3d horizBoost = motion.multiply(1,0,1).normalize().multiply(1.5);
          //motion = motion.add(horizBoost);
          Vec3d velocity = new Vec3d(velFromLength(motion.x)*2.0/9.0,velFromHeight(motion.y)/20,velFromLength(motion.z)*2.0/9.0);
          player.setVelocity(velocity);
          player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-         ArcanaEffectUtils.tetherArrowGrapple(player.getWorld(),player,blockHitResult.getPos());
-         SoundUtils.playSound(arrow.getWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_2, SoundCategory.PLAYERS,.8f,.6f);
+         ArcanaEffectUtils.tetherArrowGrapple(player.getEntityWorld(),player,blockHitResult.getPos());
+         SoundUtils.playSound(arrow.getEntityWorld(),player.getBlockPos(), SoundEvents.ITEM_TRIDENT_RIPTIDE_2, SoundCategory.PLAYERS,.8f,.6f);
          
          if(motion.y >= 12) ArcanaAchievements.progress(player,ArcanaAchievements.SPIDERMAN.id,1);
       }

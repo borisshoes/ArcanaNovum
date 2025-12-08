@@ -776,7 +776,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       
       List<EnchantEntry> possibleAdditions = new ArrayList<>();
       
-      for(RegistryEntry<Enchantment> entry : player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries()){
+      for(RegistryEntry<Enchantment> entry : player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getIndexedEntries()){
          Enchantment enchantment = entry.value();
          
          if(!EnchantmentHelper.isCompatible(curEnchants.keySet(),entry) && !curEnchants.containsKey(entry)) continue; // Remove incompatible enchants
@@ -803,7 +803,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    
    private List<EnchantmentLevelEntry> generateEnchantments(ItemStack stack, int slot, int level, Random random, int playerSeed){
       random.setSeed(playerSeed + slot);
-      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE);
+      Optional<RegistryEntryList.Named<Enchantment>> optional = player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE);
       if(optional.isEmpty()){
          return List.of();
       }

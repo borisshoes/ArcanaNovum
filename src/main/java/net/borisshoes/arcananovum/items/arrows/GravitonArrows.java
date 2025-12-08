@@ -93,7 +93,7 @@ public class GravitonArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20);// Measured in quarter seconds
          double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
          gravitonPulse(arrow, serverWorld,null,entityHitResult.getEntity(),duration,range,0);
@@ -102,7 +102,7 @@ public class GravitonArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          int duration = (int) MathHelper.clamp(arrow.getVelocity().length()*7,2,20); // Measured in quarter seconds
          double range = 3 + arrow.getAugment(ArcanaAugments.GRAVITY_WELL.id);
          gravitonPulse(arrow, serverWorld,blockHitResult.getPos(),null,duration,range,0);
@@ -111,13 +111,13 @@ public class GravitonArrows extends RunicArrow {
    
    private void gravitonPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, double range, int calls){
       if(start == null && entity == null) return;
-      Vec3d pos = entity == null ? start : entity.getPos();
+      Vec3d pos = entity == null ? start : entity.getEntityPos();
       int mobsHit = 0;
       
       Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
       List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 2*range*range && !(e instanceof PersistentProjectileEntity));
       for(Entity entity1 : entities){
-         Vec3d diff = entity1.getPos().subtract(pos);
+         Vec3d diff = entity1.getEntityPos().subtract(pos);
          double multiplier = MathHelper.clamp(diff.length()*.2,.03,2);
          Vec3d motion = diff.add(0,0,0).normalize().multiply(-multiplier);
          entity1.setVelocity(motion.x,motion.y,motion.z);

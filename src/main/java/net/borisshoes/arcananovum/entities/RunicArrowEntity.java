@@ -82,7 +82,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
       if(weaponStack != null){
          this.weapon = weaponStack.copy();
          
-         if(getWorld() instanceof ServerWorld serverWorld){
+         if(getEntityWorld() instanceof ServerWorld serverWorld){
             int i = EnchantmentHelper.getProjectilePiercing(serverWorld, weapon, this.stack);
             if(i > 0){
                this.setPierceLevel((byte)i);
@@ -130,7 +130,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          
          if(armTime == 0){
             double senseRange = 4;
-            List<Entity> triggerTargets = getWorld().getOtherEntities(this,this.getBoundingBox().expand(senseRange*2),
+            List<Entity> triggerTargets = getEntityWorld().getOtherEntities(this,this.getBoundingBox().expand(senseRange*2),
                   e -> !e.isSpectator() && e.distanceTo(this) <= senseRange && e instanceof LivingEntity && !e.isOnGround());
             if(!triggerTargets.isEmpty()){
                double radius = 4 + 1.25*ArcanaAugments.getAugmentFromMap(augments,ArcanaAugments.AIRBURST.id);
@@ -143,18 +143,18 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
             data.putFloat("initYaw",MathHelper.wrapDegrees((float)(MathHelper.atan2(velocityUnit.z, velocityUnit.x) * 57.2957763671875) - 90.0f));
          }
          if(!data.contains("initPos")){
-            data.put("initPos", Vec3d.CODEC, this.getPos());
+            data.put("initPos", Vec3d.CODEC, this.getEntityPos());
          }
          
          double viewWidth = 1.5*(ArcanaAugments.getAugmentFromMap(augments, ArcanaAugments.RUNIC_GUIDANCE.id))+5;
          double distance = 15;
-         List<LivingEntity> possibleTargets = getWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e ->
-               !e.isSpectator() && MathUtils.inCone(this.getPos(),velocityUnit,distance,1,viewWidth,e.getPos().add(0,e.getHeight()/2,0)) && !e.isInvisible()
+         List<LivingEntity> possibleTargets = getEntityWorld().getEntitiesByClass(LivingEntity.class,getBoundingBox().expand(distance), e ->
+               !e.isSpectator() && MathUtils.inCone(this.getEntityPos(),velocityUnit,distance,1,viewWidth,e.getEntityPos().add(0,e.getHeight()/2,0)) && !e.isInvisible()
          );
          LivingEntity closestTarget = null;
          double distFromLine = distance;
          for(LivingEntity possibleTarget : possibleTargets){
-            double dist = MathUtils.distToLine(possibleTarget.getPos().add(0,possibleTarget.getHeight()/2,0),this.getPos(),this.getPos().add(velocityUnit.multiply(distance)));
+            double dist = MathUtils.distToLine(possibleTarget.getEntityPos().add(0,possibleTarget.getHeight()/2,0),this.getEntityPos(),this.getEntityPos().add(velocityUnit.multiply(distance)));
             if(dist < distFromLine){
                distFromLine = dist;
                closestTarget = possibleTarget;
@@ -162,7 +162,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          }
          
          if(closestTarget != null){
-            Vec3d newVelocity = closestTarget.getPos().add(0,closestTarget.getHeight()/2,0).subtract(this.getPos()).normalize().multiply(this.getVelocity().length());
+            Vec3d newVelocity = closestTarget.getEntityPos().add(0,closestTarget.getHeight()/2,0).subtract(this.getEntityPos()).normalize().multiply(this.getVelocity().length());
             this.setVelocity(newVelocity);
             
             if(this.getOwner() instanceof ServerPlayerEntity player){
@@ -184,7 +184,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
                }
             }
             
-            if(getWorld() instanceof ServerWorld serverWorld){
+            if(getEntityWorld() instanceof ServerWorld serverWorld){
                ArcanaEffectUtils.spawnLongParticle(serverWorld, ParticleTypes.END_ROD,getX(),getY(),getZ(),0,0,0,0,1);
             }
          }
@@ -198,7 +198,7 @@ public class RunicArrowEntity extends ArrowEntity implements PolymerEntity {
          arrowType.entityHit(this,entityHitResult);
          
          if(this.getOwner() instanceof ServerPlayerEntity player){
-            if(player.getPos().distanceTo(this.getPos()) >= 100) ArcanaAchievements.grant(player, ArcanaAchievements.AIMBOT.id);
+            if(player.getEntityPos().distanceTo(this.getEntityPos()) >= 100) ArcanaAchievements.grant(player, ArcanaAchievements.AIMBOT.id);
             incArrowForEveryFoe(player);
          }
       }

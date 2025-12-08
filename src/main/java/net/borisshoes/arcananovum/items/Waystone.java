@@ -240,8 +240,8 @@ public class Waystone extends ArcanaItem {
       public ActionResult use(World world, PlayerEntity user, Hand hand){
          ItemStack stack = user.getStackInHand(hand);
          if(isUnattuned(stack) && user instanceof ServerPlayerEntity player){
-            saveTarget(stack,new WaystoneTarget(user.getWorld().getRegistryKey(), user.getPos(), user.getYaw(), user.getPitch()));
-            buildItemLore(stack,player.getServer());
+            saveTarget(stack,new WaystoneTarget(user.getEntityWorld().getRegistryKey(), user.getEntityPos(), user.getYaw(), user.getPitch()));
+            buildItemLore(stack,player.getEntityWorld().getServer());
             SoundUtils.playSongToPlayer(player, SoundEvents.ITEM_LODESTONE_COMPASS_LOCK, 1, 0.7f);
             return ActionResult.SUCCESS;
          }else{
@@ -262,7 +262,7 @@ public class Waystone extends ArcanaItem {
                         (int) target.position().getY(),
                         (int) target.position().getZ()
                         ));
-                  SoundUtils.playSound(context.getPlayer().getWorld(),context.getBlockPos(),SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS,1,0.7f);
+                  SoundUtils.playSound(context.getPlayer().getEntityWorld(),context.getBlockPos(),SoundEvents.BLOCK_RESPAWN_ANCHOR_CHARGE, SoundCategory.BLOCKS,1,0.7f);
                }
             }
          }

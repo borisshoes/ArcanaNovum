@@ -162,8 +162,8 @@ public class WingsOfEnderia extends EnergyItem {
                   player.sendMessage(Text.literal("Wing Energy Stored: "+ (wings.getEnergy(item) + 1)).formatted(Formatting.DARK_PURPLE),true);
                ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.WINGS_OF_ENDERIA_FLY)); // Add xp
             }
-            NbtCompound leftShoulder = player.getShoulderEntityLeft();
-            NbtCompound rightShoulder = player.getShoulderEntityRight();
+            NbtCompound leftShoulder = player.getLeftShoulderNbt();
+            NbtCompound rightShoulder = player.getRightShoulderNbt();
             if(leftShoulder != null && rightShoulder != null && leftShoulder.contains("id") && rightShoulder.contains("id")){
                if(leftShoulder.getString("id", "").equals(EntityType.getId(EntityType.PARROT).toString()) && rightShoulder.getString("id", "").equals(EntityType.getId(EntityType.PARROT).toString())){
                   ArcanaAchievements.grant(player, ArcanaAchievements.CROW_FATHER.id);

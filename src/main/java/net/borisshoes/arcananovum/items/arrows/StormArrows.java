@@ -115,14 +115,14 @@ public class StormArrows extends RunicArrow {
    }
    
    private void strike(PersistentProjectileEntity arrow, Vec3d pos, int stableLevel, int shockLvl){
-      World world = arrow.getWorld();
+      World world = arrow.getEntityWorld();
       if(arrow.isCritical() && (world.isRaining() || world.isThundering() || Math.random() < stormChance[stableLevel])){
-         LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getWorld());
+         LightningEntity lightning = new LightningEntity(EntityType.LIGHTNING_BOLT, arrow.getEntityWorld());
          lightning.setPosition(pos);
          world.spawnEntity(lightning);
          
          if(arrow.getOwner() instanceof ServerPlayerEntity player){
-            BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(2, () -> {
+            BorisLib.addTickTimerCallback(player.getEntityWorld(), new GenericTimer(2, () -> {
                if(lightning.getStruckEntities().anyMatch(e -> e instanceof MooshroomEntity)) ArcanaAchievements.grant(player,ArcanaAchievements.SHOCK_THERAPY.id);
             }));
          }
@@ -135,8 +135,8 @@ public class StormArrows extends RunicArrow {
    }
    
    private void chainLightning(PersistentProjectileEntity arrow, Entity hitEntity, int lvl){
-      if(!(arrow.getWorld() instanceof ServerWorld world)) return;
-      Vec3d pos = hitEntity.getPos();
+      if(!(arrow.getEntityWorld() instanceof ServerWorld world)) return;
+      Vec3d pos = hitEntity.getEntityPos();
       double range = 5;
       
       Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
@@ -148,11 +148,11 @@ public class StormArrows extends RunicArrow {
          if(entity instanceof LivingEntity e){
             if(hits.size() < lvl+1){
                if(!hits.isEmpty()){
-                  LivingEntity lastHit = hits.get(hits.size() - 1);
-                  double dist = lastHit.getPos().distanceTo(e.getPos());
+                  LivingEntity lastHit = hits.getLast();
+                  double dist = lastHit.getEntityPos().distanceTo(e.getEntityPos());
                   
                   if(world instanceof ServerWorld serverWorld)
-                     ArcanaEffectUtils.line(serverWorld,null,lastHit.getPos().add(0,lastHit.getHeight()/2,0),e.getPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
+                     ArcanaEffectUtils.line(serverWorld,null,lastHit.getEntityPos().add(0,lastHit.getHeight()/2,0),e.getEntityPos().add(0,e.getHeight()/2,0),ParticleTypes.WAX_OFF,(int)(dist*8),2,0.05,0.05);
                }
                
                DamageSource source = ArcanaDamageTypes.of(world,ArcanaDamageTypes.ARCANE_LIGHTNING,arrow,arrow.getOwner());

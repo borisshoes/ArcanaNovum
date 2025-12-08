@@ -107,11 +107,11 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    public void onDeath(DamageSource damageSource){
       super.onDeath(damageSource);
       
-      if(this.construct != null && this.mage && this.getWorld() instanceof ServerWorld serverWorld){
+      if(this.construct != null && this.mage && this.getEntityWorld() instanceof ServerWorld serverWorld){
          ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld,this::getEyePos, this.construct::getEyePos,20,1.0, ParticleTypes.RAID_OMEN,4,1,0,0,false,0,50);
          BorisLib.addTickTimerCallback(new GenericTimer(50, () -> {
             if(this.construct != null && this.construct.isAlive()){
-               this.construct.damage(serverWorld, ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.CONCENTRATION,damageSource.getSource(),damageSource.getAttacker()), 35);
+               this.construct.damage(serverWorld, ArcanaDamageTypes.of(this.getEntityWorld(),ArcanaDamageTypes.CONCENTRATION,damageSource.getSource(),damageSource.getAttacker()), 35);
             }
          }));
       }
@@ -121,8 +121,8 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
    public void tick(){
       super.tick();
       
-      if(this.construct != null && this.getWorld() instanceof ServerWorld serverWorld){
-         if(!this.construct.isAlive() || !this.construct.getWorld().getRegistryKey().equals(this.getWorld().getRegistryKey())){
+      if(this.construct != null && this.getEntityWorld() instanceof ServerWorld serverWorld){
+         if(!this.construct.isAlive() || !this.construct.getEntityWorld().getRegistryKey().equals(this.getEntityWorld().getRegistryKey())){
             this.kill(serverWorld);
          }else if(this.mage){
             if(this.age % 20 == 0 && this.construct.distanceTo(this) < NulConstructEntity.FIGHT_RANGE){
@@ -186,7 +186,7 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
       double h = target.getBodyY(0.34) - eyeY;
       double i = target.getZ() - eyeZ;
       Vec3d vec3d = new Vec3d(g, h, i);
-      WitherSkullEntity witherSkullEntity = new WitherSkullEntity(this.getWorld(), this, vec3d.normalize());
+      WitherSkullEntity witherSkullEntity = new WitherSkullEntity(this.getEntityWorld(), this, vec3d.normalize());
       witherSkullEntity.setOwner(this);
       
       if(this.construct != null && construct.isExalted()){
@@ -197,7 +197,7 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
       
       
       witherSkullEntity.setPos(eyeX, eyeY, eyeZ);
-      this.getWorld().spawnEntity(witherSkullEntity);
+      this.getEntityWorld().spawnEntity(witherSkullEntity);
    }
    
    public static DefaultAttributeContainer.Builder createGuardianAttributes(){
@@ -228,7 +228,7 @@ public class NulGuardianEntity extends WitherSkeletonEntity implements PolymerEn
       super.readCustomData(view);
       mage = view.getBoolean("mage", false);
       
-      if(getWorld() instanceof ServerWorld serverWorld){
+      if(getEntityWorld() instanceof ServerWorld serverWorld){
          if(serverWorld.getEntity(AlgoUtils.getUUID(view.getString("construct", ""))) instanceof NulConstructEntity con){
             this.construct = con;
          }

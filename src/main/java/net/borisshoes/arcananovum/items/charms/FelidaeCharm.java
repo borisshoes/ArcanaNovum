@@ -163,7 +163,7 @@ public class FelidaeCharm extends ArcanaItem {
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
          if(world.getServer().getTicks() % 20 == 0 && !player.isSpectator()){
-            Vec3d pos = player.getPos();
+            Vec3d pos = player.getEntityPos();
             Box rangeBox = new Box(pos.x+5,pos.y+3,pos.z+5,pos.x-5,pos.y-3,pos.z-5);
             List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e instanceof CreeperEntity);
             if(entities.size() >= 4) ArcanaAchievements.grant(player,ArcanaAchievements.INFILTRATION.id);

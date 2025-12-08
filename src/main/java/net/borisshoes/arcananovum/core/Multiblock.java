@@ -118,7 +118,7 @@ public class Multiblock {
          
          playerAttachments.add(attachment);
          
-         for(ServerPlayerEntity serverPlayer : player.getServer().getPlayerManager().getPlayerList()){
+         for(ServerPlayerEntity serverPlayer : player.getEntityWorld().getServer().getPlayerManager().getPlayerList()){
             if(serverPlayer != player){
                holder.stopWatching(serverPlayer);
                attachment.stopWatching(serverPlayer);

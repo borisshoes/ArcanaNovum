@@ -132,7 +132,7 @@ public class MagnetismCharm extends ArcanaItem {
       Vec3d rayEnd = playerPos.add(view.multiply(activeLength));
       
       Box box = new Box(playerPos,playerPos).expand(activeLength+activeRange);
-      List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange) && canAffectItem(charm,entity.getStack().getItem()));
+      List<ItemEntity> items = world.getEntitiesByType(EntityType.ITEM, box, (entity)->itemInRange(entity.getEntityPos(),playerPos,rayEnd,activeRange) && canAffectItem(charm,entity.getStack().getItem()));
       SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_FOX_TELEPORT, 1,.9f);
       
       for(ItemEntity item : items){
@@ -147,14 +147,14 @@ public class MagnetismCharm extends ArcanaItem {
       if(items.size() >= 25) ArcanaAchievements.grant(player,ArcanaAchievements.MAGNETS.id);
       
       if(ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.NEODYMIUM.id) >= 1){
-         List<Entity> entities = world.getOtherEntities(player, box, (entity)->itemInRange(entity.getPos(),playerPos,rayEnd,activeRange) && entity instanceof LivingEntity);
+         List<Entity> entities = world.getOtherEntities(player, box, (entity)->itemInRange(entity.getEntityPos(),playerPos,rayEnd,activeRange) && entity instanceof LivingEntity);
          for(Entity entity : entities){
             LivingEntity e = (LivingEntity) entity;
             if(e instanceof ServerPlayerEntity hitPlayer){
                if(hitPlayer.isBlocking()){
                   hitPlayer.getItemCooldownManager().set(hitPlayer.getBlockingItem(), 100);
                   hitPlayer.clearActiveItem();
-                  hitPlayer.getWorld().sendEntityStatus(hitPlayer, (byte)30);
+                  hitPlayer.getEntityWorld().sendEntityStatus(hitPlayer, (byte)30);
                }
             }else{
                HashMap<EquipmentSlot,ItemStack> equipment = new HashMap<>();
@@ -176,7 +176,7 @@ public class MagnetismCharm extends ArcanaItem {
                for(HashMap.Entry<EquipmentSlot,ItemStack> entry: equipment.entrySet()){
                   ItemStack item = entry.getValue();
                   if(item.isIn(ArcanaRegistry.NEODYMIUM_STEALABLE)){
-                     ItemEntity droppedItem = e.dropStack(player.getWorld(), item);
+                     ItemEntity droppedItem = e.dropStack(player.getEntityWorld(), item);
                      if(droppedItem != null){
                         double x = playerPos.getX() - droppedItem.getX();
                         double y = playerPos.getY() - droppedItem.getY();

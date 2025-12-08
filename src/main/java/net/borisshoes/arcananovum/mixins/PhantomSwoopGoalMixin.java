@@ -63,7 +63,7 @@ public abstract class PhantomSwoopGoalMixin extends Goal {
    
    @Inject(method = "shouldContinue", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/CatEntity;hiss()V"))
    private void arcananovum$phantomScare(CallbackInfoReturnable<Boolean> cir, @Local CatEntity catEntity){
-      if(catEntity.getWorld() instanceof ServerWorld serverWorld){
+      if(catEntity.getEntityWorld() instanceof ServerWorld serverWorld){
          for(ServerPlayerEntity player : serverWorld.getPlayers(player -> player.getBlockPos().isWithinDistance(catEntity.getBlockPos(), 10.0))){
             ArcanaNovum.data(player).setResearchTask(ResearchTasks.CAT_SCARE, true);
          }

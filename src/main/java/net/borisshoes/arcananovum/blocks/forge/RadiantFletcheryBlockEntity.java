@@ -151,6 +151,7 @@ public class RadiantFletcheryBlockEntity extends LootableContainerBlockEntity im
       this.customName = view.getString(ArcanaBlockEntity.CUSTOM_NAME, "");
       this.origin = view.getInt(ArcanaBlockEntity.ORIGIN_TAG, 0);
       this.inventory = new SimpleInventory(size());
+      this.inventory.addListener(this);
       if (!this.readLootTable(view)) {
          Inventories.readData(view, this.inventory.getHeldStacks());
       }

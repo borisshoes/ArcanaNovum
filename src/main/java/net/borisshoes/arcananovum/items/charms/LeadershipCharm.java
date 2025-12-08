@@ -112,7 +112,7 @@ public class LeadershipCharm extends ArcanaItem {
          int invigor = Math.max(0,ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.INVIGORATION.id));
          
          double effectRange = 8.5+invigor;
-         Vec3d playerPos = player.getPos();
+         Vec3d playerPos = player.getEntityPos();
          List<ServerPlayerEntity> inRangePlayers = serverWorld.getPlayers(p -> p.squaredDistanceTo(playerPos) <= effectRange*effectRange);
          
          StatusEffectInstance glow = new StatusEffectInstance(StatusEffects.GLOWING, 20 * 5 + 5, 0, false, false, true);
@@ -149,8 +149,8 @@ public class LeadershipCharm extends ArcanaItem {
          // Particle effects
          if(serverWorld.getServer().getTicks() % 10 == 0){
             double theta = Math.PI/(80)*(serverWorld.getServer().getTicks()%160); // 8 second duration
-            ArcanaEffectUtils.sphere(serverWorld,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0,theta);
-            ArcanaEffectUtils.circle(serverWorld,null,player.getPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0);
+            ArcanaEffectUtils.sphere(serverWorld,null,player.getEntityPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0,theta);
+            ArcanaEffectUtils.circle(serverWorld,null,player.getEntityPos(),ParticleTypes.HAPPY_VILLAGER,effectRange,100,1,0.1,0);
             for(ServerPlayerEntity plyr : inRangePlayers){
                if(plyr.equals(player))
                   continue;

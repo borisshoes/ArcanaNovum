@@ -148,7 +148,7 @@ public class TotemOfVengeance extends ArcanaItem {
          boolean byPlayer = attacker instanceof PlayerEntity;
          stack.set(DataComponentTypes.DEATH_PROTECTION, getTotemComponent(furyLvl, byPlayer));
          BorisLib.addTickTimerCallback(new VengeanceTotemTimerCallback(byPlayer ? 300*(furyLvl+1) / 2 : 300*(furyLvl+1),stack,player,attacker));
-         player.getWorld().spawnParticles(ParticleTypes.ANGRY_VILLAGER,player.getPos().x,player.getPos().y+player.getHeight()/2,player.getPos().z,25,.5,.6,.5,0.05);
+         player.getEntityWorld().spawnParticles(ParticleTypes.ANGRY_VILLAGER,player.getEntityPos().x,player.getEntityPos().y+player.getHeight()/2,player.getEntityPos().z,25,.5,.6,.5,0.05);
          
          if(source.isOf(ArcanaDamageTypes.VENGEANCE_TOTEM)){
             ArcanaAchievements.grant(player,ArcanaAchievements.REVENGEANCE.id);

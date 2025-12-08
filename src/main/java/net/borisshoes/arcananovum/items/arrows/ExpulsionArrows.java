@@ -88,7 +88,7 @@ public class ExpulsionArrows extends RunicArrow {
    
    @Override
    public void entityHit(RunicArrowEntity arrow, EntityHitResult entityHitResult){
-      if(arrow.getWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
             double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
@@ -103,7 +103,7 @@ public class ExpulsionArrows extends RunicArrow {
    
    @Override
    public void blockHit(RunicArrowEntity arrow, BlockHitResult blockHitResult){
-      if(arrow.getWorld() instanceof ServerWorld serverWorld){
+      if(arrow.getEntityWorld() instanceof ServerWorld serverWorld){
          boolean evict = arrow.getAugment(ArcanaAugments.EVICTION_BURST.id) > 0;
          if(evict){
             double range = MathHelper.clamp(arrow.getVelocity().length()*2,1,5);
@@ -120,7 +120,7 @@ public class ExpulsionArrows extends RunicArrow {
       Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
       List<Entity> entities = world.getOtherEntities(null,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && !(e instanceof PersistentProjectileEntity) && !(e instanceof EnderDragonEntity));
       for(Entity entity1 : entities){
-         Vec3d diff = entity1.getPos().subtract(pos);
+         Vec3d diff = entity1.getEntityPos().subtract(pos);
          double multiplier = MathHelper.clamp(3-diff.length()*.5,.1,7.5);
          Vec3d motion = diff.add(0,0,0).normalize().multiply(multiplier);
          entity1.setVelocity(motion.x,motion.y,motion.z);
@@ -137,12 +137,12 @@ public class ExpulsionArrows extends RunicArrow {
    
    private void expulsionPulse(PersistentProjectileEntity arrow, ServerWorld world, @Nullable Vec3d start, @Nullable Entity entity, int duration, double range, int calls){
       if(start == null && entity == null) return;
-      Vec3d pos = entity == null ? start : entity.getPos();
+      Vec3d pos = entity == null ? start : entity.getEntityPos();
       
       Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
       List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && !(e instanceof PersistentProjectileEntity) && !(e instanceof EnderDragonEntity));
       for(Entity entity1 : entities){
-         Vec3d diff = entity1.getPos().subtract(pos);
+         Vec3d diff = entity1.getEntityPos().subtract(pos);
          double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,5);
          Vec3d motion = diff.add(0,0,0).normalize().multiply(multiplier);
          entity1.setVelocity(motion.x,motion.y,motion.z);

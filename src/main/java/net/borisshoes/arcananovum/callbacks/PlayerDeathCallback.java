@@ -24,7 +24,7 @@ import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentIn
 public class PlayerDeathCallback {
    
    public static void afterRespawn(ServerPlayerEntity oldPlayer, ServerPlayerEntity newPlayer, boolean alive){
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(newPlayer.getServer().getWorld(World.END)).getBossFight();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(newPlayer.getEntityWorld().getServer().getWorld(World.END)).getBossFight();
       if(bossFight == null) return;
       if(bossFight.getLeft() == BossFights.DRAGON){
          DragonBossFight.playerDied(newPlayer);
@@ -50,7 +50,7 @@ public class PlayerDeathCallback {
    }
    
    public static void onPlayerCopy(ServerPlayerEntity oldPlayer, ServerPlayerEntity newPlayer, boolean alive){
-      if (!alive && !(oldPlayer.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || oldPlayer.isSpectator())) {
+      if (!alive && !(oldPlayer.getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || oldPlayer.isSpectator())) {
          for (int i = 0; i < oldPlayer.getInventory().size(); i++) {
             ItemStack oldStack = oldPlayer.getInventory().getStack(i);
             ItemStack newStack = newPlayer.getInventory().getStack(i);

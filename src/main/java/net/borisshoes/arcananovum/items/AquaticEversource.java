@@ -289,7 +289,7 @@ public class AquaticEversource extends ArcanaItem {
                return 1;
             }
          }
-         if(!world.isClient && bl && !blockState.isLiquid()){
+         if(!world.isClient() && bl && !blockState.isLiquid()){
             world.breakBlock(pos, true);
          }
          if(world.setBlockState(pos, fluid.getDefaultState().getBlockState(), Block.NOTIFY_ALL_AND_REDRAW) || blockState.getFluidState().isStill()){

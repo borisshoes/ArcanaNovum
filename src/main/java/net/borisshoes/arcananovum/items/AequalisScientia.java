@@ -731,10 +731,10 @@ public class AequalisScientia extends ArcanaItem {
                
                if(items != null && results != null){
                   playerEntity.getInventory().removeOne(stack);
-                  Vec3d center = player.getPos().add(player.getRotationVector().multiply(3,0,3)).add(0,2,0);
-                  ArcanaEffectUtils.aequalisTransmuteAnim(player.getWorld(),center,0,player.getRotationClient(),1,items.get(0),items.get(1),items.get(2),items.get(3),items.get(4));
+                  Vec3d center = player.getEntityPos().add(player.getRotationVector().multiply(3,0,3)).add(0,2,0);
+                  ArcanaEffectUtils.aequalisTransmuteAnim(player.getEntityWorld(),center,0,player.getRotationClient(),1,items.get(0),items.get(1),items.get(2),items.get(3),items.get(4));
                   
-                  BorisLib.addTickTimerCallback(player.getWorld(), new GenericTimer(500, () -> {
+                  BorisLib.addTickTimerCallback(player.getEntityWorld(), new GenericTimer(500, () -> {
                      for(ItemStack result : results){
                         if(result.isOf(ArcanaRegistry.AEQUALIS_SCIENTIA.getItem())){
                            ArcanaNovum.data(player).addCraftedSilent(result);

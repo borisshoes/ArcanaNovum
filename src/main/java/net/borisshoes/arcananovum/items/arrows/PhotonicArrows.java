@@ -92,7 +92,7 @@ public class PhotonicArrows extends RunicArrow {
       
       int killCount = 0;
       for(Entity hit : lasercast.sortedHits()){
-         float finalDmg = (float) ((damage+bonusDmg) * Math.min(1,-0.01*(hit.getPos().distanceTo(lasercast.startPos())-100)+0.25)) * (hit instanceof ServerPlayerEntity ? 0.5f : 1f);
+         float finalDmg = (float) ((damage+bonusDmg) * Math.min(1,-0.01*(hit.getEntityPos().distanceTo(lasercast.startPos())-100)+0.25)) * (hit instanceof ServerPlayerEntity ? 0.5f : 1f);
          if(hit instanceof ServerPlayerEntity hitPlayer && hitPlayer.isBlocking()){
             double dp = hitPlayer.getRotationVecClient().normalize().dotProduct(lasercast.direction().normalize());
             if(dp < -0.6){
@@ -100,7 +100,7 @@ public class PhotonicArrows extends RunicArrow {
                continue;
             }
          }
-         hit.damage(serverWorld, ArcanaDamageTypes.of(entity.getWorld(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
+         hit.damage(serverWorld, ArcanaDamageTypes.of(entity.getEntityWorld(),ArcanaDamageTypes.PHOTONIC,proj,entity), finalDmg);
          
          if(hit instanceof MobEntity mob && mob.isDead()){
             killCount++;

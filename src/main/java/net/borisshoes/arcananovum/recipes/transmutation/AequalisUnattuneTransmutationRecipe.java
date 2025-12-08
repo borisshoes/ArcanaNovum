@@ -29,7 +29,7 @@ public class AequalisUnattuneTransmutationRecipe extends TransmutationRecipe{
       List<ItemStack> returnItems = new ArrayList<>();
       if(ArcanaItemUtils.identifyItem(positiveInput) instanceof AequalisScientia aeq){
          ArcanaItem.putProperty(positiveInput, AequalisScientia.TRANSMUTATION_TAG,"");
-         aeq.buildItemLore(positiveInput,player.getServer());
+         aeq.buildItemLore(positiveInput,player.getEntityWorld().getServer());
       }
       returnItems.add(positiveInput);
       returnItems.add(aequalisInput);

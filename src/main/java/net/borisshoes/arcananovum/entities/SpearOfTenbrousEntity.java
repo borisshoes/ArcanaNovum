@@ -17,10 +17,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ProjectileDeflection;
+import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -115,12 +112,12 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
          this.discard();
          return;
       }
-      int chunkX = ChunkSectionPos.getSectionCoordFloored(this.getPos().getX());
-      int chunkZ = ChunkSectionPos.getSectionCoordFloored(this.getPos().getZ());
+      int chunkX = ChunkSectionPos.getSectionCoordFloored(this.getEntityPos().getX());
+      int chunkZ = ChunkSectionPos.getSectionCoordFloored(this.getEntityPos().getZ());
       super.tick();
       
       if (this.isAlive()) {
-         if(getWorld() instanceof ServerWorld serverWorld){
+         if(getEntityWorld() instanceof ServerWorld serverWorld){
             ArcanaEffectUtils.spawnLongParticle(serverWorld,new DustColorTransitionParticleEffect(0x001c08,0x000000,1.25f),getX(),getY(),getZ(),0.125,0.125,0.125,0.02, 6);
             
             int trailSize = 3;
@@ -129,15 +126,15 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
                ArcanaEffectUtils.trackedAnimatedLightningBolt(serverWorld, this::getEyePos, () -> endPos, (int)(Math.random()*5+5), 0.5, ParticleTypes.COMPOSTER,
                      12, 1, 0, 1, true, 5, 5);
             }
-            oldPos.add(getPos());
+            oldPos.add(getEntityPos());
             if(oldPos.size() > trailSize){
                oldPos.removeFirst();
             }
          }
          
-         BlockPos blockPos = BlockPos.ofFloored(this.getPos());
+         BlockPos blockPos = BlockPos.ofFloored(this.getEntityPos());
          ChunkPos chunkPos = this.getChunkPos();
-         if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != ChunkSectionPos.getSectionCoord(blockPos.getX()) || chunkZ != ChunkSectionPos.getSectionCoord(blockPos.getZ())) && getWorld() instanceof ServerWorld serverWorld) {
+         if ((--this.chunkTicketExpiryTicks <= 0L || chunkX != ChunkSectionPos.getSectionCoord(blockPos.getX()) || chunkZ != ChunkSectionPos.getSectionCoord(blockPos.getZ())) && getEntityWorld() instanceof ServerWorld serverWorld) {
             serverWorld.resetIdleTimeout();
             this.chunkTicketExpiryTicks = ServerPlayerEntity.addEnderPearlTicket(serverWorld, chunkPos) - 1L;
          }
@@ -149,7 +146,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    public Entity teleportTo(TeleportTarget teleportTarget) {
       Entity entity = super.teleportTo(teleportTarget);
       if (entity != null) {
-         entity.addPortalChunkTicketAt(BlockPos.ofFloored(entity.getPos()));
+         entity.addPortalChunkTicketAt(BlockPos.ofFloored(entity.getEntityPos()));
       }
       return entity;
    }
@@ -167,8 +164,8 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
          }
       }
       
-      if(voidStorm && getWorld() instanceof ServerWorld serverWorld){
-         SoundUtils.playSound(serverWorld,BlockPos.ofFloored(getPos()), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
+      if(voidStorm && getEntityWorld() instanceof ServerWorld serverWorld){
+         SoundUtils.playSound(serverWorld,BlockPos.ofFloored(getEntityPos()), SoundEvents.ITEM_TRIDENT_THUNDER, SoundCategory.PLAYERS,.1f,2f);
          ParticleEffect dust = new DustColorTransitionParticleEffect(0x001c08,0x000000,2f);
          serverWorld.spawnParticles(dust,getX(),getY(),getZ(),150,1,1,1,0.02);
          for(int i = 0; i < 18; i++){
@@ -208,8 +205,8 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       Entity target = entityHitResult.getEntity();
       float baseDamage = this.damage;
       Entity owner = this.getOwner();
-      DamageSource damageSource = ArcanaDamageTypes.of(getWorld(),ArcanaDamageTypes.ARCANE_LIGHTNING,this,owner == null ? this : owner);
-      if (this.getWorld() instanceof ServerWorld serverWorld) {
+      DamageSource damageSource = ArcanaDamageTypes.of(getEntityWorld(),ArcanaDamageTypes.ARCANE_LIGHTNING,this,owner == null ? this : owner);
+      if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
          baseDamage = EnchantmentHelper.getDamage(serverWorld, this.getWeaponStack(), target, damageSource, baseDamage);
       }
       
@@ -217,12 +214,12 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
       if(!target.isFireImmune() && fireAspect > 0){
          target.setOnFireFor(fireAspect*4.0f);
       }
-      applyImpactEffects(target, getSurroundingEntities(getWorld(),getPos()));
+      applyImpactEffects(target, getSurroundingEntities(getEntityWorld(),getEntityPos()));
       
       if(target.getType().isIn(ArcanaRegistry.TENBROUS_BONUS_DAMAGE)) baseDamage *= 1.25f;
       
       if (target.sidedDamage(damageSource, baseDamage)) {
-         if (this.getWorld() instanceof ServerWorld serverWorld) {
+         if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
             EnchantmentHelper.onTargetDamaged(serverWorld, target, damageSource, this.getWeaponStack(), item -> this.kill(serverWorld));
          }
          
@@ -234,7 +231,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
          }
       }
       
-      this.deflect(ProjectileDeflection.SIMPLE, target, this.getOwner(), false);
+      this.deflect(ProjectileDeflection.SIMPLE, target, LazyEntityReference.of(this.getOwner()), false);
       this.setVelocity(this.getVelocity().multiply(0.02, 0.2, 0.02));
       this.playSound(SoundEvents.ITEM_TRIDENT_HIT, 1.0F, 1.0F);
       this.discard();
@@ -243,7 +240,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
    @Override
    public void remove(RemovalReason reason){
       super.remove(reason);
-      if(this.getOwner() != null && this.getOwner() instanceof ServerPlayerEntity player && getWorld() instanceof ServerWorld serverWorld){
+      if(this.getOwner() != null && this.getOwner() instanceof ServerPlayerEntity player && getEntityWorld() instanceof ServerWorld serverWorld){
          int cooldownTime = 20 * (9 - 2*Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.UNENDING_HATRED)));
          if(!player.isInCreativeMode()) BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(stack,player,0, slot));
          player.getItemCooldownManager().set(stack,cooldownTime);
@@ -275,7 +272,7 @@ public class SpearOfTenbrousEntity extends PersistentProjectileEntity implements
             item -> this.kill(world)
       );
       
-      applyImpactEffects(null, getSurroundingEntities(getWorld(),getPos()));
+      applyImpactEffects(null, getSurroundingEntities(getEntityWorld(),getEntityPos()));
    }
    
    @Override

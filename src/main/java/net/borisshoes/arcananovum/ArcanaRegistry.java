@@ -184,7 +184,7 @@ public class ArcanaRegistry {
    
    public static final RegistryKey<? extends Registry<EquipmentAsset>> EQUIPMENT_ASSET_REGISTRY_KEY = RegistryKey.ofRegistry(Identifier.ofVanilla("equipment_asset"));
    
-   public static final ChunkTicketType ANCHOR_TICKET_TYPE = registerTicketType("arcananovum_anchor", 40L, true, ChunkTicketType.Use.LOADING_AND_SIMULATION);
+   public static final ChunkTicketType ANCHOR_TICKET_TYPE = registerTicketType("arcananovum_anchor", 40L, ChunkTicketType.FOR_LOADING | ChunkTicketType.FOR_SIMULATION | ChunkTicketType.SERIALIZE | ChunkTicketType.RESETS_IDLE_TIMEOUT);
    
    // Armor Materials
    public static final ArmorMaterial NON_PROTECTIVE_ARMOR_MATERIAL = new ArmorMaterial(1024, Util.make(new EnumMap<>(EquipmentType.class), map -> {
@@ -700,8 +700,8 @@ public class ArcanaRegistry {
       return Registry.register(BorisLib.LOGIN_CALLBACKS,callback.getId(),callback);
    }
    
-   private static ChunkTicketType registerTicketType(String id, long expiryTicks, boolean persist, ChunkTicketType.Use use) {
-      return Registry.register(Registries.TICKET_TYPE, id, new ChunkTicketType(expiryTicks, persist, use));
+   private static ChunkTicketType registerTicketType(String id, long expiryTicks, int flags) {
+      return Registry.register(Registries.TICKET_TYPE, id, new ChunkTicketType(expiryTicks, flags));
    }
    
    private static <T> ComponentType<T> registerEnchantmentEffectComponent(String id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {

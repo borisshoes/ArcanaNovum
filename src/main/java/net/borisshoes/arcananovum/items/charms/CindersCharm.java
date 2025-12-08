@@ -222,7 +222,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
    }
    
    public ItemStack smelt(ItemStack charm, PlayerEntity player, ItemStack stack){
-      if(!(player.getWorld() instanceof ServerWorld serverWorld)) return null;
+      if(!(player.getEntityWorld() instanceof ServerWorld serverWorld)) return null;
       try{
          boolean active = getBooleanProperty(charm,ACTIVE_TAG);
          boolean cremation = ArcanaAugments.getAugmentOnItem(charm,ArcanaAugments.CREMATION.id) >= 1;
@@ -298,8 +298,8 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
       
       double mul = 1.5*range;
-      Vec3d boxStart = playerEntity.getPos().subtract(mul,mul,mul);
-      Vec3d boxEnd = playerEntity.getPos().add(mul,mul,mul);
+      Vec3d boxStart = playerEntity.getEntityPos().subtract(mul,mul,mul);
+      Vec3d boxEnd = playerEntity.getEntityPos().add(mul,mul,mul);
       Box rangeBox = new Box(boxStart,boxEnd);
       
       SoundUtils.playSound(world, playerEntity.getBlockPos(), SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS, 0.6f, (float) (Math.random() * .5 + .5));
@@ -408,7 +408,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       for(Entity e : entities){
          if(!(e instanceof LivingEntity entity)) continue;
          if(!entity.isFireImmune()){
-            float dmg = (float) (Math.max(0,(1.2 - (entity.getPos().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
+            float dmg = (float) (Math.max(0,(1.2 - (entity.getEntityPos().distanceTo(center)/explosionRange))) * (consumedEnergy/10.0) * (.8+lvl*.2));
             entity.setOnFireFor((float) consumedEnergy /20);
             entity.damage(serverWorld, new DamageSource(entity.getDamageSources().onFire().getTypeRegistryEntry(),playerEntity),cremation ? 2*dmg : dmg);
             ignited++;
@@ -442,7 +442,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
       }
       int consumedEnergy = energy;
       
-      Vec3d center = player.getPos();
+      Vec3d center = player.getEntityPos();
       double effectRange = 2+lvl*2;
       int numTargets = 5*lvl;
       Box rangeBox = new Box(center.x+12,center.y+12,center.z+12,center.x-12,center.y-12,center.z-12);
@@ -635,7 +635,7 @@ public class CindersCharm extends EnergyItem implements LeftClickItem {
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.CINDERS_CHARM_IGNITE_ENTITY)); // Add xp
          }
          
-         SoundUtils.playSound(player.getWorld(),target.getBlockPos(),SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, player.getWorld().getRandom().nextFloat() * 0.4F + 0.8F);
+         SoundUtils.playSound(player.getEntityWorld(),target.getBlockPos(),SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, player.getEntityWorld().getRandom().nextFloat() * 0.4F + 0.8F);
          addEnergy(stack, -5);
          String message = "Cinders: ";
          for(int i=1; i<=getMaxEnergy(stack)/20; i++){

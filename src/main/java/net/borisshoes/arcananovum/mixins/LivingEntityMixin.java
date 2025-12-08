@@ -22,6 +22,7 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.items.charms.CindersCharm;
 import net.borisshoes.arcananovum.items.charms.FelidaeCharm;
 import net.borisshoes.arcananovum.research.ResearchTasks;
+import net.borisshoes.arcananovum.utils.ArcanaColors;
 import net.borisshoes.arcananovum.utils.ArcanaEffectUtils;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
@@ -195,8 +196,8 @@ public abstract class LivingEntityMixin {
                   harness.setStall(chestItem,15-2*rebootLvl);
                   player.setHealth(player.getHealth()/2);
                   player.sendMessage(Text.literal("Your Harness Stalls!").formatted(Formatting.YELLOW,Formatting.ITALIC),true);
-                  SoundUtils.playSound(player.getWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
-                  ArcanaEffectUtils.harnessStall(player.getWorld(),player.getPos().add(0,0.5,0));
+                  SoundUtils.playSound(player.getEntityWorld(),player.getBlockPos(),SoundEvents.ITEM_SHIELD_BREAK, SoundCategory.PLAYERS,1, 0.7f);
+                  ArcanaEffectUtils.harnessStall(player.getEntityWorld(),player.getEntityPos().add(0,0.5,0));
                   
                   boolean eProt = Math.max(0,ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.EMERGENCY_PROTOCOL.id)) >= 1;
                   if(eProt){
@@ -238,7 +239,7 @@ public abstract class LivingEntityMixin {
                for(int i=1; i<=5; i++){
                   message += newEnergy >= i*20 ? "✦ " : "✧ ";
                }
-               player.sendMessage(Text.literal(message).formatted(Formatting.BLACK),true);
+               player.sendMessage(Text.literal(message).withColor(ArcanaColors.NUL_COLOR),true);
             }
          }
       }
@@ -277,7 +278,7 @@ public abstract class LivingEntityMixin {
                entity.addStatusEffect(slow);
                entity.addStatusEffect(dmgAmp);
                sojournerBoots.setEnergy(boots,0);
-               SoundUtils.playSound(player.getWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
+               SoundUtils.playSound(player.getEntityWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
             }
          }
          
@@ -314,7 +315,7 @@ public abstract class LivingEntityMixin {
                MinecraftUtils.addMaxAbsorption(player, ShieldOfFortitude.EFFECT_ID,20f);
                player.setAbsorptionAmount(player.getAbsorptionAmount() + 20f);
                player.getItemCooldownManager().set(shieldStack,100);
-               SoundUtils.playSound(player.getWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
+               SoundUtils.playSound(player.getEntityWorld(),entity.getBlockPos(),SoundEvents.ENTITY_IRON_GOLEM_HURT, SoundCategory.PLAYERS, .5f, .8f);
             }
          }
       }
@@ -428,15 +429,15 @@ public abstract class LivingEntityMixin {
          // Wing Buffet ability
          int buffetLvl = ArcanaAugments.getAugmentOnItem(chestItem,ArcanaAugments.WING_BUFFET);
          if(entity instanceof ServerPlayerEntity player && buffetLvl > 0){
-            ServerWorld world = player.getWorld();
-            Vec3d pos = player.getPos().add(0,player.getHeight()/2,0);
+            ServerWorld world = player.getEntityWorld();
+            Vec3d pos = player.getEntityPos().add(0,player.getHeight()/2,0);
             Box rangeBox = new Box(pos.x+8,pos.y+8,pos.z+8,pos.x-8,pos.y-8,pos.z-8);
             int range = 3;
             List<Entity> entities = world.getOtherEntities(entity,rangeBox, e -> !e.isSpectator() && e.squaredDistanceTo(pos) < 1.5*range*range && (e instanceof MobEntity));
             boolean triggered = false;
             for(Entity entity1 : entities){
                if(wings.getEnergy(chestItem) < 50) break;
-               Vec3d diff = entity1.getPos().subtract(pos);
+               Vec3d diff = entity1.getEntityPos().subtract(pos);
                double multiplier = MathHelper.clamp(range*.75-diff.length()*.5,.1,3);
                Vec3d motion = diff.multiply(1,0,1).add(0,1,0).normalize().multiply(multiplier);
                if(entity1 instanceof ServerPlayerEntity otherPlayer){
@@ -458,7 +459,7 @@ public abstract class LivingEntityMixin {
    
       
       // Enderia Boss health scale
-      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(entity.getWorld()).getBossFight();
+      Pair<BossFights, NbtCompound> bossFight = BOSS_FIGHT.get(entity.getEntityWorld()).getBossFight();
       int numPlayers = 0;
       if(bossFight != null){
          numPlayers = bossFight.getRight().getInt("numPlayers", 0);
@@ -508,7 +509,7 @@ public abstract class LivingEntityMixin {
    @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setHealth(F)V"), cancellable = true)
    public void arcananovum$vengeanceTrigger(DamageSource source, CallbackInfoReturnable<Boolean> cir, @Local(ordinal = 0) ItemStack itemStack){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
-      List<NulConstructEntity> constructs = livingEntity.getWorld().getEntitiesByClass(NulConstructEntity.class,livingEntity.getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE*2),construct -> construct.getSummoner().getUuid().equals(livingEntity.getUuid()));
+      List<NulConstructEntity> constructs = livingEntity.getEntityWorld().getEntitiesByClass(NulConstructEntity.class,livingEntity.getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE*2),construct -> construct.getSummoner().getUuid().equals(livingEntity.getUuid()));
       
       if(ArcanaItemUtils.identifyItem(itemStack) instanceof TotemOfVengeance vengeance){
          constructs.forEach(construct -> construct.triggerAdaptation(NulConstructEntity.ConstructAdaptations.USED_VENGEANCE_TOTEM));
@@ -553,7 +554,7 @@ public abstract class LivingEntityMixin {
          }
       }
       
-      List<NulConstructEntity> constructs = livingEntity.getWorld().getEntitiesByClass(NulConstructEntity.class,livingEntity.getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE*2),construct -> construct.getSummoner() != null && construct.getSummoner().getUuid().equals(livingEntity.getUuid()));
+      List<NulConstructEntity> constructs = livingEntity.getEntityWorld().getEntitiesByClass(NulConstructEntity.class,livingEntity.getBoundingBox().expand(NulConstructEntity.FIGHT_RANGE*2),construct -> construct.getSummoner() != null && construct.getSummoner().getUuid().equals(livingEntity.getUuid()));
       if (itemStack != null) {
          if(ArcanaItemUtils.identifyItem(itemStack) instanceof TotemOfVengeance vengeance){
             constructs.forEach(construct -> construct.triggerAdaptation(NulConstructEntity.ConstructAdaptations.USED_VENGEANCE_TOTEM));
@@ -582,7 +583,7 @@ public abstract class LivingEntityMixin {
          if(deathProtectionComponent != null){
             deathProtectionComponent.applyDeathEffects(itemStack, livingEntity);
          }
-         livingEntity.getWorld().sendEntityStatus(livingEntity, EntityStatuses.USE_TOTEM_OF_UNDYING);
+         livingEntity.getEntityWorld().sendEntityStatus(livingEntity, EntityStatuses.USE_TOTEM_OF_UNDYING);
          cir.setReturnValue(true);
          return;
       }
@@ -599,8 +600,8 @@ public abstract class LivingEntityMixin {
    private void arcananovum$effectRemoved(Collection<StatusEffectInstance> effects, CallbackInfo ci){
       LivingEntity livingEntity = (LivingEntity) (Object) this;
       for(StatusEffectInstance effect : effects){
-         if(effect.getEffectType() == ArcanaRegistry.GREATER_INVISIBILITY_EFFECT && livingEntity.getServer() != null){
-            GreaterInvisibilityEffect.removeInvis(livingEntity.getServer(),livingEntity);
+         if(effect.getEffectType() == ArcanaRegistry.GREATER_INVISIBILITY_EFFECT && livingEntity.getEntityWorld().getServer() != null){
+            GreaterInvisibilityEffect.removeInvis(livingEntity.getEntityWorld().getServer(),livingEntity);
          }
       }
    }

@@ -141,7 +141,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
          setPersistent();
          setAiDisabled(true);
          
-         if(getServer() != null && getServer().getTicks() % 4 == 0 && getWorld() instanceof ServerWorld entityWorld){
+         if(getEntityWorld().getServer() != null && getEntityWorld().getServer().getTicks() % 4 == 0 && getEntityWorld() instanceof ServerWorld entityWorld){
             entityWorld.spawnParticles(ParticleTypes.CLOUD,getX(),getY(),getZ(),5,0.25,0.25,0.25,0);
             PlayerEntity nearestPlayer = entityWorld.getClosestPlayer(this,25);
             if(nearestPlayer != null)
@@ -161,11 +161,11 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
             // Summon conditions: player within 15 blocks
             // Pulse conditions: player within 7 blocks
             // Laser conditions: player within 25 blocks
-            PlayerEntity player = getWorld().getClosestPlayer(this,25);
+            PlayerEntity player = getEntityWorld().getClosestPlayer(this,25);
             if(player != null){
-               double dist = player.getPos().distanceTo(this.getPos());
+               double dist = player.getEntityPos().distanceTo(this.getEntityPos());
                if(dist <= 15 && summonTick == summonCD){
-                  List<SkeletonEntity> skeles = getWorld().getEntitiesByType(EntityType.SKELETON, new Box(getX()-15,40,getZ()-15, getX()+15,160,getZ()+15), e -> true);
+                  List<SkeletonEntity> skeles = getEntityWorld().getEntitiesByType(EntityType.SKELETON, new Box(getX()-15,40,getZ()-15, getX()+15,160,getZ()+15), e -> true);
                   if(skeles.size() < 8)
                      summonTick = 0;
                }else if(dist <= 7 && pulseTick == pulseCD){
@@ -185,22 +185,22 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    }
    
    private void castLaser(){
-      if(getWorld() instanceof ServerWorld endWorld){
-         PlayerEntity player = getWorld().getClosestPlayer(this,25);
+      if(getEntityWorld() instanceof ServerWorld endWorld){
+         PlayerEntity player = getEntityWorld().getClosestPlayer(this,25);
          if(player != null){
-            double dist = player.getPos().distanceTo(this.getPos());
+            double dist = player.getEntityPos().distanceTo(this.getEntityPos());
             if(laserTick % 10 == 0){ // Damage every half second
                player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this,this),1.25f);
             }
             if(laserTick % 3 == 0){ // Particles every third tick
-               ArcanaEffectUtils.line(endWorld,null,this.getPos(),player.getPos(), ParticleTypes.WITCH,(int)(dist*1.75),1,0.2,0);
+               ArcanaEffectUtils.line(endWorld,null,this.getEntityPos(),player.getEntityPos(), ParticleTypes.WITCH,(int)(dist*1.75),1,0.2,0);
             }
          }
       }
    }
    
    private void castSummon(){
-      if(getWorld() instanceof ServerWorld endWorld){
+      if(getEntityWorld() instanceof ServerWorld endWorld){
          if(summonTick == 1){
             skeletons = new SkeletonEntity[4];
             for(int i = 0; i < skeletons.length; i++){
@@ -217,7 +217,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
          }else if(summonTick > 1){
             for(int i = 0; i < skeletons.length; i++){
                if(skeletons[i] == null) continue;;
-               Vec3d pos = skeletons[i].getPos();
+               Vec3d pos = skeletons[i].getEntityPos();
                skeletons[i].setPos(pos.getX(),pos.getY()+(1/20.0),pos.getZ());
                endWorld.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.OBSIDIAN.getDefaultState()), pos.getX(), getY()-3, pos.getZ(), 5, .8, 0.5, .8, .5);
             }
@@ -226,8 +226,8 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
    }
    
    private void castPulse(){
-      if(getWorld() instanceof ServerWorld endWorld){
-         ArcanaEffectUtils.dragonBossWizardPulse(endWorld,getPos().add(0,-2.5,0),pulseTick);
+      if(getEntityWorld() instanceof ServerWorld endWorld){
+         ArcanaEffectUtils.dragonBossWizardPulse(endWorld,getEntityPos().add(0,-2.5,0),pulseTick);
          if(pulseTick == 10){ // Actual pulse halfway thru animation
             List<ServerPlayerEntity> inRangePlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(new Vec3d(getX()+.5,getY()-2,getZ()+.5)) <= 5.5*5.5);
             for(ServerPlayerEntity player : inRangePlayers){
@@ -303,7 +303,7 @@ public class DragonWizardEntity extends IllusionerEntity implements PolymerEntit
       numPlayers = view.getInt("numPlayers", 0);
       crystalId = AlgoUtils.getUUID(view.getString("crystalId",""));
       
-      if(getWorld() instanceof ServerWorld serverWorld){
+      if(getEntityWorld() instanceof ServerWorld serverWorld){
          Optional<List<String>> optional = view.read("skeletons", CodecUtils.STRING_LIST);
          if(optional.isEmpty()){
             skeletons = new SkeletonEntity[]{};

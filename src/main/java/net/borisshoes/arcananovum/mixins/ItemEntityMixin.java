@@ -57,9 +57,9 @@ public class ItemEntityMixin {
    private void arcananovum$worldDetection(CallbackInfo ci){
       ItemEntity itemEntity = (ItemEntity) (Object) this;
       ItemStack stack = itemEntity.getStack();
-      World world = itemEntity.getWorld();
+      World world = itemEntity.getEntityWorld();
       ArcanaItem arcanaItem = ArcanaItemUtils.identifyItem(stack);
-      if(!(itemEntity.getWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(itemEntity.getEntityWorld() instanceof ServerWorld serverWorld)) return;
       
       if(arcanaItem instanceof Soulstone){
          boolean hasAnnihilation = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.SOUL_ANNIHILATION.id) > 0;
@@ -98,7 +98,7 @@ public class ItemEntityMixin {
          int curPhase = day % 8;
          if(!(curPhase == 4 && curTime >= 14000 && curTime <= 22000)) proceed = false;
          
-         BlockPos smithPos = BlockPos.ofFloored(itemEntity.getPos().add(0,-0.25,0));
+         BlockPos smithPos = BlockPos.ofFloored(itemEntity.getEntityPos().add(0,-0.25,0));
          BlockState state = world.getBlockState(smithPos);
          if(!state.isOf(Blocks.SMITHING_TABLE)) proceed = false;
          ArcanaItem forgeItem = ArcanaRegistry.STARLIGHT_FORGE;
@@ -148,7 +148,7 @@ public class ItemEntityMixin {
          boolean proceed = false;
          ItemEntity eyeEntity = null;
          
-         BlockPos enchantPos = BlockPos.ofFloored(itemEntity.getPos().add(0,-0.25,0));
+         BlockPos enchantPos = BlockPos.ofFloored(itemEntity.getEntityPos().add(0,-0.25,0));
          BlockState state = world.getBlockState(enchantPos);
          if(state.isOf(Blocks.ENCHANTING_TABLE)){
             List<ItemEntity> otherEntities = world.getEntitiesByType(EntityType.ITEM,itemEntity.getBoundingBox().expand(1.25),e -> (!e.getUuid().equals(itemEntity.getUuid()) && !ArcanaItemUtils.isArcane(e.getStack())));
@@ -178,7 +178,7 @@ public class ItemEntityMixin {
                }
                if(tomeCrafter != null){
                   IArcanaProfileComponent profile = ArcanaNovum.data(tomeCrafter);
-                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getUuidAsString(),0,itemEntity.getServer());
+                  tomeStack = ArcanaRegistry.ARCANE_TOME.addCrafter(tomeStack,tomeCrafter.getUuidAsString(),0,itemEntity.getEntityWorld().getServer());
                   if(!profile.addCrafted(tomeStack)){
                      profile.addXP(ArcanaRarity.getFirstCraftXp(ArcanaRegistry.ARCANE_TOME.getRarity()));
                   }

@@ -28,7 +28,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    
    @Override
    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier){
-      Vec3d pos = entity.getPos();
+      Vec3d pos = entity.getEntityPos();
       world.spawnParticles(ParticleTypes.SMOKE,pos.x,pos.y+entity.getHeight()/2,pos.z,1,.4,.4,.4,0);
       return super.applyUpdateEffect(world, entity,amplifier);
    }
@@ -40,8 +40,8 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    
    @Override
    public void onApplied(LivingEntity entity, int amplifier){
-      if(entity.getServer() != null){
-         addInvis(entity.getServer(),entity);
+      if(entity.getEntityWorld().getServer() != null){
+         addInvis(entity.getEntityWorld().getServer(),entity);
       }
       super.onApplied(entity, amplifier);
    }
@@ -63,16 +63,16 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
    public static void removeInvis(MinecraftServer server, LivingEntity invisEntity){
       EntitySpawnS2CPacket addPacket = new EntitySpawnS2CPacket(invisEntity.getId(), invisEntity.getUuid(), invisEntity.getX(), invisEntity.getY(), invisEntity.getZ(), invisEntity.getPitch(), invisEntity.getYaw(), invisEntity.getType(), 0, Vec3d.ZERO, invisEntity.headYaw);
       server.getPlayerManager().getPlayerList().forEach(playerEntity -> {
-         if(!playerEntity.equals(invisEntity) && invisEntity.getWorld().equals(playerEntity.getWorld())){
+         if(!playerEntity.equals(invisEntity) && invisEntity.getEntityWorld().equals(playerEntity.getEntityWorld())){
             
             AbstractTeam abstractTeam = invisEntity.getScoreboardTeam();
             if(abstractTeam != null && playerEntity.getScoreboardTeam() == abstractTeam && abstractTeam.shouldShowFriendlyInvisibles()){
                return;
             }
             
-            Vec3d distVec = playerEntity.getPos().subtract(invisEntity.getPos());
-            int viewDist = MathHelper.clamp(playerEntity.getViewDistance(), 2, playerEntity.getWorld().getChunkManager().chunkLoadingManager.watchDistance);
-            ServerChunkLoadingManager.EntityTracker tracker = playerEntity.getWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId());
+            Vec3d distVec = playerEntity.getEntityPos().subtract(invisEntity.getEntityPos());
+            int viewDist = MathHelper.clamp(playerEntity.getViewDistance(), 2, playerEntity.getEntityWorld().getChunkManager().chunkLoadingManager.watchDistance);
+            ServerChunkLoadingManager.EntityTracker tracker = playerEntity.getEntityWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(playerEntity.getId());
             double maxTrackDist = viewDist * 16;
             if(tracker != null){
                maxTrackDist = Math.min(tracker.getMaxTrackDistance(), maxTrackDist);
@@ -83,7 +83,7 @@ public class GreaterInvisibilityEffect extends StatusEffect implements PolymerSt
             
             if(reveal){
                List<Packet<? super ClientPlayPacketListener>> list = new ArrayList<>();
-               playerEntity.getWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(invisEntity.getId()).entry.sendPackets(playerEntity, list::add);
+               playerEntity.getEntityWorld().getChunkManager().chunkLoadingManager.entityTrackers.get(invisEntity.getId()).entry.sendPackets(playerEntity, list::add);
                playerEntity.networkHandler.sendPacket(new BundleS2CPacket(list));
             }
          }

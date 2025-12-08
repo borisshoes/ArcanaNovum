@@ -32,7 +32,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal
    @Override
    public boolean canStart(){
       this.targetEntity = getServerWorld(this.mob).getClosestEntity(
-            this.mob.getWorld().getEntitiesByClass(this.classToFleeFrom, this.mob.getBoundingBox().expand((double) this.fleeDistance, 3.0, (double) this.fleeDistance), (livingEntity) -> true),
+            this.mob.getEntityWorld().getEntitiesByClass(this.classToFleeFrom, this.mob.getBoundingBox().expand((double) this.fleeDistance, 3.0, (double) this.fleeDistance), (livingEntity) -> true),
             TargetPredicate.createAttackable()
                   .setBaseMaxDistance((double)this.fleeDistance)
                   .setPredicate((entity, world) -> inclusionSelector.test(entity) && extraInclusionSelector.test(entity)),
@@ -40,7 +40,7 @@ public class FleeFelidaeCharmGoal<T extends LivingEntity> extends FleeEntityGoal
       if(this.targetEntity == null){
          return false;
       }else{
-         Vec3d vec3d = NoPenaltyTargeting.findFrom(this.mob, 16, 7, this.targetEntity.getPos());
+         Vec3d vec3d = NoPenaltyTargeting.findFrom(this.mob, 16, 7, this.targetEntity.getEntityPos());
          if(vec3d == null){
             return false;
          }else if(this.targetEntity.squaredDistanceTo(vec3d.x, vec3d.y, vec3d.z) < this.targetEntity.squaredDistanceTo(this.mob)){

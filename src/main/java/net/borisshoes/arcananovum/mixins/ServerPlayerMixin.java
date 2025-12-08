@@ -13,15 +13,11 @@ import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.ArcanaUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
+import net.minecraft.entity.*;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.DolphinEntity;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
@@ -49,7 +45,7 @@ public class ServerPlayerMixin {
    @Inject(method = "onDeath", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onKilledBy(Lnet/minecraft/entity/LivingEntity;)V"))
    private void arcananovum$onEntityKilledOther(DamageSource damageSource, CallbackInfo ci){
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-      EntityKilledCallback.killedEntity(player.getWorld(),damageSource, damageSource.getAttacker(),player);
+      EntityKilledCallback.killedEntity(player.getEntityWorld(),damageSource, damageSource.getAttacker(),player);
    }
    
    @Inject(method="onDeath",at=@At("HEAD"))
@@ -66,7 +62,7 @@ public class ServerPlayerMixin {
          int i = Math.round((float)Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) * 100.0F);
          if(i > 0){
             ArcanaAchievements.progress(player, ArcanaAchievements.OCEAN_MIGRATION.id, i);
-            LivingEntity entity = player.getWorld().getClosestEntity(DolphinEntity.class, TargetPredicate.createNonAttackable().setBaseMaxDistance(10.0).ignoreVisibility(), player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().expand(20.0));
+            LivingEntity entity = player.getEntityWorld().getClosestEntity(DolphinEntity.class, TargetPredicate.createNonAttackable().setBaseMaxDistance(10.0).ignoreVisibility(), player, player.getX(), player.getY(), player.getZ(), player.getBoundingBox().expand(20.0));
             if(entity != null) ArcanaAchievements.progress(player, ArcanaAchievements.CEPHALOS_IN_A_POD.id, i);
          }
       }
@@ -89,7 +85,7 @@ public class ServerPlayerMixin {
       ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
       if(player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT) != null){
          player.move(MovementType.PLAYER,player.getVelocity());
-         player.networkHandler.requestTeleport(new PlayerPosition(player.getPos(), player.getVelocity(), 0, 0), PositionFlag.getFlags(0b11000));
+         player.networkHandler.requestTeleport(new EntityPosition(player.getEntityPos(), player.getVelocity(), 0, 0), PositionFlag.getFlags(0b11000));
       }
    }
    

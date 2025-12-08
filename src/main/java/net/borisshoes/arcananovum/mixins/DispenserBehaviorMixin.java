@@ -156,7 +156,7 @@ public interface DispenserBehaviorMixin {
                   BlockPos blockPos = pointer.pos().offset(pointer.state().get(DispenserBlock.FACING));
                   if (!BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos) && !BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos, null)) {
                      this.setSuccess(false);
-                  } else if (!world.isClient) {
+                  } else if (!world.isClient()) {
                      world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
                   }
                   

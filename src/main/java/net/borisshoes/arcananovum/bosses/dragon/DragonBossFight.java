@@ -236,7 +236,7 @@ public class DragonBossFight {
                      for(int i = 0; i < wizards.length; i++){
                         EndCrystalEntity crystal = crystals.get(i);
                         wizards[i] = DragonGoonHelper.makeWizard(endWorld,numPlayers);
-                        wizards[i].setPosition(crystal.getPos().add(0,2,0));
+                        wizards[i].setPosition(crystal.getEntityPos().add(0,2,0));
                         wizards[i].setInvulnerable(true);
                         wizards[i].setCrystalId(crystal.getUuid());
                         wizards[i].addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE,100,4));
@@ -314,7 +314,7 @@ public class DragonBossFight {
                            if(wizards[i].getCrystalId() != null){
                               Entity entity = endWorld.getEntity(wizards[i].getCrystalId());
                               if(entity instanceof EndCrystalEntity crystal){
-                                 Vec3d crystalPos = crystal.getPos().add(0,-1,0);
+                                 Vec3d crystalPos = crystal.getEntityPos().add(0,-1,0);
                                  ArcanaEffectUtils.dragonBossTowerCircleInvuln(endWorld,crystalPos,6000,0);
                               }
                            }
@@ -327,7 +327,7 @@ public class DragonBossFight {
                            }
                         }
                         final int finalI = i;
-                        List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(wizards[finalI].getPos()) <= 20*20);
+                        List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(wizards[finalI].getEntityPos()) <= 20*20);
                         for(ServerPlayerEntity player : nearbyPlayers){
                            player.sendMessage(Text.literal("The Crystal's Shield Fades!").formatted(Formatting.AQUA,Formatting.ITALIC),true);
                         }
@@ -346,7 +346,7 @@ public class DragonBossFight {
                   if(crystal.isAlive()){
                      aliveCount++;
                   }else{
-                     ReclaimState newRecState = new ReclaimState(crystal.getPos(),endWorld);
+                     ReclaimState newRecState = new ReclaimState(crystal.getEntityPos(),endWorld);
                      newRecState.hologramVisible = false;
                      reclaimStates.add(newRecState);
                      crystals.set(i,null);
@@ -562,7 +562,7 @@ public class DragonBossFight {
          // Give reward
          List<ServerPlayerEntity> players = endWorld.getServer().getPlayerManager().getPlayerList();
          for(ServerPlayerEntity player : players){
-            ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),0,player.getServer());
+            ItemStack wings = arcanaWings.addCrafter(arcanaWings.getNewItem(),player.getUuidAsString(),0,player.getEntityWorld().getServer());
             wings.addEnchantment(MinecraftUtils.getEnchantment(ArcanaRegistry.FATE_ANCHOR),1);
             ArcanaNovum.data(player).addCraftedSilent(wings);
             BorisLib.addTickTimerCallback(new ItemReturnTimerCallback(wings,player,0));
@@ -645,7 +645,7 @@ public class DragonBossFight {
    
    private static void tickCrystal(ServerWorld endWorld, EndCrystalEntity crystal, int phase){
       if(crystal == null) return;
-      Vec3d pos = crystal.getPos().add(0,-1,0);
+      Vec3d pos = crystal.getEntityPos().add(0,-1,0);
       if(phase == 1){ // Knockback shield, Both particle effects
          if(age % 260 == 0){
             
@@ -782,11 +782,11 @@ public class DragonBossFight {
    }
    
    public static int prepBoss(ServerPlayerEntity player){
-      if(player.getWorld().getRegistryKey() != World.END){
+      if(player.getEntityWorld().getRegistryKey() != World.END){
          player.sendMessage(Text.literal("The Dragon boss must take place in The End"), false);
          return -1;
       }
-      ServerWorld endWorld = player.getWorld();
+      ServerWorld endWorld = player.getEntityWorld();
       NbtCompound dragonData = (NbtCompound) (EnderDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, endWorld.getEnderDragonFight().toData()).getOrThrow());
       NbtCompound fightData = new NbtCompound();
       if(dragonData.getBoolean("DragonKilled", false)){
@@ -803,7 +803,7 @@ public class DragonBossFight {
          }
          endWorld.getEnderDragonFight().respawnDragon();
          fightData.putString("State", States.WAITING_RESPAWN.name());
-         BorisLib.addTickTimerCallback(new DragonRespawnTimerCallback(player.getServer()));
+         BorisLib.addTickTimerCallback(new DragonRespawnTimerCallback(player.getEntityWorld().getServer()));
       }else{
          player.sendMessage(Text.literal("Co-opting Dragon"), false);
          if(endWorld.getEntitiesByType(EntityType.END_CRYSTAL, new Box(new BlockPos(-50, 25, -50).toCenterPos(), new BlockPos(50, 115, 50).toCenterPos()), EndCrystalEntity::shouldShowBottom).size() != 10){
@@ -935,7 +935,7 @@ public class DragonBossFight {
       if(!inEnd) return playerList.size();
       for(ServerPlayerEntity player : playerList){
          if(!player.isSpectator() && !player.isCreative()){
-            if(player.getWorld() == server.getWorld(World.END)){
+            if(player.getEntityWorld() == server.getWorld(World.END)){
                count++;
             }
          }
@@ -1021,7 +1021,7 @@ public class DragonBossFight {
    }
    
    public static void teleportPlayer(ServerPlayerEntity player, boolean override){
-      ServerWorld endWorld = player.getServer().getWorld(World.END);
+      ServerWorld endWorld = player.getEntityWorld().getServer().getWorld(World.END);
       if(hasDied.contains(player) || override){
          player.teleportTo(new TeleportTarget(endWorld, new Vec3d(100.5,51,0.5), Vec3d.ZERO, 90, 0, TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
          StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 20*30, 4, false, false, true);
@@ -1312,7 +1312,7 @@ public class DragonBossFight {
          Vec3d end = player.getEyePos().add(player.getRotationVector().normalize().multiply(75));
          BlockHitResult result = endWorld.raycast(new RaycastContext(player.getEyePos(),end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE,player));
          Vec3d hit = result.getPos();
-         ArcanaEffectUtils.longDistLine(endWorld,player.getPos().add(0,.7,0),hit, ParticleTypes.GLOW,(int)(2*hit.length()),1,0.1,0);
+         ArcanaEffectUtils.longDistLine(endWorld,player.getEntityPos().add(0,.7,0),hit, ParticleTypes.GLOW,(int)(2*hit.length()),1,0.1,0);
          List<Entity> entities = endWorld.getOtherEntities(player,new Box(hit.x+2,hit.y+2,hit.z+2,hit.x-2,hit.y-2,hit.z-2),e -> (e instanceof LivingEntity && !(e instanceof ServerPlayerEntity)));
    
          Scoreboard scoreboard = endWorld.getServer().getScoreboard();
@@ -1325,7 +1325,7 @@ public class DragonBossFight {
                living.damage(endWorld, endWorld.getDamageSources().playerAttack(player),5f);
             }
          }
-         if(MathUtils.distToLine(dragon.getPos(),player.getPos(),hit) < 10){
+         if(MathUtils.distToLine(dragon.getEntityPos(),player.getEntityPos(),hit) < 10){
             float damage = Math.min(100,15+numPlayers*3);
             if(scoreboardPlayerScore != null)
                scoreboardPlayerScore.setScore(scoreboardPlayerScore.getScore() + (int)(damage*10));

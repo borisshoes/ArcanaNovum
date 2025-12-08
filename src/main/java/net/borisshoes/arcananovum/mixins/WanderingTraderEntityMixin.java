@@ -50,7 +50,7 @@ public class WanderingTraderEntityMixin {
          ArcaneNotesItem.buildLore(notes);
          
          ItemStack waystone = ArcanaRegistry.WAYSTONE.getNewItem();
-         ArcanaRegistry.WAYSTONE.addCrafter(waystone,null,2,trader.getServer());
+         ArcanaRegistry.WAYSTONE.addCrafter(waystone,null,2,trader.getEntityWorld().getServer());
          
          TradeOffer offer1 = new TradeOffer(new TradedItem(Items.EMERALD_BLOCK, trader.getRandom().nextBetween(10,16)), notes.copy(), 1, 1, 0.05f);
          TradeOffer offer2 = new TradeOffer(new TradedItem(ArcanaRegistry.STARDUST, trader.getRandom().nextBetween(3,16)), new ItemStack(Items.EMERALD,trader.getRandom().nextBetween(1,24)), 12, 1, 0.05f);

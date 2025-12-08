@@ -94,7 +94,7 @@ public class ArcanistsBeltGui extends SimpleGui {
          if(arcanaItem != null && arcanaItem.hasCategory(TomeGui.TomeFilter.CHARMS)) charmCount++;
       }
       beltStack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(items));
-      belt.buildItemLore(beltStack,player.getServer());
+      belt.buildItemLore(beltStack,player.getEntityWorld().getServer());
       
       if(charmCount >= slotCount){
          ArcanaAchievements.grant(player,ArcanaAchievements.BELT_CHARMING.id);

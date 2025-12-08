@@ -18,7 +18,7 @@ public class MobEntityMixin {
    @Inject(method = "checkDespawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/MobEntity;discard()V", ordinal = 1, shift = At.Shift.BEFORE), cancellable = true)
    private void checkDespawn(CallbackInfo ci, @Local double distToPlayerSq, @Local(ordinal = 1) int imDespSq){
       MobEntity mob = (MobEntity) (Object) this;
-      if(mob.getWorld() instanceof ServerWorld world){
+      if(mob.getEntityWorld() instanceof ServerWorld world){
          Chunk chunk = world.getChunk(mob.getBlockPos());
          if(ContinuumAnchor.isChunkLoaded(world,chunk.getPos())){
             //log("Entity: "+entity.getEntityName()+" ("+entity.getPos().toString()+") distSq: "+distToPlayerSq+" imDespSq: "+imDespSq);

@@ -1,6 +1,5 @@
 package net.borisshoes.arcananovum.core;
 
-import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.borisshoes.arcananovum.ArcanaNovum;
@@ -32,6 +31,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -472,7 +472,8 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
       
       loreList.add(Text.literal(""));
       if(!player.isBlank() && server != null){
-         String crafterName = server.getUserCache().getByUuid(AlgoUtils.getUUID(player)).orElse(new GameProfile(AlgoUtils.getUUID(player),"???")).getName();
+         Optional<PlayerConfigEntry> optional = server.getApiServices().nameToIdCache().getByUuid(AlgoUtils.getUUID(player));
+         String crafterName = optional.isPresent() ? optional.get().name() : "???";
          String crafted = switch(origin){
             case 0 -> rarity == ArcanaRarity.DIVINE ? "Earned by" : "Crafted by";
             case 1 -> "Synthesized by";

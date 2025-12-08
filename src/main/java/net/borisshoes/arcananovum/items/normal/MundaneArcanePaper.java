@@ -16,7 +16,7 @@ import java.util.List;
 
 public class MundaneArcanePaper extends NormalPolymerItem {
    
-   public MundaneArcanePaper(String id, Settings settings){
+   public MundaneArcanePaper(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

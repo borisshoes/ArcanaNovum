@@ -87,7 +87,7 @@ public abstract class QuiverItem extends ArcanaItem {
       }else if(this instanceof RunicQuiver){
          ArcanaAchievements.progress(player,ArcanaAchievements.UNLIMITED_STOCK.id,1);
       }
-      buildItemLore(item,player.getServer());
+      buildItemLore(item,player.getEntityWorld().getServer());
    }
    
    public boolean shootArrow(ItemStack item, int slot, ServerPlayerEntity player, ItemStack bow){
@@ -118,7 +118,7 @@ public abstract class QuiverItem extends ArcanaItem {
       player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId, player.playerScreenHandler.nextRevision(), 45, inv.getStack(PlayerInventory.OFF_HAND_SLOT)));
       
       item.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(arrows));
-      buildItemLore(item,player.getServer());
+      buildItemLore(item,player.getEntityWorld().getServer());
       return true;
    }
    

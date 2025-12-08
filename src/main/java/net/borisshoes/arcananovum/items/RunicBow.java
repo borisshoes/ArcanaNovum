@@ -261,8 +261,7 @@ public class RunicBow extends ArcanaItem {
                   photonArrows.shoot(world, shooter, projectileEntity, alignmentLvl);
                   projectileEntity.kill(world);
                }
-               
-               bow.damage(this.getWeaponStackDamage(arrowStack), shooter, LivingEntity.getSlotForHand(hand));
+               bow.damage(this.getWeaponStackDamage(arrowStack), shooter, hand.getEquipmentSlot());
                if(bow.isEmpty()){
                   break;
                }

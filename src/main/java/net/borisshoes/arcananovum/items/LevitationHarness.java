@@ -374,7 +374,7 @@ public class LevitationHarness extends EnergyItem {
                      putProperty(stack,SOULS_TAG,getSouls(stack)-1);
                      putProperty(stack,GLOWSTONE_TAG,getGlow(stack)-16);
                   }
-                  buildItemLore(stack,player.getServer());
+                  buildItemLore(stack,player.getEntityWorld().getServer());
                }
                
                ArcanaAchievements.progress(player,ArcanaAchievements.FREQUENT_FLIER.id,1);

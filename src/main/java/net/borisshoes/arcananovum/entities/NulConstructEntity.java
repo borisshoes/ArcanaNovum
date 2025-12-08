@@ -140,7 +140,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       this.experiencePoints = 1000;
       this.blockDamage = new HashMap<>();
       this.movementChangeTime = this.age + this.random.nextBetween(200,500);
-      this.targetPosition = this.getPos();
+      this.targetPosition = this.getEntityPos();
       this.circlingCenter = this.getBlockPos();
       this.adaptiveResistance = 0.0f;
       adaptations = new HashMap<>();
@@ -379,7 +379,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          this.bossBar.setName(this.getDisplayName());
       }
       
-      if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(AlgoUtils.getUUID(view.getString("summoner", ""))) instanceof PlayerEntity player){
+      if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(AlgoUtils.getUUID(view.getString("summoner", ""))) instanceof PlayerEntity player){
          summoner = player;
       }
       
@@ -404,7 +404,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       
       players = new ArrayList<>();
       for(String id : view.read("players", CodecUtils.STRING_LIST).orElse(new ArrayList<>())){
-         if(getWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(AlgoUtils.getUUID(id)) instanceof ServerPlayerEntity player){
+         if(getEntityWorld() instanceof ServerWorld serverWorld && serverWorld.getEntity(AlgoUtils.getUUID(id)) instanceof ServerPlayerEntity player){
             players.add(player);
          }
       }
@@ -427,7 +427,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       this.setInvulTimer(220);
       this.bossBar.setPercent(0.0F);
       this.setHealth(this.getMaxHealth() / 3.0F);
-      if(!(getWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(getEntityWorld() instanceof ServerWorld serverWorld)) return;
       this.summoner = summoner;
       this.shouldHaveSummoner = true;
       this.isExalted = mythic;
@@ -446,7 +446,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
                .append(Text.literal("▓").formatted(Formatting.DARK_GRAY, Formatting.BOLD, Formatting.OBFUSCATED))
                .append(Text.literal("❖").formatted(Formatting.DARK_GRAY, Formatting.BOLD));
-         ArcanaEffectUtils.exaltedConstructSummon(serverWorld,getPos().add(0,0,0),0);
+         ArcanaEffectUtils.exaltedConstructSummon(serverWorld,getEntityPos().add(0,0,0),0);
          
          EntityAttributeInstance entityAttributeInstance = getAttributeInstance(EntityAttributes.ATTACK_DAMAGE);
          EntityAttributeModifier entityAttributeModifier = new EntityAttributeModifier(Identifier.of(MOD_ID,"exalted"), 15.0f, EntityAttributeModifier.Operation.ADD_VALUE);
@@ -462,7 +462,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                .append(Text.literal("-").formatted(Formatting.DARK_GRAY))
                .append(Text.literal("=").formatted(Formatting.DARK_GRAY))
                .append(Text.literal("-").formatted(Formatting.DARK_GRAY));
-         ArcanaEffectUtils.nulConstructSummon(serverWorld,getPos().add(0,0,0),0);
+         ArcanaEffectUtils.nulConstructSummon(serverWorld,getEntityPos().add(0,0,0),0);
       }
       
       setCustomName(witherName);
@@ -481,10 +481,10 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       
       prevHP = getHealth();
       
-      NulConstructDialog.announce(summoner.getServer(),summoner,this, Announcements.SUMMON_TEXT);
+      NulConstructDialog.announce(summoner.getEntityWorld().getServer(),summoner,this, Announcements.SUMMON_TEXT);
       NulConstructEntity construct = this;
       BorisLib.addTickTimerCallback(serverWorld, new GenericTimer(this.getInvulnerableTimer(), () -> {
-         NulConstructDialog.announce(summoner.getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
+         NulConstructDialog.announce(summoner.getEntityWorld().getServer(),summoner,construct, Announcements.SUMMON_DIALOG, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
          setHealth(getMaxHealth());
       }));
    }
@@ -493,19 +493,19 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    public void onDeath(DamageSource damageSource){
       super.onDeath(damageSource);
       
-      MinecraftServer server = getServer();
+      MinecraftServer server = getEntityWorld().getServer();
       if(server == null) return;
       
       if(isExalted){ // TODO proper loot table?
-         dropItem(getWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(24),getPos());
-         dropItem(getWorld(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(8,16)),getPos());
+         dropItem(getEntityWorld(),Items.NETHER_STAR.getDefaultStack().copyWithCount(24),getEntityPos());
+         dropItem(getEntityWorld(), new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(8,16)),getEntityPos());
       }else{
          for(int i = 0; i < this.random.nextBetween(4,16); i++){
             ItemStack stack = Items.NETHER_STAR.getDefaultStack().copy();
-            dropItem(getWorld(),stack,getPos());
-            dropItem(getWorld(),stack.copyWithCount(1),getPos());
+            dropItem(getEntityWorld(),stack,getEntityPos());
+            dropItem(getEntityWorld(),stack.copyWithCount(1),getEntityPos());
          }
-         dropItem(getWorld(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(4,12)),getPos());
+         dropItem(getEntityWorld(),new ItemStack(ArcanaRegistry.DIVINE_ARCANE_PAPER,this.random.nextBetween(4,12)),getEntityPos());
       }
       
       if(summoner == null) return;
@@ -515,13 +515,13 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       if(dropped){
          ItemStack stack = ArcanaRegistry.NUL_MEMENTO.addCrafter(ArcanaRegistry.NUL_MEMENTO.getNewItem(),summoner.getUuidAsString(),0,server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
-         dropItem(getWorld(), stack.copyWithCount(1),getPos());
+         dropItem(getEntityWorld(), stack.copyWithCount(1),getEntityPos());
       }
       
       if(!isExalted){
          ItemStack stack = ArcanaRegistry.DIVINE_CATALYST.addCrafter(ArcanaRegistry.DIVINE_CATALYST.getNewItem(),summoner.getUuidAsString(),0,server);
          ArcanaNovum.data(summoner).addCraftedSilent(stack);
-         dropItem(getWorld(), stack.copyWithCount(1),getPos());
+         dropItem(getEntityWorld(), stack.copyWithCount(1),getEntityPos());
       }
       
       NulConstructDialog.announce(server,summoner,this, Announcements.SUCCESS, new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, dropped, !dropped, isExalted, !isExalted});
@@ -536,10 +536,10 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    public void deconstruct(){
       if(summoner != null){
-         NulConstructDialog.announce(getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
+         NulConstructDialog.announce(getEntityWorld().getServer(),summoner,this, Announcements.FAILURE,new boolean[]{summonerHasDivine,summonerHasWings,!summonerHasWings, false, true, isExalted, !isExalted});
       }
       
-      dropItem(getWorld(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1),getPos());
+      dropItem(getEntityWorld(),(new ItemStack(Items.NETHERITE_BLOCK)).copyWithCount(1),getEntityPos());
       discard();
    }
    
@@ -629,7 +629,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       if(this.isReflectionActive()){
          Entity attacker = source.getAttacker();
          if(attacker instanceof LivingEntity){
-            if (this.getWorld() instanceof ServerWorld serverWorld) {
+            if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
                attacker.damage(serverWorld, getDamageSources().thorns(this), amount * 0.5f);
             }
             conversionHeal(amount*0.25f);
@@ -700,7 +700,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                   
                   int j = this.getTrackedEntityId(ix);
                   if(j > 0){
-                     LivingEntity livingEntity = (LivingEntity)this.getWorld().getEntityById(j);
+                     LivingEntity livingEntity = (LivingEntity)this.getEntityWorld().getEntityById(j);
                      if(livingEntity != null && this.canTarget(livingEntity) && !(this.squaredDistanceTo(livingEntity) > 900.0) && this.canSee(livingEntity)){
                         this.shootSkullAt(ix + 1, livingEntity);
                         this.skullCooldowns[ix - 1] = this.age + 40 + this.random.nextInt(20);
@@ -736,7 +736,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          }
          
          if(shouldHaveSummoner){
-            if(summoner == null || summoner.isDead() || !summoner.getWorld().getRegistryKey().equals(getWorld().getRegistryKey())){
+            if(summoner == null || summoner.isDead() || !summoner.getEntityWorld().getRegistryKey().equals(getEntityWorld().getRegistryKey())){
                deconstruct();
             }
             if(distanceTo(summoner) >= FIGHT_RANGE){
@@ -757,7 +757,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          
          if(hasActivatedAdaptation(ConstructAdaptations.DAMAGED_BY_MACE)){
             for(ServerPlayerEntity player : players){
-               if(player.getWorld().getRegistryKey().equals(getWorld().getRegistryKey()) && player.getY() > getY()+10){
+               if(player.getEntityWorld().getRegistryKey().equals(getEntityWorld().getRegistryKey()) && player.getY() > getY()+10){
                   ItemStack weapon = player.getWeaponStack();
                   if(weapon.isOf(Items.MACE) || weapon.isOf(ArcanaRegistry.GRAVITON_MAUL.getItem())){
                      castSpell(spells.get(ConstructSpellType.SHADOW_SHROUD));
@@ -773,7 +773,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                destructiveAura();
             }
             if(isExalted){
-               List<PlayerEntity> players = getWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(FIGHT_RANGE),(e) -> true);
+               List<PlayerEntity> players = getEntityWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(FIGHT_RANGE),(e) -> true);
                
                for(PlayerEntity player : players){
                   StatusEffectInstance amp = new StatusEffectInstance(ArcanaRegistry.DAMAGE_AMP_EFFECT, 100, 1, false, true, true);
@@ -839,10 +839,10 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          double q = this.getHeadY(jx);
          double r = this.getHeadZ(jx);
          float s = 0.3F * this.getScale();
-         this.getWorld().addParticleClient(ParticleTypes.SMOKE,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
-         if(shieldActive && this.getWorld().random.nextInt(4) == 0){
+         this.getEntityWorld().addParticleClient(ParticleTypes.SMOKE,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
+         if(shieldActive && this.getEntityWorld().random.nextInt(4) == 0){
             TintedParticleEffect particle = TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.5F);
-            this.getWorld().addParticleClient(particle,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
+            this.getEntityWorld().addParticleClient(particle,p + this.random.nextGaussian() * (double)s,q + this.random.nextGaussian() * (double)s,r + this.random.nextGaussian() * (double)s,0.0,0.0,0.0);
          }
       }
       
@@ -850,13 +850,13 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          float t = 3.3F * this.getScale();
          for (int u = 0; u < 3; u++){
             TintedParticleEffect particle = TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.9F);
-            this.getWorld().addParticleClient(particle,this.getX() + this.random.nextGaussian(),this.getY() + (double)(this.random.nextFloat() * t),this.getZ() + this.random.nextGaussian(), 0.0, 0.0, 0.0);
+            this.getEntityWorld().addParticleClient(particle,this.getX() + this.random.nextGaussian(),this.getY() + (double)(this.random.nextFloat() * t),this.getZ() + this.random.nextGaussian(), 0.0, 0.0, 0.0);
          }
       }
    }
    
    private void tickCustomAI(){
-      if(!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(this.getEntityWorld() instanceof ServerWorld serverWorld)) return;
       this.setNoGravity(true);
       double speed = getAttributeValue(EntityAttributes.FLYING_SPEED);
       
@@ -868,7 +868,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          return;
       }else if(this.movementType == ConstructMovementType.WAIT){
          this.acquireTargetCooldown = 0;
-         this.targetPosition = this.getPos();
+         this.targetPosition = this.getEntityPos();
          this.circlingCenter = this.getBlockPos();
       }
       
@@ -906,7 +906,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          double attackRange = (double)(this.getWidth() * 2.0F * this.getWidth() * 2.0F);
          
          if(this.isExalted){
-            List<PlayerEntity> players = getWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(FIGHT_RANGE),(e) -> true);
+            List<PlayerEntity> players = getEntityWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(FIGHT_RANGE),(e) -> true);
             StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 30, 20, false, true, true);
             players.forEach(p -> p.addStatusEffect(blind));
          }
@@ -922,7 +922,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          }
          
          speed *= 1.5;
-         this.targetPosition = this.getTarget().getPos();
+         this.targetPosition = this.getTarget().getEntityPos();
       }else if(this.movementType == ConstructMovementType.RANGED_PURSUIT){
          double sqrDistToTarget = this.squaredDistanceTo(this.getTarget().getX(), this.getTarget().getY(), this.getTarget().getZ());
          if(sqrDistToTarget < (RAY_RANGE * RAY_RANGE) && this.getVisibilityCache().canSee(this.getTarget())){
@@ -933,14 +933,14 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
             }
          }
          
-         Vec3d targetDiff = this.getTarget().getPos().subtract(this.getPos());
+         Vec3d targetDiff = this.getTarget().getEntityPos().subtract(this.getEntityPos());
          double lengthDiff = targetDiff.length() - RAY_RANGE*0.5;
-         Vec3d newTargetPos = this.getPos().add(targetDiff.normalize().multiply(lengthDiff));
+         Vec3d newTargetPos = this.getEntityPos().add(targetDiff.normalize().multiply(lengthDiff));
          this.targetPosition = new Vec3d(newTargetPos.x,this.getTarget().getY()+strafeHeight,newTargetPos.z);
       }else if(this.movementType == ConstructMovementType.STRAFE){
          this.circlingCenter = this.getTarget().getBlockPos();
          int up = 0;
-         while(this.getWorld().getBlockState(this.circlingCenter.up()).isAir() && up < strafeHeight){
+         while(this.getEntityWorld().getBlockState(this.circlingCenter.up()).isAir() && up < strafeHeight){
             this.circlingCenter = this.circlingCenter.up();
             up++;
          }
@@ -975,7 +975,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                LivingEntity livingEntity = (LivingEntity)serverWorld.getEntityById(id);
                if(livingEntity != null && this.canTarget(livingEntity) && (this.squaredDistanceTo(livingEntity) < (RAY_RANGE*RAY_RANGE))){
                   Vec3d headPos = new Vec3d(getHeadX(i),getHeadY(i),getHeadZ(i));
-                  MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.getPos().subtract(headPos).normalize(), RAY_RANGE, true, this);
+                  MinecraftUtils.LasercastResult lasercast = MinecraftUtils.lasercast(serverWorld, headPos, livingEntity.getEntityPos().subtract(headPos).normalize(), RAY_RANGE, true, this);
                   if(this.age % 10 == 0){
                      float damage = this.isExalted ? 2f : 4f;
                      
@@ -989,7 +989,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                            }
                         }
                         
-                        hit.damage(serverWorld, ArcanaDamageTypes.of(getWorld(),ArcanaDamageTypes.NUL,this), damage);
+                        hit.damage(serverWorld, ArcanaDamageTypes.of(getEntityWorld(),ArcanaDamageTypes.NUL,this), damage);
                         StatusEffectInstance wither = new StatusEffectInstance(StatusEffects.WITHER, isExalted ? 100 : 40, 1, false, true, true);
                         StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 40, 25, false, true, true);
                         StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, isExalted ? 100 : 40, 1, false, true, true);
@@ -1031,7 +1031,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          }
       }
       
-      Vec3d delta = this.targetPosition.subtract(this.getPos());
+      Vec3d delta = this.targetPosition.subtract(this.getEntityPos());
       speed *= 1 / (1 + Math.exp(-0.25*(delta.length() - 8))); // Sigmoid velocity scaling based on proximity
       setVelocity(delta.normalize().multiply(speed));
    }
@@ -1068,8 +1068,8 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    }
    
    private List<LivingEntity> getPrioritizedTargets(){
-      if(!(getWorld() instanceof ServerWorld serverWorld)) return new ArrayList<>();
-      List<LivingEntity> targets = new ArrayList<>(getWorld().getEntitiesByClass(LivingEntity.class, this.getHitbox().expand(FIGHT_RANGE), e -> CAN_ATTACK_PREDICATE.test(e,serverWorld)));
+      if(!(getEntityWorld() instanceof ServerWorld serverWorld)) return new ArrayList<>();
+      List<LivingEntity> targets = new ArrayList<>(getEntityWorld().getEntitiesByClass(LivingEntity.class, this.getHitbox().expand(FIGHT_RANGE), e -> CAN_ATTACK_PREDICATE.test(e,serverWorld)));
       HashSet<ServerPlayerEntity> participatingPlayers = getParticipatingPlayers();
       targets.sort(Comparator.comparingDouble(entity -> {
          double distVal = entity.distanceTo(this);
@@ -1089,7 +1089,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    private void shootSkullAt(int headIndex, double targetX, double targetY, double targetZ, boolean charged){
       if(!this.isSilent()){
-         this.getWorld().syncWorldEvent(null, WorldEvents.WITHER_SHOOTS, this.getBlockPos(), 0);
+         this.getEntityWorld().syncWorldEvent(null, WorldEvents.WITHER_SHOOTS, this.getBlockPos(), 0);
       }
       
       double d = this.getHeadX(headIndex);
@@ -1099,14 +1099,14 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       double h = targetY - e;
       double i = targetZ - f;
       Vec3d vec3d = new Vec3d(g, h, i);
-      WitherSkullEntity witherSkullEntity = new WitherSkullEntity(this.getWorld(), this, vec3d.normalize());
+      WitherSkullEntity witherSkullEntity = new WitherSkullEntity(this.getEntityWorld(), this, vec3d.normalize());
       witherSkullEntity.setOwner(this);
       if(charged){
          witherSkullEntity.setCharged(true);
       }
       
       witherSkullEntity.setPos(d, e, f);
-      this.getWorld().spawnEntity(witherSkullEntity);
+      this.getEntityWorld().spawnEntity(witherSkullEntity);
    }
    
    private void shootSkullAt(int headIndex, LivingEntity target){
@@ -1120,15 +1120,15 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    private boolean damageBlock(BlockPos pos, int damage){
       if(damage <= 0) return false;
-      BlockState blockState = this.getWorld().getBlockState(pos);
+      BlockState blockState = this.getEntityWorld().getBlockState(pos);
       if(!canDestroy(blockState)) return false;
       
       
       
       boolean blocked = true;
       for (Direction direction : Direction.values()){
-         Vec3d vec3d3 = this.getPos().offset(direction, 1.0E-5F);
-         if(getWorld().raycast(new BlockStateRaycastContext(vec3d3,pos.toCenterPos(), state -> state.isIn(BlockTags.WITHER_IMMUNE))).getType() != HitResult.Type.BLOCK){
+         Vec3d vec3d3 = this.getEntityPos().offset(direction, 1.0E-5F);
+         if(getEntityWorld().raycast(new BlockStateRaycastContext(vec3d3,pos.toCenterPos(), state -> state.isIn(BlockTags.WITHER_IMMUNE))).getType() != HitResult.Type.BLOCK){
             blocked = false;
             break;
          }
@@ -1142,9 +1142,9 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       
       if(curDmg + damage > maxDmg){
          // Break
-         boolean broken = this.getWorld().breakBlock(pos, true, this);
+         boolean broken = this.getEntityWorld().breakBlock(pos, true, this);
          if(broken){
-            this.getWorld().syncWorldEvent(null, WorldEvents.WITHER_BREAKS_BLOCK, this.getBlockPos(), 0);
+            this.getEntityWorld().syncWorldEvent(null, WorldEvents.WITHER_BREAKS_BLOCK, this.getBlockPos(), 0);
             blockDamage.remove(new BlockPos(pos.getX(),pos.getY(),pos.getZ()));
             blockPacketQueue.add(new Pair<>(pos,0));
             return true;
@@ -1163,11 +1163,11 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    }
    
    private void sendBlockBreakPackets(){
-      if(!(getWorld() instanceof ServerWorld serverWorld)) return;
+      if(!(getEntityWorld() instanceof ServerWorld serverWorld)) return;
       
       int toSend = Math.min(4096, blockPacketQueue.size());
       for (ServerPlayerEntity serverPlayerEntity : serverWorld.getServer().getPlayerManager().getPlayerList()) {
-         if (serverPlayerEntity != null && serverPlayerEntity.getWorld() == serverWorld && serverPlayerEntity.getId() != this.getId() && serverPlayerEntity.distanceTo(this) <= FIGHT_RANGE) {
+         if (serverPlayerEntity != null && serverPlayerEntity.getEntityWorld() == serverWorld && serverPlayerEntity.getId() != this.getId() && serverPlayerEntity.distanceTo(this) <= FIGHT_RANGE) {
             List<Packet<? super ClientPlayPacketListener>> list = new ArrayList<>();
             for(int i = 0; i < toSend; i++){
                BlockPos pos = blockPacketQueue.get(i).getLeft();
@@ -1188,8 +1188,8 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    private void tickSpell(ConstructSpell spell){
       int tick = spell.tick();
-      if(!(getWorld() instanceof ServerWorld world)) return;
-      Vec3d pos = getPos();
+      if(!(getEntityWorld() instanceof ServerWorld world)) return;
+      Vec3d pos = getEntityPos();
       
       if(spell.getType() == ConstructSpellType.CURSE_OF_DECAY){
          if(tick % 12 == 0){
@@ -1198,7 +1198,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                if(!(entity1 instanceof LivingEntity living)) continue;
                float dmg = living.getMaxHealth() / 15.0f;
                float mod = living instanceof ServerPlayerEntity ? 0.35f : 0.75f;
-               living.damage(world, ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),dmg);
+               living.damage(world, ArcanaDamageTypes.of(this.getEntityWorld(),ArcanaDamageTypes.NUL,this),dmg);
                
                conversionHeal(dmg*mod);
                StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS,isExalted ? 500 : 20,1,false,true,true);
@@ -1210,15 +1210,15 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                living.addStatusEffect(weak);
                living.addStatusEffect(fatigue);
                
-               ArcanaEffectUtils.nulConstructCurseOfDecay(world,entity1.getPos());
+               ArcanaEffectUtils.nulConstructCurseOfDecay(world,entity1.getEntityPos());
             }
          }
       }else if(spell.getType() == ConstructSpellType.WITHERING_RAY){
          // Handled in AI method
       }else if(spell.getType() == ConstructSpellType.NECROTIC_CONVERSION){
-         ArcanaEffectUtils.nulConstructNecroticConversion(world,getPos());
+         ArcanaEffectUtils.nulConstructNecroticConversion(world,getEntityPos());
       }else if(spell.getType() == ConstructSpellType.REFLECTIVE_ARMOR){
-         ArcanaEffectUtils.nulConstructReflectiveArmor(world,getPos());
+         ArcanaEffectUtils.nulConstructReflectiveArmor(world,getEntityPos());
       }else if(spell.getType() == ConstructSpellType.RELENTLESS_ONSLAUGHT){
          if(tick % 15 == 0){
             List<Entity> entities = world.getOtherEntities(this,getBoundingBox().expand(DECAY_RANGE*2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
@@ -1227,45 +1227,45 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
                if(!(entity1 instanceof LivingEntity living)) continue;
                if(!isInAttackRange(living)) continue;
                
-               Vec3d dirToEntity = entity1.getPos().subtract(getPos()).normalize();
+               Vec3d dirToEntity = entity1.getEntityPos().subtract(getEntityPos()).normalize();
                double dp = dirToEntity.dotProduct(getRotationVector());
                if(Math.toDegrees(Math.acos(dp)) <= 60.0){
                   this.tryAttack(world, this.getTarget());
                }
             }
-            SoundUtils.playSound(getWorld(),getBlockPos(),SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,SoundCategory.HOSTILE,0.75f,(float)(this.random.nextFloat()*0.5 + 0.75));
+            SoundUtils.playSound(getEntityWorld(),getBlockPos(),SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,SoundCategory.HOSTILE,0.75f,(float)(this.random.nextFloat()*0.5 + 0.75));
          }
-         ArcanaEffectUtils.nulConstructChargeAttack(world,getPos(),getYaw());
+         ArcanaEffectUtils.nulConstructChargeAttack(world,getEntityPos(),getYaw());
       }
    }
    
    private void castSpell(ConstructSpell spell){
-      if(spell == null || !(getWorld() instanceof ServerWorld world)) return;
+      if(spell == null || !(getEntityWorld() instanceof ServerWorld world)) return;
       if(spell.getCooldown() > 0) return;
-      Vec3d pos = getPos();
+      Vec3d pos = getEntityPos();
       
       spellCooldown = this.isExalted ? 160 : 200;
       float cooldownMod = 1f;
       float durationMod = 1f;
       if(spell.spellType == ConstructSpellType.SHADOW_SHROUD){ // Teleport
          Vec3d tpPos = findConstructTpPos(new Vec3d(0,1,0));
-         ArcanaEffectUtils.nulConstructNecroticShroud(world, getPos());
+         ArcanaEffectUtils.nulConstructNecroticShroud(world, getEntityPos());
          requestTeleport(tpPos.getX(),tpPos.getY(),tpPos.getZ());
          ArcanaEffectUtils.nulConstructNecroticShroud(world, tpPos);
          
          if(this.isExalted){
-            List<PlayerEntity> players = getWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(FIGHT_RANGE),(e) -> true);
+            List<PlayerEntity> players = getEntityWorld().getEntitiesByType(EntityType.PLAYER,getBoundingBox().expand(FIGHT_RANGE),(e) -> true);
             StatusEffectInstance blind = new StatusEffectInstance(ArcanaRegistry.GREATER_BLINDNESS_EFFECT, 60, 15, false, true, true);
             players.forEach(p -> p.addStatusEffect(blind));
          }
       }else if(spell.spellType == ConstructSpellType.REFLEXIVE_BLAST){ // Blast
          List<Entity> entities = world.getOtherEntities(this,getBoundingBox().expand(2*BLAST_RANGE), e -> !e.isSpectator() && e.distanceTo(this) <= BLAST_RANGE && (e instanceof LivingEntity));
          for(Entity entity1 : entities){
-            Vec3d diff = entity1.getPos().subtract(pos);
+            Vec3d diff = entity1.getEntityPos().subtract(pos);
             double multiplier = MathHelper.clamp(BLAST_RANGE*.75-diff.length()*.5,.1,3);
             Vec3d motion = diff.multiply(1,0,1).add(0,0.5,0).normalize().multiply(multiplier);
             entity1.setVelocity(motion.x,motion.y,motion.z);
-            entity1.damage(world, ArcanaDamageTypes.of(this.getWorld(),ArcanaDamageTypes.NUL,this),4f);
+            entity1.damage(world, ArcanaDamageTypes.of(this.getEntityWorld(),ArcanaDamageTypes.NUL,this),4f);
             if(entity1 instanceof ServerPlayerEntity player) player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
          }
          
@@ -1273,7 +1273,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
             int damage = (int) (10 - 15*Math.pow((blockPos.getSquaredDistance(this.getBlockPos()) / (BLAST_RANGE*BLAST_RANGE)),0.25));
             damageBlock(blockPos,damage);
          }
-         ArcanaEffectUtils.nulConstructReflexiveBlast(world,getPos(),0);
+         ArcanaEffectUtils.nulConstructReflexiveBlast(world,getEntityPos(),0);
       }else if(spell.spellType == ConstructSpellType.CURSE_OF_DECAY){ // AoE Damage
          // Nothing special at cast time
       }else if(spell.spellType == ConstructSpellType.FORGOTTEN_ARMY){ // Summon Skeletons
@@ -1296,7 +1296,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       }else if(spell.spellType == ConstructSpellType.WITHERING_RAY){ // Laser
          // Set laser pos
          int tries = 0;
-         this.targetPosition = getPos();
+         this.targetPosition = getEntityPos();
          while(tries < 1000){
             tries++;
             
@@ -1305,7 +1305,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
             double posZ = getZ() + this.random.nextBetween(-8,8);
             Vec3d newPos = new Vec3d(posX,posY,posZ);
             
-            if(getTarget() != null && newPos.distanceTo(getTarget().getPos()) >= RAY_RANGE*0.75) continue;
+            if(getTarget() != null && newPos.distanceTo(getTarget().getEntityPos()) >= RAY_RANGE*0.75) continue;
             Path path = this.getNavigation().findPathTo(posX,posY,posZ, (int) (RAY_RANGE*2));
             if(path == null) continue;
             this.targetPosition = newPos;
@@ -1375,7 +1375,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          
          int weight = spell.getWeight(); // Start with the randomly favored spell weights (1-10)
          if(spellType == ConstructSpellType.CURSE_OF_DECAY){ // Favored when more mobs are around
-            List<Entity> entities = getWorld().getOtherEntities(this,getBoundingBox().expand(DECAY_RANGE*2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
+            List<Entity> entities = getEntityWorld().getOtherEntities(this,getBoundingBox().expand(DECAY_RANGE*2), e -> !e.isSpectator() && e.distanceTo(this) < DECAY_RANGE && (e instanceof LivingEntity));
             weight += (int)(entities.size() * 0.5);
          }else if(spellType == ConstructSpellType.WITHERING_RAY){ // Favored at high health, cannot be cast while onslaught is active
             double hpPercent = getHealth() / getMaxHealth();
@@ -1432,7 +1432,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
    
    private Vec3d findConstructTpPos(Vec3d biasDirection){
       int tries = 0;
-      Vec3d sourcePos = summoner != null ? summoner.getPos() : this.getPos();
+      Vec3d sourcePos = summoner != null ? summoner.getEntityPos() : this.getEntityPos();
       
       biasDirection = biasDirection.normalize();
       while(tries < 1000){
@@ -1440,12 +1440,12 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          Vec3d dir = randomPoint.add(biasDirection).normalize().multiply(this.random.nextFloat() * (NulConstructEntity.TELEPORT_RANGE - 4.0) + 4.0);
          Vec3d inWorld = sourcePos.add(dir);
          
-         if(this.getWorld().isSpaceEmpty(this, this.getBoundingBox().offset(this.getPos().negate()).offset(inWorld))){
+         if(this.getEntityWorld().isSpaceEmpty(this, this.getBoundingBox().offset(this.getEntityPos().negate()).offset(inWorld))){
             return inWorld;
          }
          tries++;
       }
-      return this.getPos();
+      return this.getEntityPos();
    }
    
    private enum ConstructSpellType {
@@ -2103,7 +2103,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       }
       
       public static void abilityText(PlayerEntity summoner, NulConstructEntity construct, Text text){
-         List<ServerPlayerEntity> playersInRange = construct.getWorld().getNonSpectatingEntities(ServerPlayerEntity.class, construct.getBoundingBox().expand(50.0));
+         List<ServerPlayerEntity> playersInRange = construct.getEntityWorld().getNonSpectatingEntities(ServerPlayerEntity.class, construct.getBoundingBox().expand(50.0));
          if(summoner instanceof ServerPlayerEntity player && !playersInRange.contains(player)) playersInRange.add(player);
          for(ServerPlayerEntity inRange : playersInRange){
             inRange.sendMessage(text,false);
@@ -2119,7 +2119,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
       public static void announce(MinecraftServer server, PlayerEntity summoner, NulConstructEntity construct, Announcements type, boolean[] args){
          DialogHelper dialogHelper = new DialogHelper(DIALOG.get(type),args);
          ArrayList<MutableText> message = dialogHelper.getWeightedResult().message();
-         List<ServerPlayerEntity> playersInRange = construct.getWorld().getNonSpectatingEntities(ServerPlayerEntity.class, construct.getBoundingBox().expand(50.0));
+         List<ServerPlayerEntity> playersInRange = construct.getEntityWorld().getNonSpectatingEntities(ServerPlayerEntity.class, construct.getBoundingBox().expand(50.0));
          if(summoner instanceof ServerPlayerEntity player && !playersInRange.contains(player)) playersInRange.add(player);
          
          for(MutableText msg : message){

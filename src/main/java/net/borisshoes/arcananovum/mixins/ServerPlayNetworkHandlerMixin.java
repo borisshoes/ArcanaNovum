@@ -11,11 +11,11 @@ import net.borisshoes.arcananovum.items.*;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.borislib.BorisLib;
 import net.borisshoes.borislib.utils.SoundUtils;
+import net.minecraft.entity.EntityPosition;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -89,7 +89,7 @@ public class ServerPlayNetworkHandlerMixin {
    private void arcananovum$onPlayerLoad(PlayerLoadedC2SPacket packet, CallbackInfo ci){
       for(UUID uuid : ArcanaNovum.TOTEM_KILL_LIST){
          if(uuid.equals(player.getUuid())){
-            player.damage(player.getWorld(), ArcanaDamageTypes.of(player.getWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,player), player.getMaxHealth()*10);
+            player.damage(player.getEntityWorld(), ArcanaDamageTypes.of(player.getEntityWorld(),ArcanaDamageTypes.VENGEANCE_TOTEM,player), player.getMaxHealth()*10);
             break;
          }
       }
@@ -145,8 +145,8 @@ public class ServerPlayNetworkHandlerMixin {
       }
    }
    
-   @Inject(method = "requestTeleport(Lnet/minecraft/entity/player/PlayerPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
-   private void arcananovum$ensnarementPlayerTeleport(PlayerPosition pos, Set<PositionFlag> flags, CallbackInfo ci){
+   @Inject(method = "requestTeleport(Lnet/minecraft/entity/EntityPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
+   private void arcananovum$ensnarementPlayerTeleport(EntityPosition pos, Set<PositionFlag> flags, CallbackInfo ci){
       StatusEffectInstance effect = player.getStatusEffect(ArcanaRegistry.ENSNAREMENT_EFFECT);
       if(effect != null && effect.getAmplifier() > 0){
          player.sendMessage(Text.literal("Your teleport has been ensnared!").formatted(Formatting.DARK_PURPLE, Formatting.ITALIC), true);
@@ -162,8 +162,8 @@ public class ServerPlayNetworkHandlerMixin {
          if (++requestedTeleportId == Integer.MAX_VALUE) {
             requestedTeleportId = 0;
          }
-         requestedTeleportPos = player.getPos();
-         player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(requestedTeleportId,new PlayerPosition(player.getPos(),Vec3d.ZERO,0,0),PositionFlag.getFlags(0b11000)));
+         requestedTeleportPos = player.getEntityPos();
+         player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(requestedTeleportId,new EntityPosition(player.getEntityPos(),Vec3d.ZERO,0,0),PositionFlag.getFlags(0b11000)));
       }else{
          ItemStack pants = player.getEquippedStack(EquipmentSlot.LEGS);
          if(ArcanaItemUtils.identifyItem(pants) instanceof GreavesOfGaialtus && ArcanaAugments.getAugmentOnItem(pants,ArcanaAugments.EARTHEN_ASCENT) >= 1){

@@ -27,6 +27,7 @@ accessible method net/minecraft/block/ExperienceDroppingBlock onStacksDropped (L
 accessible method net/minecraft/block/RedstoneOreBlock onStacksDropped (Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;Z)V
 accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
 accessible method net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker getMaxTrackDistance ()I
+accessible method net/minecraft/util/UserCache load ()Ljava/util/List;
 
 accessible class net/minecraft/entity/ai/control/MoveControl$State
 accessible class net/minecraft/entity/mob/DrownedEntity$DrownedMoveControl

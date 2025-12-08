@@ -16,7 +16,7 @@ import java.util.List;
 
 public class EmpoweredArcanePaper extends NormalPolymerItem {
    
-   public EmpoweredArcanePaper(String id, Settings settings){
+   public EmpoweredArcanePaper(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

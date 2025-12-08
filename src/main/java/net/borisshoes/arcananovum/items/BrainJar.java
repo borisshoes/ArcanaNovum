@@ -146,7 +146,7 @@ public class BrainJar extends EnergyItem {
    public void toggleMending(BrainJarGui gui, ServerPlayerEntity player, ItemStack stack){
       boolean active = !getBooleanProperty(stack,ACTIVE_TAG);
       putProperty(stack,ACTIVE_TAG,active);
-      buildItemLore(stack,player.getServer());
+      buildItemLore(stack,player.getEntityWorld().getServer());
       gui.makeGui();
    }
    
@@ -161,7 +161,7 @@ public class BrainJar extends EnergyItem {
       }
       
       gui.makeGui();
-      buildItemLore(stack,player.getServer());
+      buildItemLore(stack,player.getEntityWorld().getServer());
    }
    
    public void depositXP(ServerPlayerEntity player, ItemStack stack, boolean single, BrainJarGui gui){
@@ -178,7 +178,7 @@ public class BrainJar extends EnergyItem {
       if(xpToStore > 0 && getEnergy(stack) >= getMaxEnergy(stack)) ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
       
       gui.makeGui();
-      buildItemLore(stack,player.getServer());
+      buildItemLore(stack,player.getEntityWorld().getServer());
    }
    
    @Override
@@ -267,14 +267,14 @@ public class BrainJar extends EnergyItem {
                
                if(hasMending){
                   int durability = tool.getDamage();
-                  int repairAmount = (int) Math.ceil((EnchantmentHelper.getRepairWithExperience(player.getWorld(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
+                  int repairAmount = (int) Math.ceil((EnchantmentHelper.getRepairWithExperience(player.getEntityWorld(), tool, 1) * (1 + 0.5 * Math.max(0, ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.TRADE_SCHOOL.id)))));
                   if(durability <= 0 || !tool.isDamageable())
                      continue;
                   int newDura = MathHelper.clamp(durability - repairAmount, 0, Integer.MAX_VALUE);
                   ArcanaAchievements.progress(player,ArcanaAchievements.CERTIFIED_REPAIR.id,durability-newDura);
                   addEnergy(stack,-1);
                   ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.BRAIN_JAR_MEND_PER_XP));
-                  buildItemLore(stack,player.getServer());
+                  buildItemLore(stack,player.getEntityWorld().getServer());
                   tool.setDamage(newDura);
                }
             }
@@ -287,7 +287,7 @@ public class BrainJar extends EnergyItem {
             if(beforeEnergy < getMaxEnergy(stack) && getEnergy(stack) >= getMaxEnergy(stack)){
                ArcanaAchievements.grant(player,ArcanaAchievements.BREAK_BANK.id);
             }
-            buildItemLore(stack,player.getServer());
+            buildItemLore(stack,player.getEntityWorld().getServer());
          }
       }
       

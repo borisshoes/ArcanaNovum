@@ -191,8 +191,8 @@ public class PearlOfRecall extends EnergyItem {
       float yaw = locNbt.getFloat("yaw", 0.0f);
       float pitch = locNbt.getFloat("pitch", 0.0f);
       
-      ServerWorld to = player.getWorld();
-      for (ServerWorld w : player.getServer().getWorlds()){
+      ServerWorld to = player.getEntityWorld();
+      for (ServerWorld w : player.getEntityWorld().getServer().getWorlds()){
          if(w.getRegistryKey().getValue().toString().equals(dim)){
             to = w;
             break;
@@ -204,7 +204,7 @@ public class PearlOfRecall extends EnergyItem {
       if(to.getRegistryKey().getValue().toString().equals("minecraft:the_nether")) ArcanaAchievements.grant(player,ArcanaAchievements.BACK_TO_HELL.id);
       if(to.getRegistryKey().getValue().toString().equals("minecraft:the_end")) ArcanaAchievements.grant(player,ArcanaAchievements.ASCENDING_TO_HEAVEN.id);
       SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_PORTAL_TRAVEL,1,2f);
-      ArcanaEffectUtils.recallTeleport(to,player.getPos());
+      ArcanaEffectUtils.recallTeleport(to,player.getEntityPos());
    }
    
    @Override
@@ -294,11 +294,11 @@ public class PearlOfRecall extends EnergyItem {
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PEARL_OF_RECALL_USE)); // Add xp
          }else if(heat > 0){
             putProperty(stack,HEAT_TAG, heat+1);
-            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.getPos());
+            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.getEntityPos());
          }else if(heat == -1){
             // Teleport was cancelled by damage
-            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.getPos());
-            SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
+            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.getEntityPos());
+            SoundUtils.playSound(player.getEntityWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
             putProperty(stack,HEAT_TAG, 0);
             setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
          }
@@ -310,7 +310,7 @@ public class PearlOfRecall extends EnergyItem {
             double y = locNbt.getDouble("y", 0.0);
             double z = locNbt.getDouble("z", 0.0);
             Vec3d loc = new Vec3d(x,y,z);
-            if(player.getWorld().getRegistryKey().getValue().toString().equals(dim) && player.getPos().distanceTo(loc) < 30){
+            if(player.getEntityWorld().getRegistryKey().getValue().toString().equals(dim) && player.getEntityPos().distanceTo(loc) < 30){
                ArcanaEffectUtils.recallLocation(serverWorld,loc,player);
             }
          }
@@ -332,19 +332,19 @@ public class PearlOfRecall extends EnergyItem {
             
             if(!(canClear && player.isSneaking())){
                if(dim.equals("unattuned")){
-                  locNbt.putString("dim", playerEntity.getWorld().getRegistryKey().getValue().toString());
-                  locNbt.putDouble("x", playerEntity.getPos().x);
-                  locNbt.putDouble("y", playerEntity.getPos().y);
-                  locNbt.putDouble("z", playerEntity.getPos().z);
+                  locNbt.putString("dim", playerEntity.getEntityWorld().getRegistryKey().getValue().toString());
+                  locNbt.putDouble("x", playerEntity.getEntityPos().x);
+                  locNbt.putDouble("y", playerEntity.getEntityPos().y);
+                  locNbt.putDouble("z", playerEntity.getEntityPos().z);
                   locNbt.putFloat("yaw", playerEntity.getYaw());
                   locNbt.putFloat("pitch", playerEntity.getPitch());
                   putProperty(item,LOCATION_TAG,locNbt);
-                  buildItemLore(item,playerEntity.getServer());
+                  buildItemLore(item,playerEntity.getEntityWorld().getServer());
                }else{
                   int curEnergy = getEnergy(item);
                   if(curEnergy >= getMaxEnergy(item)){
                      putProperty(item,HEAT_TAG, 1); // Starts the heat up process
-                     SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
+                     SoundUtils.playSound(player.getEntityWorld(), player.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
                   }else{
                      playerEntity.sendMessage(Text.literal("Pearl Recharging: " + (curEnergy * 100 / getMaxEnergy(item)) + "%").formatted(Formatting.DARK_AQUA), true);
                      SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
@@ -355,7 +355,7 @@ public class PearlOfRecall extends EnergyItem {
                   locNbt = new NbtCompound();
                   locNbt.putString("dim", "unattuned");
                   putProperty(item,LOCATION_TAG,locNbt);
-                  buildItemLore(item,playerEntity.getServer());
+                  buildItemLore(item,playerEntity.getEntityWorld().getServer());
                   
                   playerEntity.sendMessage(Text.literal("Saved Location Cleared").formatted(Formatting.DARK_AQUA), true);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, .7f);

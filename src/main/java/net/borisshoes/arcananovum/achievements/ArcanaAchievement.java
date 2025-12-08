@@ -96,75 +96,73 @@ public abstract class ArcanaAchievement {
          descriptionText.append("\n").append(d);
       }
       
-      MinecraftServer server = player.getServer();
-      if(server != null){
-         List<MutableText> msgs = new ArrayList<>();
+      MinecraftServer server = player.getEntityWorld().getServer();
+      List<MutableText> msgs = new ArrayList<>();
+      
+      if(id.equals(ArcanaAchievements.ALL_ACHIEVEMENTS.id)){
+         msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE));
+         msgs.add(Text.literal("")
+               .append(Text.literal("=== ").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK))
+               .append(player.getDisplayName())
+               .append(Text.literal(" has mastered all Arcana Achievements and became ").formatted(Formatting.DARK_PURPLE))
+               .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
+                           Text.literal("")
+                                 .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
+                                 .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
+                                 .append(Text.literal("")
+                                       .append(Text.literal("\n"+LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
+                                       .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                                       .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
+                                       .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
+                                       .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
+                     .withColor(Formatting.DARK_AQUA).withBold(true)))
+               .append(Text.literal("!!!").formatted(Formatting.DARK_PURPLE))
+               .append(Text.literal(" ===").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK)));
+         msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE));
+         SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
+      }else if(pointsReward >= 5){
+         msgs.add(Text.literal("")
+               .append(player.getDisplayName())
+               .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.DARK_PURPLE))
+               .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
+                           Text.literal("")
+                                 .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
+                                 .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
+                                 .append(Text.literal("")
+                                       .append(Text.literal("\n"+LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
+                                       .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                                       .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
+                                       .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
+                                       .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
+                     .withColor(Formatting.DARK_AQUA).withBold(true)))
+               .append(Text.literal("!!!").formatted(Formatting.DARK_PURPLE)));
+         SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
+      }else{
+         msgs.add(Text.literal("")
+               .append(player.getDisplayName())
+               .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.LIGHT_PURPLE))
+               .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
+                           Text.literal("")
+                                 .append(getTranslatedName().formatted(Formatting.AQUA))
+                                 .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))
+                                 .append(Text.literal("")
+                                       .append(Text.literal("\n"+ LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
+                                       .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
+                                       .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
+                                       .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
+                                       .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
+                     .withColor(Formatting.AQUA)))
+               .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE)));
          
-         if(id.equals(ArcanaAchievements.ALL_ACHIEVEMENTS.id)){
-            msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE));
-            msgs.add(Text.literal("")
-                  .append(Text.literal("=== ").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK))
-                  .append(player.getDisplayName())
-                  .append(Text.literal(" has mastered all Arcana Achievements and became ").formatted(Formatting.DARK_PURPLE))
-                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
-                              Text.literal("")
-                                    .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
-                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
-                                    .append(Text.literal("")
-                                          .append(Text.literal("\n"+LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
-                                          .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
-                                          .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
-                                          .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
-                                          .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
-                        .withColor(Formatting.DARK_AQUA).withBold(true)))
-                  .append(Text.literal("!!!").formatted(Formatting.DARK_PURPLE))
-                  .append(Text.literal(" ===").formatted(Formatting.OBFUSCATED,Formatting.BOLD,Formatting.BLACK)));
-            msgs.add(Text.literal("=============================================").formatted(Formatting.BOLD,Formatting.LIGHT_PURPLE));
-            SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
-         }else if(pointsReward >= 5){
-            msgs.add(Text.literal("")
-                  .append(player.getDisplayName())
-                  .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.DARK_PURPLE))
-                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
-                              Text.literal("")
-                                    .append(getTranslatedName().formatted(Formatting.DARK_AQUA))
-                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.DARK_PURPLE))
-                                    .append(Text.literal("")
-                                          .append(Text.literal("\n"+LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
-                                          .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
-                                          .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
-                                          .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
-                                          .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
-                        .withColor(Formatting.DARK_AQUA).withBold(true)))
-                  .append(Text.literal("!!!").formatted(Formatting.DARK_PURPLE)));
-            SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE,1,1);
-         }else{
-            msgs.add(Text.literal("")
-                  .append(player.getDisplayName())
-                  .append(Text.literal(" has made the Arcana Achievement ").formatted(Formatting.LIGHT_PURPLE))
-                  .append((Text.literal("[").append(getTranslatedName()).append(Text.literal("]"))).styled(s -> s.withHoverEvent(new HoverEvent.ShowText(
-                              Text.literal("")
-                                    .append(getTranslatedName().formatted(Formatting.AQUA))
-                                    .append(Text.literal(descriptionText.toString()).formatted(Formatting.LIGHT_PURPLE))
-                                    .append(Text.literal("")
-                                          .append(Text.literal("\n"+ LevelUtils.readableInt(xpReward)).formatted(Formatting.AQUA))
-                                          .append(Text.literal(" XP").formatted(Formatting.DARK_AQUA))
-                                          .append(Text.literal(" | ").formatted(Formatting.DARK_AQUA))
-                                          .append(Text.literal(""+pointsReward).formatted(Formatting.AQUA))
-                                          .append(Text.literal(" Skill Points").formatted(Formatting.DARK_AQUA)))))
-                        .withColor(Formatting.AQUA)))
-                  .append(Text.literal("!").formatted(Formatting.LIGHT_PURPLE)));
-            
-            SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PLAYER_LEVELUP,1,1);
+         SoundUtils.playSongToPlayer(player, SoundEvents.ENTITY_PLAYER_LEVELUP,1,1);
+      }
+      if(ArcanaConfig.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
+         for(MutableText msg : msgs){
+            server.getPlayerManager().broadcast(msg, false);
          }
-         if(ArcanaConfig.getBoolean(ArcanaRegistry.ANNOUNCE_ACHIEVEMENTS)){
-            for(MutableText msg : msgs){
-               server.getPlayerManager().broadcast(msg, false);
-            }
-         }else{
-            for(MutableText msg : msgs){
-               player.sendMessage(msg, false);
-            }
+      }else{
+         for(MutableText msg : msgs){
+            player.sendMessage(msg, false);
          }
       }
       IArcanaProfileComponent profile = ArcanaNovum.data(player);

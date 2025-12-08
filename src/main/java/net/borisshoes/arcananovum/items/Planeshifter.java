@@ -192,7 +192,7 @@ public class Planeshifter extends EnergyItem {
    }
    
    private void findPortalAndTeleport(ServerPlayerEntity player, ServerWorld destWorld, boolean destIsNether){
-      double scale = DimensionType.getCoordinateScaleFactor(player.getWorld().getDimension(), destWorld.getDimension());
+      double scale = DimensionType.getCoordinateScaleFactor(player.getEntityWorld().getDimension(), destWorld.getDimension());
       WorldBorder worldBorder = destWorld.getWorldBorder();
       Vec3d destPos = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
       Optional<BlockPos> portalRect = destWorld.getPortalForcer().getPortalPos(BlockPos.ofFloored(destPos), destIsNether, worldBorder);
@@ -207,7 +207,7 @@ public class Planeshifter extends EnergyItem {
    }
    
    private void directTeleport(ServerPlayerEntity player, ServerWorld destWorld){
-      double scale = DimensionType.getCoordinateScaleFactor(player.getWorld().getDimension(), destWorld.getDimension());
+      double scale = DimensionType.getCoordinateScaleFactor(player.getEntityWorld().getDimension(), destWorld.getDimension());
       WorldBorder worldBorder = destWorld.getWorldBorder();
       Vec3d destPos = worldBorder.clamp(player.getX() * scale, player.getY(), player.getZ() * scale);
       player.teleportTo(new TeleportTarget(destWorld, destPos, Vec3d.ZERO, player.getYaw(),player.getPitch(), TeleportTarget.ADD_PORTAL_CHUNK_TICKET));
@@ -224,7 +224,7 @@ public class Planeshifter extends EnergyItem {
    }
    
    private void teleport(ItemStack stack, ServerPlayerEntity player){
-      ServerWorld world = player.getWorld();
+      ServerWorld world = player.getEntityWorld();
       ServerWorld target = getTargetDim(stack,world.getServer());
       if(target == null) return;
       
@@ -247,7 +247,7 @@ public class Planeshifter extends EnergyItem {
          findPortalAndTeleport(player,target,true);
       }else if(destEnd || (inEnd && destOverworld)){
          EndPortalBlock endPortalBlock = (EndPortalBlock) Blocks.END_PORTAL;
-         player.teleportTo(endPortalBlock.createTeleportTarget(player.getWorld(),player,player.getBlockPos()));
+         player.teleportTo(endPortalBlock.createTeleportTarget(player.getEntityWorld(),player,player.getBlockPos()));
       }else{
          directTeleport(player,target);
       }
@@ -255,7 +255,7 @@ public class Planeshifter extends EnergyItem {
       ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.PLANESHIFTER_USE)); // Add xp
       setEnergy(stack,0);
       SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_PORTAL_TRAVEL,1,2f);
-      ArcanaEffectUtils.recallTeleport(world,player.getPos());
+      ArcanaEffectUtils.recallTeleport(world,player.getEntityPos());
    }
    
    private ServerWorld getTargetDim(ItemStack stack, MinecraftServer server){
@@ -357,16 +357,16 @@ public class Planeshifter extends EnergyItem {
                return ActionResult.SUCCESS_SERVER;
             }
             
-            ServerWorld targetWorld = getTargetDim(stack,player.getServer());
+            ServerWorld targetWorld = getTargetDim(stack,player.getEntityWorld().getServer());
             if(targetWorld == null){
                playerEntity.sendMessage(Text.literal("The Planeshifter cannot find its target").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-            }else if(!playerEntity.getServer().isWorldAllowed(playerEntity.getServer().getWorld(targetWorld.getRegistryKey()))){
+            }else if(!playerEntity.getEntityWorld().getServer().isEnterableWithPortal(playerEntity.getEntityWorld().getServer().getWorld(targetWorld.getRegistryKey()))){
                playerEntity.sendMessage(Text.literal("The targeted world is not enabled on this Server").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }else if(curEnergy >= getMaxEnergy(stack)){
                putProperty(stack,HEAT_TAG,1); // Starts the heat up process
-               SoundUtils.playSound(playerEntity.getWorld(), playerEntity.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
+               SoundUtils.playSound(playerEntity.getEntityWorld(), playerEntity.getBlockPos(), SoundEvents.BLOCK_PORTAL_TRIGGER, SoundCategory.PLAYERS, 1, 1);
             }
          }
          return ActionResult.SUCCESS_SERVER;
@@ -388,11 +388,11 @@ public class Planeshifter extends EnergyItem {
             putProperty(stack,HEAT_TAG,0);
          }else if(heat > 0){
             putProperty(stack,HEAT_TAG,heat+1);
-            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.getPos());
+            ArcanaEffectUtils.recallTeleportCharge(serverWorld,player.getEntityPos());
          }else if(heat == -1){
             // Teleport was cancelled by damage
-            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.getPos());
-            SoundUtils.playSound(player.getWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
+            ArcanaEffectUtils.recallTeleportCancel(serverWorld,player.getEntityPos());
+            SoundUtils.playSound(player.getEntityWorld(), player.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_HURT, SoundCategory.PLAYERS, 8,0.8f);
             putProperty(stack,HEAT_TAG,0);
             setEnergy(stack,(int)(getMaxEnergy(stack)*0.75));
          }
@@ -413,8 +413,8 @@ public class Planeshifter extends EnergyItem {
       private void rotateDimension(ItemStack stack, ServerPlayerEntity player, boolean announce){
          NbtList dimensions = getListProperty(stack,DIMENSIONS_TAG);
          ArrayList<RegistryKey<World>> dims = new ArrayList<>();
-         for(ServerWorld world : player.getServer().getWorlds()){
-            if(dimensions.contains(NbtString.of(world.getRegistryKey().getValue().toString())) && !player.getWorld().getRegistryKey().getValue().equals(world.getRegistryKey().getValue())){
+         for(ServerWorld world : player.getEntityWorld().getServer().getWorlds()){
+            if(dimensions.contains(NbtString.of(world.getRegistryKey().getValue().toString())) && !player.getEntityWorld().getRegistryKey().getValue().equals(world.getRegistryKey().getValue())){
                dims.add(world.getRegistryKey());
             }
          }
@@ -423,7 +423,7 @@ public class Planeshifter extends EnergyItem {
          RegistryKey<World> world = null;
          if(dims.isEmpty()){
             putProperty(stack,SELECTED_TAG,"");
-            buildItemLore(stack,player.getServer());
+            buildItemLore(stack,player.getEntityWorld().getServer());
             return;
          }else if(selected.isEmpty()){
             world = dims.getFirst();
@@ -471,7 +471,7 @@ public class Planeshifter extends EnergyItem {
          
          SoundUtils.playSongToPlayer(player, SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 0.3f,2f);
          putProperty(stack,DIMENSIONS_TAG,dimensions);
-         buildItemLore(stack,player.getServer());
+         buildItemLore(stack,player.getEntityWorld().getServer());
       }
       
       @Override

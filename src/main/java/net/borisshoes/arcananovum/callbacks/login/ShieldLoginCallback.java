@@ -27,7 +27,7 @@ public class ShieldLoginCallback extends LoginCallback {
    
    public ShieldLoginCallback(ServerPlayerEntity player, float hearts){
       this();
-      this.world = player.getServer().getWorld(ServerWorld.OVERWORLD);
+      this.world = player.getEntityWorld().getServer().getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player.getUuidAsString();
       this.hearts = hearts;
    }

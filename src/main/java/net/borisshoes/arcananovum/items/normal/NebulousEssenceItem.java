@@ -25,7 +25,7 @@ import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
 
 public class NebulousEssenceItem extends NormalPolymerItem {
    
-   public NebulousEssenceItem(String id, Settings settings){
+   public NebulousEssenceItem(String id, net.minecraft.item.Item.Settings settings){
       super(id, settings);
    }
    

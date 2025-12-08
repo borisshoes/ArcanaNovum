@@ -132,7 +132,7 @@ public class DragonAbilities {
          if(overloadTicks % 10 == 0){
             for(EndCrystalEntity crystal : crystals){
                if(crystal != null && crystal.isAlive()){
-                  List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getPos()) <= 5*5);
+                  List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getEntityPos()) <= 5*5);
                   for(ServerPlayerEntity player : nearbyPlayers){
                      if(player.isCreative() || player.isSpectator()) continue; // Skip creative and spectator players
                      player.damage(endWorld, new DamageSource(endWorld.getDamageSources().magic().getTypeRegistryEntry(), this.dragon,this.dragon),2f);
@@ -164,12 +164,12 @@ public class DragonAbilities {
             double p = randomPlayer.getBodyY(0.5) - m;
             double q = randomPlayer.getZ() - n;
             if(!this.dragon.isSilent()){
-               this.dragon.getWorld().syncWorldEvent((PlayerEntity)null, 1017, this.dragon.getBlockPos(), 0);
+               this.dragon.getEntityWorld().syncWorldEvent((PlayerEntity)null, 1017, this.dragon.getBlockPos(), 0);
             }
             
-            DragonFireballEntity dragonFireballEntity = new DragonFireballEntity(this.dragon.getWorld(), this.dragon, new Vec3d(o,p,q));
+            DragonFireballEntity dragonFireballEntity = new DragonFireballEntity(this.dragon.getEntityWorld(), this.dragon, new Vec3d(o,p,q));
             dragonFireballEntity.refreshPositionAndAngles(l, m, n, 0.0F, 0.0F);
-            this.dragon.getWorld().spawnEntity(dragonFireballEntity);
+            this.dragon.getEntityWorld().spawnEntity(dragonFireballEntity);
          }
       }
       
@@ -235,7 +235,7 @@ public class DragonAbilities {
          int crystalPlayerCount = 0;
          for(EndCrystalEntity crystal : crystals){
             if(crystal != null && crystal.isAlive()){
-               List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getPos()) <= 6*6);
+               List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(crystal.getEntityPos()) <= 6*6);
                crystalPlayerCount += nearbyPlayers.size();
             }
          }
@@ -271,14 +271,14 @@ public class DragonAbilities {
          manager.setPhase(PhaseType.CHARGING_PLAYER);
          PlayerEntity player = endWorld.getClosestPlayer(dragon,75);
          if(player != null && manager.getCurrent() instanceof ChargingPlayerPhase charge){
-            charge.setPathTarget(player.getPos());
+            charge.setPathTarget(player.getEntityPos());
             swoopTicks = 0;
             return true;
          }
          swoopTicks = swoopCD/2;
          return false;
       }else if(ability == DragonAbilityTypes.WING_GUST){
-         Vec3d pos = dragon.getPos();
+         Vec3d pos = dragon.getEntityPos();
          SoundUtils.playSound(endWorld,dragon.getBlockPos(), SoundEvents.ENTITY_ENDER_DRAGON_FLAP, SoundCategory.HOSTILE,1f,0.5f);
          List<ServerPlayerEntity> nearbyPlayers = endWorld.getPlayers(p -> p.squaredDistanceTo(pos) <= 10*10);
          for(ServerPlayerEntity player : nearbyPlayers){

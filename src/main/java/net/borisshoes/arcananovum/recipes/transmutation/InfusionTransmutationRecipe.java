@@ -36,7 +36,7 @@ public class InfusionTransmutationRecipe extends TransmutationRecipe{
          ItemStack outputStack = output.copy();
          if(ArcanaItemUtils.isArcane(outputStack)){
             ArcanaItem arcanaOutputItem = ArcanaItemUtils.identifyItem(outputStack);
-            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),0,player.getServer());
+            outputStack = arcanaOutputItem.addCrafter(arcanaOutputItem.getNewItem(),player.getUuidAsString(),0,player.getEntityWorld().getServer());
          }
          returnItems.add(outputStack);
       }

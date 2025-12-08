@@ -184,7 +184,7 @@ public class ContainmentCirclet extends ArcanaItem {
          SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
       }else if(entity instanceof MobEntity){
          try (ErrorReporter.Logging logging = new ErrorReporter.Logging(entity.getErrorReporterContext(),LogUtils.getLogger())){
-            NbtWriteView writeView = NbtWriteView.create(logging, entity.getWorld().getRegistryManager());
+            NbtWriteView writeView = NbtWriteView.create(logging, entity.getEntityWorld().getRegistryManager());
             entity.writeData(writeView);
             NbtCompound data = writeView.getNbt();
             data.putString("id", EntityType.getId(entity.getType()).toString());
@@ -195,7 +195,7 @@ public class ContainmentCirclet extends ArcanaItem {
             user.sendMessage(Text.literal("The Circlet contains the creature").formatted(Formatting.DARK_GREEN,Formatting.ITALIC),true);
             SoundUtils.playSongToPlayer((ServerPlayerEntity) user, SoundEvents.ITEM_FIRECHARGE_USE, 1, 1.5f);
             ArcanaNovum.data(user).addXP(ArcanaConfig.getInt(ArcanaRegistry.CONTAINMENT_CIRCLET_USE)); // Add xp
-            buildItemLore(stack,user.getServer());
+            buildItemLore(stack,user.getEntityWorld().getServer());
          }
       }
       
@@ -207,7 +207,7 @@ public class ContainmentCirclet extends ArcanaItem {
       ArcanaIngredient a = new ArcanaIngredient(Items.CRYING_OBSIDIAN,4);
       ArcanaIngredient b = new ArcanaIngredient(Items.OBSIDIAN,4);
       ArcanaIngredient c = new ArcanaIngredient(Items.IRON_BARS,16);
-      ArcanaIngredient g = new ArcanaIngredient(Items.CHAIN,12);
+      ArcanaIngredient g = new ArcanaIngredient(Items.IRON_CHAIN,12);
       ArcanaIngredient h = new ArcanaIngredient(Items.COBWEB,8);
       ArcanaIngredient m = new ArcanaIngredient(Items.ENDER_CHEST,4);
       
@@ -309,7 +309,7 @@ public class ContainmentCirclet extends ArcanaItem {
          float maxHp = getFloatProperty(stack,MAX_HP_TAG);
          boolean heals = ArcanaAugments.getAugmentOnItem(stack,ArcanaAugments.HEALING_CIRCLET.id) > 0;
          
-         if(heals && player.getServer().getTicks() % 1200 == 0){
+         if(heals && player.getEntityWorld().getServer().getTicks() % 1200 == 0){
             putProperty(stack,HP_TAG,Math.min(maxHp,hp+1));
             buildItemLore(stack,serverWorld.getServer());
          }

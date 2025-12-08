@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
+import static net.borisshoes.arcananovum.ArcanaNovum.log;
 
 public class StasisPearl extends EnergyItem {
 	public static final String ID = "stasis_pearl";
@@ -249,7 +250,7 @@ public class StasisPearl extends EnergyItem {
                if(getEnergy(stack) >= getMaxEnergy(stack)){
                   SoundUtils.playSound(world,playerEntity.getBlockPos(),SoundEvents.ENTITY_ENDER_PEARL_THROW, SoundCategory.PLAYERS, 0.5F, 0.4F);
                   playerEntity.getItemCooldownManager().set(stack, 0);
-                  if(!world.isClient){
+                  if(!world.isClient()){
                      StasisPearlEntity stasisPearlEntity = new StasisPearlEntity(world, playerEntity, getUUID(stack), getCompoundProperty(stack,AUGMENTS_TAG));
                      stasisPearlEntity.setVelocity(playerEntity, playerEntity.getPitch(), playerEntity.getYaw(), 0.0F, 1.5F, 1.0F);
                      world.spawnEntity(stasisPearlEntity);
@@ -303,6 +304,7 @@ public class StasisPearl extends EnergyItem {
                }
                
                // If this is reached, something went wrong and the pearl needs to be reset
+               log(1,"A stasis pearl was not found to unstasis properly, resetting pearl...");
                putProperty(stack,ACTIVE_TAG,false);
                putProperty(stack,PEARL_ID_TAG,"");
             }else{ // Stasis the pearl
@@ -322,6 +324,7 @@ public class StasisPearl extends EnergyItem {
                   }
                }
                // If this is reached, something went wrong and the pearl needs to be reset
+               log(1,"A stasis pearl was not found to stasis properly, resetting pearl...");
                putProperty(stack,ACTIVE_TAG,false);
                putProperty(stack,PEARL_ID_TAG,"");
             }

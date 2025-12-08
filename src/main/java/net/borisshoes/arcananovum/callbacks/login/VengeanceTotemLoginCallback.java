@@ -19,7 +19,7 @@ public class VengeanceTotemLoginCallback extends LoginCallback {
    
    public VengeanceTotemLoginCallback(ServerPlayerEntity player){
       this();
-      this.world = player.getServer().getWorld(ServerWorld.OVERWORLD);
+      this.world = player.getEntityWorld().getServer().getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player.getUuidAsString();
    }
    
