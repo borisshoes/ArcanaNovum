@@ -21,7 +21,6 @@ public class ColliderLoginCallback extends LoginCallback {
    
    public ColliderLoginCallback(MinecraftServer server, String player, int blocks){
       this();
-      this.world = server.getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player;
       this.blocks = blocks;
    }

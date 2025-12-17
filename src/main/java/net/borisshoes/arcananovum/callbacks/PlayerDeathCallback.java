@@ -16,8 +16,8 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.rule.GameRules;
 
 import static net.borisshoes.arcananovum.cardinalcomponents.WorldDataComponentInitializer.BOSS_FIGHT;
 
@@ -50,7 +50,7 @@ public class PlayerDeathCallback {
    }
    
    public static void onPlayerCopy(ServerPlayerEntity oldPlayer, ServerPlayerEntity newPlayer, boolean alive){
-      if (!alive && !(oldPlayer.getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || oldPlayer.isSpectator())) {
+      if (!alive && !(oldPlayer.getEntityWorld().getGameRules().getValue(GameRules.KEEP_INVENTORY) || oldPlayer.isSpectator())) {
          for (int i = 0; i < oldPlayer.getInventory().size(); i++) {
             ItemStack oldStack = oldPlayer.getInventory().getStack(i);
             ItemStack newStack = newPlayer.getInventory().getStack(i);

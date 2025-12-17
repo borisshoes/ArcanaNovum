@@ -52,6 +52,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
@@ -270,7 +271,8 @@ public class AquaticEversource extends ArcanaItem {
          if(!bl2){
             return hitResult == null ? 0 : placeFluid(fluid,player, world, hitResult.getBlockPos().offset(hitResult.getSide()), null, flood);
          }
-         if(world.getDimension().ultrawarm() && fluid.isIn(FluidTags.WATER)){
+
+         if(world.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.WATER_EVAPORATES_GAMEPLAY, pos) && fluid.isIn(FluidTags.WATER)){
             int i = pos.getX();
             int j = pos.getY();
             int k = pos.getZ();

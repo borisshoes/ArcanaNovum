@@ -27,6 +27,7 @@ import net.borisshoes.borislib.utils.MathUtils;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LazyEntityReference;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.BossBar;
@@ -65,13 +66,13 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.EndSpikeFeature;
 import net.minecraft.world.gen.feature.EndSpikeFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.world.rule.GameRules;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -178,10 +179,9 @@ public class DragonBossFight {
                dragon.setCustomName(dragonName);
    
                // Turn keep inventory on
-               GameRules rules = server.getGameRules();
-               GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);
-               keepInventoryBefore = rule.get();
-               rule.set(true,server);
+               GameRules rules = endWorld.getGameRules();
+               keepInventoryBefore = rules.getValue(GameRules.KEEP_INVENTORY);
+               rules.setValue(GameRules.KEEP_INVENTORY, true, server);
    
                // Make scoreboards
                makeScoreboards(server);
@@ -260,7 +260,7 @@ public class DragonBossFight {
             List<EndermanEntity> endermen = endWorld.getEntitiesByType(EntityType.ENDERMAN, new Box(new BlockPos(-100,25,-100).toCenterPos(), new BlockPos(100,115,100).toCenterPos()), e -> true);
    
             for(EndermanEntity enderman : endermen){ // Make endermen not attack Endermites
-               if(enderman.getTarget() instanceof EndermiteEntity || endWorld.getEntity(enderman.getAngryAt()) instanceof EndermiteEntity){
+               if(enderman.getTarget() instanceof EndermiteEntity || (enderman.getAngryAt() != null && endWorld.getEntity(enderman.getAngryAt().getUuid()) instanceof EndermiteEntity)){
                   enderman.setTarget(null);
                   enderman.setAngryAt(null);
                }
@@ -407,15 +407,15 @@ public class DragonBossFight {
                   if(closestPlayer != null){
                      enderman.setProvoked();
                      enderman.setTarget(closestPlayer);
-                     enderman.setAngryAt(closestPlayer.getUuid());
-                     enderman.setAngerTime(1200);
+                     enderman.setAngryAt(LazyEntityReference.of(closestPlayer));
+                     enderman.setAngerEndTime(enderman.age + 1200);
                   }else{
                      PlayerEntity randomPlayer = endWorld.getRandomAlivePlayer();
                      if(randomPlayer != null && Math.random() < .1*numPlayers){
                         enderman.setProvoked();
                         enderman.setTarget(randomPlayer);
-                        enderman.setAngryAt(randomPlayer.getUuid());
-                        enderman.setAngerTime(1200);
+                        enderman.setAngryAt(LazyEntityReference.of(randomPlayer));
+                        enderman.setAngerEndTime(enderman.age + 1200);
                      }
                   }
                }
@@ -628,9 +628,8 @@ public class DragonBossFight {
             }
          }));
       
-         GameRules rules = server.getGameRules();
-         GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);
-         rule.set(keepInventoryBefore,server);
+         GameRules rules = endWorld.getGameRules();
+         rules.setValue(GameRules.KEEP_INVENTORY, keepInventoryBefore, server);
       
          if(gameMaster != null){
             gameMaster.sendMessage(Text.literal("Fight Ended, Thanks For Playing!"));
@@ -880,9 +879,8 @@ public class DragonBossFight {
       phantoms.forEach(e -> e.kill(endWorld));
       illusioners.forEach(e -> e.kill(endWorld));
    
-      GameRules rules = server.getGameRules();
-      GameRules.BooleanRule rule = rules.get(GameRules.KEEP_INVENTORY);
-      rule.set(keepInventoryBefore,server);
+      GameRules rules = endWorld.getGameRules();
+      rules.setValue(GameRules.KEEP_INVENTORY, keepInventoryBefore, server);
    
       resetVariables();
       removeScoreboards(server);
