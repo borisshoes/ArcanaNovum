@@ -8,6 +8,7 @@ import net.borisshoes.arcananovum.achievements.ArcanaAchievements;
 import net.borisshoes.arcananovum.cardinalcomponents.IArcanaProfileComponent;
 import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.NameToIdCache;
 import net.minecraft.util.UserCache;
@@ -39,7 +40,7 @@ public class ServerStartedCallback {
                Optional<GameProfile> opt = server.getApiServices().profileResolver().getProfileById(cacheEntry.getPlayer().id());;
                if(opt.isEmpty()) continue;
                GameProfile reqProfile = opt.get();
-               ServerPlayerEntity reqPlayer = MinecraftUtils.getRequestedPlayer(server, reqProfile);
+               ServerPlayerEntity reqPlayer = MinecraftUtils.getRequestedPlayer(server, new PlayerConfigEntry(reqProfile));
                allPlayers.add(reqPlayer);
             }
          }else{

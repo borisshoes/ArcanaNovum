@@ -21,7 +21,6 @@ public class AnchorTimeLoginCallback extends LoginCallback {
    
    public AnchorTimeLoginCallback(MinecraftServer server, String player, int seconds){
       this();
-      this.world = server.getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player;
       this.seconds = seconds;
    }

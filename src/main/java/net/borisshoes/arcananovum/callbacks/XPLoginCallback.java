@@ -21,7 +21,6 @@ public class XPLoginCallback extends LoginCallback {
    
    public XPLoginCallback(MinecraftServer server, String player, int xp){
       this();
-      this.world = server.getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player;
       this.xp = xp;
    }

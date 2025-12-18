@@ -48,6 +48,7 @@ import net.minecraft.nbt.NbtInt;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -1091,7 +1092,8 @@ public class ArcanaCommands {
                DragonBossFight.teleportPlayer(p,true);
             }
          }else{
-            DragonBossFight.teleportPlayer(player,context.getSource().hasPermissionLevel(2));
+
+            DragonBossFight.teleportPlayer(player, CommandManager.GAMEMASTERS_CHECK.allows(player.getPermissions()));
          }
          return 0;
       }

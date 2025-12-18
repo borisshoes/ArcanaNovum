@@ -8,7 +8,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.command.permission.PermissionPredicate;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.dedicated.command.OpCommand;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.StringIdentifiable;
@@ -103,7 +106,7 @@ public class ConfigUtils {
    
    public LiteralArgumentBuilder<ServerCommandSource> generateCommand(){
       LiteralArgumentBuilder<ServerCommandSource> out =
-            literal("arcana").then(literal("config").requires(source -> source.hasPermissionLevel(4))
+            literal("arcana").then(literal("config").requires(CommandManager.requirePermissionLevel(CommandManager.OWNERS_CHECK))
                   .executes(ctx -> {
                      values.stream().filter(v -> v.command != null).forEach(value ->
                            ctx.getSource().sendFeedback(()-> MutableText.of(new TranslatableTextContent(value.command.getterText, null, new String[] {String.valueOf(value.value.toString())})), false));

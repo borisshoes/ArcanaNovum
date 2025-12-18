@@ -361,8 +361,8 @@ public class Planeshifter extends EnergyItem {
             if(targetWorld == null){
                playerEntity.sendMessage(Text.literal("The Planeshifter cannot find its target").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
-            }else if(!playerEntity.getEntityWorld().getServer().isEnterableWithPortal(playerEntity.getEntityWorld().getServer().getWorld(targetWorld.getRegistryKey()))){
-               playerEntity.sendMessage(Text.literal("The targeted world is not enabled on this Server").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
+            }else if(!((ServerWorld) playerEntity.getEntityWorld()).isEnterableWithPortal(playerEntity.getEntityWorld().getServer().getWorld(targetWorld.getRegistryKey()))){
+                playerEntity.sendMessage(Text.literal("The targeted world is not enabled on this Server").formatted(Formatting.DARK_AQUA,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer((ServerPlayerEntity) playerEntity, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1, .5f);
             }else if(curEnergy >= getMaxEnergy(stack)){
                putProperty(stack,HEAT_TAG,1); // Starts the heat up process

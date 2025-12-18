@@ -81,6 +81,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.*;
+import net.minecraft.world.rule.GameRules;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.packettweaker.PacketContext;
 
@@ -769,7 +770,7 @@ public class NulConstructEntity extends HostileEntity implements PolymerEntity, 
          }
          
          if(this.age % 20 == 0){
-            if(world.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)){
+            if(world.getGameRules().getValue(GameRules.DO_MOB_GRIEFING)){
                destructiveAura();
             }
             if(isExalted){

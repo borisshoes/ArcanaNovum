@@ -4,6 +4,7 @@ import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.SpawnPile;
 import net.borisshoes.borislib.utils.SoundUtils;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LazyEntityReference;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.phase.ChargingPlayerPhase;
@@ -332,16 +333,16 @@ public class DragonAbilities {
                if(closestPlayer.isCreative() || closestPlayer.isSpectator()) continue; // Skip creative and spectator players
                enderman.setProvoked();
                enderman.setTarget(closestPlayer);
-               enderman.setAngryAt(closestPlayer.getUuid());
-               enderman.setAngerTime(1200);
+               enderman.setAngryAt(LazyEntityReference.of(closestPlayer));
+               enderman.setAngerEndTime(enderman.age + 1200);
             }else{
                PlayerEntity randomPlayer = endWorld.getRandomAlivePlayer();
                if(randomPlayer != null){
                   if(randomPlayer.isCreative() || randomPlayer.isSpectator()) continue; // Skip creative and spectator players
                   enderman.setProvoked();
                   enderman.setTarget(randomPlayer);
-                  enderman.setAngryAt(randomPlayer.getUuid());
-                  enderman.setAngerTime(1200);
+                  enderman.setAngryAt(LazyEntityReference.of(randomPlayer));
+                  enderman.setAngerEndTime(enderman.age + 1200);
                }
             }
          }

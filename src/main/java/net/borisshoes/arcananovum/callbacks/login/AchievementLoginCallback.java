@@ -30,7 +30,6 @@ public class AchievementLoginCallback extends LoginCallback {
    
    public AchievementLoginCallback(MinecraftServer server, String player, ArcanaAchievement... achievements){
       this();
-      this.world = server.getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player;
       this.achievements = new ArrayList<>(Arrays.stream(achievements).toList());
    }

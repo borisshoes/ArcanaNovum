@@ -19,7 +19,6 @@ public class MaxHealthLoginCallback extends LoginCallback {
    
    public MaxHealthLoginCallback(MinecraftServer server, String player, float health){
       this();
-      this.world = server.getWorld(ServerWorld.OVERWORLD);
       this.playerUUID = player;
       this.hp = health;
    }
