@@ -17,7 +17,7 @@ public abstract class NormalPolymerItem extends Item implements PolymerItem {
    
    private final String id;
    
-   public NormalPolymerItem(String id, net.minecraft.item.Item.Settings settings){
+   public NormalPolymerItem(String id, Item.Settings settings){
       super(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID,id))));
       this.id = id;
    }

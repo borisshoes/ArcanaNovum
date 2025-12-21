@@ -24,6 +24,7 @@ import net.borisshoes.borislib.utils.MinecraftUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.ExperienceDroppingBlock;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
@@ -326,9 +327,7 @@ public class GravitonMaul extends ArcanaItem {
          ArcanaEffectUtils.gravitonMaulMaelstrom(player,player.getItemUseTime());
          
          StatusEffectInstance res = new StatusEffectInstance(StatusEffects.RESISTANCE, 10, 2, false, false, true);
-         StatusEffectInstance slow = new StatusEffectInstance(StatusEffects.SLOWNESS, 10, 3, false, false, true);
          player.addStatusEffect(res);
-         player.addStatusEffect(slow);
       }
    }
    
@@ -368,6 +367,7 @@ public class GravitonMaul extends ArcanaItem {
                .component(DataComponentTypes.TOOL, new ToolComponent(List.of(), 1.0F, 2, false))
                .component(DataComponentTypes.CONSUMABLE, ConsumableComponent.builder().consumeSeconds(72000).useAction(UseAction.BOW).sound(Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME)).build())
                .component(DataComponentTypes.WEAPON, new WeaponComponent(1, 7.5F))
+               .component(DataComponentTypes.USE_EFFECTS, new UseEffectsComponent(false,true,0.01f))
                .attributeModifiers(AttributeModifiersComponent.builder()
                      .add(EntityAttributes.ATTACK_DAMAGE, new EntityAttributeModifier(BASE_ATTACK_DAMAGE_MODIFIER_ID, 5.0, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)
                      .add(EntityAttributes.ATTACK_SPEED, new EntityAttributeModifier(BASE_ATTACK_SPEED_MODIFIER_ID, -3.4F, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)

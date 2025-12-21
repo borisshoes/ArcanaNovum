@@ -77,7 +77,7 @@ public class StarpathTargetGui extends AnvilInputGui {
                onCompletion.accept(parsed);
                this.close();
             }
-         }else{
+         }else if(text != null){
             String trimmedName = text.trim();
             if(trimmedName.isBlank() || trimmedName.length() > 50){
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -104,7 +104,7 @@ public class StarpathTargetGui extends AnvilInputGui {
          }else{
             setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CONFIRM)).hideDefaultTooltip().setName(Text.literal("Valid Location: "+parsed.toShortString()).formatted(Formatting.DARK_AQUA)));
          }
-      }else{
+      }else if(text != null){
          String trimmedName = text.trim();
          if(trimmedName.isBlank() || trimmedName.length() > 50){
             setSlot(2, GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.CANCEL)).setName(Text.literal("Invalid Name").formatted(Formatting.DARK_AQUA)));

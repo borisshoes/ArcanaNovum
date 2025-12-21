@@ -5,6 +5,7 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.items.ArcanistsBelt;
 import net.borisshoes.arcananovum.items.ShieldOfFortitude;
+import net.minecraft.block.Block;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -13,14 +14,20 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.object.AtlasTextObjectContents;
+import net.minecraft.util.Atlases;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 
@@ -28,6 +35,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArcanaUtils {
+   
+   public static MutableText getAtlasedTexture(Item item){
+      Identifier id = Registries.ITEM.getKey(item).get().getValue();
+      Identifier newId = Identifier.of(id.getNamespace(),"item/"+id.getPath());
+      return Text.object(new AtlasTextObjectContents(Atlases.ITEMS, newId));
+   }
+   
+   public static MutableText getAtlasedTexture(Block block){
+      Identifier id = Registries.BLOCK.getKey(block).get().getValue();
+      Identifier newId = Identifier.of(id.getNamespace(),"block/"+id.getPath());
+      return Text.object(new AtlasTextObjectContents(Atlases.BLOCKS, newId));
+   }
+   
+   public static MutableText getAtlasedTexture(Identifier atlas, Identifier rawId){
+      return Text.object(new AtlasTextObjectContents(atlas, rawId));
+   }
    
    public static MutableText getFormattedDimName(RegistryKey<World> worldKey){
       if(worldKey.getValue().toString().equals(ServerWorld.OVERWORLD.getValue().toString())){

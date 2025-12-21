@@ -23,8 +23,10 @@ import net.borisshoes.borislib.utils.SoundUtils;
 import net.borisshoes.borislib.utils.TextUtils;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttackRangeComponent;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.WeaponComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -198,26 +200,10 @@ public class ShadowStalkersGlaive extends EnergyItem {
    public class ShadowStalkersGlaiveItem extends ArcanaPolymerItem {
       public ShadowStalkersGlaiveItem(){
          super(getThis(), getEquipmentArcanaItemComponents()
+               .component(DataComponentTypes.ATTACK_RANGE, new AttackRangeComponent(0.5f,3.75f,0.5f,5.75f,0.075f,0.8f))
                .sword(ToolMaterial.NETHERITE, 3.0F, -2.4F)
+               .component(DataComponentTypes.WEAPON, new WeaponComponent(1,0.75f))
          );
-      }
-      
-      @Override
-      public ComponentMap getComponents(){
-         ComponentMap baseComponents = super.getComponents();
-         AttributeModifiersComponent comp = baseComponents.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
-         
-         AttributeModifiersComponent.Builder builder = AttributeModifiersComponent.builder();
-         for(AttributeModifiersComponent.Entry entry : comp.modifiers()){
-            if(entry.matches(EntityAttributes.ENTITY_INTERACTION_RANGE, Identifier.of(MOD_ID,id))) continue;
-            builder.add(entry.attribute(),entry.modifier(),entry.slot());
-         }
-         builder.add(EntityAttributes.ENTITY_INTERACTION_RANGE,new EntityAttributeModifier(Identifier.of(MOD_ID,id),0.5F,EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND);
-         
-         ComponentMap.Builder overrides = ComponentMap.builder();
-         overrides.add(DataComponentTypes.ATTRIBUTE_MODIFIERS,builder.build());
-         
-         return ComponentMap.of(baseComponents,overrides.build());
       }
       
       @Override

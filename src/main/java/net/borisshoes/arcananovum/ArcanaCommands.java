@@ -53,9 +53,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
+import net.minecraft.text.object.AtlasTextObjectContents;
+import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -568,7 +567,7 @@ public class ArcanaCommands {
          return 0;
       try {
          ServerPlayerEntity player = ctx.getSource().getPlayer();
-         
+
       } catch (Exception e){
          log(2,e.toString());
       }

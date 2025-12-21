@@ -29,6 +29,8 @@ import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -52,32 +54,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
+public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> implements InventoryChangedListener {
    private final MidnightEnchanterBlockEntity blockEntity;
-   private MidnightEnchanterInventoryListener listener;
-   private ItemStack stack = ItemStack.EMPTY;
    private int page = 1;
    private int maxPages = 1;
    private int xpCost = 0;
    private int essenceCost = 0;
    private int bookshelves = -1; // Mode for enchanting unenchanted items
    private int lapisLevel = 0;
+   private boolean updating = false;
    private List<EnchantEntry> enchants = new ArrayList<>();
    
    public MidnightEnchanterGui(ServerPlayerEntity player, MidnightEnchanterBlockEntity blockEntity){
       super(ScreenHandlerType.GENERIC_9X6, player, false);
       this.blockEntity = blockEntity;
       setTitle(Text.literal("Midnight Enchanter"));
+      inventory = new SimpleInventory(1);
+      inventory.addListener(this);
    }
    
    @Override
    public boolean onAnyClick(int index, ClickType type, SlotActionType action){
       if(!(blockEntity.getWorld() instanceof ServerWorld serverWorld)) return true;
-      boolean enchanted = EnchantmentHelper.hasEnchantments(stack);
+      boolean enchanted = EnchantmentHelper.hasEnchantments(getStack());
       boolean precision = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PRECISION_DISENCHANTING.id) >= 1;
       
       if(index == 49){
-         if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
+         if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
             if(lapisLevel == -1){
                player.sendMessage(Text.literal("You must select a Lapis Level").formatted(Formatting.RED,Formatting.ITALIC),true);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
@@ -90,33 +93,31 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             }
             
             if(MinecraftUtils.removeItems(player,Items.LAPIS_LAZULI,lapisLevel)){
-               player.applyEnchantmentCosts(stack,0);
+               player.applyEnchantmentCosts(getStack(),0);
                applyEnchants();
                removeXP(lapisLevel);
                MinecraftUtils.returnItems(inventory,player);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
-               listener.setUpdating();
-               inventory.setStack(0,ItemStack.EMPTY);
+               setUpdating();
                setItem(ItemStack.EMPTY);
-               listener.finishUpdate();
+               finishUpdate();
             }else{
                player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
                      .append(Text.translatable(Items.LAPIS_LAZULI.getTranslationKey()).formatted(Formatting.BLUE,Formatting.ITALIC)),false);
                SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_FIRE_EXTINGUISH, 1,1);
             }
-         }else if(stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER)){
+         }else if(getStack().isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER)){
             if(player.experienceLevel >= xpCost || player.isCreative()){
                if(MinecraftUtils.removeItems(player,ArcanaRegistry.NEBULOUS_ESSENCE,essenceCost)){
-                  listener.setUpdating();
+                  setUpdating();
                   ItemStack newStack = new ItemStack(ArcanaRegistry.EXOTIC_ARCANE_PAPER);
-                  newStack.setCount(stack.getCount());
-                  inventory.setStack(0,newStack);
+                  newStack.setCount(getStack().getCount());
+                  setItem(newStack);
                   removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
                   MinecraftUtils.returnItems(inventory,player);
-                  inventory.setStack(0,ItemStack.EMPTY);
                   setItem(ItemStack.EMPTY);
-                  listener.finishUpdate();
+                  finishUpdate();
                }else{
                   player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
                         .append(Text.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getTranslationKey()).formatted(Formatting.DARK_PURPLE,Formatting.ITALIC)),false);
@@ -134,10 +135,9 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
                   removeXP(xpCost);
                   SoundUtils.playSongToPlayer(player, SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, 1f, (float) (Math.random()*0.4f + 0.8f));
                   MinecraftUtils.returnItems(inventory,player);
-                  listener.setUpdating();
-                  inventory.setStack(0,ItemStack.EMPTY);
+                  setUpdating();
                   setItem(ItemStack.EMPTY);
-                  listener.finishUpdate();
+                  finishUpdate();
                }else{
                   player.sendMessage(Text.literal("You do not have enough ").formatted(Formatting.RED,Formatting.ITALIC)
                         .append(Text.translatable(ArcanaRegistry.NEBULOUS_ESSENCE.getTranslationKey()).formatted(Formatting.DARK_PURPLE,Formatting.ITALIC)),false);
@@ -159,7 +159,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          if(MinecraftUtils.removeItems(player,Items.BOOK,1)){
             ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
             if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-               ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
+               ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(getStack());
                EnchantmentHelper.set(book,comp);
                disenchantItem();
             }else{
@@ -178,7 +178,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          buildGui();
       }else if(index == 7){
          if(enchanted){
-            int essence = (int) (ArcanaUtils.calcEssenceFromEnchants(stack) * (1 + .15*ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA.id)));
+            int essence = (int) (ArcanaUtils.calcEssenceFromEnchants(getStack()) * (1 + .15*ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.ESSENCE_SUPERNOVA.id)));
             SimpleInventory sinv = new SimpleInventory(essence / 64 + 1);
             ArcanaNovum.data(player).addXP(ArcanaConfig.getInt(ArcanaRegistry.MIDNIGHT_ENCHANTER_DISENCHANT_PER_ESSENCE)*essence);
             if(essence > 0){
@@ -195,7 +195,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             
             int maxCount = 0;
             
-            ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
+            ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(getStack());
             for(Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : comp.getEnchantmentEntries()){
                if(entry.getIntValue() == entry.getKey().value().getMaxLevel()) maxCount++;
             }
@@ -204,6 +204,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             }
             
             disenchantItem();
+            buildGui();
          }else{
             if(type == ClickType.MOUSE_LEFT_SHIFT){
                bookshelves = -1;
@@ -220,7 +221,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
                   bookshelves++;
                }
             }
-            this.enchants = getEnchantsForItem(this.stack);
+            this.enchants = getEnchantsForItem(this.getStack());
             lapisLevel = -1;
             xpCost = -1;
          }
@@ -233,7 +234,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
                if(MinecraftUtils.removeItems(player,Items.BOOK,1)){
                   ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
                   if(type == ClickType.MOUSE_RIGHT || type == ClickType.MOUSE_RIGHT_SHIFT){
-                     ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
+                     ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(getStack());
                      EnchantmentHelper.set(book,comp);
                      disenchantItem();
                   }else{
@@ -257,7 +258,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          }
          buildGui();
       }else if(index % 9 > 0 && index % 9 < 8 && index > 18 && index < 44){
-         if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
+         if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
             int row = (index / 9) - 1;
             if(getSlot(index) != null && (getSlot(index).getItemStack().isOf(Items.ENCHANTED_BOOK) ||  getSlot(index).getItemStack().isOf(Items.LAPIS_LAZULI))){
                lapisLevel = row;
@@ -280,23 +281,16 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    
    public void buildGui(){
       boolean precision = ArcanaAugments.getAugmentFromMap(blockEntity.getAugments(),ArcanaAugments.PRECISION_DISENCHANTING.id) >= 1;
-      boolean paperUpgrade = stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
+      boolean paperUpgrade = getStack().isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
       
       GuiHelper.outlineGUI(this,ArcanaColors.ARCANA_COLOR,Text.empty());
       clearSlot(4);
       
-      if(inventory == null){
-         inventory = new SimpleInventory(1);
-      }
       setSlotRedirect(4,new MidnightEnchanterSlot(inventory,0,0,0));
-      if(listener == null){
-         listener = new MidnightEnchanterInventoryListener(this,blockEntity);
-         inventory.addListener(listener);
-      }
       
-      boolean enchanted = EnchantmentHelper.hasEnchantments(stack);
-      Text name = stack.isEmpty() ? Text.literal("Insert an Enchanted or Enchantable Item").formatted(Formatting.DARK_PURPLE) : Text.literal("Add Enchantments or Disenchant Your Item").formatted(Formatting.LIGHT_PURPLE);
-      int color = stack.isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR;
+      boolean enchanted = EnchantmentHelper.hasEnchantments(getStack());
+      Text name = getStack().isEmpty() ? Text.literal("Insert an Enchanted or Enchantable Item").formatted(Formatting.DARK_PURPLE) : Text.literal("Add Enchantments or Disenchant Your Item").formatted(Formatting.LIGHT_PURPLE);
+      int color = getStack().isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR;
       
       for(int i = 0; i < 9; i++){
          if(i == 0){
@@ -314,7 +308,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          }
       }
       
-      if(maxPages > 1 && !(stack.isEnchantable() && !enchanted && bookshelves >= 0)){
+      if(maxPages > 1 && !(getStack().isEnchantable() && !enchanted && bookshelves >= 0)){
          GuiElementBuilder nextArrow = GuiElementBuilder.from(GraphicalItem.with(GraphicalItem.RIGHT_ARROW)).hideDefaultTooltip();
          nextArrow.setName((Text.literal("")
                .append(Text.literal("Next Page").formatted(Formatting.GOLD))));
@@ -403,7 +397,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          setSlot(7,essenceItem);
       }
       
-      if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
+      if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
          for(int i = 19; i < 26; i++){
             GuiElementBuilder bgPane2 = GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, ArcanaColors.DARK_COLOR)).hideDefaultTooltip();
             bgPane2.setName(Text.empty()).hideTooltip();
@@ -423,12 +417,12 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          
          int[] enchPowers = new int[3];
          for(int i = 0; i < enchPowers.length; i++){
-            enchPowers[i] = EnchantmentHelper.calculateRequiredExperienceLevel(random, i, bookshelves, stack);
+            enchPowers[i] = EnchantmentHelper.calculateRequiredExperienceLevel(random, i, bookshelves, getStack());
          }
          
          for(int i = 0; i < enchPowers.length; i++){
             List<EnchantmentLevelEntry> list;
-            if(enchPowers[i] >= i + 1 && (list = this.generateEnchantments(stack, i, enchPowers[i],random,playerSeed)) != null && !list.isEmpty()){
+            if(enchPowers[i] >= i + 1 && (list = this.generateEnchantments(getStack(), i, enchPowers[i],random,playerSeed)) != null && !list.isEmpty()){
                GuiElementBuilder lapisItem = new GuiElementBuilder(Items.LAPIS_LAZULI).hideDefaultTooltip().setCount(i+1);
                lapisItem.setName((Text.literal("")
                      .append(Text.literal("Slot "+(i+1)).formatted(Formatting.BLUE))));
@@ -469,7 +463,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             }
          }
          xpCost = 10;
-         essenceCost = stack.getCount();
+         essenceCost = getStack().getCount();
       }else{
          List<EnchantEntry> pageItems = getPage();
          int k = 0;
@@ -494,7 +488,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
                   
                   setSlot((i*9+19)+j,enchantBook);
                }else{
-                  setSlot((i*9+19)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, stack.isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
+                  setSlot((i*9+19)+j,GuiElementBuilder.from(GraphicalItem.withColor(GraphicalItem.PAGE_BG, getStack().isEmpty() ? ArcanaColors.DARK_COLOR : ArcanaColors.LAPIS_COLOR)).setName(Text.empty()).hideTooltip());
                }
                k++;
             }
@@ -513,11 +507,11 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       }else{
          enchantItem.setName((Text.literal("")
                .append(Text.literal("Enchant ").formatted(Formatting.LIGHT_PURPLE))
-               .append(Text.translatable(stack.getItem().getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))));
+               .append(Text.translatable(getStack().getItem().getTranslationKey()).formatted(Formatting.LIGHT_PURPLE))));
          enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal("Click").formatted(Formatting.AQUA))
                .append(Text.literal(" to enchant the ").formatted(Formatting.DARK_PURPLE))
-               .append(Text.translatable(stack.getItem().getTranslationKey()).formatted(Formatting.DARK_PURPLE)))));
+               .append(Text.translatable(getStack().getItem().getTranslationKey()).formatted(Formatting.DARK_PURPLE)))));
       }
       
       
@@ -532,10 +526,10 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
          
          enchantItem.addLoreLine(TextUtils.removeItalics(Text.empty()));
          enchantItem.addLoreLine(TextUtils.removeItalics(Text.literal("Costs: ").formatted(Formatting.LIGHT_PURPLE)));
-         if(xpCost > 0 && (!selected.isEmpty() || paperUpgrade)){
+         if(xpCost > 0){
             enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal(xpCost+" Levels").formatted(Formatting.DARK_GREEN)))));
-            if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
+            if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
                enchantItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                      .append(Text.literal(lapisLevel+" Lapis Lazuli").formatted(Formatting.BLUE)))));
             }else{
@@ -552,7 +546,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       if(xpCost > 0 && (!selected.isEmpty() || paperUpgrade)){
          xpItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                .append(Text.literal(xpCost+" Levels").formatted(Formatting.DARK_GREEN)))));
-         if(stack.isEnchantable() && !enchanted && bookshelves >= 0){
+         if(getStack().isEnchantable() && !enchanted && bookshelves >= 0){
             xpItem.addLoreLine(TextUtils.removeItalics((Text.literal("")
                   .append(Text.literal(lapisLevel+" Lapis Lazuli").formatted(Formatting.BLUE)))));
          }else{
@@ -581,7 +575,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    }
    
    private boolean isCompatible(RegistryEntry<Enchantment> enchant, int level){
-      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
+      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(getStack());
       Object2IntOpenHashMap<RegistryEntry<Enchantment>> enchants = new Object2IntOpenHashMap<>();
       comp.getEnchantmentEntries().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
       
@@ -601,8 +595,8 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    }
    
    private void applyEnchants(){
-      listener.setUpdating();
-      ItemEnchantmentsComponent.Builder enchantBuilder = new ItemEnchantmentsComponent.Builder(EnchantmentHelper.getEnchantments(stack));
+      setUpdating();
+      ItemEnchantmentsComponent.Builder enchantBuilder = new ItemEnchantmentsComponent.Builder(EnchantmentHelper.getEnchantments(getStack()));
       for(EnchantEntry entry : getSelected()){
          enchantBuilder.remove(e -> e == entry.enchantment());
          enchantBuilder.add(entry.enchantment(),entry.level());
@@ -611,32 +605,32 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             ArcanaAchievements.grant(player,ArcanaAchievements.ENCHANTING_OVERKILL.id);
          }
       }
-      if(stack.isOf(Items.BOOK)){
-         stack = stack.withItem(Items.ENCHANTED_BOOK);
+      if(getStack().isOf(Items.BOOK)){
+         setItem(getStack().withItem(Items.ENCHANTED_BOOK));
       }
       
-      EnchantmentHelper.set(stack,enchantBuilder.build());
-      inventory.setStack(0,stack);
-      listener.finishUpdate();
+      EnchantmentHelper.set(getStack(),enchantBuilder.build());
+      setItem(getStack());
+      finishUpdate();
    }
    
    private void disenchantItem(){
-      listener.setUpdating();
+      setUpdating();
       
-      EnchantmentHelper.apply(stack, components -> components.remove(enchantment -> true));
-      if(stack.isOf(Items.ENCHANTED_BOOK)){
-         stack = stack.withItem(Items.BOOK);
+      EnchantmentHelper.apply(getStack(), components -> components.remove(enchantment -> true));
+      if(getStack().isOf(Items.ENCHANTED_BOOK)){
+         setItem(getStack().withItem(Items.BOOK));
       }
       
-      if(ArcanaItemUtils.isArcane(stack)){
-         ArcanaItemUtils.identifyItem(stack).buildItemLore(stack, BorisLib.SERVER);
+      if(ArcanaItemUtils.isArcane(getStack())){
+         ArcanaItemUtils.identifyItem(getStack()).buildItemLore(getStack(), BorisLib.SERVER);
       }
-      inventory.setStack(0,stack);
-      listener.finishUpdate();
+      setItem(getStack());
+      finishUpdate();
    }
    
    private Pair<RegistryEntry<Enchantment>,Integer> removeTopEnchant(){
-      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
+      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(getStack());
       Object2IntOpenHashMap<RegistryEntry<Enchantment>> enchants = new Object2IntOpenHashMap<>();
       comp.getEnchantmentEntries().forEach(entry -> enchants.addTo(entry.getKey(),entry.getIntValue()));
       
@@ -646,7 +640,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
             return new Pair<>(entry, enchants.getInt(entry));
          }
       }
-      listener.setUpdating();
+      setUpdating();
       
       RegistryEntryList<Enchantment> registryEntryList = null;
       Optional<RegistryEntryList.Named<Enchantment>> optional = player.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.TOOLTIP_ORDER);
@@ -685,10 +679,10 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       
       ItemEnchantmentsComponent.Builder enchantBuilder = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
       enchants.forEach(enchantBuilder::add);
-      EnchantmentHelper.set(stack,enchantBuilder.build());
+      EnchantmentHelper.set(getStack(),enchantBuilder.build());
       
-      inventory.setStack(0,stack);
-      listener.finishUpdate();
+      setItem(getStack());
+      finishUpdate();
       return new Pair<>(registryEntry,value);
    }
    
@@ -697,7 +691,7 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
       enchants = getEnchantsForItem(stack);
       page = 1;
       maxPages = (int) Math.ceil(enchants.size() / 21.0);
-      this.stack = stack.copy();
+      inventory.setStack(0,stack.copy());
       calculateXPCost();
    }
    
@@ -708,16 +702,16 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    }
    
    public void calculateXPCost(){
-      boolean paperUpgrade = stack.isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
+      boolean paperUpgrade = getStack().isOf(ArcanaRegistry.EMPOWERED_ARCANE_PAPER);
       int cost = 0;
       int eCost = 0;
       if(paperUpgrade){
          xpCost = 10;
-         essenceCost = stack.getCount();
+         essenceCost = getStack().getCount();
          return;
       }
       
-      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(stack);
+      ItemEnchantmentsComponent comp = EnchantmentHelper.getEnchantments(getStack());
       Object2IntOpenHashMap<RegistryEntry<Enchantment>> curEnchants = new Object2IntOpenHashMap<>();
       comp.getEnchantmentEntries().forEach(entry -> curEnchants.addTo(entry.getKey(),entry.getIntValue()));
       
@@ -833,6 +827,29 @@ public class MidnightEnchanterGui extends VirtualInventoryGui<SimpleInventory> {
    @Override
    public void close(){
       super.close();
+   }
+   
+   @Override
+   public void onInventoryChanged(Inventory inv){
+      if(!updating){
+         setUpdating();
+         ItemStack mainStack = inv.getStack(0);
+         buildGui();
+         setItem(mainStack);
+         //Update gui
+         finishUpdate();
+      }
+   }
+   
+   private ItemStack getStack(){
+      return this.inventory.getStack(0);
+   }
+   
+   public void finishUpdate(){
+      updating = false;
+   }
+   public void setUpdating(){
+      updating = true;
    }
    
    private record EnchantEntry(RegistryEntry<Enchantment> enchantment, int level, boolean selected){}

@@ -79,6 +79,12 @@
     "minecraft:bell",
     "minecraft:lantern",
     "minecraft:soul_lantern",
-    "minecraft:hopper"
+    "minecraft:hopper",
+    "minecraft:iron_spear",
+    "minecraft:golden_spear",
+    "minecraft:copper_spear",
+    "minecraft:copper_nautilus_armor",
+    "minecraft:iron_nautilus_armor",
+    "minecraft:golden_nautilus_armor"
   ]
 }

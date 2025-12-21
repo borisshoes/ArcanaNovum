@@ -16,7 +16,7 @@ public class PolymerItemUtilsMixin {
    @ModifyReturnValue(method = "createItemStack(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/tooltip/TooltipType;Lxyz/nucleoid/packettweaker/PacketContext;)Lnet/minecraft/item/ItemStack;", at = @At("RETURN"))
    private static ItemStack arcananovum$modifyPlayerHeads(ItemStack returned, ItemStack itemStack, TooltipType tooltipContext, PacketContext context){
       if(itemStack.isOf(Items.PLAYER_HEAD) && returned.isOf(Items.PLAYER_HEAD) && !returned.contains(DataComponentTypes.PROFILE) && itemStack.contains(DataComponentTypes.PROFILE)){
-         returned.set(DataComponentTypes.PROFILE,itemStack.get(DataComponentTypes.PROFILE));
+         //returned.set(DataComponentTypes.PROFILE,itemStack.get(DataComponentTypes.PROFILE));
       }
       return returned;
    }

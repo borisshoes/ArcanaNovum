@@ -239,9 +239,9 @@ public class SojournerBoots extends EnergyItem {
          super(getThis(),getEquipmentArcanaItemComponents()
                .armor(ArmorMaterials.NETHERITE, EquipmentType.BOOTS)
                .component(DataComponentTypes.DYED_COLOR,new DyedColorComponent(0x33A900))
-               .attributeModifiers(new AttributeModifiersComponent(List.of(
-                     new AttributeModifiersComponent.Entry(EntityAttributes.STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
-               )))
+               .attributeModifiers(ArmorMaterials.NETHERITE.createAttributeModifiers(EquipmentType.BOOTS)
+                     .with(EntityAttributes.STEP_HEIGHT, new EntityAttributeModifier(Identifier.of(ArcanaNovum.MOD_ID, STEP_TAG), 0.65, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.FEET)
+               )
          );
       }
       

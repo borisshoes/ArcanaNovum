@@ -6,18 +6,17 @@ import net.borisshoes.arcananovum.augments.ArcanaAugments;
 import net.borisshoes.arcananovum.core.ArcanaItem;
 import net.borisshoes.arcananovum.core.ArcanaRarity;
 import net.borisshoes.arcananovum.core.polymer.ArcanaPolymerItem;
+import net.borisshoes.arcananovum.damage.ArcanaDamageTypes;
 import net.borisshoes.arcananovum.entities.SpearOfTenbrousEntity;
 import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.research.ResearchTasks;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.borislib.utils.TextUtils;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.EnchantmentEffectComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.component.type.ToolComponent;
+import net.minecraft.component.type.*;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -30,9 +29,11 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ProjectileItem;
+import net.minecraft.item.ToolMaterial;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.LazyRegistryEntryReference;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -50,6 +51,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static net.borisshoes.arcananovum.ArcanaNovum.MOD_ID;
@@ -58,6 +60,7 @@ public class SpearOfTenbrous extends ArcanaItem {
    public static final String ID = "spear_of_tenbrous";
    
    public static final String SPEAR_ID_TAG = "spearID";
+   public static final String HAND_TAG = "hand";
    
    public SpearOfTenbrous(){
       id = ID;
@@ -161,11 +164,15 @@ public class SpearOfTenbrous extends ArcanaItem {
       public SpearOfTenbrousItem(){
          super(getThis(),getEquipmentArcanaItemComponents()
                .component(DataComponentTypes.TOOL, new ToolComponent(List.of(), 1.0F, 2, false))
-               .component(DataComponentTypes.CONSUMABLE, ConsumableComponent.builder().consumeSeconds(72000).useAction(UseAction.SPEAR).sound(Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME)).build())
+               .component(DataComponentTypes.ATTACK_RANGE,new AttackRangeComponent(1.0f,4.75f,1.0f,6.75f,0.1375f,0.5f))
+               .component(DataComponentTypes.DAMAGE_TYPE, new LazyRegistryEntryReference<>(ArcanaDamageTypes.ARCANE_LIGHTNING))
+               .component(DataComponentTypes.MINIMUM_ATTACK_CHARGE, 1.0f)
+               .component(DataComponentTypes.PIERCING_WEAPON, new PiercingWeaponComponent(true, false, Optional.of(SoundEvents.ITEM_SPEAR_ATTACK), Optional.of(SoundEvents.ITEM_SPEAR_HIT)))
+               .component(DataComponentTypes.SWING_ANIMATION, new SwingAnimationComponent(SwingAnimationType.STAB, 20))
+               .component(DataComponentTypes.USE_EFFECTS, new UseEffectsComponent(true,true,1.0f))
                .attributeModifiers(AttributeModifiersComponent.builder()
-                     .add(EntityAttributes.ATTACK_DAMAGE, new EntityAttributeModifier(BASE_ATTACK_DAMAGE_MODIFIER_ID, 10.0, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)
+                     .add(EntityAttributes.ATTACK_DAMAGE, new EntityAttributeModifier(BASE_ATTACK_DAMAGE_MODIFIER_ID, 6.0, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)
                      .add(EntityAttributes.ATTACK_SPEED, new EntityAttributeModifier(BASE_ATTACK_SPEED_MODIFIER_ID, -3.0F, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)
-                     .add(EntityAttributes.ENTITY_INTERACTION_RANGE, new EntityAttributeModifier(Identifier.of(MOD_ID,id), 1.0F, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND)
                      .build())
                .enchantable(15)
          );
@@ -180,10 +187,31 @@ public class SpearOfTenbrous extends ArcanaItem {
       public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot){
          if(!ArcanaItemUtils.isArcane(stack)) return;
          if(!(world instanceof ServerWorld && entity instanceof ServerPlayerEntity player)) return;
+         if(slot == null){
+            stack.remove(DataComponentTypes.KINETIC_WEAPON);
+            stack.remove(DataComponentTypes.CONSUMABLE);
+            ArcanaItem.removeProperty(stack,HAND_TAG);
+         }else if(slot == EquipmentSlot.MAINHAND){
+            stack.remove(DataComponentTypes.KINETIC_WEAPON);
+            stack.set(DataComponentTypes.CONSUMABLE, ConsumableComponent.builder().consumeSeconds(72000).useAction(UseAction.TRIDENT).sound(Registries.SOUND_EVENT.getEntry(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME)).build());
+         }else if(slot == EquipmentSlot.OFFHAND){
+            stack.remove(DataComponentTypes.CONSUMABLE);
+            stack.set(DataComponentTypes.KINETIC_WEAPON, new KineticWeaponComponent(
+                        10,
+                        10,
+                        KineticWeaponComponent.Condition.ofMinSpeed(175, 7.0f),
+                        KineticWeaponComponent.Condition.ofMinSpeed(350, 5.1f),
+                        KineticWeaponComponent.Condition.ofMinRelativeSpeed(525, 4.6f),
+                        0.38f,
+                        1.25f,
+                        Optional.of(SoundEvents.ITEM_SPEAR_USE),
+                        Optional.of(SoundEvents.ITEM_SPEAR_HIT)));
+         }
       }
       
       @Override
       public boolean onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+         if(stack.contains(DataComponentTypes.KINETIC_WEAPON)) return super.onStoppedUsing(stack,world,user,remainingUseTicks);
          if(!(user instanceof PlayerEntity playerEntity)) return false;
          
          int i = this.getMaxUseTime(stack, user) - remainingUseTicks;
@@ -211,13 +239,28 @@ public class SpearOfTenbrous extends ArcanaItem {
       @Override
       public ActionResult use(World world, PlayerEntity playerEntity, Hand hand) {
          ItemStack stack = playerEntity.getStackInHand(hand);
+         if(stack.contains(DataComponentTypes.KINETIC_WEAPON)){
+            ActionResult sup = super.use(world,playerEntity,hand);
+            if(sup == ActionResult.CONSUME || sup == ActionResult.SUCCESS){
+               if(ArcanaItem.getStringProperty(stack,HAND_TAG).equals(Hand.MAIN_HAND.name())) playerEntity.stopUsingItem();
+               ArcanaItem.putProperty(stack,HAND_TAG,hand.name());
+            }
+            return sup;
+         }
          if(!(playerEntity instanceof ServerPlayerEntity player)) return ActionResult.PASS;
          if (stack.willBreakNextUse()) {
             return ActionResult.FAIL;
          } else {
             playerEntity.setCurrentHand(hand);
+            if(ArcanaItem.getStringProperty(stack,HAND_TAG).equals(Hand.OFF_HAND.name())) playerEntity.stopUsingItem();
+            ArcanaItem.putProperty(stack,HAND_TAG,hand.name());
             return ActionResult.CONSUME;
          }
+      }
+      
+      @Override
+      public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks){
+         super.usageTick(world, user, stack, remainingUseTicks);
       }
       
       @Override
@@ -236,11 +279,13 @@ public class SpearOfTenbrous extends ArcanaItem {
       
       @Override
       public UseAction getUseAction(ItemStack stack) {
-         return UseAction.SPEAR;
+         if(stack.contains(DataComponentTypes.KINETIC_WEAPON)) return UseAction.SPEAR;
+         return UseAction.TRIDENT;
       }
       
       @Override
       public int getMaxUseTime(ItemStack stack, LivingEntity user) {
+         if(stack.contains(DataComponentTypes.KINETIC_WEAPON)) return super.getMaxUseTime(stack,user);
          return 72000;
       }
       

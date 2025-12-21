@@ -6,12 +6,18 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
+base {
+    archivesName = project.archives_base_name
+}
+
 loom {
     accessWidenerPath = file("src/main/resources/arcananovum.accesswidener")
 }
 
 fabricApi {
-    configureDataGeneration()
+    configureDataGeneration {
+        modId = "arcananovum"
+    }
 }
 
 repositories {
@@ -100,10 +106,6 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
-base {
-    archivesName = project.archives_base_name
-}
-
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     if(JavaVersion.current() < javaVersion){
@@ -117,8 +119,8 @@ java {
 }
 
 jar {
-    from("LICENSE"){
-        rename { "${it}_${project.archives_base_name}" }
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
     }
 }
 

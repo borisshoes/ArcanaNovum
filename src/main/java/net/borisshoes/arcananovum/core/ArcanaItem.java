@@ -11,6 +11,7 @@ import net.borisshoes.arcananovum.gui.arcanetome.TomeGui;
 import net.borisshoes.arcananovum.recipes.arcana.ArcanaRecipe;
 import net.borisshoes.arcananovum.research.ResearchTask;
 import net.borisshoes.arcananovum.utils.ArcanaItemUtils;
+import net.borisshoes.arcananovum.utils.ArcanaUtils;
 import net.borisshoes.arcananovum.utils.EnhancedStatUtils;
 import net.borisshoes.arcananovum.utils.LevelUtils;
 import net.borisshoes.borislib.BorisLib;
@@ -20,11 +21,15 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.equipment.trim.ArmorTrim;
 import net.minecraft.nbt.*;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -34,9 +39,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.Unit;
+import net.minecraft.text.object.AtlasTextObjectContents;
+import net.minecraft.text.object.TextObjectContents;
+import net.minecraft.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -548,6 +553,89 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
          }
       }
       
+      List<Text> statLines = new ArrayList<>();
+      AttributeModifiersComponent attrs = item.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+      // Armor: Armor + Toughness + KB Res + Max HP
+      EquippableComponent equip = item.get(DataComponentTypes.EQUIPPABLE);
+      if(equip != null && attrs != null){
+         EquipmentSlot slot = equip.slot();
+         double armor = attrs.applyOperations(EntityAttributes.ARMOR, 0,slot);
+         double toughness = attrs.applyOperations(EntityAttributes.ARMOR_TOUGHNESS, 0,slot);
+         double kbRes = attrs.applyOperations(EntityAttributes.KNOCKBACK_RESISTANCE, 0,slot);
+         double health = attrs.applyOperations(EntityAttributes.MAX_HEALTH, 20.0, slot) - 20.0;
+         boolean anyUnusual = false;
+         MutableText text = Text.literal("").formatted(Formatting.GOLD);
+         if(armor != 0 || toughness != 0){
+            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_CHESTPLATE).formatted(Formatting.WHITE));
+            text.append(Text.literal(" "+TextUtils.readableDouble(armor, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_CHESTPLATE).formatted(Formatting.WHITE));
+            text.append(Text.literal(" "+TextUtils.readableDouble(toughness, 2)+" | "));
+            anyUnusual = true;
+         }
+         if(kbRes != 0){
+            text.append(ArcanaUtils.getAtlasedTexture(Items.NETHERITE_CHESTPLATE).formatted(Formatting.WHITE));
+            text.append(Text.literal(" "+TextUtils.readableDouble(kbRes, 2)+" | "));
+            anyUnusual = true;
+         }
+         if(health != 0){
+            text.append(ArcanaUtils.getAtlasedTexture(Atlases.GUI,Identifier.of("hud/heart/full")).formatted(Formatting.WHITE));
+            text.append(Text.literal((health > 0 ? " +" : " ")+TextUtils.readableDouble(health, 2)+" | "));
+            anyUnusual = true;
+         }
+         if(anyUnusual) statLines.add(text);
+      }
+      
+      // Weapon: Damage + Speed + Range Min + Range Max + Shield Disable
+      if(attrs != null){
+         boolean anyUnusual = false;
+         double dmg = 1 + attrs.applyOperations(EntityAttributes.ATTACK_DAMAGE, 0,EquipmentSlot.MAINHAND);
+         double speed = 4.0 + attrs.applyOperations(EntityAttributes.ATTACK_SPEED, 0,EquipmentSlot.MAINHAND);
+         double rangeMin = 0, rangeMax = 3.0, shieldDisable = 0;
+         AttackRangeComponent rangeComp = item.get(DataComponentTypes.ATTACK_RANGE);
+         if(rangeComp != null){
+            rangeMin = rangeComp.minRange();
+            rangeMax = rangeComp.maxRange();
+         }
+         WeaponComponent weaponComp = item.get(DataComponentTypes.WEAPON);
+         if(weaponComp != null){
+            shieldDisable = weaponComp.disableBlockingForSeconds();
+         }
+         MutableText text = Text.literal("").formatted(Formatting.GOLD);
+         if(dmg != 1 || speed != 4.0){
+            text.append(ArcanaUtils.getAtlasedTexture(Items.DIAMOND_SWORD).formatted(Formatting.WHITE));
+            text.append(Text.literal(" "+TextUtils.readableDouble(dmg, 2)+" | "));
+            text.append(ArcanaUtils.getAtlasedTexture(Items.GOLDEN_SWORD).formatted(Formatting.WHITE));
+            text.append(Text.literal(" "+TextUtils.readableDouble(speed, 2)+" | "));
+            anyUnusual = true;
+         }
+         if(rangeMin != 0 || rangeMax != 3.0){
+            text.append(ArcanaUtils.getAtlasedTexture(Items.IRON_SPEAR).formatted(Formatting.WHITE));
+            text.append(Text.literal(" "+TextUtils.readableDouble(rangeMin, 2)+"-"+TextUtils.readableDouble(rangeMax, 2)+" | "));
+            anyUnusual = true;
+         }
+         if(shieldDisable != 0){
+            text.append(ArcanaUtils.getAtlasedTexture(Items.COPPER_AXE).formatted(Formatting.WHITE));
+            text.append(Text.literal(" "+TextUtils.readableDouble(shieldDisable, 2)+" | "));
+            anyUnusual = true;
+         }
+         if(anyUnusual) statLines.add(text);
+      }
+      
+      // Block Interaction Range + Entity Interaction Range + Mining Speed
+      
+      // Fall Damage Protection + Aqua Affinity + Movement Speed + Step Height
+      
+      if(!statLines.isEmpty()){
+         loreList.add(Text.literal(""));
+         loreList.add(TextUtils.removeItalics(Text.literal("Item Stats:")).formatted(Formatting.YELLOW));
+         loreList.addAll(statLines.stream().map(TextUtils::removeItalics).toList());
+      }
+      
+      // Projectiles / Firework Rocket Info
+      ChargedProjectilesComponent projs = item.get(DataComponentTypes.CHARGED_PROJECTILES);
+      FireworksComponent fireworks = item.get(DataComponentTypes.FIREWORKS);
+      // TODO
+      
       item.set(DataComponentTypes.LORE, new LoreComponent(loreList,loreList));
       return item;
    }
@@ -572,6 +660,9 @@ public abstract class ArcanaItem implements Comparable<ArcanaItem>{
             .with(DataComponentTypes.POTION_CONTENTS,true)
             .with(DataComponentTypes.BASE_COLOR,true)
             .with(DataComponentTypes.DYED_COLOR,true)
+            .with(DataComponentTypes.FIREWORKS,true)
+            .with(DataComponentTypes.CHARGED_PROJECTILES,true)
+            .with(DataComponentTypes.INTANGIBLE_PROJECTILE,true)
             ;
    }
 }

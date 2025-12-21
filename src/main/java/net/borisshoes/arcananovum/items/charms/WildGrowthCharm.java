@@ -43,6 +43,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
 import org.jetbrains.annotations.Nullable;
@@ -201,6 +202,7 @@ public class WildGrowthCharm extends ArcanaItem {
                   Block block = state.getBlock();
                   if(count >= 2) break;
                   count++;
+                  Vec3d blockCenter = blockPos.toCenterPos();
                   
                   if(block instanceof ShortPlantBlock){
                      count--;
@@ -208,25 +210,35 @@ public class WildGrowthCharm extends ArcanaItem {
                         block instanceof NetherWartBlock ||
                         block instanceof CactusBlock ||
                         block instanceof ChorusFlowerBlock ||
-                        block instanceof OxidizableBlock ||
-                        block instanceof BuddingAmethystBlock){
+                        block instanceof StemBlock){
                      state.randomTick(player.getEntityWorld(),blockPos,world.getRandom());
                      world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+                  }else if(block instanceof Oxidizable){
+                     state.randomTick(player.getEntityWorld(),blockPos,world.getRandom());
+                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
+                  }else if(block instanceof BuddingAmethystBlock){
+                     for(int i = 0; i < 10; i++){
+                        state.randomTick(player.getEntityWorld(),blockPos,world.getRandom());
+                     }
+                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
                   }else if((block instanceof AbstractPlantStemBlock ||
                         block instanceof CropBlock ||
                         block instanceof CocoaBlock ||
                         block instanceof StemBlock ||
                         block instanceof SweetBerryBushBlock) && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
                      world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
-                     
+                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,5,0.5,0.5,0.5,1);
                      if(world.getBlockState(blockPos).getBlock() instanceof CropBlock crop && crop.isMature(world.getBlockState(blockPos))){
                         ArcanaAchievements.progress(player,ArcanaAchievements.BOUNTIFUL_HARVEST.id,1);
                         ArcanaNovum.data(player).addXP(reaping >= 2 && harvest ? ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_REAPED_CROP) : ArcanaConfig.getInt(ArcanaRegistry.WILD_GROWTH_CHARM_PER_MATURE_CROP)); // Add xp
                      }
                   }else if(bloom && BoneMealItem.useOnFertilizable(new ItemStack(Items.BONE_MEAL,64), world, blockPos)){
                      world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
                   }else if(bloom && BoneMealItem.useOnGround(new ItemStack(Items.BONE_MEAL,64), world, blockPos, Direction.random(player.getRandom()))){
                      world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, blockPos, 15);
+                     world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, blockCenter.x,blockCenter.y,blockCenter.z,2,0.5,0.5,0.5,1);
                   }else{
                      count--;
                   }
@@ -237,11 +249,13 @@ public class WildGrowthCharm extends ArcanaItem {
                         if(reaping >= 2 && crop.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
                            world.setBlockState(blockPos,block.getDefaultState());
                         }
+                        world.spawnParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
                      }else if(block instanceof NetherWartBlock wart && world.getBlockState(blockPos).get(NetherWartBlock.AGE) == 3){
                         world.breakBlock(blockPos,true,player);
                         if(reaping >= 2 && wart.canPlaceAt(world.getBlockState(blockPos.down()),world,blockPos)){
                            world.setBlockState(blockPos,block.getDefaultState());
                         }
+                        world.spawnParticles(ParticleTypes.POOF, blockCenter.x,blockCenter.y,blockCenter.z,3,0.5,0.5,0.5,0.05);
                      }
                   }
                }

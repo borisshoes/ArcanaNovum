@@ -12,14 +12,23 @@
 				],
 				"model": {
 					"type": "minecraft:condition",
-					"property": "minecraft:using_item",
+					"property": "minecraft:has_component",
+					"component": "minecraft:kinetic_weapon",
 					"on_true": {
 						"type": "minecraft:model",
-						"model": "arcananovum:item/spear_of_tenbrous_full_throwing"
+						"model": "arcananovum:item/spear_of_tenbrous_full"
 					},
 					"on_false": {
-						"type": "minecraft:model",
-						"model": "arcananovum:item/spear_of_tenbrous_full"
+						"type": "minecraft:condition",
+						"property": "minecraft:using_item",
+						"on_true": {
+							"type": "minecraft:model",
+							"model": "arcananovum:item/spear_of_tenbrous_full_throwing"
+						},
+						"on_false": {
+							"type": "minecraft:model",
+							"model": "arcananovum:item/spear_of_tenbrous_full"
+						}
 					}
 				}
 			}

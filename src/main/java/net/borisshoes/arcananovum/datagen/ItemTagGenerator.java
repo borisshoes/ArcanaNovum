@@ -149,6 +149,12 @@ public class ItemTagGenerator extends FabricTagProvider.ItemTagProvider {
             .add(Items.LANTERN)
             .add(Items.SOUL_LANTERN)
             .add(Items.HOPPER)
+            .add(Items.IRON_SPEAR)
+            .add(Items.GOLDEN_SPEAR)
+            .add(Items.COPPER_SPEAR)
+            .add(Items.COPPER_NAUTILUS_ARMOR)
+            .add(Items.IRON_NAUTILUS_ARMOR)
+            .add(Items.GOLDEN_NAUTILUS_ARMOR)
       ;
       
       valueLookupBuilder(ArcanaRegistry.ENDERIA_ITEMS)
